@@ -1,0 +1,37 @@
+package coredef;
+
+
+// 测试用消息
+message EchoACK
+{
+	optional string Content = 1;
+}
+
+message Region 
+{
+	optional int32 ID = 1;
+	optional string Address = 2;
+}
+
+
+
+// 请求连接
+message RegionLinkREQ
+{
+	optional Region Profile = 1;			// 自己的档案
+}
+
+// 确认连接, 并且返回所有可用的地址列表
+message RegionLinkACK
+{	
+	optional Region Status = 1;				// 目标的当前状态
+	repeated Region AddressList = 2;		// 目标其他连接的地址
+}
+
+
+message RouterACK
+{
+	optional bytes Msg = 1;
+	optional uint32 MsgID = 2;
+	optional int64 TargetNodeID = 3;		// 真实送到的NodeID
+}
