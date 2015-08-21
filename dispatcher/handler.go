@@ -7,10 +7,6 @@ import (
 	"log"
 )
 
-const (
-	EventNewSession = 1
-)
-
 type errInterface interface {
 	Error() string
 }
@@ -21,14 +17,16 @@ func PeerHandler(disp *PacketDispatcher) func(cellnet.CellID, interface{}) {
 	return func(peer cellnet.CellID, peerev interface{}) {
 
 		switch v := peerev.(type) {
-		case cellnet.IPacketStream: // 新的连接生成
+		case ltvsocket.EventNewSession: // 新的连接生成
 
 			ltvsocket.SpawnSession(v, func(ses cellnet.CellID, sesev interface{}) {
 
 				switch data := sesev.(type) {
 
 				case cellnet.EventInit: // 初始化转通知
-					disp.Call(ses, &cellnet.Packet{MsgID: EventNewSession})
+					disp.Call(ses, &cellnet.Packet{MsgID: MsgNewSession})
+				case ltvsocket.EventClose: // 断开转通知
+					disp.Call(ses, &cellnet.Packet{MsgID: MsgClose})
 				case *cellnet.Packet: // 收
 
 					disp.Call(ses, data)

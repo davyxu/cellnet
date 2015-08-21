@@ -1,3 +1,7 @@
+/*
+	dispatcher包提供以注册+回调方式的消息处理方式, 封装消息解包, 打包的过程
+
+*/
 package dispatcher
 
 import (

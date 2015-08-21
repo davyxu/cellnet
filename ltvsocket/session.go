@@ -8,19 +8,19 @@ func SpawnSession(stream cellnet.IPacketStream, callback func(cellnet.CellID, in
 
 	cid := cellnet.Spawn(callback)
 
-	// io goroutine
+	// io线程
 	go func() {
 		var err error
 		var pkt *cellnet.Packet
 
 		for {
 
-			// Read packet data as ltv packet format
+			// 从Socket读取封包并转为ltv格式
 			pkt, err = stream.Read()
 
 			if err != nil {
 
-				cellnet.Send(cid, err)
+				cellnet.Send(cid, EventClose{error: err})
 				break
 			}
 

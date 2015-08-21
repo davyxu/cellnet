@@ -15,11 +15,11 @@ func SpawnConnector(address string, callback func(cellnet.CellID, interface{})) 
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 
-			cellnet.Send(cid, err)
+			cellnet.Send(cid, EventConnectError{error: err})
 			return
 		}
 
-		cellnet.Send(cid, NewPacketStream(conn))
+		cellnet.Send(cid, EventConnected{stream: NewPacketStream(conn)})
 
 	}()
 

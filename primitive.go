@@ -56,9 +56,6 @@ func IsLocal(id CellID) bool {
 	return id.Region() == RegionID
 }
 
-type EventInit struct {
-}
-
 // 为消息处理函数生成一个Cell, 返回CellID
 func Spawn(callback func(CellID, interface{})) CellID {
 
