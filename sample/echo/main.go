@@ -16,33 +16,27 @@ type IError interface {
 var done = make(chan bool)
 
 func server() {
-	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(mailbox chan interface{}) {
-		for {
+	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
-			switch v := (<-mailbox).(type) {
-			case cellnet.IPacketStream:
+		switch v := cm.(type) {
+		case cellnet.IPacketStream:
 
-				ltvsocket.SpawnSession(v, func(sesmail chan interface{}) {
+			ltvsocket.SpawnSession(v, func(ses cellnet.CellID, sescm interface{}) {
 
-					for {
+				switch pkt := sescm.(type) {
+				case *cellnet.Packet:
 
-						switch pkt := (<-sesmail).(type) {
-						case *cellnet.Packet:
+					log.Println("server recv:", cellnet.ReflectContent(pkt))
 
-							log.Println("server recv:", cellnet.ReflectContent(pkt))
+					v.Write(cellnet.BuildPacket(&coredef.EchoACK{
+						Content: proto.String("world"),
+					}))
+				}
 
-							v.Write(cellnet.BuildPacket(&coredef.EchoACK{
-								Content: proto.String("world"),
-							}))
-						}
+			})
 
-					}
-
-				})
-
-			case IError:
-				log.Println(cellnet.ReflectContent(v))
-			}
+		case IError:
+			log.Println(cellnet.ReflectContent(v))
 		}
 
 	})
@@ -50,40 +44,38 @@ func server() {
 
 func client() {
 
-	ltvsocket.SpawnConnector("127.0.0.1:8001", func(mailbox chan interface{}) {
-		for {
+	ltvsocket.SpawnConnector("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
-			switch v := (<-mailbox).(type) {
-			case cellnet.IPacketStream:
+		switch v := cm.(type) {
+		case cellnet.IPacketStream:
 
-				// new session
-				ltvsocket.SpawnSession(v, func(sesmail chan interface{}) {
+			// new session
+			ltvsocket.SpawnSession(v, func(ses cellnet.CellID, sescm interface{}) {
 
-					switch pkt := (<-sesmail).(type) {
-					case *cellnet.Packet:
+				switch pkt := sescm.(type) {
+				case *cellnet.Packet:
 
-						var ack coredef.EchoACK
-						if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
-							log.Println(err)
-						} else {
-							log.Println("client recv", ack.String())
+					var ack coredef.EchoACK
+					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
+						log.Println(err)
+					} else {
+						log.Println("client recv", ack.String())
 
-							done <- true
-						}
-
+						done <- true
 					}
 
-				})
+				}
 
-				// send packet on connected
-				v.Write(cellnet.BuildPacket(&coredef.EchoACK{
-					Content: proto.String("hello"),
-				}))
+			})
 
-			case IError:
-				log.Println(cellnet.ReflectContent(v))
+			// send packet on connected
+			v.Write(cellnet.BuildPacket(&coredef.EchoACK{
+				Content: proto.String("hello"),
+			}))
 
-			}
+		case IError:
+			log.Println(cellnet.ReflectContent(v))
+
 		}
 
 	})

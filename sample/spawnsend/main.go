@@ -11,13 +11,11 @@ var done = make(chan bool)
 func spawnsend() {
 
 	// no block spawn cell, msg function here
-	cid := cellnet.Spawn(func(mailbox chan interface{}) {
-		for {
+	cid := cellnet.Spawn(func(_ cellnet.CellID, cl interface{}) {
 
-			switch v := (<-mailbox).(type) {
-			case string:
-				log.Println(v)
-			}
+		switch v := cl.(type) {
+		case string:
+			log.Println(v)
 		}
 
 	})

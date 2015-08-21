@@ -1,20 +1,45 @@
 # CellNet
 A Golang game server framework based on actor model
 
+# Target
 
-CellNet设计的目的在于提供一个通用的框架和概念, 让游戏服务器编写起来可以方便快捷,高扩展性和复用性
+Erlang like API style
+
+More easy when build game servers
+
+Ez to handle and management
+
+High scalability
+
+# Dependencies
+github.com/golang/protobuf/proto
 
 
-
-Usage
+# Example
 =================================
 ```go
 
+cid := cellnet.Spawn(func(mailbox chan interface{}) {
+	for {
+
+		switch v := (<-mailbox).(type) {
+		case string:
+			log.Println(v)
+		}
+	}
+
+})
+
+cellnet.Send(cid, "hello world ")
+
+
 ```
-博客: http://www.cppblog.com/sunicdavy
 
-知乎关注: http://www.zhihu.com/people/xu-bo-62-87
+# Contact 
+blog: http://www.cppblog.com/sunicdavy
 
-讨论群: 309800774 加群请说明github
+zhihu follow me: http://www.zhihu.com/people/xu-bo-62-87
+
+qq group: 309800774 加群请说明github
 
 mail: sunicdavy@qq.com

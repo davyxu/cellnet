@@ -4,7 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-func SpawnSession(stream cellnet.IPacketStream, callback func(mailbox chan interface{})) cellnet.CellID {
+func SpawnSession(stream cellnet.IPacketStream, callback func(cellnet.CellID, interface{})) cellnet.CellID {
 
 	cid := cellnet.Spawn(callback)
 

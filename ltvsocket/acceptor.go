@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func SpawnAcceptor(address string, callback func(mailbox chan interface{})) cellnet.CellID {
+func SpawnAcceptor(address string, callback func(cellnet.CellID, interface{})) cellnet.CellID {
 
 	cid := cellnet.Spawn(callback)
 

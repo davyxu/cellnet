@@ -56,25 +56,40 @@ func IsLocal(id CellID) bool {
 	return id.Region() == RegionID
 }
 
+type EventInit struct {
+}
+
 // 为消息处理函数生成一个Cell, 返回CellID
-func Spawn(callback func(chan interface{})) CellID {
+func Spawn(callback func(CellID, interface{})) CellID {
+
+	id := genID()
 
 	c := &cell{
 		mailbox: make(chan interface{}, 8),
-		id:      genID(),
+		id:      id,
 	}
 
 	cellMapGuard.Lock()
-	cellMap[c.id] = c
+	cellMap[id] = c
 	cellMapGuard.Unlock()
 
 	go func() {
 
-		callback(c.mailbox)
+		for {
+
+			if data, ok := c.fetch(); ok {
+				callback(id, data)
+			} else {
+				break
+			}
+
+		}
 
 	}()
 
-	return c.id
+	c.post(EventInit{})
+
+	return id
 }
 
 // 将制定内容发送到target的Cell中
@@ -96,7 +111,7 @@ func SendLocal(target CellID, data interface{}) bool {
 	if c := findCell(target); c != nil {
 
 		log.Printf("#send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(2))
-		c.postMail(data)
+		c.post(data)
 		return true
 	}
 
