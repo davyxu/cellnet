@@ -41,7 +41,7 @@ func client() {
 		done <- true
 	})
 
-	disp.RegisterCallback(dispatcher.MsgNewSession, func(ses cellnet.CellID, _ *cellnet.Packet) {
+	disp.RegisterCallback(dispatcher.MsgConnected, func(ses cellnet.CellID, _ *cellnet.Packet) {
 		cellnet.Send(ses, &coredef.EchoACK{
 			Content: proto.String("hello"),
 		})
