@@ -100,7 +100,20 @@ func Send(target CellID, data interface{}) bool {
 		return SendLocal(target, data)
 	}
 
-	return false
+	if expressDriver == nil {
+
+		log.Println("express func nil, target not send", target.String())
+
+		return false
+	}
+
+	if !expressDriver(target, data) {
+
+		log.Println("extern target not found: ", target.String())
+		return false
+	}
+
+	return true
 }
 
 // 将制定内容发送到本地的target的Cell中
@@ -115,4 +128,11 @@ func SendLocal(target CellID, data interface{}) bool {
 	log.Println("target not found: ", target.String())
 
 	return false
+}
+
+var expressDriver func(CellID, interface{}) bool
+
+// 设置快递驱动, 负责将给定内容跨进程送达
+func SetExpressDriver(driver func(CellID, interface{}) bool) {
+	expressDriver = driver
 }

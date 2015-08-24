@@ -19,16 +19,16 @@ func server() {
 	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
 		switch v := cm.(type) {
-		case cellnet.IPacketStream:
+		case ltvsocket.EventAccepted:
 
-			ltvsocket.SpawnSession(v, func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream(), func(ses cellnet.CellID, sescm interface{}) {
 
 				switch pkt := sescm.(type) {
 				case *cellnet.Packet:
 
 					log.Println("server recv:", cellnet.ReflectContent(pkt))
 
-					v.Write(cellnet.BuildPacket(&coredef.EchoACK{
+					v.Stream().Write(cellnet.BuildPacket(&coredef.TestEchoACK{
 						Content: proto.String("world"),
 					}))
 				}
@@ -47,15 +47,15 @@ func client() {
 	ltvsocket.SpawnConnector("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
 		switch v := cm.(type) {
-		case cellnet.IPacketStream:
+		case ltvsocket.EventConnected:
 
 			// new session
-			ltvsocket.SpawnSession(v, func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream(), func(ses cellnet.CellID, sescm interface{}) {
 
 				switch pkt := sescm.(type) {
 				case *cellnet.Packet:
 
-					var ack coredef.EchoACK
+					var ack coredef.TestEchoACK
 					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
 						log.Println(err)
 					} else {
@@ -69,7 +69,7 @@ func client() {
 			})
 
 			// send packet on connected
-			v.Write(cellnet.BuildPacket(&coredef.EchoACK{
+			v.Stream().Write(cellnet.BuildPacket(&coredef.TestEchoACK{
 				Content: proto.String("hello"),
 			}))
 

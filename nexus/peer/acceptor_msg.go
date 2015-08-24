@@ -49,7 +49,7 @@ func listenNexus() {
 
 	})
 
-	Dispatcher.RegisterCallback(dispatcher.MsgClose, func(ses cellnet.CellID, _ interface{}) {
+	dispatcher.RegisterMessage(Dispatcher, coredef.ClosedACK{}, func(ses cellnet.CellID, _ interface{}) {
 
 		addrlist.RemoveRegion(ses)
 

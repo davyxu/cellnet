@@ -1,7 +1,6 @@
 package peer
 
 import (
-	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/dispatcher"
 	"github.com/davyxu/cellnet/nexus/config"
 )
@@ -9,16 +8,13 @@ import (
 var Dispatcher = dispatcher.NewPacketDispatcher()
 
 func init() {
-	cellnet.RegisterModuleEntry(func() {
 
-		listenNexus()
+	listenNexus()
 
-		joinAddr := config.Data.JoinAddress
+	joinAddr := config.Data.JoinAddress
 
-		if joinAddr != "" {
+	if joinAddr != "" {
 
-			joinNexus(joinAddr)
-		}
-
-	})
+		joinNexus(joinAddr)
+	}
 }

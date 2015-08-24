@@ -1,11 +1,9 @@
 package coredef;
 
 
-// 测试用消息
-message EchoACK
-{
-	optional string Content = 1;
-}
+// ==========================================================
+// 内部结构
+// ==========================================================
 
 message Region 
 {
@@ -34,4 +32,36 @@ message RouterACK
 	optional bytes Msg = 1;
 	optional uint32 MsgID = 2;
 	optional int64 TargetNodeID = 3;		// 真实送到的NodeID
+}
+
+// ==========================================================
+// dispatcher消息
+// ==========================================================
+
+// 一个连接接入
+message AcceptedACK
+{
+	
+}
+
+// 已连接
+message ConnectedACK
+{
+	
+}
+
+// 连接断开
+message ClosedACK
+{
+	
+}
+
+
+
+// ==========================================================
+// 测试用消息
+// ==========================================================
+message TestEchoACK
+{
+	optional string Content = 1;
 }

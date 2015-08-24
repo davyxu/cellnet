@@ -9,11 +9,14 @@ It is generated from these files:
 	coredef.proto
 
 It has these top-level messages:
-	EchoACK
 	Region
 	RegionLinkREQ
 	RegionLinkACK
 	RouterACK
+	AcceptedACK
+	ConnectedACK
+	ClosedACK
+	TestEchoACK
 */
 package coredef
 
@@ -23,23 +26,6 @@ import math "math"
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = math.Inf
-
-// 测试用消息
-type EchoACK struct {
-	Content          *string `protobuf:"bytes,1,opt" json:"Content,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *EchoACK) Reset()         { *m = EchoACK{} }
-func (m *EchoACK) String() string { return proto.CompactTextString(m) }
-func (*EchoACK) ProtoMessage()    {}
-
-func (m *EchoACK) GetContent() string {
-	if m != nil && m.Content != nil {
-		return *m.Content
-	}
-	return ""
-}
 
 type Region struct {
 	ID               *int32  `protobuf:"varint,1,opt" json:"ID,omitempty"`
@@ -137,6 +123,52 @@ func (m *RouterACK) GetTargetNodeID() int64 {
 		return *m.TargetNodeID
 	}
 	return 0
+}
+
+// 一个连接接入
+type AcceptedACK struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *AcceptedACK) Reset()         { *m = AcceptedACK{} }
+func (m *AcceptedACK) String() string { return proto.CompactTextString(m) }
+func (*AcceptedACK) ProtoMessage()    {}
+
+// 已连接
+type ConnectedACK struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *ConnectedACK) Reset()         { *m = ConnectedACK{} }
+func (m *ConnectedACK) String() string { return proto.CompactTextString(m) }
+func (*ConnectedACK) ProtoMessage()    {}
+
+// 连接断开
+type ClosedACK struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *ClosedACK) Reset()         { *m = ClosedACK{} }
+func (m *ClosedACK) String() string { return proto.CompactTextString(m) }
+func (*ClosedACK) ProtoMessage()    {}
+
+// ==========================================================
+// 测试用消息
+// ==========================================================
+type TestEchoACK struct {
+	Content          *string `protobuf:"bytes,1,opt" json:"Content,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *TestEchoACK) Reset()         { *m = TestEchoACK{} }
+func (m *TestEchoACK) String() string { return proto.CompactTextString(m) }
+func (*TestEchoACK) ProtoMessage()    {}
+
+func (m *TestEchoACK) GetContent() string {
+	if m != nil && m.Content != nil {
+		return *m.Content
+	}
+	return ""
 }
 
 func init() {

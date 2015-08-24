@@ -16,7 +16,7 @@ func joinNexus(addr string) {
 	ltvsocket.SpawnConnector(addr, dispatcher.PeerHandler(Dispatcher))
 	log.Printf("begin join: %s", addr)
 
-	Dispatcher.RegisterCallback(dispatcher.MsgNewSession, func(src cellnet.CellID, _ *cellnet.Packet) {
+	dispatcher.RegisterMessage(Dispatcher, coredef.ConnectedACK{}, func(src cellnet.CellID, _ interface{}) {
 		cellnet.Send(src, &coredef.RegionLinkREQ{
 			Profile: &coredef.Region{
 				ID:      proto.Int32(cellnet.RegionID),
@@ -57,11 +57,5 @@ func joinNexus(addr string) {
 		}
 
 	})
-
-	//	Dispatcher.RegisterCallback(comm.EventClosed, func(src cellnet.CellID, _ *cellnet.Packet) {
-
-	//		addrlist.RemoveRegion(src)
-
-	//	})
 
 }

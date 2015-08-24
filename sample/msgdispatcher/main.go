@@ -16,12 +16,12 @@ func server() {
 
 	disp := dispatcher.NewPacketDispatcher()
 
-	dispatcher.RegisterMessage(disp, coredef.EchoACK{}, func(ses cellnet.CellID, content interface{}) {
-		msg := content.(*coredef.EchoACK)
+	dispatcher.RegisterMessage(disp, coredef.TestEchoACK{}, func(ses cellnet.CellID, content interface{}) {
+		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("server recv:", msg.String())
 
-		cellnet.Send(ses, &coredef.EchoACK{
+		cellnet.Send(ses, &coredef.TestEchoACK{
 			Content: proto.String("world"),
 		})
 	})
@@ -33,16 +33,16 @@ func client() {
 
 	disp := dispatcher.NewPacketDispatcher()
 
-	dispatcher.RegisterMessage(disp, coredef.EchoACK{}, func(ses cellnet.CellID, content interface{}) {
-		msg := content.(*coredef.EchoACK)
+	dispatcher.RegisterMessage(disp, coredef.TestEchoACK{}, func(ses cellnet.CellID, content interface{}) {
+		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())
 
 		done <- true
 	})
 
-	disp.RegisterCallback(dispatcher.MsgConnected, func(ses cellnet.CellID, _ *cellnet.Packet) {
-		cellnet.Send(ses, &coredef.EchoACK{
+	dispatcher.RegisterMessage(disp, coredef.ConnectedACK{}, func(ses cellnet.CellID, content interface{}) {
+		cellnet.Send(ses, &coredef.TestEchoACK{
 			Content: proto.String("hello"),
 		})
 	})
