@@ -1,4 +1,4 @@
-package addrlist
+package nexus
 
 import (
 	"github.com/davyxu/cellnet"
@@ -35,9 +35,9 @@ func AddRegion(ses cellnet.CellID, profile *coredef.Region) {
 	id2regionMap[profile.GetID()] = rd
 	ses2regionMap[ses] = rd
 
-	Event.Invoke("addrlist.AddRegion", rd)
+	Event.Invoke("OnAddRegion", rd)
 
-	log.Printf("add region: %d@%s node: %v", profile.GetID(), profile.GetAddress(), ses.String())
+	log.Printf("[nexus] add region: %d@%s node: %v", profile.GetID(), profile.GetAddress(), ses.String())
 }
 
 func GetRegion(regionID int32) *RegionData {
@@ -63,12 +63,12 @@ func RemoveRegion(nid cellnet.CellID) (*RegionData, bool) {
 		return nil, false
 	}
 
-	Event.Invoke("addrlist.RemoveRegion", rd)
+	Event.Invoke("OnRemoveRegion", rd)
 
 	delete(id2regionMap, rd.GetID())
 	delete(ses2regionMap, nid)
 
-	log.Println("remove region: %d@%s", rd.GetID(), rd.GetAddress())
+	log.Println("[nexus] remove region: %d@%s", rd.GetID(), rd.GetAddress())
 
 	return rd, true
 

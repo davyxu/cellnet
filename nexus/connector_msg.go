@@ -1,11 +1,9 @@
-package peer
+package nexus
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/dispatcher"
 	"github.com/davyxu/cellnet/ltvsocket"
-	"github.com/davyxu/cellnet/nexus/addrlist"
-	"github.com/davyxu/cellnet/nexus/config"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/golang/protobuf/proto"
 	"log"
@@ -14,13 +12,12 @@ import (
 func joinNexus(addr string) {
 
 	ltvsocket.SpawnConnector(addr, dispatcher.PeerHandler(Dispatcher))
-	log.Printf("begin join: %s", addr)
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.ConnectedACK{}, func(src cellnet.CellID, _ interface{}) {
 		cellnet.Send(src, &coredef.RegionLinkREQ{
 			Profile: &coredef.Region{
 				ID:      proto.Int32(cellnet.RegionID),
-				Address: proto.String(config.Data.ListenAddress),
+				Address: proto.String(config.Listen),
 			},
 		})
 	})
@@ -32,15 +29,15 @@ func joinNexus(addr string) {
 		status := msg.GetStatus()
 
 		if status.GetID() == cellnet.RegionID {
-			log.Printf("duplicate regionid: %d@%s", status.GetID(), status.GetAddress())
+			log.Printf("[nexus] duplicate regionid: %d@%s", status.GetID(), status.GetAddress())
 			return
 		}
 
-		addrlist.AddRegion(src, status)
+		AddRegion(src, status)
 
 		for _, rg := range msg.GetAddressList() {
 
-			log.Printf("address: %d@%s", rg.GetID(), rg.GetAddress())
+			//log.Printf("address: %d@%s", rg.GetID(), rg.GetAddress())
 
 			// 不能是自己
 			if rg.GetID() == cellnet.RegionID {
@@ -48,7 +45,7 @@ func joinNexus(addr string) {
 			}
 
 			// 已经连上了, 不再连接
-			if addrlist.GetRegion(rg.GetID()) != nil {
+			if GetRegion(rg.GetID()) != nil {
 				continue
 			}
 

@@ -40,6 +40,8 @@ func (self *PacketStream) Read() (p *cellnet.Packet, err error) {
 
 	p = &cellnet.Packet{}
 
+	// TODO 调整为一次性读取结构体
+
 	// 读取包头
 	headbuf := bytes.NewReader(headdata)
 	if err = binary.Read(headbuf, binary.LittleEndian, &p.MsgID); err != nil {

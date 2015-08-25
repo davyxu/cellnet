@@ -1,11 +1,9 @@
-package peer
+package nexus
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/dispatcher"
 	"github.com/davyxu/cellnet/ltvsocket"
-	"github.com/davyxu/cellnet/nexus/addrlist"
-	"github.com/davyxu/cellnet/nexus/config"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/golang/protobuf/proto"
 	"log"
@@ -13,10 +11,9 @@ import (
 
 func listenNexus() {
 
-	listenAddr := config.Data.ListenAddress
+	listenAddr := config.Listen
 
 	ltvsocket.SpawnAcceptor(listenAddr, dispatcher.PeerHandler(Dispatcher))
-	log.Printf("listen: %s", listenAddr)
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.RegionLinkREQ{}, func(ses cellnet.CellID, content interface{}) {
 
@@ -29,17 +26,17 @@ func listenNexus() {
 			return
 		}
 
-		addrlist.AddRegion(ses, profile)
+		AddRegion(ses, profile)
 
 		ack := coredef.RegionLinkACK{
 			AddressList: make([]*coredef.Region, 0),
 			Status: &coredef.Region{
 				ID:      proto.Int32(cellnet.RegionID),
-				Address: proto.String(config.Data.ListenAddress),
+				Address: proto.String(config.Listen),
 			},
 		}
 
-		addrlist.IterateRegion(func(profile *addrlist.RegionData) {
+		IterateRegion(func(profile *RegionData) {
 
 			ack.AddressList = append(ack.AddressList, profile.Region)
 
@@ -51,7 +48,7 @@ func listenNexus() {
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.ClosedACK{}, func(ses cellnet.CellID, _ interface{}) {
 
-		addrlist.RemoveRegion(ses)
+		RemoveRegion(ses)
 
 	})
 }

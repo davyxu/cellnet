@@ -1,9 +1,8 @@
-package express
+package nexus
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/dispatcher"
-	"github.com/davyxu/cellnet/nexus/addrlist"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/golang/protobuf/proto"
 	"log"
@@ -12,7 +11,7 @@ import (
 func Register(disp *dispatcher.PacketDispatcher) {
 
 	if disp.Exists(cellnet.Type2ID(&coredef.RouterACK{})) {
-		panic("Duplicate router register")
+		panic("[nexus] Duplicate router register")
 	}
 
 	dispatcher.RegisterMessage(disp, coredef.RouterACK{}, func(src cellnet.CellID, content interface{}) {
@@ -23,6 +22,7 @@ func Register(disp *dispatcher.PacketDispatcher) {
 			MsgID: msg.GetMsgID(),
 			Data:  msg.GetMsg(),
 		}
+
 		cellnet.SendLocal(cellnet.CellID(msg.GetTargetNodeID()), &pkt)
 
 	})
@@ -34,9 +34,9 @@ func init() {
 	//注册节点系统的路由函数, 由addrlist来处理路由
 	cellnet.SetExpressDriver(func(target cellnet.CellID, data interface{}) bool {
 		// 取得目标所在的快递点信息
-		rd := addrlist.GetRegion(target.Region())
+		rd := GetRegion(target.Region())
 		if rd == nil {
-			log.Println("router: region not found", target.String())
+			log.Println("[nexus] express target not found", target.String())
 			return false
 		}
 

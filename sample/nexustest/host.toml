@@ -1,0 +1,4 @@
+Listen="127.0.0.1:7001"
+RegionID=0
+CellLog=true
+SocketLog=true

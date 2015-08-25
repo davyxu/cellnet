@@ -13,28 +13,14 @@ var (
 	// CellID生成器
 	indexAccGuard sync.RWMutex
 	indexAcc      int32
-
-	// 本进程的ID
-	RegionID       int32
-	regionIDInited bool
 )
-
-func InitRegionID(id int32) {
-	if regionIDInited {
-		panic("Duplicate region register")
-	}
-
-	RegionID = id
-	regionIDInited = true
-
-	log.Printf("Region: %d", RegionID)
-}
 
 func genID() CellID {
 
 	indexAccGuard.Lock()
 	defer indexAccGuard.Unlock()
 
+	// TODO 处理翻越case
 	indexAcc++
 
 	return NewCellID(RegionID, indexAcc)
@@ -60,6 +46,10 @@ func IsLocal(id CellID) bool {
 func Spawn(callback func(CellID, interface{})) CellID {
 
 	id := genID()
+
+	if config.CellLog {
+		log.Println("[cellnet] #spawn", id.String(), GetStackInfoString(2))
+	}
 
 	c := &cell{
 		mailbox: make(chan interface{}, 8),
@@ -102,14 +92,14 @@ func Send(target CellID, data interface{}) bool {
 
 	if expressDriver == nil {
 
-		log.Println("express func nil, target not send", target.String())
+		log.Println("[cellnet] express func nil, target not send", target.String())
 
 		return false
 	}
 
 	if !expressDriver(target, data) {
 
-		log.Println("extern target not found: ", target.String())
+		log.Println("[cellnet] extern target not found: ", target.String())
 		return false
 	}
 
@@ -120,12 +110,15 @@ func Send(target CellID, data interface{}) bool {
 func SendLocal(target CellID, data interface{}) bool {
 	if c := findCell(target); c != nil {
 
-		log.Printf("#send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(2))
+		if config.CellLog {
+			log.Printf("[cellnet] #send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(2))
+		}
+
 		c.post(data)
 		return true
 	}
 
-	log.Println("target not found: ", target.String())
+	log.Println("[cellnet] target not found: ", target.String())
 
 	return false
 }
