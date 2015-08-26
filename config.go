@@ -24,12 +24,15 @@ func init() {
 
 	RegionID = config.RegionID
 
-	log.Printf("[cellnet] Region: %d", RegionID)
+	if config.CellLog {
+		log.Printf("[cellnet] Region: %d", RegionID)
+	}
+
 }
 
 func ReadConfig(data interface{}) {
 
-	if len(os.Args) < 1 {
+	if len(os.Args) < 2 {
 		return
 	}
 

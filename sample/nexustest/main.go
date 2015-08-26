@@ -39,7 +39,12 @@ func client() {
 
 	// cellid: 1.3
 	cid := cellnet.Spawn(func(src cellnet.CellID, data interface{}) {
-		log.Println("recv node msg", src.String(), cellnet.ReflectContent(data))
+
+		switch d := data.(type) {
+		case *cellnet.Packet:
+			log.Println("recv node msg", src.String(), cellnet.ReflectContent(d))
+		}
+
 	})
 
 	log.Println(cid.String())
@@ -58,8 +63,8 @@ func client() {
 func main() {
 
 	// 保证host先启动
-	// 主机参数: -listen=127.0.0.1:7001
-	// 从机参数: -region=1 -listen=127.0.0.1:7002 -join=127.0.0.1:7001
+	// 主机参数: ./host.toml
+	// 从机参数: ./client.toml
 
 	// host
 	if cellnet.RegionID == 0 {

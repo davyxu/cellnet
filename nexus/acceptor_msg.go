@@ -26,7 +26,7 @@ func listenNexus() {
 			return
 		}
 
-		AddRegion(ses, profile)
+		addRegion(ses, profile)
 
 		ack := coredef.RegionLinkACK{
 			AddressList: make([]*coredef.Region, 0),
@@ -48,7 +48,7 @@ func listenNexus() {
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.ClosedACK{}, func(ses cellnet.CellID, _ interface{}) {
 
-		RemoveRegion(ses)
+		removeRegion(ses)
 
 	})
 }

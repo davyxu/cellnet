@@ -1,18 +1,19 @@
 # CellNet
 A Golang game server framework based on actor model
 
-# Target
+# Feature
 
-Erlang like API style
+本机,跨进程,跨机器通信均使用统一的Actor模型
+为游戏服务器优化, 注重开发效率及运行效率
 
-More easy when build game servers
-
-Easy to handle and management
-
-High scalability
+# Roadmap
+RPC支持
+服务器框架例子
+服务器可视化部署工具
 
 # Dependencies
 github.com/golang/protobuf/proto
+
 github.com/BurntSushi/toml
 
 # Example
@@ -63,7 +64,6 @@ func client() {
 
 		log.Println("client recv:", msg.String())
 
-		done <- true
 	})
 
 	dispatcher.RegisterMessage(disp, coredef.ConnectedACK{}, func(ses cellnet.CellID, content interface{}) {
@@ -79,10 +79,10 @@ func client() {
 ```
 
 # Contact 
-blog: http://www.cppblog.com/sunicdavy
+博客: http://www.cppblog.com/sunicdavy
 
-zhihu follow me: http://www.zhihu.com/people/xu-bo-62-87
+知乎: http://www.zhihu.com/people/xu-bo-62-87
 
-qq group: 309800774 加群请说明github
+技术讨论组: 309800774 加群请说明cellnet
 
-mail: sunicdavy@qq.com
+邮箱: sunicdavy@qq.com

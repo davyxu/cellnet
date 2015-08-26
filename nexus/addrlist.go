@@ -25,7 +25,7 @@ var (
 	Event *cellnet.EventDispatcher = cellnet.NewEventDispatcher()
 )
 
-func AddRegion(ses cellnet.CellID, profile *coredef.Region) {
+func addRegion(ses cellnet.CellID, profile *coredef.Region) {
 
 	rd := &RegionData{
 		Region:  profile,
@@ -56,7 +56,7 @@ func getRegionBySession(nid cellnet.CellID) *RegionData {
 	return nil
 }
 
-func RemoveRegion(nid cellnet.CellID) (*RegionData, bool) {
+func removeRegion(nid cellnet.CellID) (*RegionData, bool) {
 
 	rd := getRegionBySession(nid)
 	if rd == nil {

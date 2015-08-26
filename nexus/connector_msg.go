@@ -33,7 +33,7 @@ func joinNexus(addr string) {
 			return
 		}
 
-		AddRegion(src, status)
+		addRegion(src, status)
 
 		for _, rg := range msg.GetAddressList() {
 
