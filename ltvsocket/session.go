@@ -2,16 +2,33 @@ package ltvsocket
 
 import (
 	"github.com/davyxu/cellnet"
+	"log"
 )
 
-func SpawnSession(stream cellnet.IPacketStream, callback func(cellnet.CellID, interface{})) cellnet.CellID {
+func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, callback func(cellnet.CellID, interface{})) cellnet.CellID {
 
-	cid := cellnet.Spawn(callback)
+	recvCell := cellnet.Spawn(callback)
 
-	// io线程
+	// 发送线程
+	sendCell := cellnet.Spawn(func(_ cellnet.CellID, sendev interface{}) {
+
+		if pkt, ok := sendev.(*cellnet.Packet); ok {
+			stream.Write(pkt)
+		} else {
+
+			if config.SocketLog {
+				log.Println("[ltvsocket] write require *cellnet.Packet type")
+			}
+		}
+
+	})
+
+	// 接收线程
 	go func() {
 		var err error
 		var pkt *cellnet.Packet
+
+		cellnet.Send(recvCell, EventNewSession{Session: sendCell, Type: createType})
 
 		for {
 
@@ -20,15 +37,15 @@ func SpawnSession(stream cellnet.IPacketStream, callback func(cellnet.CellID, in
 
 			if err != nil {
 
-				cellnet.Send(cid, EventClose{error: err})
+				cellnet.Send(recvCell, EventClose{Session: sendCell, Err: err})
 				break
 			}
 
-			cellnet.Send(cid, pkt)
+			cellnet.Send(recvCell, EventData{Session: sendCell, Packet: pkt})
 
 		}
 
 	}()
 
-	return cid
+	return recvCell
 }

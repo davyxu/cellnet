@@ -4,11 +4,14 @@ A Golang game server framework based on actor model
 # Feature
 
 本机,跨进程,跨机器通信均使用统一的Actor模型
+
 为游戏服务器优化, 注重开发效率及运行效率
 
 # Roadmap
 RPC支持
+
 服务器框架例子
+
 服务器可视化部署工具
 
 # Dependencies

@@ -21,9 +21,9 @@ func server() {
 
 		log.Println("server recv:", msg.String())
 
-		cellnet.Send(ses, &coredef.TestEchoACK{
+		cellnet.Send(ses, cellnet.BuildPacket(&coredef.TestEchoACK{
 			Content: proto.String("world"),
-		})
+		}))
 	})
 
 	ltvsocket.SpawnAcceptor("127.0.0.1:8001", dispatcher.PeerHandler(disp))
@@ -42,9 +42,10 @@ func client() {
 	})
 
 	dispatcher.RegisterMessage(disp, coredef.ConnectedACK{}, func(ses cellnet.CellID, content interface{}) {
-		cellnet.Send(ses, &coredef.TestEchoACK{
+
+		cellnet.Send(ses, cellnet.BuildPacket(&coredef.TestEchoACK{
 			Content: proto.String("hello"),
-		})
+		}))
 	})
 
 	ltvsocket.SpawnConnector("127.0.0.1:8001", dispatcher.PeerHandler(disp))
@@ -52,6 +53,9 @@ func client() {
 }
 
 func main() {
+
+	//cellnet.EnableLog(true)
+	//ltvsocket.EnableLog(true)
 
 	server()
 

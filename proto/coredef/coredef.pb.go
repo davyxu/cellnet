@@ -12,7 +12,7 @@ It has these top-level messages:
 	Region
 	RegionLinkREQ
 	RegionLinkACK
-	RouterACK
+	ExpressACK
 	AcceptedACK
 	ConnectedACK
 	ClosedACK
@@ -93,34 +93,42 @@ func (m *RegionLinkACK) GetAddressList() []*Region {
 	return nil
 }
 
-type RouterACK struct {
+type ExpressACK struct {
 	Msg              []byte  `protobuf:"bytes,1,opt" json:"Msg,omitempty"`
 	MsgID            *uint32 `protobuf:"varint,2,opt" json:"MsgID,omitempty"`
-	TargetNodeID     *int64  `protobuf:"varint,3,opt" json:"TargetNodeID,omitempty"`
+	TargetID         *int64  `protobuf:"varint,3,opt" json:"TargetID,omitempty"`
+	CallID           *int64  `protobuf:"varint,4,opt" json:"CallID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *RouterACK) Reset()         { *m = RouterACK{} }
-func (m *RouterACK) String() string { return proto.CompactTextString(m) }
-func (*RouterACK) ProtoMessage()    {}
+func (m *ExpressACK) Reset()         { *m = ExpressACK{} }
+func (m *ExpressACK) String() string { return proto.CompactTextString(m) }
+func (*ExpressACK) ProtoMessage()    {}
 
-func (m *RouterACK) GetMsg() []byte {
+func (m *ExpressACK) GetMsg() []byte {
 	if m != nil {
 		return m.Msg
 	}
 	return nil
 }
 
-func (m *RouterACK) GetMsgID() uint32 {
+func (m *ExpressACK) GetMsgID() uint32 {
 	if m != nil && m.MsgID != nil {
 		return *m.MsgID
 	}
 	return 0
 }
 
-func (m *RouterACK) GetTargetNodeID() int64 {
-	if m != nil && m.TargetNodeID != nil {
-		return *m.TargetNodeID
+func (m *ExpressACK) GetTargetID() int64 {
+	if m != nil && m.TargetID != nil {
+		return *m.TargetID
+	}
+	return 0
+}
+
+func (m *ExpressACK) GetCallID() int64 {
+	if m != nil && m.CallID != nil {
+		return *m.CallID
 	}
 	return 0
 }

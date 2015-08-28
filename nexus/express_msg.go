@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/dispatcher"
 	"github.com/davyxu/cellnet/proto/coredef"
@@ -8,46 +9,85 @@ import (
 	"log"
 )
 
-func Register(disp *dispatcher.PacketDispatcher) {
+type rpcResponse struct {
+	cellnet.Packet
 
-	if disp.Exists(cellnet.Type2ID(&coredef.RouterACK{})) {
+	callid int64
+	target cellnet.CellID
+}
+
+func (self *rpcResponse) Feedback(data interface{}) {
+
+	cellnet.RawSend(self.target, data, self.callid)
+}
+
+func Register(disp *dispatcher.DataDispatcher) {
+
+	if disp.Exists(cellnet.Type2ID(&coredef.ExpressACK{})) {
 		panic("[nexus] Duplicate router register")
 	}
 
-	dispatcher.RegisterMessage(disp, coredef.RouterACK{}, func(src cellnet.CellID, content interface{}) {
+	dispatcher.RegisterMessage(disp, coredef.ExpressACK{}, func(src cellnet.CellID, content interface{}) {
 
-		msg := content.(*coredef.RouterACK)
+		msg := content.(*coredef.ExpressACK)
 
-		pkt := cellnet.Packet{
-			MsgID: msg.GetMsgID(),
-			Data:  msg.GetMsg(),
+		var identity cellnet.Identity
+
+		if msg.GetCallID() != 0 {
+
+			identity = &rpcResponse{
+				Packet: cellnet.Packet{
+					MsgID: msg.GetMsgID(),
+					Data:  msg.GetMsg(),
+				},
+
+				callid: msg.GetCallID(),
+			}
+
+		} else {
+
+			identity = &cellnet.Packet{
+				MsgID: msg.GetMsgID(),
+				Data:  msg.GetMsg(),
+			}
 		}
 
-		cellnet.SendLocal(cellnet.CellID(msg.GetTargetNodeID()), &pkt)
+		cellnet.SendLocal(cellnet.CellID(msg.GetTargetID()), identity)
 
 	})
 
 }
 
+var (
+	errExpressTargetNotFound error = errors.New("RPC reqest time out")
+)
+
 func init() {
 
 	//注册节点系统的路由函数, 由addrlist来处理路由
-	cellnet.SetExpressDriver(func(target cellnet.CellID, data interface{}) bool {
+	cellnet.SetExpressDriver(func(target cellnet.CellID, data interface{}, callid int64) error {
 		// 取得目标所在的快递点信息
 		rd := GetRegion(target.Region())
 		if rd == nil {
+
 			log.Println("[nexus] express target not found", target.String())
-			return false
+			return errExpressTargetNotFound
 		}
 
 		// 用户信息封包化
 		pkt := cellnet.BuildPacket(data.(proto.Message))
 
+		ack := &coredef.ExpressACK{
+			Msg:      pkt.Data,
+			MsgID:    proto.Uint32(pkt.MsgID),
+			TargetID: proto.Int64(int64(target)),
+		}
+
+		if callid != 0 {
+			ack.CallID = proto.Int64(callid)
+		}
+
 		// 先发到快递点, 再解包
-		return cellnet.SendLocal(rd.Session, &coredef.RouterACK{
-			Msg:          pkt.Data,
-			MsgID:        proto.Uint32(pkt.MsgID),
-			TargetNodeID: proto.Int64(int64(target)),
-		})
+		return cellnet.SendLocal(rd.Session, cellnet.BuildPacket(ack))
 	})
 }

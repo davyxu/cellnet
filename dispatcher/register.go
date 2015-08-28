@@ -7,7 +7,7 @@ import (
 )
 
 // 将PB消息解析封装到闭包中
-func RegisterMessage(disp *PacketDispatcher, msgIns interface{}, userHandler func(cellnet.CellID, interface{})) {
+func RegisterMessage(disp *DataDispatcher, msgIns interface{}, userHandler func(cellnet.CellID, interface{})) {
 
 	msgType := reflect.TypeOf(msgIns)
 
@@ -20,15 +20,25 @@ func RegisterMessage(disp *PacketDispatcher, msgIns interface{}, userHandler fun
 
 	//log.Printf("[dispatcher] #regmsg %s(%d 0x%x)", msgName, msgID, msgID)
 
-	disp.RegisterCallback(msgID, func(ses cellnet.CellID, pkt *cellnet.Packet) {
+	disp.RegisterCallback(msgID, func(ses cellnet.CellID, data interface{}) {
 
-		rawMsg, err := cellnet.ParsePacket(pkt, msgType)
+		if data == nil {
 
-		if err != nil {
-			log.Printf("[cellnet] unmarshaling error:\n", err)
-			return
+			userHandler(ses, nil)
+
+		} else {
+			pkt := data.(*cellnet.Packet)
+
+			rawMsg, err := cellnet.ParsePacket(pkt, msgType)
+
+			if err != nil {
+				log.Printf("[cellnet] unmarshaling error:\n", err)
+				return
+			}
+
+			userHandler(ses, rawMsg)
+
 		}
 
-		userHandler(ses, rawMsg)
 	})
 }

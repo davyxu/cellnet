@@ -4,34 +4,37 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type EventClose struct {
-	error
-}
-
 type EventConnectError struct {
-	error
+	Err error
 }
 
 type EventListenError struct {
-	error
+	Err error
 }
 
-type EventNewSession interface {
-	Stream() cellnet.IPacketStream
+const (
+	SessionAccepted  = 1
+	SessionConnected = 2
+)
+
+type SessionCreateType int
+
+type EventCreateSession struct {
+	Stream cellnet.PacketStream
+	Type   SessionCreateType
 }
 
-type EventConnected struct {
-	stream cellnet.IPacketStream
+type EventNewSession struct {
+	Session cellnet.CellID
+	Type    SessionCreateType
 }
 
-func (self EventConnected) Stream() cellnet.IPacketStream {
-	return self.stream
+type EventData struct {
+	Session cellnet.CellID
+	Packet  *cellnet.Packet
 }
 
-type EventAccepted struct {
-	stream cellnet.IPacketStream
-}
-
-func (self EventAccepted) Stream() cellnet.IPacketStream {
-	return self.stream
+type EventClose struct {
+	Session cellnet.CellID
+	Err     error
 }

@@ -8,11 +8,11 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type PacketDispatcher struct {
-	contextMap map[int][]func(cellnet.CellID, *cellnet.Packet)
+type DataDispatcher struct {
+	contextMap map[int][]func(cellnet.CellID, interface{})
 }
 
-func (self *PacketDispatcher) RegisterCallback(id int, f func(cellnet.CellID, *cellnet.Packet)) {
+func (self *DataDispatcher) RegisterCallback(id int, f func(cellnet.CellID, interface{})) {
 
 	// 事件
 	em, ok := self.contextMap[id]
@@ -20,7 +20,7 @@ func (self *PacketDispatcher) RegisterCallback(id int, f func(cellnet.CellID, *c
 	// 新建
 	if !ok {
 
-		em = make([]func(cellnet.CellID, *cellnet.Packet), 0)
+		em = make([]func(cellnet.CellID, interface{}), 0)
 
 	}
 
@@ -29,26 +29,26 @@ func (self *PacketDispatcher) RegisterCallback(id int, f func(cellnet.CellID, *c
 	self.contextMap[id] = em
 }
 
-func (self *PacketDispatcher) Exists(id int) bool {
+func (self *DataDispatcher) Exists(id int) bool {
 	_, ok := self.contextMap[id]
 
 	return ok
 }
 
-func (self *PacketDispatcher) Call(src cellnet.CellID, pkt *cellnet.Packet) {
+func (self *DataDispatcher) Call(src cellnet.CellID, id int, data interface{}) {
 
-	if carr, ok := self.contextMap[int(pkt.MsgID)]; ok {
+	if carr, ok := self.contextMap[id]; ok {
 
 		for _, c := range carr {
 
-			c(src, pkt)
+			c(src, data)
 		}
 	}
 }
 
-func NewPacketDispatcher() *PacketDispatcher {
-	return &PacketDispatcher{
-		contextMap: make(map[int][]func(cellnet.CellID, *cellnet.Packet)),
+func NewPacketDispatcher() *DataDispatcher {
+	return &DataDispatcher{
+		contextMap: make(map[int][]func(cellnet.CellID, interface{})),
 	}
 
 }

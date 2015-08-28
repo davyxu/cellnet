@@ -19,18 +19,25 @@ func server() {
 	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
 		switch v := cm.(type) {
-		case ltvsocket.EventAccepted:
+		case ltvsocket.EventCreateSession:
 
-			ltvsocket.SpawnSession(v.Stream(), func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream, v.Type, func(ses cellnet.CellID, sescm interface{}) {
 
-				switch pkt := sescm.(type) {
-				case *cellnet.Packet:
+				switch ev := sescm.(type) {
+				case ltvsocket.EventData:
 
-					log.Println("server recv:", cellnet.ReflectContent(pkt))
+					var ack coredef.TestEchoACK
+					if err := proto.Unmarshal(ev.Packet.Data, &ack); err != nil {
+						log.Println(err)
+					} else {
+						log.Println("server recv:", ack.String())
 
-					v.Stream().Write(cellnet.BuildPacket(&coredef.TestEchoACK{
+					}
+
+					cellnet.Send(ev.Session, cellnet.BuildPacket(&coredef.TestEchoACK{
 						Content: proto.String("world"),
 					}))
+
 				}
 
 			})
@@ -47,19 +54,25 @@ func client() {
 	ltvsocket.SpawnConnector("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
 
 		switch v := cm.(type) {
-		case ltvsocket.EventConnected:
+		case ltvsocket.EventCreateSession:
 
 			// new session
-			ltvsocket.SpawnSession(v.Stream(), func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream, v.Type, func(ses cellnet.CellID, sescm interface{}) {
 
-				switch pkt := sescm.(type) {
-				case *cellnet.Packet:
+				switch ev := sescm.(type) {
+				case ltvsocket.EventNewSession:
+
+					cellnet.Send(ev.Session, cellnet.BuildPacket(&coredef.TestEchoACK{
+						Content: proto.String("hello"),
+					}))
+
+				case ltvsocket.EventData:
 
 					var ack coredef.TestEchoACK
-					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
+					if err := proto.Unmarshal(ev.Packet.Data, &ack); err != nil {
 						log.Println(err)
 					} else {
-						log.Println("client recv", ack.String())
+						log.Println("client recv:", ack.String())
 
 						done <- true
 					}
@@ -67,11 +80,6 @@ func client() {
 				}
 
 			})
-
-			// send packet on connected
-			v.Stream().Write(cellnet.BuildPacket(&coredef.TestEchoACK{
-				Content: proto.String("hello"),
-			}))
 
 		case IError:
 			log.Println(cellnet.ReflectContent(v))

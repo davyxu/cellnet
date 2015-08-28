@@ -27,12 +27,16 @@ message RegionLinkACK
 }
 
 
-message RouterACK
+message ExpressACK
 {
 	optional bytes Msg = 1;
 	optional uint32 MsgID = 2;
-	optional int64 TargetNodeID = 3;		// 真实送到的NodeID
+	optional int64 TargetID = 3;		// 真实送到的CellID
+	
+	optional int64 CallID = 4;			// 存在时, 需要回应
 }
+
+
 
 // ==========================================================
 // dispatcher消息

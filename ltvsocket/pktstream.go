@@ -15,7 +15,7 @@ const (
 	MaxPacketSize     = 1024 * 8
 )
 
-type PacketStream struct {
+type ltvStream struct {
 	recvtag      uint16
 	sendtag      uint16
 	conn         net.Conn
@@ -30,7 +30,7 @@ var (
 
 // 参考hub_client.go
 // Read a packet from a datastream interface , return packet struct
-func (self *PacketStream) Read() (p *cellnet.Packet, err error) {
+func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 
 	headdata := make([]byte, PackageHeaderSize)
 
@@ -88,7 +88,7 @@ func (self *PacketStream) Read() (p *cellnet.Packet, err error) {
 }
 
 // Write a packet to datastream interface
-func (self *PacketStream) Write(pkt *cellnet.Packet) (err error) {
+func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 
 	outbuff := bytes.NewBuffer([]byte{})
 
@@ -128,12 +128,12 @@ func (self *PacketStream) Write(pkt *cellnet.Packet) (err error) {
 	return
 }
 
-func (self *PacketStream) Close() error {
+func (self *ltvStream) Close() error {
 	return self.conn.Close()
 }
 
-func NewPacketStream(conn net.Conn) cellnet.IPacketStream {
-	return &PacketStream{
+func NewPacketStream(conn net.Conn) cellnet.PacketStream {
+	return &ltvStream{
 		conn:    conn,
 		recvtag: 1,
 		sendtag: 1,

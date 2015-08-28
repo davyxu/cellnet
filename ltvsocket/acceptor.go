@@ -20,7 +20,7 @@ func SpawnAcceptor(address string, callback func(cellnet.CellID, interface{})) c
 		ln, err := net.Listen("tcp", address)
 
 		if err != nil {
-			cellnet.Send(cid, EventListenError{error: err})
+			cellnet.Send(cid, EventListenError{Err: err})
 
 			if config.SocketLog {
 				log.Println("[socket] listen failed", err.Error())
@@ -36,7 +36,7 @@ func SpawnAcceptor(address string, callback func(cellnet.CellID, interface{})) c
 				continue
 			}
 
-			cellnet.Send(cid, EventAccepted{stream: NewPacketStream(conn)})
+			cellnet.Send(cid, EventCreateSession{Stream: NewPacketStream(conn), Type: SessionAccepted})
 		}
 
 	}()

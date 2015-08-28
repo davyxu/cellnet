@@ -22,9 +22,9 @@ func host() {
 		// client 连上来了
 		if rd.GetID() == 1 {
 			log.Println("client connected", rd.GetID())
-			cellnet.Send(cellnet.NewCellID(1, 3), &coredef.TestEchoACK{
+			cellnet.Send(cellnet.NewCellID(1, 3), cellnet.BuildPacket(&coredef.TestEchoACK{
 				Content: proto.String("send to node"),
-			})
+			}))
 
 			//			cellnet.Send(cellnet.NewCellID(1, 4), &coredef.TestEchoACK{
 			//				Content: proto.String("send to callback"),

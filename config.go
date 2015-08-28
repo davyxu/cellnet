@@ -30,6 +30,10 @@ func init() {
 
 }
 
+func EnableLog(v bool) {
+	config.CellLog = v
+}
+
 func ReadConfig(data interface{}) {
 
 	if len(os.Args) < 2 {

@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"errors"
 	"log"
 	"sync"
 )
@@ -74,58 +75,71 @@ func Spawn(callback func(CellID, interface{})) CellID {
 
 	}()
 
-	c.post(EventInit{})
-
 	return id
 }
 
+var (
+	errExpressDriverLost error = errors.New("Express driver lost")
+	errTargetNotFound    error = errors.New("Target not found")
+)
+
 // 将制定内容发送到target的Cell中
-func Send(target CellID, data interface{}) bool {
+func Send(target CellID, data interface{}) error {
+
+	return RawSend(target, data, 0)
+}
+
+func RawSend(target CellID, data interface{}, callid int64) error {
 
 	if target == 0 {
-		return false
+		return nil
 	}
 
 	if IsLocal(target) {
-		return SendLocal(target, data)
+		return rawSendLocal(target, data, callid)
 	}
 
 	if expressDriver == nil {
 
-		log.Println("[cellnet] express func nil, target not send", target.String())
+		if config.CellLog {
+			log.Println("[cellnet] express func nil, target not send", target.String())
+		}
 
-		return false
+		return errExpressDriverLost
 	}
 
-	if !expressDriver(target, data) {
+	return expressDriver(target, data, callid)
 
-		log.Println("[cellnet] extern target not found: ", target.String())
-		return false
-	}
-
-	return true
 }
 
-// 将制定内容发送到本地的target的Cell中
-func SendLocal(target CellID, data interface{}) bool {
+func rawSendLocal(target CellID, data interface{}, callid int64) error {
+
 	if c := findCell(target); c != nil {
 
 		if config.CellLog {
-			log.Printf("[cellnet] #send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(2))
+			log.Printf("[cellnet] #send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(3))
 		}
 
 		c.post(data)
-		return true
+		return nil
 	}
 
-	log.Println("[cellnet] target not found: ", target.String())
+	if config.CellLog {
+		log.Println("[cellnet] target not found: ", target.String())
+	}
 
-	return false
+	return errTargetNotFound
 }
 
-var expressDriver func(CellID, interface{}) bool
+// 将制定内容发送到本地的target的Cell中
+func SendLocal(target CellID, data interface{}) error {
+
+	return rawSendLocal(target, data, 0)
+}
+
+var expressDriver func(CellID, interface{}, int64) error
 
 // 设置快递驱动, 负责将给定内容跨进程送达
-func SetExpressDriver(driver func(CellID, interface{}) bool) {
+func SetExpressDriver(driver func(CellID, interface{}, int64) error) {
 	expressDriver = driver
 }

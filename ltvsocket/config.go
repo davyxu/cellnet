@@ -10,6 +10,10 @@ type configDefine struct {
 
 var config configDefine
 
+func EnableLog(v bool) {
+	config.SocketLog = v
+}
+
 func init() {
 
 	cellnet.ReadConfig(&config)
