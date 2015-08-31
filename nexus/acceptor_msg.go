@@ -42,7 +42,7 @@ func listenNexus() {
 
 		})
 
-		cellnet.Send(ses, &ack)
+		cellnet.Send(ses, cellnet.BuildPacket(&ack))
 
 	})
 

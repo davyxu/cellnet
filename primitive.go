@@ -96,8 +96,14 @@ func RawSend(target CellID, data interface{}, callid int64) error {
 	}
 
 	if IsLocal(target) {
-		return rawSendLocal(target, data, callid)
+		return LocalPost(target, data)
 	}
+
+	return ExpressPost(target, data, callid)
+}
+
+// 将定制内容发送到远程
+func ExpressPost(target CellID, data interface{}, callid int64) error {
 
 	if expressDriver == nil {
 
@@ -109,15 +115,15 @@ func RawSend(target CellID, data interface{}, callid int64) error {
 	}
 
 	return expressDriver(target, data, callid)
-
 }
 
-func rawSendLocal(target CellID, data interface{}, callid int64) error {
+// 将制定内容发送到本地的target的Cell中
+func LocalPost(target CellID, data interface{}) error {
 
 	if c := findCell(target); c != nil {
 
 		if config.CellLog {
-			log.Printf("[cellnet] #send %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(3))
+			log.Printf("[cellnet] #localpost %v %v %v", target.String(), ReflectContent(data), GetStackInfoString(3))
 		}
 
 		c.post(data)
@@ -129,12 +135,6 @@ func rawSendLocal(target CellID, data interface{}, callid int64) error {
 	}
 
 	return errTargetNotFound
-}
-
-// 将制定内容发送到本地的target的Cell中
-func SendLocal(target CellID, data interface{}) error {
-
-	return rawSendLocal(target, data, 0)
 }
 
 var expressDriver func(CellID, interface{}, int64) error

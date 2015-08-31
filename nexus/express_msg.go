@@ -9,18 +9,6 @@ import (
 	"log"
 )
 
-type rpcResponse struct {
-	cellnet.Packet
-
-	callid int64
-	target cellnet.CellID
-}
-
-func (self *rpcResponse) Feedback(data interface{}) {
-
-	cellnet.RawSend(self.target, data, self.callid)
-}
-
 func Register(disp *dispatcher.DataDispatcher) {
 
 	if disp.Exists(cellnet.Type2ID(&coredef.ExpressACK{})) {
@@ -31,28 +19,20 @@ func Register(disp *dispatcher.DataDispatcher) {
 
 		msg := content.(*coredef.ExpressACK)
 
-		var identity cellnet.Identity
-
 		if msg.GetCallID() != 0 {
 
-			identity = &rpcResponse{
-				Packet: cellnet.Packet{
-					MsgID: msg.GetMsgID(),
-					Data:  msg.GetMsg(),
-				},
-
-				callid: msg.GetCallID(),
-			}
+			cellnet.InjectPost(cellnet.CellID(msg.GetTargetID()), &cellnet.Packet{
+				MsgID: msg.GetMsgID(),
+				Data:  msg.GetMsg(),
+			}, msg.GetCallID())
 
 		} else {
 
-			identity = &cellnet.Packet{
+			cellnet.LocalPost(cellnet.CellID(msg.GetTargetID()), &cellnet.Packet{
 				MsgID: msg.GetMsgID(),
 				Data:  msg.GetMsg(),
-			}
+			})
 		}
-
-		cellnet.SendLocal(cellnet.CellID(msg.GetTargetID()), identity)
 
 	})
 
@@ -63,6 +43,8 @@ var (
 )
 
 func init() {
+
+	dispatcher.AddMapper(coredef.ExpressACK{})
 
 	//注册节点系统的路由函数, 由addrlist来处理路由
 	cellnet.SetExpressDriver(func(target cellnet.CellID, data interface{}, callid int64) error {
@@ -75,7 +57,7 @@ func init() {
 		}
 
 		// 用户信息封包化
-		pkt := cellnet.BuildPacket(data.(proto.Message))
+		pkt := data.(*cellnet.Packet)
 
 		ack := &coredef.ExpressACK{
 			Msg:      pkt.Data,
@@ -88,6 +70,6 @@ func init() {
 		}
 
 		// 先发到快递点, 再解包
-		return cellnet.SendLocal(rd.Session, cellnet.BuildPacket(ack))
+		return cellnet.LocalPost(rd.Session, cellnet.BuildPacket(ack))
 	})
 }

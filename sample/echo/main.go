@@ -26,8 +26,10 @@ func server() {
 				switch ev := sescm.(type) {
 				case ltvsocket.EventData:
 
+					pkt := ev.Packet.(*cellnet.Packet)
+
 					var ack coredef.TestEchoACK
-					if err := proto.Unmarshal(ev.Packet.Data, &ack); err != nil {
+					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
 						log.Println(err)
 					} else {
 						log.Println("server recv:", ack.String())
@@ -68,8 +70,10 @@ func client() {
 
 				case ltvsocket.EventData:
 
+					pkt := ev.Packet.(*cellnet.Packet)
+
 					var ack coredef.TestEchoACK
-					if err := proto.Unmarshal(ev.Packet.Data, &ack); err != nil {
+					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
 						log.Println(err)
 					} else {
 						log.Println("client recv:", ack.String())

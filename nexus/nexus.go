@@ -9,11 +9,14 @@ package nexus
 
 import (
 	"github.com/davyxu/cellnet/dispatcher"
+	"github.com/davyxu/cellnet/proto/coredef"
 )
 
 var Dispatcher = dispatcher.NewPacketDispatcher()
 
 func init() {
+
+	dispatcher.AddMapper(coredef.RegionLinkACK{})
 
 	listenNexus()
 

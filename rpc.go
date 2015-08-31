@@ -6,6 +6,27 @@ import (
 	"time"
 )
 
+type rpcResponse struct {
+	Packet
+
+	callid int64
+	target CellID
+}
+
+func (self *rpcResponse) Feedback(data interface{}) {
+
+	RawSend(self.target, data, self.callid)
+}
+
+func (self *rpcResponse) GetPacket() *Packet {
+	return &self.Packet
+}
+
+type RPCResponse interface {
+	Feedback(interface{})
+	GetPacket() *Packet
+}
+
 // rpc每次调用上下文
 type remoteCall struct {
 	Done chan bool
@@ -71,14 +92,43 @@ var (
 	timeOut           time.Duration = time.Second * 5
 )
 
+func InjectPost(target CellID, data interface{}, callid int64) {
+
+	datapkt := data.(*Packet)
+
+	var final Identity
+
+	if callid != 0 {
+
+		final = &rpcResponse{
+			Packet: *datapkt,
+
+			callid: callid,
+		}
+	} else {
+		final = datapkt
+	}
+
+	LocalPost(target, final)
+}
+
 func Call(target CellID, data interface{}) (interface{}, error) {
 
 	c := &remoteCall{Done: make(chan bool)}
 
 	c.callid = addCall(c)
 
-	// TODO 可能在这里卡死影响后面的等待
-	RawSend(target, data, c.callid)
+	// 投递内容就在本地, 马上post
+	if IsLocal(target) {
+
+		InjectPost(target, data, c.callid)
+
+	} else {
+
+		// 真正的rpc
+		ExpressPost(target, data, c.callid)
+
+	}
 
 	select {
 	// 等待异步响应

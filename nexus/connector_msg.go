@@ -14,12 +14,12 @@ func joinNexus(addr string) {
 	ltvsocket.SpawnConnector(addr, dispatcher.PeerHandler(Dispatcher))
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.ConnectedACK{}, func(src cellnet.CellID, _ interface{}) {
-		cellnet.Send(src, &coredef.RegionLinkREQ{
+		cellnet.Send(src, cellnet.BuildPacket(&coredef.RegionLinkREQ{
 			Profile: &coredef.Region{
 				ID:      proto.Int32(cellnet.RegionID),
 				Address: proto.String(config.Listen),
 			},
-		})
+		}))
 	})
 
 	dispatcher.RegisterMessage(Dispatcher, coredef.RegionLinkACK{}, func(src cellnet.CellID, content interface{}) {

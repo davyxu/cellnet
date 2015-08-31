@@ -28,7 +28,7 @@ func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, cal
 		var err error
 		var pkt *cellnet.Packet
 
-		cellnet.Send(recvCell, EventNewSession{Session: sendCell, Type: createType})
+		cellnet.LocalPost(recvCell, EventNewSession{Session: sendCell, Type: createType})
 
 		for {
 
@@ -41,7 +41,7 @@ func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, cal
 				break
 			}
 
-			cellnet.Send(recvCell, EventData{Session: sendCell, Packet: pkt})
+			cellnet.LocalPost(recvCell, EventData{Session: sendCell, Packet: pkt})
 
 		}
 

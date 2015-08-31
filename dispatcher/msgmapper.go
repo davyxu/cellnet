@@ -1,6 +1,8 @@
 package dispatcher
 
 import (
+	"github.com/davyxu/cellnet"
+	"reflect"
 	"sync"
 )
 
@@ -9,6 +11,15 @@ var (
 	name2idMap  = make(map[string]int)
 	mapperGuard sync.RWMutex
 )
+
+func AddMapper(msgIns interface{}) {
+
+	msgName := reflect.TypeOf(msgIns).String()
+
+	msgID := cellnet.Name2ID(msgName)
+
+	addMapper(msgName, msgID)
+}
 
 func addMapper(name string, id int) {
 

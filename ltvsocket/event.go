@@ -31,7 +31,7 @@ type EventNewSession struct {
 
 type EventData struct {
 	Session cellnet.CellID
-	Packet  *cellnet.Packet
+	Packet  cellnet.Identity
 }
 
 type EventClose struct {
