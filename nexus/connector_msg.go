@@ -11,9 +11,9 @@ import (
 
 func joinNexus(addr string) {
 
-	ltvsocket.SpawnConnector(addr, dispatcher.PeerHandler(Dispatcher))
+	ltvsocket.SpawnConnector(addr, dispatcher.PeerHandler(disp))
 
-	dispatcher.RegisterMessage(Dispatcher, coredef.ConnectedACK{}, func(src cellnet.CellID, _ interface{}) {
+	dispatcher.RegisterMessage(disp, coredef.ConnectedACK{}, func(src cellnet.CellID, _ interface{}) {
 		cellnet.Send(src, cellnet.BuildPacket(&coredef.RegionLinkREQ{
 			Profile: &coredef.Region{
 				ID:      proto.Int32(cellnet.RegionID),
@@ -22,7 +22,7 @@ func joinNexus(addr string) {
 		}))
 	})
 
-	dispatcher.RegisterMessage(Dispatcher, coredef.RegionLinkACK{}, func(src cellnet.CellID, content interface{}) {
+	dispatcher.RegisterMessage(disp, coredef.RegionLinkACK{}, func(src cellnet.CellID, content interface{}) {
 
 		msg := content.(*coredef.RegionLinkACK)
 

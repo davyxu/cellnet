@@ -18,29 +18,30 @@ var (
 )
 
 // 处理Peer的新会话及会话的消息处理
-func PeerHandler(disp *DataDispatcher) func(cellnet.CellID, interface{}) {
+func PeerHandler(disp *DataDispatcher) func(interface{}) {
 
-	return func(peer cellnet.CellID, peerev interface{}) {
+	return func(peerev interface{}) {
 
 		switch v := peerev.(type) {
-		case ltvsocket.EventCreateSession: // 新的连接生成
+		case ltvsocket.SocketCreateSession: // 新的连接生成
 
-			ltvsocket.SpawnSession(v.Stream, v.Type, func(ses cellnet.CellID, sesev interface{}) {
+			ltvsocket.SpawnSession(v.Stream, v.Type, func(sesev interface{}) {
 
 				switch ev := sesev.(type) {
 
-				case ltvsocket.EventNewSession:
+				case ltvsocket.SocketNewSession:
 
 					if ev.Type == ltvsocket.SessionAccepted {
-						disp.Call(ev.Session, msgAccepted, nil)
+						disp.Call(msgAccepted, sesev)
 					} else {
-						disp.Call(ev.Session, msgConnected, nil)
+						disp.Call(msgConnected, sesev)
 					}
 
-				case ltvsocket.EventClose: // 断开转通知
-					disp.Call(ev.Session, msgClosed, nil)
-				case ltvsocket.EventData: // 收
-					disp.Call(ev.Session, ev.Packet.ID(), ev.Packet)
+				case ltvsocket.SocketClose: // 断开转通知
+					disp.Call(msgClosed, sesev)
+				case cellnet.SessionPacket: // 收
+
+					disp.Call(int(ev.GetPacket().MsgID), sesev)
 				}
 
 			})
@@ -50,4 +51,12 @@ func PeerHandler(disp *DataDispatcher) func(cellnet.CellID, interface{}) {
 		}
 
 	}
+}
+
+func EventHandler(disp *DataDispatcher) func(interface{}) {
+
+	return func(peerev interface{}) {
+
+	}
+
 }

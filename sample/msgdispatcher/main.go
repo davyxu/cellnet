@@ -46,6 +46,7 @@ func client() {
 		cellnet.Send(ses, cellnet.BuildPacket(&coredef.TestEchoACK{
 			Content: proto.String("hello"),
 		}))
+
 	})
 
 	ltvsocket.SpawnConnector("127.0.0.1:8001", dispatcher.PeerHandler(disp))
@@ -54,8 +55,8 @@ func client() {
 
 func main() {
 
-	//cellnet.EnableLog(true)
-	//ltvsocket.EnableLog(true)
+	cellnet.EnableLog(true)
+	ltvsocket.EnableLog(true)
 
 	server()
 

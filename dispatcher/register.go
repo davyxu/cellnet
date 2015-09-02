@@ -20,31 +20,28 @@ func RegisterMessage(disp *DataDispatcher, msgIns interface{}, userHandler func(
 
 	log.Printf("[dispatcher] #regmsg %s(%d)", msgName, msgID)
 
-	disp.RegisterCallback(msgID, func(ses cellnet.CellID, data interface{}) {
+	disp.RegisterCallback(msgID, func(data interface{}) {
 
-		if data == nil {
+		switch sd := data.(type) {
+		case cellnet.SessionPacket:
 
-			userHandler(ses, nil)
-
-		} else {
-			pkt := data.(*cellnet.Packet)
-
-			rawMsg, err := cellnet.ParsePacket(pkt, msgType)
+			rawMsg, err := cellnet.ParsePacket(sd.GetPacket(), msgType)
 
 			if err != nil {
 				log.Printf("[cellnet] unmarshaling error:\n", err)
 				return
 			}
 
-			userHandler(ses, rawMsg)
-
+			userHandler(sd.GetSession(), rawMsg)
+		case cellnet.SessionEvent:
+			userHandler(sd.GetSession(), nil)
 		}
 
 	})
 }
 
 // 将PB消息解析封装到闭包中
-func RegisterRemoteCall(disp *DataDispatcher, msgIns interface{}, userHandler func(cellnet.CellID, interface{}, cellnet.RPCResponse)) {
+func RegisterRemoteCall(disp *DataDispatcher, msgIns interface{}, userHandler func(interface{}, cellnet.RPCResponse)) {
 
 	msgType := reflect.TypeOf(msgIns)
 
@@ -57,24 +54,22 @@ func RegisterRemoteCall(disp *DataDispatcher, msgIns interface{}, userHandler fu
 
 	//log.Printf("[dispatcher] #regmsg %s(%d)", msgName, msgID)
 
-	disp.RegisterCallback(msgID, func(ses cellnet.CellID, data interface{}) {
+	disp.RegisterCallback(msgID, func(data interface{}) {
 
-		if data == nil {
+		switch sd := data.(type) {
+		case cellnet.RPCResponse:
 
-			userHandler(ses, nil, nil)
-
-		} else {
-			resp := data.(cellnet.RPCResponse)
-
-			rawMsg, err := cellnet.ParsePacket(resp.GetPacket(), msgType)
+			rawMsg, err := cellnet.ParsePacket(sd.GetPacket(), msgType)
 
 			if err != nil {
 				log.Printf("[cellnet] unmarshaling error:\n", err)
 				return
 			}
 
-			userHandler(ses, rawMsg, resp)
+			userHandler(rawMsg, sd)
 
+		case cellnet.SessionEvent:
+			userHandler(sd.GetSession(), nil)
 		}
 
 	})

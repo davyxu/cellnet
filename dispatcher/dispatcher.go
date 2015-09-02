@@ -4,15 +4,11 @@
 */
 package dispatcher
 
-import (
-	"github.com/davyxu/cellnet"
-)
-
 type DataDispatcher struct {
-	contextMap map[int][]func(cellnet.CellID, interface{})
+	contextMap map[int][]func(interface{})
 }
 
-func (self *DataDispatcher) RegisterCallback(id int, f func(cellnet.CellID, interface{})) {
+func (self *DataDispatcher) RegisterCallback(id int, f func(interface{})) {
 
 	// 事件
 	em, ok := self.contextMap[id]
@@ -20,7 +16,7 @@ func (self *DataDispatcher) RegisterCallback(id int, f func(cellnet.CellID, inte
 	// 新建
 	if !ok {
 
-		em = make([]func(cellnet.CellID, interface{}), 0)
+		em = make([]func(interface{}), 0)
 
 	}
 
@@ -35,20 +31,20 @@ func (self *DataDispatcher) Exists(id int) bool {
 	return ok
 }
 
-func (self *DataDispatcher) Call(src cellnet.CellID, id int, data interface{}) {
+func (self *DataDispatcher) Call(id int, data interface{}) {
 
 	if carr, ok := self.contextMap[id]; ok {
 
 		for _, c := range carr {
 
-			c(src, data)
+			c(data)
 		}
 	}
 }
 
 func NewPacketDispatcher() *DataDispatcher {
 	return &DataDispatcher{
-		contextMap: make(map[int][]func(cellnet.CellID, interface{})),
+		contextMap: make(map[int][]func(interface{})),
 	}
 
 }

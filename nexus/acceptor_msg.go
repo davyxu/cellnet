@@ -13,9 +13,9 @@ func listenNexus() {
 
 	listenAddr := config.Listen
 
-	ltvsocket.SpawnAcceptor(listenAddr, dispatcher.PeerHandler(Dispatcher))
+	ltvsocket.SpawnAcceptor(listenAddr, dispatcher.PeerHandler(disp))
 
-	dispatcher.RegisterMessage(Dispatcher, coredef.RegionLinkREQ{}, func(ses cellnet.CellID, content interface{}) {
+	dispatcher.RegisterMessage(disp, coredef.RegionLinkREQ{}, func(ses cellnet.CellID, content interface{}) {
 
 		msg := content.(*coredef.RegionLinkREQ)
 
@@ -46,7 +46,7 @@ func listenNexus() {
 
 	})
 
-	dispatcher.RegisterMessage(Dispatcher, coredef.ClosedACK{}, func(ses cellnet.CellID, _ interface{}) {
+	dispatcher.RegisterMessage(disp, coredef.ClosedACK{}, func(ses cellnet.CellID, _ interface{}) {
 
 		removeRegion(ses)
 

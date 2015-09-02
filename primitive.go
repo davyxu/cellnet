@@ -44,7 +44,7 @@ func IsLocal(id CellID) bool {
 }
 
 // 为消息处理函数生成一个Cell, 返回CellID
-func Spawn(callback func(CellID, interface{})) CellID {
+func Spawn(callback func(interface{})) CellID {
 
 	id := genID()
 
@@ -66,7 +66,7 @@ func Spawn(callback func(CellID, interface{})) CellID {
 		for {
 
 			if data, ok := c.fetch(); ok {
-				callback(id, data)
+				callback(data)
 			} else {
 				break
 			}

@@ -11,7 +11,7 @@ var done = make(chan bool)
 func spawnsend() {
 
 	// no block spawn cell, msg function here
-	cid := cellnet.Spawn(func(_ cellnet.CellID, cl interface{}) {
+	cid := cellnet.Spawn(func(cl interface{}) {
 
 		switch v := cl.(type) {
 		case string:

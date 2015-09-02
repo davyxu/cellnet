@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func SpawnConnector(address string, callback func(cellnet.CellID, interface{})) cellnet.CellID {
+func SpawnConnector(address string, callback func(interface{})) cellnet.CellID {
 
 	cid := cellnet.Spawn(callback)
 
@@ -20,7 +20,7 @@ func SpawnConnector(address string, callback func(cellnet.CellID, interface{})) 
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 
-			cellnet.Send(cid, EventConnectError{Err: err})
+			cellnet.Send(cid, SocketConnectError{Err: err})
 
 			if config.SocketLog {
 				log.Println("[socket] connect failed", err.Error())
@@ -28,7 +28,7 @@ func SpawnConnector(address string, callback func(cellnet.CellID, interface{})) 
 			return
 		}
 
-		cellnet.Send(cid, EventCreateSession{Stream: NewPacketStream(conn), Type: SessionConnected})
+		cellnet.Send(cid, SocketCreateSession{Stream: NewPacketStream(conn), Type: SessionConnected})
 
 	}()
 

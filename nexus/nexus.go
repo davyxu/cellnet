@@ -12,11 +12,13 @@ import (
 	"github.com/davyxu/cellnet/proto/coredef"
 )
 
-var Dispatcher = dispatcher.NewPacketDispatcher()
+var disp = dispatcher.NewPacketDispatcher()
 
 func init() {
 
 	dispatcher.AddMapper(coredef.RegionLinkACK{})
+
+	register(disp)
 
 	listenNexus()
 

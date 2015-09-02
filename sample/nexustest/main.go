@@ -38,18 +38,16 @@ func client() {
 	// cellid: 1.2 connector
 
 	// cellid: 1.3
-	cid := cellnet.Spawn(func(src cellnet.CellID, data interface{}) {
+	cid := cellnet.Spawn(func(data interface{}) {
 
 		switch d := data.(type) {
 		case *cellnet.Packet:
-			log.Println("recv node msg", src.String(), cellnet.ReflectContent(d))
+			log.Println("recv node msg", cellnet.ReflectContent(d))
 		}
 
 	})
 
 	log.Println(cid.String())
-
-	nexus.Register(nexus.Dispatcher)
 
 	// cellid: 1.4
 	dispatcher.RegisterMessage(nexus.Dispatcher, coredef.TestEchoACK{}, func(src cellnet.CellID, content interface{}) {

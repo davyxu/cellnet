@@ -5,12 +5,12 @@ import (
 	"log"
 )
 
-func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, callback func(cellnet.CellID, interface{})) cellnet.CellID {
+func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, callback func(interface{})) cellnet.CellID {
 
 	recvCell := cellnet.Spawn(callback)
 
 	// 发送线程
-	sendCell := cellnet.Spawn(func(_ cellnet.CellID, sendev interface{}) {
+	sendCell := cellnet.Spawn(func(sendev interface{}) {
 
 		if pkt, ok := sendev.(*cellnet.Packet); ok {
 			stream.Write(pkt)
@@ -28,7 +28,7 @@ func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, cal
 		var err error
 		var pkt *cellnet.Packet
 
-		cellnet.LocalPost(recvCell, EventNewSession{Session: sendCell, Type: createType})
+		cellnet.LocalPost(recvCell, SocketNewSession{Session: sendCell, Type: createType})
 
 		for {
 
@@ -37,11 +37,11 @@ func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, cal
 
 			if err != nil {
 
-				cellnet.Send(recvCell, EventClose{Session: sendCell, Err: err})
+				cellnet.Send(recvCell, SocketClose{Session: sendCell, Err: err})
 				break
 			}
 
-			cellnet.LocalPost(recvCell, EventData{Session: sendCell, Packet: pkt})
+			cellnet.LocalPost(recvCell, SocketData{Session: sendCell, Packet: pkt})
 
 		}
 

@@ -16,17 +16,17 @@ type IError interface {
 var done = make(chan bool)
 
 func server() {
-	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
+	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(cm interface{}) {
 
 		switch v := cm.(type) {
-		case ltvsocket.EventCreateSession:
+		case ltvsocket.SocketCreateSession:
 
-			ltvsocket.SpawnSession(v.Stream, v.Type, func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream, v.Type, func(sescm interface{}) {
 
 				switch ev := sescm.(type) {
-				case ltvsocket.EventData:
+				case ltvsocket.SocketData:
 
-					pkt := ev.Packet.(*cellnet.Packet)
+					pkt := ev.GetPacket()
 
 					var ack coredef.TestEchoACK
 					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
@@ -53,24 +53,24 @@ func server() {
 
 func client() {
 
-	ltvsocket.SpawnConnector("127.0.0.1:8001", func(self cellnet.CellID, cm interface{}) {
+	ltvsocket.SpawnConnector("127.0.0.1:8001", func(cm interface{}) {
 
 		switch v := cm.(type) {
-		case ltvsocket.EventCreateSession:
+		case ltvsocket.SocketCreateSession:
 
 			// new session
-			ltvsocket.SpawnSession(v.Stream, v.Type, func(ses cellnet.CellID, sescm interface{}) {
+			ltvsocket.SpawnSession(v.Stream, v.Type, func(sescm interface{}) {
 
 				switch ev := sescm.(type) {
-				case ltvsocket.EventNewSession:
+				case ltvsocket.SocketNewSession:
 
 					cellnet.Send(ev.Session, cellnet.BuildPacket(&coredef.TestEchoACK{
 						Content: proto.String("hello"),
 					}))
 
-				case ltvsocket.EventData:
+				case ltvsocket.SocketData:
 
-					pkt := ev.Packet.(*cellnet.Packet)
+					pkt := ev.GetPacket()
 
 					var ack coredef.TestEchoACK
 					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {

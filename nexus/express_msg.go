@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-func Register(disp *dispatcher.DataDispatcher) {
+func register(disp *dispatcher.DataDispatcher) {
 
 	if disp.Exists(cellnet.Type2ID(&coredef.ExpressACK{})) {
 		panic("[nexus] Duplicate router register")
@@ -19,20 +19,10 @@ func Register(disp *dispatcher.DataDispatcher) {
 
 		msg := content.(*coredef.ExpressACK)
 
-		if msg.GetCallID() != 0 {
-
-			cellnet.InjectPost(cellnet.CellID(msg.GetTargetID()), &cellnet.Packet{
-				MsgID: msg.GetMsgID(),
-				Data:  msg.GetMsg(),
-			}, msg.GetCallID())
-
-		} else {
-
-			cellnet.LocalPost(cellnet.CellID(msg.GetTargetID()), &cellnet.Packet{
-				MsgID: msg.GetMsgID(),
-				Data:  msg.GetMsg(),
-			})
-		}
+		cellnet.InjectPost(cellnet.CellID(msg.GetTargetID()), &cellnet.Packet{
+			MsgID: msg.GetMsgID(),
+			Data:  msg.GetMsg(),
+		}, msg.GetCallID())
 
 	})
 

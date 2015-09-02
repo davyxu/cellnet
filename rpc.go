@@ -7,7 +7,7 @@ import (
 )
 
 type rpcResponse struct {
-	Packet
+	pkt *Packet
 
 	callid int64
 	target CellID
@@ -19,7 +19,11 @@ func (self *rpcResponse) Feedback(data interface{}) {
 }
 
 func (self *rpcResponse) GetPacket() *Packet {
-	return &self.Packet
+	return self.pkt
+}
+
+func (self *rpcResponse) GetSession() CellID {
+	return self.target
 }
 
 type RPCResponse interface {
@@ -94,22 +98,18 @@ var (
 
 func InjectPost(target CellID, data interface{}, callid int64) {
 
-	datapkt := data.(*Packet)
-
-	var final Identity
-
 	if callid != 0 {
 
-		final = &rpcResponse{
-			Packet: *datapkt,
+		LocalPost(target, &rpcResponse{
+			pkt: data.(*Packet),
 
 			callid: callid,
-		}
+		})
+
 	} else {
-		final = datapkt
+		LocalPost(target, data)
 	}
 
-	LocalPost(target, final)
 }
 
 func Call(target CellID, data interface{}) (interface{}, error) {
