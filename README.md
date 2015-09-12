@@ -1,14 +1,13 @@
 # CellNet
-A Golang game server framework based on actor model
+Go语言的游戏服务器框架
 
 # Feature
 
-本机,跨进程,跨机器通信均使用统一的Actor模型
+异步单线程多进程架构
 
-为游戏服务器优化, 注重开发效率及运行效率
+
 
 # Roadmap
-RPC支持
 
 服务器框架例子
 

@@ -12,8 +12,6 @@ import (
 var done = make(chan bool)
 
 func host() {
-	// cellid: 0.1 acceptor
-	// cellid: 0.2 connector
 
 	//  开始测试的时机
 	nexus.Event.Add("OnAddRegion", func(args ...interface{}) {
@@ -34,27 +32,24 @@ func host() {
 }
 
 func client() {
-	// cellid: 1.1 acceptor
-	// cellid: 1.2 connector
+
+	disp := dispatcher.NewDataDispatcher()
 
 	// cellid: 1.3
 	cid := cellnet.Spawn(func(data interface{}) {
 
-		switch d := data.(type) {
-		case *cellnet.Packet:
-			log.Println("recv node msg", cellnet.ReflectContent(d))
+		switch ev := data.(type) {
+
+		case cellnet.SessionPacket: // 收
+
+			disp.Call(int(ev.GetPacket().MsgID), data)
+		default:
+			log.Println("unknown data", cellnet.ReflectContent(ev))
 		}
 
 	})
 
 	log.Println(cid.String())
-
-	// cellid: 1.4
-	dispatcher.RegisterMessage(nexus.Dispatcher, coredef.TestEchoACK{}, func(src cellnet.CellID, content interface{}) {
-
-		msg := content.(*coredef.TestEchoACK)
-		log.Println("recv msg callback :", msg.GetContent())
-	})
 
 }
 

@@ -12,7 +12,7 @@ import (
 	"github.com/davyxu/cellnet/proto/coredef"
 )
 
-var disp = dispatcher.NewPacketDispatcher()
+var disp = dispatcher.NewDataDispatcher()
 
 func init() {
 

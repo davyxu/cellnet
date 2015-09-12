@@ -10,12 +10,12 @@ type rpcResponse struct {
 	pkt *Packet
 
 	callid int64
-	target CellID
+	src    CellID
 }
 
 func (self *rpcResponse) Feedback(data interface{}) {
 
-	RawSend(self.target, data, self.callid)
+	RawSend(self.src, data, self.callid)
 }
 
 func (self *rpcResponse) GetPacket() *Packet {
@@ -23,7 +23,7 @@ func (self *rpcResponse) GetPacket() *Packet {
 }
 
 func (self *rpcResponse) GetSession() CellID {
-	return self.target
+	return self.src
 }
 
 type RPCResponse interface {
@@ -96,23 +96,39 @@ var (
 	timeOut           time.Duration = time.Second * 5
 )
 
-func InjectPost(target CellID, data interface{}, callid int64) {
+type localData struct {
+	Session CellID
+	Packet  *Packet
+}
+
+func (self localData) GetSession() CellID {
+	return self.Session
+}
+
+func (self localData) GetPacket() *Packet {
+	return self.Packet
+}
+
+func InjectPost(target CellID, data interface{}, callid int64, src CellID) {
+
+	pkt := data.(*Packet)
 
 	if callid != 0 {
 
 		LocalPost(target, &rpcResponse{
-			pkt: data.(*Packet),
+			pkt: pkt,
 
 			callid: callid,
+			src:    src,
 		})
 
 	} else {
-		LocalPost(target, data)
+		LocalPost(target, &localData{Packet: pkt, Session: src})
 	}
 
 }
 
-func Call(target CellID, data interface{}) (interface{}, error) {
+func Call(target CellID, data interface{}, src CellID) (interface{}, error) {
 
 	c := &remoteCall{Done: make(chan bool)}
 
@@ -121,12 +137,12 @@ func Call(target CellID, data interface{}) (interface{}, error) {
 	// 投递内容就在本地, 马上post
 	if IsLocal(target) {
 
-		InjectPost(target, data, c.callid)
+		InjectPost(target, data, c.callid, src)
 
 	} else {
 
 		// 真正的rpc
-		ExpressPost(target, data, c.callid)
+		ExpressPost(target, data, c.callid, src)
 
 	}
 

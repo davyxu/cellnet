@@ -42,7 +42,7 @@ func (self *DataDispatcher) Call(id int, data interface{}) {
 	}
 }
 
-func NewPacketDispatcher() *DataDispatcher {
+func NewDataDispatcher() *DataDispatcher {
 	return &DataDispatcher{
 		contextMap: make(map[int][]func(interface{})),
 	}

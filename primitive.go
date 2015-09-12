@@ -103,7 +103,7 @@ func RawSend(target CellID, data interface{}, callid int64) error {
 }
 
 // 将定制内容发送到远程
-func ExpressPost(target CellID, data interface{}, callid int64) error {
+func ExpressPost(target CellID, data interface{}, callid int64, src CellID) error {
 
 	if expressDriver == nil {
 
