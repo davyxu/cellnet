@@ -6,41 +6,51 @@ import (
 	"net"
 )
 
-func SpawnAcceptor(address string, callback func(interface{})) cellnet.CellID {
+type ltvAcceptor struct {
+	listener net.Listener
 
-	cid := cellnet.Spawn(callback)
+	running bool
 
-	// io goroutine
+	queue *cellnet.EvQueue
+}
+
+func (self *ltvAcceptor) Start(address string) {
+
+	ln, err := net.Listen("tcp", address)
+
+	self.listener = ln
+
+	if err != nil {
+
+		log.Println("[socket] listen failed", err.Error())
+		return
+	}
+
+	self.running = true
+
 	go func() {
-
-		if config.SocketLog {
-			log.Printf("[socket] #listen %s %s\n", cid.String(), address)
-		}
-
-		ln, err := net.Listen("tcp", address)
-
-		if err != nil {
-			cellnet.Send(cid, SocketListenError{Err: err})
-
-			if config.SocketLog {
-				log.Println("[socket] listen failed", err.Error())
-			}
-
-			return
-		}
-
-		for {
+		for self.running {
 			conn, err := ln.Accept()
 
 			if err != nil {
 				continue
 			}
 
-			cellnet.Send(cid, SocketCreateSession{Stream: NewPacketStream(conn), Type: SessionAccepted})
+			ses := newSession(NewPacketStream(conn), self.queue)
+
+			self.queue.Post(NewDataEvent(Event_Accepted, ses, nil))
+
 		}
 
 	}()
+}
 
-	return cid
+func (self *ltvAcceptor) Stop() {
+	self.running = false
 
+	self.listener.Close()
+}
+
+func newAcceptor(evq *cellnet.EvQueue) *ltvAcceptor {
+	return &ltvAcceptor{queue: evq}
 }

@@ -6,32 +6,40 @@ import (
 	"net"
 )
 
-func SpawnConnector(address string, callback func(interface{})) cellnet.CellID {
+type ltvConnector struct {
+	queue *cellnet.EvQueue
+	conn  net.Conn
+}
 
-	cid := cellnet.Spawn(callback)
+func (self *ltvConnector) Start(address string) {
 
-	// io goroutine
 	go func() {
+		cn, err := net.Dial("tcp", address)
 
-		if config.SocketLog {
-			log.Printf("[socket] #connect %s %s\n", cid.String(), address)
-		}
-
-		conn, err := net.Dial("tcp", address)
 		if err != nil {
 
-			cellnet.Send(cid, SocketConnectError{Err: err})
-
-			if config.SocketLog {
-				log.Println("[socket] connect failed", err.Error())
-			}
+			log.Println("[socket] cononect failed", err.Error())
 			return
 		}
 
-		cellnet.Send(cid, SocketCreateSession{Stream: NewPacketStream(conn), Type: SessionConnected})
+		self.conn = cn
+
+		ses := newSession(NewPacketStream(cn), self.queue)
+
+		self.queue.Post(NewDataEvent(Event_Connected, ses, nil))
 
 	}()
 
-	return cid
+}
 
+func (self *ltvConnector) Stop() {
+
+	if self.conn != nil {
+		self.conn.Close()
+	}
+
+}
+
+func newConnector(evq *cellnet.EvQueue) *ltvConnector {
+	return &ltvConnector{queue: evq}
 }

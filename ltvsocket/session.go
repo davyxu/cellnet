@@ -2,50 +2,58 @@ package ltvsocket
 
 import (
 	"github.com/davyxu/cellnet"
-	"log"
 )
 
-func SpawnSession(stream cellnet.PacketStream, createType SessionCreateType, callback func(interface{})) cellnet.CellID {
+type ltvSession struct {
+	writeChan chan *cellnet.Packet
+}
 
-	recvCell := cellnet.Spawn(callback)
+func (self *ltvSession) Send(pkt *cellnet.Packet) {
+	self.writeChan <- pkt
+}
 
-	// 发送线程
-	sendCell := cellnet.Spawn(func(sendev interface{}) {
+func newSession(stream cellnet.PacketStream, evq *cellnet.EvQueue) *ltvSession {
 
-		if pkt, ok := sendev.(*cellnet.Packet); ok {
+	self := &ltvSession{
+		writeChan: make(chan *cellnet.Packet),
+	}
+
+	go func() {
+
+		for {
+
+			pkt := <-self.writeChan
+
 			stream.Write(pkt)
-		} else {
 
-			if config.SocketLog {
-				log.Println("[ltvsocket] write require *cellnet.Packet type")
-			}
 		}
 
-	})
+	}()
 
 	// 接收线程
 	go func() {
 		var err error
 		var pkt *cellnet.Packet
 
-		cellnet.LocalPost(recvCell, SocketNewSession{Session: sendCell, Type: createType})
-
 		for {
 
-			// 从Socket读取封包并转为ltv格式
+			// 从Socket读取封包
 			pkt, err = stream.Read()
 
 			if err != nil {
 
-				cellnet.Send(recvCell, SocketClose{Session: sendCell, Err: err})
+				evq.Post(NewDataEvent(Event_Closed, self, nil))
 				break
 			}
 
-			cellnet.LocalPost(recvCell, SocketData{Session: sendCell, Packet: pkt})
+			evq.Post(&DataEvent{
+				Packet: pkt,
+				Ses:    self,
+			})
 
 		}
 
 	}()
 
-	return recvCell
+	return self
 }

@@ -4,56 +4,25 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-// Connector/Acceptor事件
-type SocketConnectError struct {
-	Err error
-}
-
-type SocketListenError struct {
-	Err error
-}
-
 const (
-	SessionAccepted  = 1
-	SessionConnected = 2
+	Event_RecvData  = 1
+	Event_Connected = 2
+	Event_Closed    = 3
+	Event_Accepted  = 4
 )
 
-type SessionCreateType int
-
-type SocketCreateSession struct {
-	Stream cellnet.PacketStream
-	Type   SessionCreateType
+type Session interface {
+	Send(*cellnet.Packet)
 }
 
-// Session相关事件
-
-type SocketNewSession struct {
-	Session cellnet.CellID
-	Type    SessionCreateType
+type DataEvent struct {
+	*cellnet.Packet
+	Ses Session
 }
 
-func (self SocketNewSession) GetSession() cellnet.CellID {
-	return self.Session
-}
-
-type SocketData struct {
-	Session cellnet.CellID
-	Packet  *cellnet.Packet
-}
-
-func (self SocketData) GetSession() cellnet.CellID {
-	return self.Session
-}
-
-func (self SocketData) GetPacket() *cellnet.Packet {
-	return self.Packet
-}
-
-type SocketClose struct {
-	Session cellnet.CellID
-	Err     error
-}
-
-func (self SocketClose) GetSession() cellnet.CellID {
-	return self.Session
+func NewDataEvent(msgid uint32, s Session, data []byte) *DataEvent {
+	return &DataEvent{
+		Packet: &cellnet.Packet{MsgID: msgid, Data: data},
+		Ses:    s,
+	}
 }

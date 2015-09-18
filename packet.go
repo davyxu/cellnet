@@ -6,6 +6,10 @@ type Packet struct {
 	Data  []byte
 }
 
+func (self Packet) ContextID() int {
+	return int(self.MsgID)
+}
+
 // 封包流
 type PacketStream interface {
 	Read() (*Packet, error)

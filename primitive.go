@@ -99,7 +99,7 @@ func RawSend(target CellID, data interface{}, callid int64) error {
 		return LocalPost(target, data)
 	}
 
-	return ExpressPost(target, data, callid)
+	return ExpressPost(target, data, callid, 0)
 }
 
 // 将定制内容发送到远程
