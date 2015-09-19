@@ -11,10 +11,6 @@ const (
 	Event_Accepted  = 4
 )
 
-type Session interface {
-	Send(*cellnet.Packet)
-}
-
 type DataEvent struct {
 	*cellnet.Packet
 	Ses Session

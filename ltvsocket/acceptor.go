@@ -1,17 +1,18 @@
 package ltvsocket
 
 import (
-	"github.com/davyxu/cellnet"
 	"log"
 	"net"
+
+	"github.com/davyxu/cellnet"
 )
 
 type ltvAcceptor struct {
+	*PeerProfile
+
 	listener net.Listener
 
 	running bool
-
-	queue *cellnet.EvQueue
 }
 
 func (self *ltvAcceptor) Start(address string) {
@@ -28,6 +29,7 @@ func (self *ltvAcceptor) Start(address string) {
 
 	self.running = true
 
+	// 接受线程
 	go func() {
 		for self.running {
 			conn, err := ln.Accept()
@@ -51,6 +53,10 @@ func (self *ltvAcceptor) Stop() {
 	self.listener.Close()
 }
 
-func newAcceptor(evq *cellnet.EvQueue) *ltvAcceptor {
-	return &ltvAcceptor{queue: evq}
+func init() {
+
+	cellnet.RegisterPeerType("ltvAcceptor", func(pf *PeerProfile) Peer {
+		return &ltvAcceptor{PeerProfile: pf}
+	})
+
 }
