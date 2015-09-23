@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"github.com/davyxu/cellnet/util"
 	"log"
 	"path"
 	"runtime"
@@ -13,7 +14,7 @@ func getModuleName() string {
 		return ""
 	}
 
-	return path.Dir(StripFileName(file, 3))
+	return path.Dir(util.StripFileName(file, 3))
 }
 
 var moduleRegMap map[string]func() = make(map[string]func())

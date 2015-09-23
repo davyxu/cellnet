@@ -20,7 +20,7 @@ var config configDefine
 
 func init() {
 
-	ReadConfig(&config)
+	//ReadConfig(&config)
 
 	RegionID = config.RegionID
 

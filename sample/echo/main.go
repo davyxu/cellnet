@@ -2,95 +2,55 @@ package main
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/ltvsocket"
 	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
 	"log"
 	"time"
 )
 
-type IError interface {
-	Error() string
-}
-
 var done = make(chan bool)
 
 func server() {
-	ltvsocket.SpawnAcceptor("127.0.0.1:8001", func(cm interface{}) {
 
-		switch v := cm.(type) {
-		case ltvsocket.SocketCreateSession:
+	evq := cellnet.NewEvQueue()
 
-			ltvsocket.SpawnSession(v.Stream, v.Type, func(sescm interface{}) {
+	socket.NewAcceptor(evq).Start("127.0.0.1:7234")
 
-				switch ev := sescm.(type) {
-				case ltvsocket.SocketData:
+	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+		msg := content.(*coredef.TestEchoACK)
 
-					pkt := ev.GetPacket()
+		log.Println("server recv:", msg.String())
 
-					var ack coredef.TestEchoACK
-					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
-						log.Println(err)
-					} else {
-						log.Println("server recv:", ack.String())
-
-					}
-
-					cellnet.Send(ev.Session, cellnet.BuildPacket(&coredef.TestEchoACK{
-						Content: proto.String("world"),
-					}))
-
-				}
-
-			})
-
-		case IError:
-			log.Println(cellnet.ReflectContent(v))
-		}
+		ses.Send(&coredef.TestEchoACK{
+			Content: proto.String("world"),
+		})
 
 	})
+
 }
 
 func client() {
 
-	ltvsocket.SpawnConnector("127.0.0.1:8001", func(cm interface{}) {
+	evq := cellnet.NewEvQueue()
 
-		switch v := cm.(type) {
-		case ltvsocket.SocketCreateSession:
+	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+		msg := content.(*coredef.TestEchoACK)
 
-			// new session
-			ltvsocket.SpawnSession(v.Stream, v.Type, func(sescm interface{}) {
+		log.Println("client recv:", msg.String())
 
-				switch ev := sescm.(type) {
-				case ltvsocket.SocketNewSession:
+		done <- true
+	})
 
-					cellnet.Send(ev.Session, cellnet.BuildPacket(&coredef.TestEchoACK{
-						Content: proto.String("hello"),
-					}))
+	socket.RegisterMessage(evq, coredef.ConnectedACK{}, func(ses cellnet.Session, content interface{}) {
 
-				case ltvsocket.SocketData:
-
-					pkt := ev.GetPacket()
-
-					var ack coredef.TestEchoACK
-					if err := proto.Unmarshal(pkt.Data, &ack); err != nil {
-						log.Println(err)
-					} else {
-						log.Println("client recv:", ack.String())
-
-						done <- true
-					}
-
-				}
-
-			})
-
-		case IError:
-			log.Println(cellnet.ReflectContent(v))
-
-		}
+		ses.Send(&coredef.TestEchoACK{
+			Content: proto.String("hello"),
+		})
 
 	})
+
+	socket.NewConnector(evq).Start("127.0.0.1:7234")
 
 }
 

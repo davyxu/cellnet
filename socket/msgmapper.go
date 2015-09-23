@@ -1,4 +1,4 @@
-package dispatcher
+package socket
 
 import (
 	"github.com/davyxu/cellnet"

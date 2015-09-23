@@ -13,6 +13,6 @@ var config configDefine
 
 func init() {
 
-	cellnet.ReadConfig(&config)
+	//cellnet.ReadConfig(&config)
 
 }

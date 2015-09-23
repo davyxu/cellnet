@@ -41,6 +41,18 @@ func (self *EvQueue) Post(data interface{}) {
 	self.queue <- data
 }
 
+func (self *EvQueue) Count() int {
+	return len(self.contextMap)
+}
+
+func (self *EvQueue) CountByID(id int) int {
+	if v, ok := self.contextMap[id]; ok {
+		return len(v)
+	}
+
+	return 0
+}
+
 type contentIndexer interface {
 	ContextID() int
 }

@@ -1,15 +1,9 @@
 package cellnet
 
-import (
-	"github.com/davyxu/cellnet"
-)
-
 type Peer interface {
-	Start(address string)
+	Start(address string) Peer
 	Stop()
-}
 
-type PeerProfile struct {
-	name  string
-	queue *cellnet.EvQueue
+	SetName(string)
+	Name() string
 }

@@ -1,7 +1,7 @@
-package ltvsocket
+package socket
 
 import (
-	"github.com/davyxu/cellnet"
+//	"github.com/davyxu/cellnet"
 )
 
 type configDefine struct {
@@ -16,6 +16,6 @@ func EnableLog(v bool) {
 
 func init() {
 
-	cellnet.ReadConfig(&config)
+	//cellnet.ReadConfig(&config)
 
 }

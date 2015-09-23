@@ -1,13 +1,15 @@
-package ltvsocket
+package socket
 
 import (
+	"github.com/davyxu/cellnet"
 	"log"
 	"net"
 	"time"
 )
 
 type ltvConnector struct {
-	*PeerProfile
+	*peerProfile
+	*sessionMgr
 
 	conn net.Conn
 
@@ -18,14 +20,15 @@ type ltvConnector struct {
 	working bool // 重入锁
 }
 
-func (self *ltvConnector) Start(address string) {
+func (self *ltvConnector) Start(address string) cellnet.Peer {
 
 	if self.working {
-		return
+		return self
 	}
 
 	go self.connect(address)
 
+	return self
 }
 
 func (self *ltvConnector) connect(address string) {
@@ -53,14 +56,18 @@ func (self *ltvConnector) connect(address string) {
 			continue
 		}
 
+		log.Println("connected: ", address)
+
 		// 连上了, 记录连接
 		self.conn = cn
 
 		// 创建Session
-		ses := newSession(NewPacketStream(cn), self.queue)
+		ses := newSession(NewPacketStream(cn), self.queue, self)
+		self.sessionMgr.Add(ses)
 
 		// 内部断开回调
 		ses.OnClose = func() {
+			self.sessionMgr.Remove(ses)
 			self.closeSignal <- true
 		}
 
@@ -97,13 +104,10 @@ func (self *ltvConnector) Stop() {
 
 }
 
-func init() {
-
-	cellnet.RegisterPeerType("ltvConnector", func(pf *PeerProfile) Peer {
-		return &ltvConnector{
-			PeerProfile: pf,
-			closeSignal: make(chan bool),
-		}
-	})
-
+func NewConnector(queue *cellnet.EvQueue) cellnet.Peer {
+	return &ltvConnector{
+		sessionMgr:  newSessionManager(),
+		peerProfile: &peerProfile{queue: queue},
+		closeSignal: make(chan bool),
+	}
 }

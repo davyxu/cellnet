@@ -1,21 +1,21 @@
-package ltvsocket
+package socket
 
 import (
+	"github.com/davyxu/cellnet"
 	"log"
 	"net"
-
-	"github.com/davyxu/cellnet"
 )
 
 type ltvAcceptor struct {
-	*PeerProfile
+	*peerProfile
+	*sessionMgr
 
 	listener net.Listener
 
 	running bool
 }
 
-func (self *ltvAcceptor) Start(address string) {
+func (self *ltvAcceptor) Start(address string) cellnet.Peer {
 
 	ln, err := net.Listen("tcp", address)
 
@@ -24,8 +24,10 @@ func (self *ltvAcceptor) Start(address string) {
 	if err != nil {
 
 		log.Println("[socket] listen failed", err.Error())
-		return
+		return self
 	}
+
+	log.Println("listening: ", address)
 
 	self.running = true
 
@@ -38,13 +40,21 @@ func (self *ltvAcceptor) Start(address string) {
 				continue
 			}
 
-			ses := newSession(NewPacketStream(conn), self.queue)
+			ses := newSession(NewPacketStream(conn), self.queue, self)
+
+			self.sessionMgr.Add(ses)
+
+			ses.OnClose = func() {
+				self.sessionMgr.Remove(ses)
+			}
 
 			self.queue.Post(NewDataEvent(Event_Accepted, ses, nil))
 
 		}
 
 	}()
+
+	return self
 }
 
 func (self *ltvAcceptor) Stop() {
@@ -53,10 +63,9 @@ func (self *ltvAcceptor) Stop() {
 	self.listener.Close()
 }
 
-func init() {
-
-	cellnet.RegisterPeerType("ltvAcceptor", func(pf *PeerProfile) Peer {
-		return &ltvAcceptor{PeerProfile: pf}
-	})
-
+func NewAcceptor(queue *cellnet.EvQueue) cellnet.Peer {
+	return &ltvAcceptor{
+		sessionMgr:  newSessionManager(),
+		peerProfile: &peerProfile{queue: queue},
+	}
 }

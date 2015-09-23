@@ -1,4 +1,4 @@
-package ltvsocket
+package socket
 
 import (
 	"bytes"
@@ -118,7 +118,7 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 
 	// 发包内容
 	if _, err = self.conn.Write(pkt.Data); err != nil {
-		return
+		return err
 	}
 
 	// 增加序列号值
@@ -130,6 +130,10 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 
 func (self *ltvStream) Close() error {
 	return self.conn.Close()
+}
+
+func (self *ltvStream) Raw() net.Conn {
+	return self.conn
 }
 
 func NewPacketStream(conn net.Conn) cellnet.PacketStream {

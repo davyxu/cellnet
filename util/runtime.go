@@ -1,4 +1,4 @@
-package cellnet
+package util
 
 import (
 	"fmt"
