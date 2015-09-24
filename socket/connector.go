@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type ltvConnector struct {
+type socketConnector struct {
 	*peerProfile
 	*sessionMgr
 
@@ -20,7 +20,7 @@ type ltvConnector struct {
 	working bool // 重入锁
 }
 
-func (self *ltvConnector) Start(address string) cellnet.Peer {
+func (self *socketConnector) Start(address string) cellnet.Peer {
 
 	if self.working {
 		return self
@@ -31,7 +31,7 @@ func (self *ltvConnector) Start(address string) cellnet.Peer {
 	return self
 }
 
-func (self *ltvConnector) connect(address string) {
+func (self *socketConnector) connect(address string) {
 	self.working = true
 
 	for {
@@ -96,7 +96,7 @@ func (self *ltvConnector) connect(address string) {
 	self.working = false
 }
 
-func (self *ltvConnector) Stop() {
+func (self *socketConnector) Stop() {
 
 	if self.conn != nil {
 		self.conn.Close()
@@ -105,7 +105,7 @@ func (self *ltvConnector) Stop() {
 }
 
 func NewConnector(queue *cellnet.EvQueue) cellnet.Peer {
-	return &ltvConnector{
+	return &socketConnector{
 		sessionMgr:  newSessionManager(),
 		peerProfile: &peerProfile{queue: queue},
 		closeSignal: make(chan bool),

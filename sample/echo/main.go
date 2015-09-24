@@ -23,7 +23,7 @@ func server() {
 		log.Println("server recv:", msg.String())
 
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String("world"),
+			Content: proto.String(msg.String()),
 		})
 
 	})

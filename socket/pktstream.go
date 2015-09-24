@@ -15,9 +15,17 @@ const (
 	MaxPacketSize     = 1024 * 8
 )
 
+// 封包流
+type PacketStream interface {
+	Read() (*cellnet.Packet, error)
+	Write(pkt *cellnet.Packet) error
+	Close() error
+	Raw() net.Conn
+}
+
 type ltvStream struct {
-	recvtag      uint16
-	sendtag      uint16
+	recvser      uint16
+	sendser      uint16
 	conn         net.Conn
 	sendtagGuard sync.RWMutex
 }
@@ -40,17 +48,16 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 
 	p = &cellnet.Packet{}
 
-	// TODO 调整为一次性读取结构体
-
-	// 读取包头
 	headbuf := bytes.NewReader(headdata)
+
+	// 读取ID
 	if err = binary.Read(headbuf, binary.LittleEndian, &p.MsgID); err != nil {
 		return nil, err
 	}
 
-	// 读取tag
-	var tag uint16
-	if err = binary.Read(headbuf, binary.LittleEndian, &tag); err != nil {
+	// 读取序号
+	var ser uint16
+	if err = binary.Read(headbuf, binary.LittleEndian, &ser); err != nil {
 		return nil, err
 	}
 
@@ -65,8 +72,8 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 		return nil, packageTooBig
 	}
 
-	// tag不匹配
-	if self.recvtag != tag {
+	// 序列号不匹配
+	if self.recvser != ser {
 		return nil, packageTagNotMatch
 	}
 
@@ -82,7 +89,7 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 	}
 
 	// 增加序列号值
-	self.recvtag++
+	self.recvser++
 
 	return
 }
@@ -96,24 +103,24 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 	self.sendtagGuard.Lock()
 	defer self.sendtagGuard.Unlock()
 
-	// 发消息ID
+	// 写ID
 	if err = binary.Write(outbuff, binary.LittleEndian, pkt.MsgID); err != nil {
 		return
 	}
 
-	// 发序列号
-	if err = binary.Write(outbuff, binary.LittleEndian, self.sendtag); err != nil {
+	// 写序号
+	if err = binary.Write(outbuff, binary.LittleEndian, self.sendser); err != nil {
 		return
 	}
 
-	// 发包大小
+	// 写包大小
 	if err = binary.Write(outbuff, binary.LittleEndian, uint16(len(pkt.Data)+PackageHeaderSize)); err != nil {
 		return
 	}
 
 	// 发包头
 	if _, err = self.conn.Write(outbuff.Bytes()); err != nil {
-		return
+		return err
 	}
 
 	// 发包内容
@@ -121,9 +128,8 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 		return err
 	}
 
-	// 增加序列号值
-
-	self.sendtag++
+	// 增加序号值
+	self.sendser++
 
 	return
 }
@@ -136,10 +142,10 @@ func (self *ltvStream) Raw() net.Conn {
 	return self.conn
 }
 
-func NewPacketStream(conn net.Conn) cellnet.PacketStream {
+func NewPacketStream(conn net.Conn) PacketStream {
 	return &ltvStream{
 		conn:    conn,
-		recvtag: 1,
-		sendtag: 1,
+		recvser: 1,
+		sendser: 1,
 	}
 }

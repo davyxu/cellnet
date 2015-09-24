@@ -11,6 +11,7 @@ var (
 	Event_Accepted  = uint32(cellnet.Type2ID(&coredef.AcceptedACK{}))
 )
 
+// 内部事件
 type DataEvent struct {
 	*cellnet.Packet
 	Ses cellnet.Session
@@ -23,6 +24,7 @@ func NewDataEvent(msgid uint32, s cellnet.Session, data []byte) *DataEvent {
 	}
 }
 
+// Peer间的共享数据
 type peerProfile struct {
 	queue *cellnet.EvQueue
 	name  string

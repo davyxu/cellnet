@@ -1,4 +1,4 @@
 /sample/*/*.exe
 /tools/name2id/*.exe
 /tools/ServiceLauncher/*.cfg
-/test/closesend/*.exe
+/test/sendclose/*.exe

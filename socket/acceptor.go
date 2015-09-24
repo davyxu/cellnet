@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-type ltvAcceptor struct {
+type socketAcceptor struct {
 	*peerProfile
 	*sessionMgr
 
@@ -15,7 +15,7 @@ type ltvAcceptor struct {
 	running bool
 }
 
-func (self *ltvAcceptor) Start(address string) cellnet.Peer {
+func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 	ln, err := net.Listen("tcp", address)
 
@@ -42,12 +42,15 @@ func (self *ltvAcceptor) Start(address string) cellnet.Peer {
 
 			ses := newSession(NewPacketStream(conn), self.queue, self)
 
+			// 添加到管理器
 			self.sessionMgr.Add(ses)
 
+			// 断开后从管理器移除
 			ses.OnClose = func() {
 				self.sessionMgr.Remove(ses)
 			}
 
+			// 通知逻辑
 			self.queue.Post(NewDataEvent(Event_Accepted, ses, nil))
 
 		}
@@ -57,14 +60,14 @@ func (self *ltvAcceptor) Start(address string) cellnet.Peer {
 	return self
 }
 
-func (self *ltvAcceptor) Stop() {
+func (self *socketAcceptor) Stop() {
 	self.running = false
 
 	self.listener.Close()
 }
 
 func NewAcceptor(queue *cellnet.EvQueue) cellnet.Peer {
-	return &ltvAcceptor{
+	return &socketAcceptor{
 		sessionMgr:  newSessionManager(),
 		peerProfile: &peerProfile{queue: queue},
 	}

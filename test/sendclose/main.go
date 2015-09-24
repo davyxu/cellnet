@@ -64,29 +64,33 @@ func runClient() {
 func runServer() {
 	evq := cellnet.NewEvQueue()
 
-	acc := socket.NewAcceptor(evq).Start("127.0.0.1:7235").(cellnet.SessionManager)
+	p := socket.NewAcceptor(evq).Start("127.0.0.1:7235")
+
+	// 计数器, 应该按照connCount倍数递增
+	var counter int
 
 	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
-		if acc.Get(ses.ID()) != ses {
+		if p.Get(ses.ID()) != ses {
 			panic("1: session not exist in SessionManager")
 		}
 
-		log.Println("server recv:", msg.String())
+		counter++
+		log.Printf("No. %d: server recv: %v", counter, msg.String())
 
 		// 发包后关闭
 		ses.Send(&coredef.TestEchoACK{
 			Content: proto.String(msg.GetContent()),
 		})
 
-		if acc.Get(ses.ID()) != ses {
+		if p.Get(ses.ID()) != ses {
 			panic("2: session not exist in SessionManager")
 		}
 
 		ses.Close()
 
-		if acc.Get(ses.ID()) != ses {
+		if p.Get(ses.ID()) != ses {
 			panic("3: session not exist in SessionManager")
 		}
 
