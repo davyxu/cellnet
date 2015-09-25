@@ -17,13 +17,13 @@ func getModuleName() string {
 	return path.Dir(util.StripFileName(file, 3))
 }
 
-var moduleRegMap map[string]func() = make(map[string]func())
+var moduleRegMap = make(map[string]func(Peer))
 
-func RegisterModuleEntry(entry func()) {
+func RegisterModule(entry func(Peer)) {
 
 	name := getModuleName()
 
-	if GetModuleEntry(name) != nil {
+	if GetModule(name) != nil {
 		log.Println("duplicate module entry:", name)
 		return
 	}
@@ -31,19 +31,10 @@ func RegisterModuleEntry(entry func()) {
 	moduleRegMap[name] = entry
 }
 
-func GetModuleEntry(name string) func() {
+func GetModule(name string) func(Peer) {
 	if v, ok := moduleRegMap[name]; ok {
 		return v
 	}
 
 	return nil
-}
-
-func StartModule() {
-
-	for name, entry := range moduleRegMap {
-		log.Printf("start module: %v", name)
-
-		entry()
-	}
 }

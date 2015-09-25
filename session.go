@@ -9,7 +9,7 @@ type Session interface {
 	Close()
 
 	// 标示ID
-	ID() uint32
+	ID() int64
 
 	// 归属端
 	FromPeer() Peer

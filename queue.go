@@ -10,6 +10,8 @@ type EvQueue struct {
 	contextMap map[int][]func(interface{})
 
 	queue chan interface{}
+
+	inject func(interface{}) bool
 }
 
 // 注册事件回调
@@ -28,6 +30,12 @@ func (self *EvQueue) RegisterCallback(id int, f func(interface{})) {
 	em = append(em, f)
 
 	self.contextMap[id] = em
+}
+
+// 注入回调, 返回false时表示不再投递
+func (self *EvQueue) Inject(f func(interface{}) bool) {
+
+	self.inject = f
 }
 
 func (self *EvQueue) Exists(id int) bool {
@@ -60,6 +68,12 @@ type contentIndexer interface {
 // 通过数据接口调用
 func (self *EvQueue) call(data interface{}) {
 
+	// 先处理注入
+	if self.inject != nil && !self.inject(data) {
+		return
+	}
+
+	// 再投递消息
 	if ci, ok := data.(contentIndexer); ok {
 
 		if carr, ok := self.contextMap[ci.ContextID()]; ok {
@@ -73,22 +87,13 @@ func (self *EvQueue) call(data interface{}) {
 
 }
 
-func NewEvQueue() *EvQueue {
+const queueLength = 10
+
+func newEvQueue() *EvQueue {
 	self := &EvQueue{
 		contextMap: make(map[int][]func(interface{})),
-		queue:      make(chan interface{}),
+		queue:      make(chan interface{}, queueLength),
 	}
-
-	go func() {
-
-		for {
-
-			ev := <-self.queue
-
-			self.call(ev)
-		}
-
-	}()
 
 	return self
 

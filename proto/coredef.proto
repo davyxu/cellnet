@@ -1,63 +1,65 @@
 package coredef;
 
-
 // ==========================================================
-// 内部结构
-// ==========================================================
-
-message Region 
-{
-	optional int32 ID = 1;
-	optional string Address = 2;
-}
-
-
-
-// 请求连接
-message RegionLinkREQ
-{
-	optional Region Profile = 1;			// 自己的档案
-}
-
-// 确认连接, 并且返回所有可用的地址列表
-message RegionLinkACK
-{	
-	optional Region Status = 1;				// 目标的当前状态
-	repeated Region AddressList = 2;		// 目标其他连接的地址
-}
-
-
-message ExpressACK
-{
-	optional bytes Msg = 1;
-	optional uint32 MsgID = 2;
-	optional int64 TargetID = 3;		// 真实送到的CellID
-	
-	optional int64 CallID = 4;			// 存在时, 需要回应
-}
-
-
-
-// ==========================================================
-// dispatcher消息
+// 系统消息
 // ==========================================================
 
 // 一个连接接入
-message AcceptedACK
+message SessionAccepted
 {
 	
 }
 
 // 已连接
-message ConnectedACK
+message SessionConnected
 {
 	
 }
 
 // 连接断开
-message ClosedACK
+message SessionClosed
 {
 	
+}
+
+// 端初始化
+message PeerInit
+{
+	
+}
+
+
+// 端启动
+message PeerStart
+{
+	
+}
+
+// 端停止
+message PeerStop
+{
+	
+}
+
+// ==========================================================
+// 网关
+// ==========================================================
+
+// 关闭客户端
+message CloseClientACK
+{
+	optional int64 ClientID = 1;
+}
+
+// 广播
+message BroardcastACK
+{
+	optional uint32 MsgID = 1;
+	
+	optional bytes Data = 2;
+	
+	
+	repeated int64 ClientID = 3;	// 要广播的玩家列表
 }
 
 

@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	PackageHeaderSize = 8
+	PackageHeaderSize = 8 // MsgID(uint32) + Ser(uint16) + Size(uint16)
+	RelayHeaderSize   = 8 // ClientID(int64)
 	MaxPacketSize     = 1024 * 8
 )
 
@@ -28,6 +29,7 @@ type ltvStream struct {
 	sendser      uint16
 	conn         net.Conn
 	sendtagGuard sync.RWMutex
+	relay        bool
 }
 
 var (
@@ -40,7 +42,13 @@ var (
 // Read a packet from a datastream interface , return packet struct
 func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 
-	headdata := make([]byte, PackageHeaderSize)
+	sizeToRead := PackageHeaderSize
+
+	if self.relay {
+		sizeToRead += RelayHeaderSize
+	}
+
+	headdata := make([]byte, sizeToRead)
 
 	if _, err = io.ReadFull(self.conn, headdata); err != nil {
 		return nil, err
@@ -65,6 +73,14 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 	var fullsize uint16
 	if err = binary.Read(headbuf, binary.LittleEndian, &fullsize); err != nil {
 		return nil, err
+	}
+
+	// 路由模式, 接收客户端标识号
+	if self.relay {
+
+		if err = binary.Read(headbuf, binary.LittleEndian, &p.ClientID); err != nil {
+			return nil, err
+		}
 	}
 
 	// 封包太大
@@ -118,6 +134,15 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 		return
 	}
 
+	// 路由模式
+	if self.relay {
+
+		// 写客户端标识号
+		if err = binary.Write(outbuff, binary.LittleEndian, pkt.ClientID); err != nil {
+			return
+		}
+	}
+
 	// 发包头
 	if _, err = self.conn.Write(outbuff.Bytes()); err != nil {
 		return err
@@ -142,10 +167,11 @@ func (self *ltvStream) Raw() net.Conn {
 	return self.conn
 }
 
-func NewPacketStream(conn net.Conn) PacketStream {
+func NewPacketStream(conn net.Conn, relay bool) PacketStream {
 	return &ltvStream{
 		conn:    conn,
 		recvser: 1,
 		sendser: 1,
+		relay:   relay,
 	}
 }

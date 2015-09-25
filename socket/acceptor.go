@@ -40,7 +40,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				continue
 			}
 
-			ses := newSession(NewPacketStream(conn), self.queue, self)
+			ses := newSession(NewPacketStream(conn, self.relay), self.EvQueue, self)
 
 			// 添加到管理器
 			self.sessionMgr.Add(ses)
@@ -51,24 +51,38 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			}
 
 			// 通知逻辑
-			self.queue.Post(NewDataEvent(Event_Accepted, ses, nil))
+			self.Post(NewSessionEvent(Event_SessionAccepted, ses, nil))
 
 		}
 
 	}()
 
+	self.Post(NewPeerEvent(Event_PeerStart, self))
+
 	return self
 }
 
 func (self *socketAcceptor) Stop() {
+
+	if !self.running {
+		return
+	}
+
+	self.Post(NewPeerEvent(Event_PeerStop, self))
+
 	self.running = false
 
 	self.listener.Close()
 }
 
-func NewAcceptor(queue *cellnet.EvQueue) cellnet.Peer {
-	return &socketAcceptor{
+func NewAcceptor(pipe *cellnet.EvPipe) cellnet.Peer {
+
+	self := &socketAcceptor{
 		sessionMgr:  newSessionManager(),
-		peerProfile: &peerProfile{queue: queue},
+		peerProfile: newPeerProfile(pipe.AddQueue()),
 	}
+
+	self.Post(NewPeerEvent(Event_PeerInit, self))
+
+	return self
 }

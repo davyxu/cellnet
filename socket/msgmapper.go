@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"reflect"
 	"sync"
@@ -12,16 +13,16 @@ var (
 	mapperGuard sync.RWMutex
 )
 
-func AddMapper(msgIns interface{}) {
+func MapMessage(msgIns interface{}) {
 
 	msgName := reflect.TypeOf(msgIns).String()
 
 	msgID := cellnet.Name2ID(msgName)
 
-	addMapper(msgName, msgID)
+	MapNameID(msgName, msgID)
 }
 
-func addMapper(name string, id int) {
+func MapNameID(name string, id int) {
 
 	mapperGuard.Lock()
 
@@ -41,7 +42,7 @@ func GetNameByID(id int) string {
 		return v
 	}
 
-	return "(??)"
+	return fmt.Sprintf("(??)id=%d", id)
 }
 
 // 通过id取名字

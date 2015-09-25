@@ -20,39 +20,43 @@ const connCount = 10
 
 func runClient() {
 
-	evq := cellnet.NewEvQueue()
+	pipe := cellnet.NewEvPipe()
 
 	// 同步量
 	var endAcc sync.WaitGroup
-
-	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
-		msg := content.(*coredef.TestEchoACK)
-
-		log.Println("client recv:", msg.String())
-
-		// 正常收到
-		endAcc.Done()
-	})
-
-	socket.RegisterMessage(evq, coredef.ConnectedACK{}, func(ses cellnet.Session, content interface{}) {
-
-		id, _ := strconv.Atoi(ses.FromPeer().Name())
-
-		// 连接上发包
-		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String(fmt.Sprintf("data#%d", id)),
-		})
-
-	})
 
 	// 启动N个连接
 	for i := 0; i < connCount; i++ {
 
 		endAcc.Add(1)
 
-		socket.NewConnector(evq).Start("127.0.0.1:7235").SetName(fmt.Sprintf("%d", i))
+		p := socket.NewConnector(pipe).Start("127.0.0.1:7235")
+
+		p.SetName(fmt.Sprintf("%d", i))
+
+		socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+			msg := content.(*coredef.TestEchoACK)
+
+			log.Println("client recv:", msg.String())
+
+			// 正常收到
+			endAcc.Done()
+		})
+
+		socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
+
+			id, _ := strconv.Atoi(ses.FromPeer().Name())
+
+			// 连接上发包
+			ses.Send(&coredef.TestEchoACK{
+				Content: proto.String(fmt.Sprintf("data#%d", id)),
+			})
+
+		})
 
 	}
+
+	pipe.Start()
 
 	log.Println("waiting server msg...")
 
@@ -62,14 +66,14 @@ func runClient() {
 }
 
 func runServer() {
-	evq := cellnet.NewEvQueue()
+	pipe := cellnet.NewEvPipe()
 
-	p := socket.NewAcceptor(evq).Start("127.0.0.1:7235")
+	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7235")
 
 	// 计数器, 应该按照connCount倍数递增
 	var counter int
 
-	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		if p.Get(ses.ID()) != ses {
@@ -95,6 +99,8 @@ func runServer() {
 		}
 
 	})
+
+	pipe.Start()
 
 	done <- true
 

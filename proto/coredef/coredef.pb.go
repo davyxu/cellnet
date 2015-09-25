@@ -9,13 +9,14 @@ It is generated from these files:
 	coredef.proto
 
 It has these top-level messages:
-	Region
-	RegionLinkREQ
-	RegionLinkACK
-	ExpressACK
-	AcceptedACK
-	ConnectedACK
-	ClosedACK
+	SessionAccepted
+	SessionConnected
+	SessionClosed
+	PeerInit
+	PeerStart
+	PeerStop
+	CloseClientACK
+	BroardcastACK
 	TestEchoACK
 */
 package coredef
@@ -27,138 +28,109 @@ import math "math"
 var _ = proto.Marshal
 var _ = math.Inf
 
-type Region struct {
-	ID               *int32  `protobuf:"varint,1,opt" json:"ID,omitempty"`
-	Address          *string `protobuf:"bytes,2,opt" json:"Address,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
+// 一个连接接入
+type SessionAccepted struct {
+	XXX_unrecognized []byte `json:"-"`
 }
 
-func (m *Region) Reset()         { *m = Region{} }
-func (m *Region) String() string { return proto.CompactTextString(m) }
-func (*Region) ProtoMessage()    {}
+func (m *SessionAccepted) Reset()         { *m = SessionAccepted{} }
+func (m *SessionAccepted) String() string { return proto.CompactTextString(m) }
+func (*SessionAccepted) ProtoMessage()    {}
 
-func (m *Region) GetID() int32 {
-	if m != nil && m.ID != nil {
-		return *m.ID
+// 已连接
+type SessionConnected struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *SessionConnected) Reset()         { *m = SessionConnected{} }
+func (m *SessionConnected) String() string { return proto.CompactTextString(m) }
+func (*SessionConnected) ProtoMessage()    {}
+
+// 连接断开
+type SessionClosed struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *SessionClosed) Reset()         { *m = SessionClosed{} }
+func (m *SessionClosed) String() string { return proto.CompactTextString(m) }
+func (*SessionClosed) ProtoMessage()    {}
+
+// 端初始化
+type PeerInit struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *PeerInit) Reset()         { *m = PeerInit{} }
+func (m *PeerInit) String() string { return proto.CompactTextString(m) }
+func (*PeerInit) ProtoMessage()    {}
+
+// 端启动
+type PeerStart struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *PeerStart) Reset()         { *m = PeerStart{} }
+func (m *PeerStart) String() string { return proto.CompactTextString(m) }
+func (*PeerStart) ProtoMessage()    {}
+
+// 端停止
+type PeerStop struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *PeerStop) Reset()         { *m = PeerStop{} }
+func (m *PeerStop) String() string { return proto.CompactTextString(m) }
+func (*PeerStop) ProtoMessage()    {}
+
+// 关闭客户端
+type CloseClientACK struct {
+	ClientID         *int64 `protobuf:"varint,1,opt" json:"ClientID,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *CloseClientACK) Reset()         { *m = CloseClientACK{} }
+func (m *CloseClientACK) String() string { return proto.CompactTextString(m) }
+func (*CloseClientACK) ProtoMessage()    {}
+
+func (m *CloseClientACK) GetClientID() int64 {
+	if m != nil && m.ClientID != nil {
+		return *m.ClientID
 	}
 	return 0
 }
 
-func (m *Region) GetAddress() string {
-	if m != nil && m.Address != nil {
-		return *m.Address
-	}
-	return ""
-}
-
-// 请求连接
-type RegionLinkREQ struct {
-	Profile          *Region `protobuf:"bytes,1,opt" json:"Profile,omitempty"`
+// 广播
+type BroardcastACK struct {
+	MsgID            *uint32 `protobuf:"varint,1,opt" json:"MsgID,omitempty"`
+	Data             []byte  `protobuf:"bytes,2,opt" json:"Data,omitempty"`
+	ClientID         []int64 `protobuf:"varint,3,rep" json:"ClientID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *RegionLinkREQ) Reset()         { *m = RegionLinkREQ{} }
-func (m *RegionLinkREQ) String() string { return proto.CompactTextString(m) }
-func (*RegionLinkREQ) ProtoMessage()    {}
+func (m *BroardcastACK) Reset()         { *m = BroardcastACK{} }
+func (m *BroardcastACK) String() string { return proto.CompactTextString(m) }
+func (*BroardcastACK) ProtoMessage()    {}
 
-func (m *RegionLinkREQ) GetProfile() *Region {
-	if m != nil {
-		return m.Profile
-	}
-	return nil
-}
-
-// 确认连接, 并且返回所有可用的地址列表
-type RegionLinkACK struct {
-	Status           *Region   `protobuf:"bytes,1,opt" json:"Status,omitempty"`
-	AddressList      []*Region `protobuf:"bytes,2,rep" json:"AddressList,omitempty"`
-	XXX_unrecognized []byte    `json:"-"`
-}
-
-func (m *RegionLinkACK) Reset()         { *m = RegionLinkACK{} }
-func (m *RegionLinkACK) String() string { return proto.CompactTextString(m) }
-func (*RegionLinkACK) ProtoMessage()    {}
-
-func (m *RegionLinkACK) GetStatus() *Region {
-	if m != nil {
-		return m.Status
-	}
-	return nil
-}
-
-func (m *RegionLinkACK) GetAddressList() []*Region {
-	if m != nil {
-		return m.AddressList
-	}
-	return nil
-}
-
-type ExpressACK struct {
-	Msg              []byte  `protobuf:"bytes,1,opt" json:"Msg,omitempty"`
-	MsgID            *uint32 `protobuf:"varint,2,opt" json:"MsgID,omitempty"`
-	TargetID         *int64  `protobuf:"varint,3,opt" json:"TargetID,omitempty"`
-	CallID           *int64  `protobuf:"varint,4,opt" json:"CallID,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *ExpressACK) Reset()         { *m = ExpressACK{} }
-func (m *ExpressACK) String() string { return proto.CompactTextString(m) }
-func (*ExpressACK) ProtoMessage()    {}
-
-func (m *ExpressACK) GetMsg() []byte {
-	if m != nil {
-		return m.Msg
-	}
-	return nil
-}
-
-func (m *ExpressACK) GetMsgID() uint32 {
+func (m *BroardcastACK) GetMsgID() uint32 {
 	if m != nil && m.MsgID != nil {
 		return *m.MsgID
 	}
 	return 0
 }
 
-func (m *ExpressACK) GetTargetID() int64 {
-	if m != nil && m.TargetID != nil {
-		return *m.TargetID
+func (m *BroardcastACK) GetData() []byte {
+	if m != nil {
+		return m.Data
 	}
-	return 0
+	return nil
 }
 
-func (m *ExpressACK) GetCallID() int64 {
-	if m != nil && m.CallID != nil {
-		return *m.CallID
+func (m *BroardcastACK) GetClientID() []int64 {
+	if m != nil {
+		return m.ClientID
 	}
-	return 0
+	return nil
 }
-
-// 一个连接接入
-type AcceptedACK struct {
-	XXX_unrecognized []byte `json:"-"`
-}
-
-func (m *AcceptedACK) Reset()         { *m = AcceptedACK{} }
-func (m *AcceptedACK) String() string { return proto.CompactTextString(m) }
-func (*AcceptedACK) ProtoMessage()    {}
-
-// 已连接
-type ConnectedACK struct {
-	XXX_unrecognized []byte `json:"-"`
-}
-
-func (m *ConnectedACK) Reset()         { *m = ConnectedACK{} }
-func (m *ConnectedACK) String() string { return proto.CompactTextString(m) }
-func (*ConnectedACK) ProtoMessage()    {}
-
-// 连接断开
-type ClosedACK struct {
-	XXX_unrecognized []byte `json:"-"`
-}
-
-func (m *ClosedACK) Reset()         { *m = ClosedACK{} }
-func (m *ClosedACK) String() string { return proto.CompactTextString(m) }
-func (*ClosedACK) ProtoMessage()    {}
 
 // ==========================================================
 // 测试用消息

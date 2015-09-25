@@ -8,9 +8,9 @@ import (
 )
 
 type sessionMgr struct {
-	sesMap map[uint32]cellnet.Session
+	sesMap map[int64]cellnet.Session
 
-	sesIDAcc    uint32
+	sesIDAcc    int64
 	sesMapGuard sync.RWMutex
 }
 
@@ -23,12 +23,12 @@ func (self *sessionMgr) Add(ses cellnet.Session) {
 
 	var tryCount int = totalTryCount
 
-	var id uint32
+	var id int64
 
 	// id翻越处理
 	for tryCount > 0 {
 
-		id = atomic.AddUint32(&self.sesIDAcc, 1)
+		id = atomic.AddInt64(&self.sesIDAcc, 1)
 
 		if _, ok := self.sesMap[id]; !ok {
 			break
@@ -46,7 +46,6 @@ func (self *sessionMgr) Add(ses cellnet.Session) {
 	ltvses.id = id
 
 	self.sesMap[id] = ses
-	self.sesMapGuard.Unlock()
 
 }
 
@@ -56,19 +55,10 @@ func (self *sessionMgr) Remove(ses cellnet.Session) {
 	self.sesMapGuard.Unlock()
 }
 
-// 广播到所有连接
-func (self *sessionMgr) Broardcast(data interface{}) {
-	self.sesMapGuard.RLock()
-	defer self.sesMapGuard.RUnlock()
-
-	for _, ses := range self.sesMap {
-		ses.Send(data)
-	}
-
-}
+// 获
 
 // 获得一个连接
-func (self *sessionMgr) Get(id uint32) cellnet.Session {
+func (self *sessionMgr) Get(id int64) cellnet.Session {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 
@@ -101,6 +91,6 @@ func (self *sessionMgr) Count() int {
 
 func newSessionManager() *sessionMgr {
 	return &sessionMgr{
-		sesMap: make(map[uint32]cellnet.Session),
+		sesMap: make(map[int64]cellnet.Session),
 	}
 }

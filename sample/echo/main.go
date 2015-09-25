@@ -13,11 +13,11 @@ var done = make(chan bool)
 
 func server() {
 
-	evq := cellnet.NewEvQueue()
+	pipe := cellnet.NewEvPipe()
 
-	socket.NewAcceptor(evq).Start("127.0.0.1:7234")
+	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("server recv:", msg.String())
@@ -28,13 +28,17 @@ func server() {
 
 	})
 
+	pipe.Start()
+
 }
 
 func client() {
 
-	evq := cellnet.NewEvQueue()
+	pipe := cellnet.NewEvPipe()
 
-	socket.RegisterMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
+
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())
@@ -42,7 +46,7 @@ func client() {
 		done <- true
 	})
 
-	socket.RegisterMessage(evq, coredef.ConnectedACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
 
 		ses.Send(&coredef.TestEchoACK{
 			Content: proto.String("hello"),
@@ -50,8 +54,7 @@ func client() {
 
 	})
 
-	socket.NewConnector(evq).Start("127.0.0.1:7234")
-
+	pipe.Start()
 }
 
 func main() {
