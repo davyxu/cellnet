@@ -1,24 +1,25 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
 	"log"
+	"os"
 	"runtime"
 	"strconv"
 	"sync"
 )
 
-var done = make(chan bool)
+var done = make(chan int)
 
 // 测试客户端连接数量
 const connCount = 10
 
-func runClient() {
+// 多连接收封包后被服务器关闭, 确保收到封包
+func multiConn() {
 
 	pipe := cellnet.NewEvPipe()
 
@@ -58,10 +59,61 @@ func runClient() {
 
 	pipe.Start()
 
-	log.Println("waiting server msg...")
-
 	// 等待完成
 	endAcc.Wait()
+
+	fmt.Println("multi connection close test done!")
+
+}
+
+// 客户端连接上后, 主动断开连接, 确保连接正常关闭
+func connClose() {
+
+	pipe := cellnet.NewEvPipe()
+
+	p := socket.NewConnector(pipe).Start("127.0.0.1:7235")
+
+	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
+
+		// 连接上发包,告诉服务器不要断开
+		ses.Send(&coredef.TestEchoACK{
+			Content: proto.String("noclose"),
+		})
+
+	})
+
+	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+		msg := content.(*coredef.TestEchoACK)
+
+		log.Println("client recv:", msg.String())
+		done <- 1
+
+		// 客户端主动断开
+		ses.Close()
+
+	})
+
+	socket.RegisterSessionMessage(p, coredef.SessionClosed{}, func(ses cellnet.Session, content interface{}) {
+
+		log.Println("close ok!")
+		// 正常断开
+		done <- 2
+
+	})
+
+	pipe.Start()
+
+	// 收到回包
+	if <-done != 1 {
+		log.Panicln("test failed, not recv msg")
+	}
+
+	// 断开正常
+	if <-done != 2 {
+		log.Panicln("test failed, not close")
+	}
+
+	fmt.Println("connected close test done!")
 
 }
 
@@ -76,10 +128,6 @@ func runServer() {
 	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
-		if p.Get(ses.ID()) != ses {
-			panic("1: session not exist in SessionManager")
-		}
-
 		counter++
 		log.Printf("No. %d: server recv: %v", counter, msg.String())
 
@@ -88,36 +136,29 @@ func runServer() {
 			Content: proto.String(msg.GetContent()),
 		})
 
-		if p.Get(ses.ID()) != ses {
-			panic("2: session not exist in SessionManager")
-		}
-
-		ses.Close()
-
-		if p.Get(ses.ID()) != ses {
-			panic("3: session not exist in SessionManager")
+		if msg.GetContent() != "noclose" {
+			ses.Close()
 		}
 
 	})
 
 	pipe.Start()
 
-	done <- true
+	done <- 0
 
 }
 
+// 运行服务器: sendclose s
+// 运行客户端: sendclose
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	mode := flag.String("mode", "", "specify the mode of this test")
-
-	flag.Parse()
-
-	if mode != nil && *mode == "client" {
-		runClient()
-	} else {
+	if len(os.Args) > 1 && os.Args[1] == "s" {
 		runServer()
+	} else {
+		multiConn()
+		connClose()
 	}
 
 }

@@ -6,8 +6,8 @@ import (
 
 // Peer间的共享数据
 type peerProfile struct {
-	*cellnet.EvQueue
-	name string
+	*cellnet.EvQueue // 实现事件注册和注入
+	name             string
 
 	relay bool
 }

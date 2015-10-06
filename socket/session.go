@@ -2,10 +2,7 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"log"
-	"net"
 	"sync"
-	"time"
 )
 
 type closeWritePacket struct {
@@ -25,13 +22,15 @@ type ltvSession struct {
 	writeChan chan interface{}
 	stream    PacketStream
 
-	OnClose func()
+	OnClose func() // 关闭函数回调
 
 	id int64
 
 	p cellnet.Peer
 
 	endSync sync.WaitGroup
+
+	needNotifyWrite bool // 是否需要通知写线程关闭
 }
 
 func (self *ltvSession) ID() int64 {
@@ -44,12 +43,7 @@ func (self *ltvSession) FromPeer() cellnet.Peer {
 
 func (self *ltvSession) Close() {
 
-	log.Println("manual close")
-
-	tcpConn := self.stream.Raw().(*net.TCPConn)
-
-	// 关闭socket, 触发读错误
-	tcpConn.CloseRead()
+	self.writeChan <- closeWritePacket{}
 }
 
 func (self *ltvSession) Send(data interface{}) {
@@ -96,6 +90,12 @@ func (self *ltvSession) sendThread() {
 
 exitsendloop:
 
+	// 不需要读线程再次通知写线程
+	self.needNotifyWrite = false
+
+	// 关闭socket,触发读错误, 结束读循环
+	self.stream.Close()
+
 	// 通知发送线程ok
 	self.endSync.Done()
 }
@@ -125,8 +125,11 @@ func (self *ltvSession) recvThread(evq *cellnet.EvQueue) {
 
 	}
 
-	// 通知发送线程停止
-	self.writeChan <- closeWritePacket{}
+	if self.needNotifyWrite {
+
+		// 通知发送线程停止
+		self.writeChan <- closeWritePacket{}
+	}
 
 	// 通知接收线程ok
 	self.endSync.Done()
@@ -146,18 +149,15 @@ func (self *ltvSession) exitThread() {
 		self.OnClose()
 	}
 
-	// 延时断开
-	time.AfterFunc(time.Second, func() {
-		self.stream.Close()
-	})
 }
 
 func newSession(stream PacketStream, evq *cellnet.EvQueue, p cellnet.Peer) *ltvSession {
 
 	self := &ltvSession{
-		writeChan: make(chan interface{}),
-		stream:    stream,
-		p:         p,
+		writeChan:       make(chan interface{}),
+		stream:          stream,
+		p:               p,
+		needNotifyWrite: true,
 	}
 
 	// 接收线程
