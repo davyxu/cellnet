@@ -58,7 +58,7 @@ func (self *sessionMgr) Remove(ses cellnet.Session) {
 // 获
 
 // 获得一个连接
-func (self *sessionMgr) Get(id int64) cellnet.Session {
+func (self *sessionMgr) GetSession(id int64) cellnet.Session {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 
@@ -70,7 +70,7 @@ func (self *sessionMgr) Get(id int64) cellnet.Session {
 	return nil
 }
 
-func (self *sessionMgr) Iterate(callback func(cellnet.Session) bool) {
+func (self *sessionMgr) IterateSession(callback func(cellnet.Session) bool) {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 
@@ -82,7 +82,7 @@ func (self *sessionMgr) Iterate(callback func(cellnet.Session) bool) {
 
 }
 
-func (self *sessionMgr) Count() int {
+func (self *sessionMgr) SessionCount() int {
 	self.sesMapGuard.Lock()
 	defer self.sesMapGuard.Unlock()
 

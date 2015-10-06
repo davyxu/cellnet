@@ -8,16 +8,6 @@ import (
 type closeWritePacket struct {
 }
 
-type RawSession interface {
-	// 路由发包
-	RelaySend(data interface{}, clientid int64)
-
-	// 直接发送封包
-	RawSend(*cellnet.Packet)
-
-	cellnet.Session
-}
-
 type ltvSession struct {
 	writeChan chan interface{}
 	stream    PacketStream
@@ -49,16 +39,6 @@ func (self *ltvSession) Close() {
 func (self *ltvSession) Send(data interface{}) {
 
 	self.RawSend(cellnet.BuildPacket(data))
-}
-
-func (self *ltvSession) RelaySend(data interface{}, clientid int64) {
-
-	// TODO 如果性能不理想, 丢到线程中利用线程发送
-	pkt := cellnet.BuildPacket(data)
-	pkt.ClientID = clientid
-
-	self.RawSend(pkt)
-
 }
 
 func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
@@ -101,7 +81,7 @@ exitsendloop:
 }
 
 // 接收线程
-func (self *ltvSession) recvThread(evq *cellnet.EvQueue) {
+func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	var err error
 	var pkt *cellnet.Packet
 
@@ -113,12 +93,12 @@ func (self *ltvSession) recvThread(evq *cellnet.EvQueue) {
 		if err != nil {
 
 			// 断开事件
-			evq.Post(NewSessionEvent(Event_SessionClosed, self, nil))
+			eq.PostData(NewSessionEvent(Event_SessionClosed, self, nil))
 			break
 		}
 
 		// 逻辑封包
-		evq.Post(&SessionEvent{
+		eq.PostData(&SessionEvent{
 			Packet: pkt,
 			Ses:    self,
 		})
@@ -151,7 +131,7 @@ func (self *ltvSession) exitThread() {
 
 }
 
-func newSession(stream PacketStream, evq *cellnet.EvQueue, p cellnet.Peer) *ltvSession {
+func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
 
 	self := &ltvSession{
 		writeChan:       make(chan interface{}),
@@ -161,7 +141,7 @@ func newSession(stream PacketStream, evq *cellnet.EvQueue, p cellnet.Peer) *ltvS
 	}
 
 	// 接收线程
-	go self.recvThread(evq)
+	go self.recvThread(eq)
 
 	// 发送线程
 	go self.sendThread()

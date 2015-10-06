@@ -1,25 +1,24 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/gate"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
 	"log"
-
+	"os"
 	"runtime"
 )
 
 var done = make(chan bool)
 
+// 后台服务器
 func backendServer() {
 
 	gate.DebugMode = true
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	gate.StartGateConnector(pipe, []string{"127.0.0.1:7201"})
 
@@ -51,7 +50,7 @@ func gateServer() {
 
 	gate.DebugMode = true
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	gate.StartBackendAcceptor(pipe, "127.0.0.1:7201")
 	gate.StartClientAcceptor(pipe, "127.0.0.1:7101")
@@ -67,9 +66,10 @@ func gateServer() {
 	<-done
 }
 
+// 客户端
 func client() {
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7101")
 
@@ -97,18 +97,21 @@ func client() {
 	<-done
 }
 
+// 启动顺序:
+// 网关服务器: gate gate
+// 后台服务器: gate backend
+// 客户端: gate client
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	mode := flag.String("mode", "gate", "specify the mode of this test")
+	if len(os.Args) <= 1 {
+		return
+	}
 
-	flag.Parse()
-
-	switch *mode {
+	switch os.Args[1] {
 	case "gate":
 		gateServer()
-
 	case "client":
 		client()
 	case "backend":

@@ -14,7 +14,7 @@ var (
 	Event_PeerStop         = uint32(cellnet.Type2ID(&coredef.PeerStop{}))
 )
 
-// 内部事件
+// 会话事件
 type SessionEvent struct {
 	*cellnet.Packet
 	Ses cellnet.Session
@@ -27,6 +27,7 @@ func NewSessionEvent(msgid uint32, s cellnet.Session, data []byte) *SessionEvent
 	}
 }
 
+// 端事件
 type PeerEvent struct {
 	MsgID uint32
 	P     cellnet.Peer

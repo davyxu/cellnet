@@ -13,38 +13,38 @@ import (
 
 var gateConnArray []cellnet.Peer
 
-func StartGateConnector(pipe *cellnet.EvPipe, addressList []string) {
+type relayEvent struct {
+	*socket.SessionEvent
+
+	ClientID int64
+}
+
+func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 
 	gateConnArray = make([]cellnet.Peer, len(addressList))
 
 	for index, addr := range addressList {
 
 		conn := socket.NewConnector(pipe).Start(addr)
-		conn.SetRelayMode(true)
 		gateConnArray[index] = conn
 
 		gateIndex := new(int)
 		*gateIndex = index
 
-		if DebugMode {
-			conn.Inject(func(data interface{}) bool {
+		// 广播
+		socket.RegisterSessionMessage(conn, coredef.UpstreamACK{}, func(ses cellnet.Session, content interface{}) {
+			msg := content.(*coredef.UpstreamACK)
 
-				if ev, ok := data.(*socket.SessionEvent); ok {
+			// 生成派发的消息
 
-					// Socket各种事件过滤掉
-					switch ev.MsgID {
-					case socket.Event_SessionConnected:
-						return true
-					}
-
-					if ev, ok := data.(*socket.SessionEvent); ok {
-						log.Printf("gate->backend, gateindex: %d msgid: %d clientid: %d data: %v", *gateIndex, ev.MsgID, ev.ClientID, ev.Data)
-					}
-				}
-
-				return true
+			// TODO 用PostData防止多重嵌套?
+			// 调用已注册的回调
+			conn.CallData(&relayEvent{
+				SessionEvent: socket.NewSessionEvent(msg.GetMsgID(), ses, msg.Data),
+				ClientID:     msg.GetClientID(),
 			})
-		}
+
+		})
 
 	}
 
@@ -66,7 +66,7 @@ func RegisterSessionMessage(msgIns interface{}, userHandler func(cellnet.Session
 
 		conn.RegisterCallback(msgID, func(data interface{}) {
 
-			if ev, ok := data.(*socket.SessionEvent); ok {
+			if ev, ok := data.(*relayEvent); ok {
 
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgType)
 
@@ -91,7 +91,13 @@ func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
 		return
 	}
 
-	gateSes.(socket.RawSession).RelaySend(data, clientid)
+	userpkt := cellnet.BuildPacket(data)
+
+	gateSes.Send(&coredef.DownstreamACK{
+		Data:     userpkt.Data,
+		MsgID:    proto.Uint32(userpkt.MsgID),
+		ClientID: []int64{clientid},
+	})
 }
 
 // 通知网关关闭客户端连接
@@ -131,7 +137,7 @@ func BroadcastToClient(data interface{}) {
 
 	pkt := cellnet.BuildPacket(data)
 
-	ack := &coredef.BroardcastACK{
+	ack := &coredef.DownstreamACK{
 		Data:  pkt.Data,
 		MsgID: proto.Uint32(pkt.MsgID),
 	}
@@ -175,7 +181,7 @@ func BroadcastToClientList(data interface{}, list ClientList) {
 
 	for ses, clientlist := range list {
 
-		ack := &coredef.BroardcastACK{
+		ack := &coredef.DownstreamACK{
 			Data:  pkt.Data,
 			MsgID: proto.Uint32(pkt.MsgID),
 		}

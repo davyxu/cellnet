@@ -5,7 +5,20 @@
 */
 package cellnet
 
-type EvQueue struct {
+type EventQueue interface {
+
+	// 注册事件回调
+	RegisterCallback(id int, f func(interface{}))
+
+	// 截获所有的事件
+	InjectData(func(interface{}) bool)
+
+	PostData(data interface{})
+
+	CallData(data interface{})
+}
+
+type evQueue struct {
 	// 保证注册发生在初始化, 读取发生在之后可以不用锁
 	contextMap map[int][]func(interface{})
 
@@ -15,7 +28,7 @@ type EvQueue struct {
 }
 
 // 注册事件回调
-func (self *EvQueue) RegisterCallback(id int, f func(interface{})) {
+func (self *evQueue) RegisterCallback(id int, f func(interface{})) {
 
 	// 事件
 	em, ok := self.contextMap[id]
@@ -33,27 +46,27 @@ func (self *EvQueue) RegisterCallback(id int, f func(interface{})) {
 }
 
 // 注入回调, 返回false时表示不再投递
-func (self *EvQueue) Inject(f func(interface{}) bool) {
+func (self *evQueue) InjectData(f func(interface{}) bool) {
 
 	self.inject = f
 }
 
-func (self *EvQueue) Exists(id int) bool {
+func (self *evQueue) Exists(id int) bool {
 	_, ok := self.contextMap[id]
 
 	return ok
 }
 
 // 派发到队列
-func (self *EvQueue) Post(data interface{}) {
+func (self *evQueue) PostData(data interface{}) {
 	self.queue <- data
 }
 
-func (self *EvQueue) Count() int {
+func (self *evQueue) Count() int {
 	return len(self.contextMap)
 }
 
-func (self *EvQueue) CountByID(id int) int {
+func (self *evQueue) CountByID(id int) int {
 	if v, ok := self.contextMap[id]; ok {
 		return len(v)
 	}
@@ -66,7 +79,7 @@ type contentIndexer interface {
 }
 
 // 通过数据接口调用
-func (self *EvQueue) call(data interface{}) {
+func (self *evQueue) CallData(data interface{}) {
 
 	// 先处理注入
 	if self.inject != nil && !self.inject(data) {
@@ -89,8 +102,8 @@ func (self *EvQueue) call(data interface{}) {
 
 const queueLength = 10
 
-func newEvQueue() *EvQueue {
-	self := &EvQueue{
+func NewEventQueue() EventQueue {
+	self := &evQueue{
 		contextMap: make(map[int][]func(interface{})),
 		queue:      make(chan interface{}, queueLength),
 	}

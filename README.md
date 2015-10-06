@@ -1,86 +1,107 @@
 # CellNet
-Go语言的游戏服务器框架
-
-# Feature
-
-异步单线程多进程架构
+简单,方便,高效的Go语言的游戏服务器框架
 
 
+# 特性
+****
+## 异步单线程多进程架构
+  
+* 无需处理繁琐的多线程安全问题, 逻辑不会"卡住"
 
-# Roadmap
+* 底层IO仍然使用goroutine进行处理, 保证IO吞吐率
 
-服务器框架例子
+* 性能敏感的业务拆离为单独进程进行处理
 
-服务器可视化部署工具
+## 网关
+* 基本的网关透传框架
+* 广播,列表广播
 
-# Dependencies
-github.com/golang/protobuf/proto
 
-github.com/BurntSushi/toml
+## RPC
+* 异步远程过程调用
 
-# Example
-=================================
-## Hello world
+## 模块化
+* 鼓励使用统一的模块化命名及拆分方法进行隔离降偶
+
+
+# 第三方库依赖
+
+* github.com/golang/protobuf/proto
+
+* github.com/BurntSushi/toml
+
+
+# 例子
+****
+## Echo
 ```go
 
 
-cid := cellnet.Spawn(func(_ cellnet.CellID, cl interface{}) {
-
-	switch v := cl.(type) {
-	case string:
-		log.Println(v)
-	}
-
-})
-
-cellnet.Send(cid, "hello world ")
-
-
-```
-
-## Client & server with message dispatcher
-```go
 func server() {
 
-	disp := dispatcher.NewPacketDispatcher()
+	pipe := cellnet.NewEventPipe()
 
-	dispatcher.RegisterMessage(disp, coredef.TestEchoACK{}, func(ses cellnet.CellID, content interface{}) {
+	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
+
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("server recv:", msg.String())
 
-		cellnet.Send(ses, &coredef.TestEchoACK{
-			Content: proto.String("world"),
+		ses.Send(&coredef.TestEchoACK{
+			Content: proto.String(msg.String()),
 		})
+
 	})
 
-	ltvsocket.SpawnAcceptor("127.0.0.1:8001", dispatcher.PeerHandler(disp))
+	pipe.Start()
+
 }
 
 func client() {
 
-	disp := dispatcher.NewPacketDispatcher()
+	pipe := cellnet.NewEventPipe()
 
-	dispatcher.RegisterMessage(disp, coredef.TestEchoACK{}, func(ses cellnet.CellID, content interface{}) {
+	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
+
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())
 
 	})
 
-	dispatcher.RegisterMessage(disp, coredef.ConnectedACK{}, func(ses cellnet.CellID, content interface{}) {
-		cellnet.Send(ses, &coredef.TestEchoACK{
+	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
+
+		ses.Send(&coredef.TestEchoACK{
 			Content: proto.String("hello"),
 		})
+
 	})
 
-	ltvsocket.SpawnConnector("127.0.0.1:8001", dispatcher.PeerHandler(disp))
-
+	pipe.Start()
 }
 
 ```
 
+# 新品预告!
+
+## 消息日志
+
+* 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
+
+## 整合MongoDB
+* 提供KV数据库的基本抽象
+
+* DB内存映射框架
+
+* DB存储日志
+
+## 网关
+* 可定制的消息路由规则
+
 # Contact 
+****
 博客: http://www.cppblog.com/sunicdavy
 
 知乎: http://www.zhihu.com/people/xu-bo-62-87

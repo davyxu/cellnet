@@ -21,7 +21,7 @@ const connCount = 10
 // 多连接收封包后被服务器关闭, 确保收到封包
 func multiConn() {
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	// 同步量
 	var endAcc sync.WaitGroup
@@ -69,7 +69,7 @@ func multiConn() {
 // 客户端连接上后, 主动断开连接, 确保连接正常关闭
 func connClose() {
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	p := socket.NewConnector(pipe).Start("127.0.0.1:7235")
 
@@ -118,7 +118,7 @@ func connClose() {
 }
 
 func runServer() {
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7235")
 

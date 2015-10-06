@@ -4,26 +4,32 @@ import (
 	"reflect"
 )
 
-type EvPipe struct {
-	qarray []*EvQueue
+type EventPipe interface {
+	AddQueue() EventQueue
+
+	Start()
+}
+
+type evPipe struct {
+	qarray []*evQueue
 
 	arrayLock bool
 }
 
-func (self *EvPipe) AddQueue() *EvQueue {
+func (self *evPipe) AddQueue() EventQueue {
 
 	if self.arrayLock {
 		panic("Pipe already start, can not addqueue any more")
 	}
 
-	q := newEvQueue()
+	q := NewEventQueue().(*evQueue)
 
 	self.qarray = append(self.qarray, q)
 
 	return q
 }
 
-func (self *EvPipe) Start() {
+func (self *evPipe) Start() {
 
 	// 开始后, 不能修改数组
 	self.arrayLock = true
@@ -41,7 +47,7 @@ func (self *EvPipe) Start() {
 
 			if index, value, ok := reflect.Select(cases); ok {
 
-				self.qarray[index].call(value.Interface())
+				self.qarray[index].CallData(value.Interface())
 			}
 
 		}
@@ -50,8 +56,8 @@ func (self *EvPipe) Start() {
 
 }
 
-func NewEvPipe() *EvPipe {
-	return &EvPipe{
-		qarray: make([]*EvQueue, 0),
+func NewEventPipe() EventPipe {
+	return &evPipe{
+		qarray: make([]*evQueue, 0),
 	}
 }

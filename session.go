@@ -5,6 +5,9 @@ type Session interface {
 	// 发包
 	Send(interface{})
 
+	// 直接发送封包
+	RawSend(*Packet)
+
 	// 断开
 	Close()
 

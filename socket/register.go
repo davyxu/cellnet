@@ -7,7 +7,7 @@ import (
 )
 
 // 注册连接消息
-func RegisterSessionMessage(em cellnet.EventManager, msgIns interface{}, userHandler func(cellnet.Session, interface{})) uint32 {
+func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(cellnet.Session, interface{})) uint32 {
 
 	msgType := reflect.TypeOf(msgIns)
 
@@ -18,7 +18,7 @@ func RegisterSessionMessage(em cellnet.EventManager, msgIns interface{}, userHan
 	// 将消息注册到mapper中, 提供反射用
 	MapNameID(msgName, msgID)
 
-	em.RegisterCallback(msgID, func(data interface{}) {
+	eq.RegisterCallback(msgID, func(data interface{}) {
 
 		if ev, ok := data.(*SessionEvent); ok {
 
@@ -39,7 +39,7 @@ func RegisterSessionMessage(em cellnet.EventManager, msgIns interface{}, userHan
 }
 
 // 注册连接消息
-func RegisterPeerMessage(em cellnet.EventManager, msgIns interface{}, userHandler func(cellnet.Peer, interface{})) {
+func RegisterPeerMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(cellnet.Peer, interface{})) {
 
 	msgType := reflect.TypeOf(msgIns)
 
@@ -50,7 +50,7 @@ func RegisterPeerMessage(em cellnet.EventManager, msgIns interface{}, userHandle
 	// 将消息注册到mapper中, 提供反射用
 	MapNameID(msgName, msgID)
 
-	em.RegisterCallback(msgID, func(data interface{}) {
+	eq.RegisterCallback(msgID, func(data interface{}) {
 
 		if ev, ok := data.(*PeerEvent); ok {
 

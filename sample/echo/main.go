@@ -13,7 +13,7 @@ var done = make(chan bool)
 
 func server() {
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
 
@@ -34,7 +34,7 @@ func server() {
 
 func client() {
 
-	pipe := cellnet.NewEvPipe()
+	pipe := cellnet.NewEventPipe()
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
 

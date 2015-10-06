@@ -6,7 +6,7 @@ import (
 
 func TestQueue(t *testing.T) {
 
-	q := NewEvQueue()
+	q := NewEventQueue()
 
 	q.RegisterCallback(1, func(d interface{}) {
 

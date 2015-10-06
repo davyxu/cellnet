@@ -15,8 +15,9 @@ It has these top-level messages:
 	PeerInit
 	PeerStart
 	PeerStop
+	UpstreamACK
 	CloseClientACK
-	BroardcastACK
+	DownstreamACK
 	TestEchoACK
 */
 package coredef
@@ -82,7 +83,42 @@ func (m *PeerStop) Reset()         { *m = PeerStop{} }
 func (m *PeerStop) String() string { return proto.CompactTextString(m) }
 func (*PeerStop) ProtoMessage()    {}
 
+// 路由上行数据
+// gate -> backend
+type UpstreamACK struct {
+	MsgID            *uint32 `protobuf:"varint,1,opt" json:"MsgID,omitempty"`
+	Data             []byte  `protobuf:"bytes,2,opt" json:"Data,omitempty"`
+	ClientID         *int64  `protobuf:"varint,3,opt" json:"ClientID,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *UpstreamACK) Reset()         { *m = UpstreamACK{} }
+func (m *UpstreamACK) String() string { return proto.CompactTextString(m) }
+func (*UpstreamACK) ProtoMessage()    {}
+
+func (m *UpstreamACK) GetMsgID() uint32 {
+	if m != nil && m.MsgID != nil {
+		return *m.MsgID
+	}
+	return 0
+}
+
+func (m *UpstreamACK) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *UpstreamACK) GetClientID() int64 {
+	if m != nil && m.ClientID != nil {
+		return *m.ClientID
+	}
+	return 0
+}
+
 // 关闭客户端
+// backend -> gate
 type CloseClientACK struct {
 	ClientID         *int64 `protobuf:"varint,1,opt" json:"ClientID,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
@@ -99,33 +135,34 @@ func (m *CloseClientACK) GetClientID() int64 {
 	return 0
 }
 
-// 广播
-type BroardcastACK struct {
+// 路由下行数据
+// backend -> gate
+type DownstreamACK struct {
 	MsgID            *uint32 `protobuf:"varint,1,opt" json:"MsgID,omitempty"`
 	Data             []byte  `protobuf:"bytes,2,opt" json:"Data,omitempty"`
 	ClientID         []int64 `protobuf:"varint,3,rep" json:"ClientID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *BroardcastACK) Reset()         { *m = BroardcastACK{} }
-func (m *BroardcastACK) String() string { return proto.CompactTextString(m) }
-func (*BroardcastACK) ProtoMessage()    {}
+func (m *DownstreamACK) Reset()         { *m = DownstreamACK{} }
+func (m *DownstreamACK) String() string { return proto.CompactTextString(m) }
+func (*DownstreamACK) ProtoMessage()    {}
 
-func (m *BroardcastACK) GetMsgID() uint32 {
+func (m *DownstreamACK) GetMsgID() uint32 {
 	if m != nil && m.MsgID != nil {
 		return *m.MsgID
 	}
 	return 0
 }
 
-func (m *BroardcastACK) GetData() []byte {
+func (m *DownstreamACK) GetData() []byte {
 	if m != nil {
 		return m.Data
 	}
 	return nil
 }
 
-func (m *BroardcastACK) GetClientID() []int64 {
+func (m *DownstreamACK) GetClientID() []int64 {
 	if m != nil {
 		return m.ClientID
 	}
