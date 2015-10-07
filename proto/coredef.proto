@@ -42,7 +42,7 @@ message PeerStop
 }
 
 // ==========================================================
-// 网关
+// gate网关
 // ==========================================================
 
 
@@ -78,6 +78,30 @@ message DownstreamACK
 	repeated int64 ClientID = 3;	// 要广播的玩家列表
 }
 
+
+// ==========================================================
+// RPC
+// ==========================================================
+
+// 请求
+message RemoteCallREQ
+{	                 
+	optional uint32 MsgID = 1;		// 消息号
+	
+	optional bytes Data = 2;		// 用户封包
+	
+	optional int64 CallID = 3;
+}
+
+// 回应
+message RemoteCallACK
+{
+	optional uint32 MsgID = 1;		// 消息号
+	
+	optional bytes Data = 2;		// 用户封包
+	
+	optional int64 CallID = 3;
+}
 
 
 

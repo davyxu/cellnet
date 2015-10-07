@@ -44,10 +44,6 @@ func backendServer() {
 // 网关服务器
 func gateServer() {
 
-	//	fmt.Println(socket.Event_SessionAccepted, "socket.Event_SessionAccepted")
-	//	fmt.Println(socket.Event_SessionClosed, "socket.Event_SessionClosed")
-	//	fmt.Println(socket.Event_SessionConnected, "socket.Event_SessionConnected")
-
 	gate.DebugMode = true
 
 	pipe := cellnet.NewEventPipe()

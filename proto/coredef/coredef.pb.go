@@ -18,6 +18,8 @@ It has these top-level messages:
 	UpstreamACK
 	CloseClientACK
 	DownstreamACK
+	RemoteCallREQ
+	RemoteCallACK
 	TestEchoACK
 */
 package coredef
@@ -167,6 +169,72 @@ func (m *DownstreamACK) GetClientID() []int64 {
 		return m.ClientID
 	}
 	return nil
+}
+
+// 请求
+type RemoteCallREQ struct {
+	MsgID            *uint32 `protobuf:"varint,1,opt" json:"MsgID,omitempty"`
+	Data             []byte  `protobuf:"bytes,2,opt" json:"Data,omitempty"`
+	CallID           *int64  `protobuf:"varint,3,opt" json:"CallID,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *RemoteCallREQ) Reset()         { *m = RemoteCallREQ{} }
+func (m *RemoteCallREQ) String() string { return proto.CompactTextString(m) }
+func (*RemoteCallREQ) ProtoMessage()    {}
+
+func (m *RemoteCallREQ) GetMsgID() uint32 {
+	if m != nil && m.MsgID != nil {
+		return *m.MsgID
+	}
+	return 0
+}
+
+func (m *RemoteCallREQ) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *RemoteCallREQ) GetCallID() int64 {
+	if m != nil && m.CallID != nil {
+		return *m.CallID
+	}
+	return 0
+}
+
+// 回应
+type RemoteCallACK struct {
+	MsgID            *uint32 `protobuf:"varint,1,opt" json:"MsgID,omitempty"`
+	Data             []byte  `protobuf:"bytes,2,opt" json:"Data,omitempty"`
+	CallID           *int64  `protobuf:"varint,3,opt" json:"CallID,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *RemoteCallACK) Reset()         { *m = RemoteCallACK{} }
+func (m *RemoteCallACK) String() string { return proto.CompactTextString(m) }
+func (*RemoteCallACK) ProtoMessage()    {}
+
+func (m *RemoteCallACK) GetMsgID() uint32 {
+	if m != nil && m.MsgID != nil {
+		return *m.MsgID
+	}
+	return 0
+}
+
+func (m *RemoteCallACK) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *RemoteCallACK) GetCallID() int64 {
+	if m != nil && m.CallID != nil {
+		return *m.CallID
+	}
+	return 0
 }
 
 // ==========================================================
