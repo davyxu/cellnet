@@ -6,7 +6,7 @@
 ****
 ## 异步单线程多进程架构
   
-* 无需处理繁琐的多线程安全问题, 逻辑不会"卡住"
+* 无需处理繁琐的多线程安全问题
 * 底层IO仍然使用goroutine进行处理, 保证IO吞吐率
 * 性能敏感的业务拆离为单独进程进行处理
 
@@ -40,7 +40,7 @@ func server() {
 
 	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("server recv:", msg.String())
@@ -61,14 +61,14 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())
 
 	})
 
-	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&coredef.TestEchoACK{
 			Content: proto.String("hello"),
