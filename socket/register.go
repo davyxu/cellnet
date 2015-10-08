@@ -7,58 +7,52 @@ import (
 )
 
 // 注册连接消息
-func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(cellnet.Session, interface{})) uint32 {
+func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Session)) *cellnet.MessageMeta {
 
-	msgType := reflect.TypeOf(msgIns)
-
-	msgName := msgType.String()
-
-	msgID := cellnet.Name2ID(msgName)
+	msgMeta := cellnet.NewMessageMeta(msgIns)
 
 	// 将消息注册到mapper中, 提供反射用
-	MapNameID(msgName, msgID)
+	MapNameID(msgMeta.Name, msgMeta.ID)
 
-	eq.RegisterCallback(msgID, func(data interface{}) {
+	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 		if ev, ok := data.(*SessionEvent); ok {
 
-			rawMsg, err := cellnet.ParsePacket(ev.Packet, msgType)
+			rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 			if err != nil {
 				log.Printf("[cellnet] unmarshaling error:\n", err)
 				return
 			}
 
-			userHandler(ev.Ses, rawMsg)
+			userHandler(rawMsg, ev.Ses)
 
 		}
 
 	})
 
-	return uint32(msgID)
+	return msgMeta
 }
 
 // 注册连接消息
-func RegisterPeerMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(cellnet.Peer, interface{})) {
+func RegisterPeerMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
 
-	msgType := reflect.TypeOf(msgIns)
-
-	msgName := msgType.String()
-
-	msgID := cellnet.Name2ID(msgName)
+	msgMeta := cellnet.NewMessageMeta(msgIns)
 
 	// 将消息注册到mapper中, 提供反射用
-	MapNameID(msgName, msgID)
+	MapNameID(msgMeta.Name, msgMeta.ID)
 
-	eq.RegisterCallback(msgID, func(data interface{}) {
+	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 		if ev, ok := data.(*PeerEvent); ok {
 
-			rawMsg := reflect.New(msgType).Interface()
+			rawMsg := reflect.New(msgMeta.Type).Interface()
 
-			userHandler(ev.P, rawMsg)
+			userHandler(rawMsg, ev.P)
 
 		}
 
 	})
+
+	return msgMeta
 }

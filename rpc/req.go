@@ -1,15 +1,14 @@
 package rpc
 
 import (
-	"log"
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
+	"log"
 	"reflect"
 )
-
 
 var (
 	callMap = make(map[int64]*request)
@@ -76,10 +75,10 @@ func getPeerSession(p cellnet.Peer) (cellnet.Session, error) {
 	return ses, nil
 }
 
-func Call(p cellnet.Peer, args interface{}, callback interface{} ) {
+func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 
-	req := addCall()	
-	
+	req := addCall()
+
 	funcType := reflect.TypeOf(callback)
 	req.replyType = funcType.In(0).Elem()
 	req.callback = reflect.ValueOf(callback)
@@ -106,8 +105,8 @@ func Call(p cellnet.Peer, args interface{}, callback interface{} ) {
 
 type request struct {
 	id        int64
-	callback reflect.Value
-	replyType reflect.Type	
+	callback  reflect.Value
+	replyType reflect.Type
 }
 
 func (self *request) done(msg *coredef.RemoteCallACK) {
@@ -124,13 +123,13 @@ func (self *request) done(msg *coredef.RemoteCallACK) {
 		return
 	}
 
-	self.callback.Call( []reflect.Value{ reflect.ValueOf(rawType)})
+	self.callback.Call([]reflect.Value{reflect.ValueOf(rawType)})
 }
 
 func InstallClient(p cellnet.Peer) {
 
 	// 请求端
-	socket.RegisterSessionMessage(p, coredef.RemoteCallACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(p, coredef.RemoteCallACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.RemoteCallACK)
 
 		c := getCall(msg.GetCallID())

@@ -22,11 +22,11 @@ func backendServer() {
 
 	gate.StartGateConnector(pipe, []string{"127.0.0.1:7201"})
 
-	gate.RegisterSessionMessage(coredef.SessionClosed{}, func(gateSes cellnet.Session, clientid int64, content interface{}) {
+	gate.RegisterSessionMessage(coredef.SessionClosed{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
 		log.Printf("client closed gate: %d clientid: %d\n", gateSes.ID(), clientid)
 	})
 
-	gate.RegisterSessionMessage(coredef.TestEchoACK{}, func(gateSes cellnet.Session, clientid int64, content interface{}) {
+	gate.RegisterSessionMessage(coredef.TestEchoACK{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Printf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
@@ -51,7 +51,7 @@ func gateServer() {
 	gate.StartBackendAcceptor(pipe, "127.0.0.1:7201")
 	gate.StartClientAcceptor(pipe, "127.0.0.1:7101")
 
-	socket.RegisterSessionMessage(gate.ClientAcceptor, coredef.SessionAccepted{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(gate.ClientAcceptor, coredef.SessionAccepted{}, func(content interface{}, ses cellnet.Session) {
 
 		log.Println("client accepted", ses.ID())
 
@@ -69,7 +69,7 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7101")
 
-	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
 		ack := &coredef.TestEchoACK{
 			Content: proto.String("hello"),
@@ -80,7 +80,7 @@ func client() {
 
 	})
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(ses cellnet.Session, content interface{}) {
+	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())

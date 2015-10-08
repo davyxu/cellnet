@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
-	"github.com/davyxu/cellnet/rpc"
 	"log"
 	"time"
 )
@@ -39,22 +39,19 @@ func client() {
 	pipe := cellnet.NewEventPipe()
 
 	p := socket.NewConnector(pipe).Start("127.0.0.1:7234")
-	
+
 	rpc.InstallClient(p)
 
-	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(ses cellnet.Session, content interface{}) {
-		
-		
-		rpc.Call( p, &coredef.TestEchoACK{
-			Content: proto.String("rpc hello"),
-		},  func( msg *coredef.TestEchoACK ){
+	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
-			
+		rpc.Call(p, &coredef.TestEchoACK{
+			Content: proto.String("rpc hello"),
+		}, func(msg *coredef.TestEchoACK) {
+
 			log.Println("client recv", msg.GetContent())
-			
+
 			done <- true
 		})
-		
 
 	})
 

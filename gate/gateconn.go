@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"reflect"
 )
 
 // 连接到Gate的连接器
@@ -32,7 +31,7 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 		*gateIndex = index
 
 		// 广播
-		socket.RegisterSessionMessage(conn, coredef.UpstreamACK{}, func(ses cellnet.Session, content interface{}) {
+		socket.RegisterSessionMessage(conn, coredef.UpstreamACK{}, func(content interface{}, ses cellnet.Session) {
 			msg := content.(*coredef.UpstreamACK)
 
 			// 生成派发的消息
@@ -51,31 +50,27 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 }
 
 // 注册连接消息
-func RegisterSessionMessage(msgIns interface{}, userHandler func(cellnet.Session, int64, interface{})) {
+func RegisterSessionMessage(msgIns interface{}, userHandler func(interface{}, cellnet.Session, int64)) {
 
-	msgType := reflect.TypeOf(msgIns)
-
-	msgName := msgType.String()
-
-	msgID := cellnet.Name2ID(msgName)
+	msgMeta := cellnet.NewMessageMeta(msgIns)
 
 	// 将消息注册到mapper中, 提供反射用
-	socket.MapNameID(msgName, msgID)
+	socket.MapNameID(msgMeta.Name, msgMeta.ID)
 
 	for _, conn := range gateConnArray {
 
-		conn.RegisterCallback(msgID, func(data interface{}) {
+		conn.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 			if ev, ok := data.(*relayEvent); ok {
 
-				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgType)
+				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 				if err != nil {
 					log.Printf("[cellnet] unmarshaling error:\n", err)
 					return
 				}
 
-				userHandler(ev.Ses, ev.ClientID, rawMsg)
+				userHandler(rawMsg, ev.Ses, ev.ClientID)
 
 			}
 
