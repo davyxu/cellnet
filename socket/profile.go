@@ -20,5 +20,7 @@ func (self *peerProfile) Name() string {
 
 func newPeerProfile(queue cellnet.EventQueue) *peerProfile {
 
-	return &peerProfile{EventQueue: queue}
+	self := &peerProfile{EventQueue: queue}
+
+	return self
 }

@@ -1,22 +1,23 @@
-package main
+package rpc
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"time"
+	"testing"
 )
 
-var done = make(chan bool)
+var signal *test.SignalTester
 
 func server() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
+	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
 	rpc.InstallServer(p)
 
 	rpc.RegisterMessage(p, coredef.TestEchoACK{}, func(resp rpc.Response, content interface{}) {
@@ -38,7 +39,7 @@ func client() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewConnector(pipe).Start("127.0.0.1:7234")
+	p := socket.NewConnector(pipe).Start("127.0.0.1:7201")
 
 	rpc.InstallClient(p)
 
@@ -50,25 +51,22 @@ func client() {
 
 			log.Println("client recv", msg.GetContent())
 
-			done <- true
+			signal.Done(1)
 		})
 
 	})
 
 	pipe.Start()
+
+	signal.WaitAndExpect(1, "not recv data")
 }
 
-func main() {
+func TestRPC(t *testing.T) {
+
+	signal = test.NewSignalTester(t)
 
 	server()
 
 	client()
-
-	select {
-	case <-done:
-
-	case <-time.After(2 * time.Second):
-		log.Println("time out")
-	}
 
 }

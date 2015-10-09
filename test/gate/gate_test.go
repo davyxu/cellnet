@@ -5,13 +5,13 @@ import (
 	"github.com/davyxu/cellnet/gate"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"os"
-	"runtime"
+	"testing"
 )
 
-var done = make(chan bool)
+var signal *test.SignalTester
 
 // 后台服务器
 func backendServer() {
@@ -31,14 +31,14 @@ func backendServer() {
 
 		log.Printf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
 
+		signal.Done(2)
+
 		gate.SendToClient(gateSes, clientid, &coredef.TestEchoACK{
 			Content: proto.String(msg.GetContent()),
 		})
 	})
 
 	pipe.Start()
-
-	<-done
 }
 
 // 网关服务器
@@ -51,15 +51,8 @@ func gateServer() {
 	gate.StartBackendAcceptor(pipe, "127.0.0.1:7201")
 	gate.StartClientAcceptor(pipe, "127.0.0.1:7101")
 
-	socket.RegisterSessionMessage(gate.ClientAcceptor, coredef.SessionAccepted{}, func(content interface{}, ses cellnet.Session) {
-
-		log.Println("client accepted", ses.ID())
-
-	})
-
 	pipe.Start()
 
-	<-done
 }
 
 // 客户端
@@ -70,6 +63,8 @@ func client() {
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7101")
 
 	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+
+		signal.Done(1)
 
 		ack := &coredef.TestEchoACK{
 			Content: proto.String("hello"),
@@ -85,33 +80,23 @@ func client() {
 
 		log.Println("client recv:", msg.String())
 
-		done <- true
+		signal.Done(3)
 	})
 
 	pipe.Start()
 
-	<-done
+	signal.WaitAndExpect(1, "not connceted to gate")
+	signal.WaitAndExpect(2, "not recv client msg")
+	signal.WaitAndExpect(3, "not recv server msg")
+
 }
 
-// 启动顺序:
-// 网关服务器: gate gate
-// 后台服务器: gate backend
-// 客户端: gate client
-func main() {
+func TestGate(t *testing.T) {
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	signal = test.NewSignalTester(t)
 
-	if len(os.Args) <= 1 {
-		return
-	}
-
-	switch os.Args[1] {
-	case "gate":
-		gateServer()
-	case "client":
-		client()
-	case "backend":
-		backendServer()
-	}
+	gateServer()
+	backendServer()
+	client()
 
 }

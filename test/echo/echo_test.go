@@ -1,21 +1,22 @@
-package main
+package echo
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"time"
+	"testing"
 )
 
-var done = make(chan bool)
+var signal *test.SignalTester
 
 func server() {
 
 	pipe := cellnet.NewEventPipe()
 
-	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
+	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
 
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
@@ -36,14 +37,14 @@ func client() {
 
 	pipe := cellnet.NewEventPipe()
 
-	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
+	evq := socket.NewConnector(pipe).Start("127.0.0.1:7201")
 
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Println("client recv:", msg.String())
 
-		done <- true
+		signal.Done(1)
 	})
 
 	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
@@ -55,19 +56,17 @@ func client() {
 	})
 
 	pipe.Start()
+
+	signal.WaitAndExpect(1, "not recv data")
+
 }
 
-func main() {
+func TestEcho(t *testing.T) {
+
+	signal = test.NewSignalTester(t)
 
 	server()
 
 	client()
-
-	select {
-	case <-done:
-
-	case <-time.After(2 * time.Second):
-		log.Println("time out")
-	}
 
 }

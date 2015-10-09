@@ -22,7 +22,7 @@ func (self *evPipe) AddQueue() EventQueue {
 		panic("Pipe already start, can not addqueue any more")
 	}
 
-	q := NewEventQueue().(*evQueue)
+	q := newEventQueue()
 
 	self.qarray = append(self.qarray, q)
 

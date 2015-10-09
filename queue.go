@@ -16,6 +16,9 @@ type EventQueue interface {
 	PostData(data interface{})
 
 	CallData(data interface{})
+
+	// 投递函数, 在pipe对应线程被调用
+	PostFunc(callback func())
 }
 
 type evQueue struct {
@@ -62,6 +65,10 @@ func (self *evQueue) PostData(data interface{}) {
 	self.queue <- data
 }
 
+func (self *evQueue) PostFunc(callback func()) {
+	self.queue <- callback
+}
+
 func (self *evQueue) Count() int {
 	return len(self.contextMap)
 }
@@ -86,23 +93,27 @@ func (self *evQueue) CallData(data interface{}) {
 		return
 	}
 
-	// 再投递消息
-	if ci, ok := data.(contentIndexer); ok {
+	switch d := data.(type) {
+	// ID索引的消息
+	case contentIndexer:
+		if carr, ok := self.contextMap[d.ContextID()]; ok {
 
-		if carr, ok := self.contextMap[ci.ContextID()]; ok {
-
+			// 遍历所有的回调
 			for _, c := range carr {
 
 				c(data)
 			}
 		}
+	// 直接回调
+	case func():
+		d()
 	}
 
 }
 
 const queueLength = 10
 
-func NewEventQueue() EventQueue {
+func newEventQueue() *evQueue {
 	self := &evQueue{
 		contextMap: make(map[int][]func(interface{})),
 		queue:      make(chan interface{}, queueLength),
