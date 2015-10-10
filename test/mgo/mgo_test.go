@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/mgo"
 	"github.com/davyxu/cellnet/test"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 	"testing"
 )
 
@@ -33,7 +33,7 @@ func db() {
 	})
 
 	if err != nil {
-		log.Println("db connect failed:", err)
+		log.Errorln("db connect failed:", err)
 		signal.Fail()
 		return
 	}
@@ -51,7 +51,7 @@ func db() {
 						signal.Log("can not found record")
 						signal.Fail()
 					} else {
-						log.Println(c)
+						log.Debugln(c)
 						signal.Done(1)
 					}
 
@@ -62,7 +62,7 @@ func db() {
 			// 有记录, 搞定
 		} else {
 
-			log.Println(c)
+			log.Debugln(c)
 			signal.Done(1)
 
 		}

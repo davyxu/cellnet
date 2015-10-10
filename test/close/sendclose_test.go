@@ -2,11 +2,11 @@ package sendclose
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
-	"log"
 	"testing"
 )
 
@@ -55,7 +55,7 @@ func testConnActiveClose() {
 	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("client recv:", msg.String())
+		log.Debugln("client recv:", msg.String())
 		signal.Done(2)
 
 		// 客户端主动断开
@@ -65,7 +65,7 @@ func testConnActiveClose() {
 
 	socket.RegisterSessionMessage(p, coredef.SessionClosed{}, func(content interface{}, ses cellnet.Session) {
 
-		log.Println("close ok!")
+		log.Debugln("close ok!")
 		// 正常断开
 		signal.Done(3)
 
@@ -98,7 +98,7 @@ func testRecvDisconnected() {
 	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("client recv:", msg.String())
+		log.Debugln("client recv:", msg.String())
 
 		signal.Done(2)
 

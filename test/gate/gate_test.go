@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/gate"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
-	"log"
 	"testing"
 )
 
@@ -23,13 +23,13 @@ func backendServer() {
 	gate.StartGateConnector(pipe, []string{"127.0.0.1:7201"})
 
 	gate.RegisterSessionMessage(coredef.SessionClosed{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
-		log.Printf("client closed gate: %d clientid: %d\n", gateSes.ID(), clientid)
+		log.Debugf("client closed gate: %d clientid: %d\n", gateSes.ID(), clientid)
 	})
 
 	gate.RegisterSessionMessage(coredef.TestEchoACK{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Printf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
+		log.Debugf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
 
 		signal.Done(2)
 
@@ -71,14 +71,14 @@ func client() {
 		}
 		ses.Send(ack)
 
-		log.Printf("client send: %s\n", ack.String())
+		log.Debugf("client send: %s\n", ack.String())
 
 	})
 
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("client recv:", msg.String())
+		log.Debugf("client recv:", msg.String())
 
 		signal.Done(3)
 	})

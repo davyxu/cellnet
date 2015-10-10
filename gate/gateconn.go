@@ -2,10 +2,10 @@ package gate
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
-	"log"
 )
 
 // 连接到Gate的连接器
@@ -66,7 +66,7 @@ func RegisterSessionMessage(msgIns interface{}, userHandler func(interface{}, ce
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 				if err != nil {
-					log.Printf("[cellnet] unmarshaling error:\n", err)
+					log.Errorln("[gate] unmarshaling error:\n", err)
 					return
 				}
 

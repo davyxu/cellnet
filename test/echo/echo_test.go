@@ -2,11 +2,11 @@ package echo
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
-	"log"
 	"testing"
 )
 
@@ -21,7 +21,7 @@ func server() {
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("server recv:", msg.String())
+		log.Debugln("server recv:", msg.String())
 
 		ses.Send(&coredef.TestEchoACK{
 			Content: proto.String(msg.String()),
@@ -42,7 +42,7 @@ func client() {
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("client recv:", msg.String())
+		log.Debugln("client recv:", msg.String())
 
 		signal.Done(1)
 	})

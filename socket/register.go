@@ -2,7 +2,7 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"log"
+	"github.com/davyxu/cellnet/log"
 	"reflect"
 )
 
@@ -21,7 +21,7 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandl
 			rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 			if err != nil {
-				log.Printf("[cellnet] unmarshaling error:\n", err)
+				log.Errorln("[cellnet] unmarshaling error:\n", err)
 				return
 			}
 

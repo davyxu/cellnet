@@ -2,9 +2,9 @@ package gate
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
-	"log"
 )
 
 var BackendAcceptor cellnet.Peer
@@ -24,7 +24,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Printf("backend->client, close clientid %d", msg.GetClientID())
+					log.Debugf("[gate] backend->client, close clientid %d", msg.GetClientID())
 				}
 				ses.Close()
 
@@ -40,12 +40,12 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			if clientSes != nil {
 
 				if DebugMode {
-					log.Printf("backend->client, close clientid %d", msg.GetClientID())
+					log.Debugf("[gate] backend->client, close clientid %d", msg.GetClientID())
 				}
 
 				clientSes.Close()
 			} else if DebugMode {
-				log.Printf("backend->client, client not found, close failed, clientid %d", msg.GetClientID())
+				log.Debugf("[gate] backend->client, client not found, close failed, clientid %d", msg.GetClientID())
 			}
 
 		}
@@ -67,7 +67,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Printf("backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+					log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
 				}
 
 				ses.RawSend(pkt)
@@ -84,14 +84,14 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 				if clientSes != nil {
 
 					if DebugMode {
-						log.Printf("backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+						log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
 					}
 
 					clientSes.RawSend(pkt)
 
 				} else if DebugMode {
 
-					log.Printf("backend->client, client not found, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+					log.Debugf("[gate] backend->client, client not found, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
 				}
 			}
 		}

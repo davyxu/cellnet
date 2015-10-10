@@ -2,10 +2,10 @@ package gate
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
-	"log"
 )
 
 var ClientAcceptor cellnet.Peer
@@ -40,7 +40,7 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 			BackendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Printf("client->backend, msgid: %d clientid: %d data: %v", ev.MsgID, ev.Ses.ID(), ev.Data)
+					log.Debugf("[gate] client->backend, msgid: %d clientid: %d data: %v", ev.MsgID, ev.Ses.ID(), ev.Data)
 				}
 
 				ses.RawSend(relaypkt)

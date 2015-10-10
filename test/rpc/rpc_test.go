@@ -2,12 +2,12 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/golang/protobuf/proto"
-	"log"
 	"testing"
 )
 
@@ -23,7 +23,7 @@ func server() {
 	rpc.RegisterMessage(p, coredef.TestEchoACK{}, func(resp rpc.Response, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("server recv:", msg.String())
+		log.Debugln("server recv:", msg.String())
 
 		resp.Feedback(&coredef.TestEchoACK{
 			Content: proto.String(msg.String()),
@@ -49,7 +49,7 @@ func client() {
 			Content: proto.String("rpc hello"),
 		}, func(msg *coredef.TestEchoACK) {
 
-			log.Println("client recv", msg.GetContent())
+			log.Debugln("client recv", msg.GetContent())
 
 			signal.Done(1)
 		})

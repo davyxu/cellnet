@@ -27,6 +27,9 @@
 ## 模块化
 * 鼓励使用统一的模块化命名及拆分方法进行隔离降偶
 
+## 日志
+* 分级日志
+
 
 # 第三方库依赖
 
@@ -89,9 +92,6 @@ func client() {
 
 # 新品预告!
 
-## 日志
-* 支持分级
-
 ## 消息日志
 * 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
 
@@ -104,11 +104,13 @@ func client() {
 * 可定制的消息路由规则
 
 # 备注
-本人开发环境是Windows, 所以工具、Shell相关都会以Windows为主
+cellnet当前主要开发环境是Windows, 所以工具、Shell相关都会以Windows为主
 后期会对Linux平台的开发环境进行支持
 
-推荐使用LiteIDE(https://github.com/visualfc/liteide)进行开发及查看
+推荐使用LiteIDE进行开发及查看
+https://github.com/visualfc/liteide
 
+感觉不错请fork和star, 谢谢!
 
 博客: http://www.cppblog.com/sunicdavy
 
