@@ -1,3 +1,15 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package log implements a simple logging package. It defines a type, Logger,
+// with methods for formatting output. It also has a predefined 'standard'
+// Logger accessible through helper functions Print[f|ln], Fatal[f|ln], and
+// Panic[f|ln], which are easier to use than creating a Logger manually.
+// That logger writes to standard error and prints the date and time
+// of each logged message.
+// The Fatal functions call os.Exit(1) after writing the log message.
+// The Panic functions call panic after writing the log message.
 package log
 
 import (

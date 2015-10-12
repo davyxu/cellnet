@@ -5,6 +5,10 @@
 */
 package cellnet
 
+import (
+	"time"
+)
+
 type EventQueue interface {
 
 	// 注册事件回调
@@ -17,8 +21,8 @@ type EventQueue interface {
 
 	CallData(data interface{})
 
-	// 投递函数, 在pipe对应线程被调用
-	PostFunc(callback func())
+	// 延时投递
+	DelayPostData(dur time.Duration, callback func())
 }
 
 type evQueue struct {
@@ -65,8 +69,15 @@ func (self *evQueue) PostData(data interface{}) {
 	self.queue <- data
 }
 
-func (self *evQueue) PostFunc(callback func()) {
-	self.queue <- callback
+func (self *evQueue) DelayPostData(dur time.Duration, callback func()) {
+	go func() {
+
+		time.AfterFunc(dur, func() {
+
+			self.queue <- callback
+		})
+
+	}()
 }
 
 func (self *evQueue) Count() int {

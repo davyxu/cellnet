@@ -25,7 +25,7 @@ func (self *mongoDriver) readTask(evq cellnet.EventQueue, usercallback interface
 	self.back(db)
 
 	//将回调函数投递到主线程
-	evq.PostFunc(func() {
+	evq.PostData(func() {
 
 		errValue := reflect.ValueOf(&err).Elem()
 
@@ -52,7 +52,7 @@ func (self *mongoDriver) writeTask(evq cellnet.EventQueue, usercallback func(err
 
 	if usercallback != nil {
 		//将回调函数投递到主线程
-		evq.PostFunc(func() {
+		evq.PostData(func() {
 
 			usercallback(err)
 
