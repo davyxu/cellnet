@@ -78,7 +78,7 @@ func client() {
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Debugf("client recv:", msg.String())
+		log.Debugln("client recv:", msg.String())
 
 		signal.Done(3)
 	})

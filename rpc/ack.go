@@ -19,7 +19,7 @@ type response struct {
 
 func (self *response) Feedback(msg interface{}) {
 
-	pkt := cellnet.BuildPacket(msg)
+	pkt, _ := cellnet.BuildPacket(msg)
 
 	self.ses.Send(&coredef.RemoteCallACK{
 		MsgID:  proto.Uint32(pkt.MsgID),

@@ -86,7 +86,7 @@ func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
 		return
 	}
 
-	userpkt := cellnet.BuildPacket(data)
+	userpkt, _ := cellnet.BuildPacket(data)
 
 	gateSes.Send(&coredef.DownstreamACK{
 		Data:     userpkt.Data,
@@ -130,7 +130,7 @@ type connSesManager interface {
 // 发送给所有gate的所有客户端
 func BroadcastToClient(data interface{}) {
 
-	pkt := cellnet.BuildPacket(data)
+	pkt, _ := cellnet.BuildPacket(data)
 
 	ack := &coredef.DownstreamACK{
 		Data:  pkt.Data,
@@ -172,7 +172,7 @@ func NewClientList() ClientList {
 // 发送给指定客户端列表的客户端
 func BroadcastToClientList(data interface{}, list ClientList) {
 
-	pkt := cellnet.BuildPacket(data)
+	pkt, _ := cellnet.BuildPacket(data)
 
 	for ses, clientlist := range list {
 

@@ -2,6 +2,8 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/log"
+	"github.com/golang/protobuf/proto"
 	"sync"
 )
 
@@ -38,7 +40,11 @@ func (self *ltvSession) Close() {
 
 func (self *ltvSession) Send(data interface{}) {
 
-	self.RawSend(cellnet.BuildPacket(data))
+	pkt, meta := cellnet.BuildPacket(data)
+
+	log.Debugf("#send(%s) sid: %d %s(%d)|%s", self.FromPeer().Name(), self.ID(), meta.Name, len(pkt.Data), data.(proto.Message).String())
+
+	self.RawSend(pkt)
 }
 
 func (self *ltvSession) RawSend(pkt *cellnet.Packet) {

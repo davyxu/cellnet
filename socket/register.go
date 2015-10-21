@@ -3,6 +3,7 @@ package socket
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/log"
+	"github.com/golang/protobuf/proto"
 	"reflect"
 )
 
@@ -10,9 +11,6 @@ import (
 func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Session)) *cellnet.MessageMeta {
 
 	msgMeta := cellnet.NewMessageMeta(msgIns)
-
-	// 将消息注册到mapper中, 提供反射用
-	MapNameID(msgMeta.Name, msgMeta.ID)
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
@@ -24,6 +22,8 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandl
 				log.Errorln("[cellnet] unmarshaling error:\n", err)
 				return
 			}
+
+			log.Debugf("#recv(%s) sid: %d %s(%d)|%s", ev.Ses.FromPeer().Name(), ev.Ses.ID(), msgMeta.Name, len(ev.Packet.Data), rawMsg.(proto.Message).String())
 
 			userHandler(rawMsg, ev.Ses)
 
@@ -38,9 +38,6 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandl
 func RegisterPeerMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
 
 	msgMeta := cellnet.NewMessageMeta(msgIns)
-
-	// 将消息注册到mapper中, 提供反射用
-	MapNameID(msgMeta.Name, msgMeta.ID)
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 

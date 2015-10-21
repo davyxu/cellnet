@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -14,11 +15,15 @@ func NewMessageMeta(msg interface{}) *MessageMeta {
 
 	msgType := reflect.TypeOf(msg)
 
+	if msgType.Kind() == reflect.Ptr {
+		msgType = msgType.Elem()
+	}
+
 	msgName := msgType.String()
 
 	return &MessageMeta{
 		Type: msgType,
 		Name: msgName,
-		ID:   Name2ID(msgName),
+		ID:   int(util.StringHashNoCase(msgName)),
 	}
 }

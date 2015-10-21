@@ -6,7 +6,7 @@ import (
 )
 
 // 将绝对路径按需要的节从右压缩
-// 例如: c:/Develop/nucleus.git/server/src/core/util/stack.go中
+// 例如: /server/src/core/util/stack.go中
 // 当cStripPathSection=3
 // 返回 core/util/stack.go
 func StripFileName(filename string, part int) string {

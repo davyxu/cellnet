@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	Event_SessionConnected = uint32(cellnet.Type2ID(&coredef.SessionConnected{}))
-	Event_SessionClosed    = uint32(cellnet.Type2ID(&coredef.SessionClosed{}))
-	Event_SessionAccepted  = uint32(cellnet.Type2ID(&coredef.SessionAccepted{}))
-	Event_PeerInit         = uint32(cellnet.Type2ID(&coredef.PeerInit{}))
-	Event_PeerStart        = uint32(cellnet.Type2ID(&coredef.PeerStart{}))
-	Event_PeerStop         = uint32(cellnet.Type2ID(&coredef.PeerStop{}))
+	Event_SessionConnected = uint32(cellnet.NewMessageMeta(&coredef.SessionConnected{}).ID)
+	Event_SessionClosed    = uint32(cellnet.NewMessageMeta(&coredef.SessionClosed{}).ID)
+	Event_SessionAccepted  = uint32(cellnet.NewMessageMeta(&coredef.SessionAccepted{}).ID)
+	Event_PeerInit         = uint32(cellnet.NewMessageMeta(&coredef.PeerInit{}).ID)
+	Event_PeerStart        = uint32(cellnet.NewMessageMeta(&coredef.PeerStart{}).ID)
+	Event_PeerStop         = uint32(cellnet.NewMessageMeta(&coredef.PeerStop{}).ID)
 )
 
 // 会话事件

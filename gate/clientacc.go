@@ -28,7 +28,7 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 			}
 
 			// 构建路由封包
-			relaypkt := cellnet.BuildPacket(&coredef.UpstreamACK{
+			relaypkt, _ := cellnet.BuildPacket(&coredef.UpstreamACK{
 				MsgID:    proto.Uint32(ev.MsgID),
 				Data:     ev.Data,
 				ClientID: proto.Int64(ev.Ses.ID()),

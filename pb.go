@@ -1,33 +1,15 @@
 package cellnet
 
 import (
-	"github.com/davyxu/cellnet/util"
 	"github.com/golang/protobuf/proto"
 	"log"
 	"reflect"
 )
 
-func Name2ID(name string) int {
-
-	return int(util.StringHashNoCase(name))
-}
-
-func Type2ID(msg proto.Message) int {
-
-	name := reflect.TypeOf(msg).Elem().String()
-
-	return int(util.StringHashNoCase(name))
-}
-
-func ReflectProtoName(msg proto.Message) string {
-
-	return reflect.TypeOf(msg).Elem().String()
-}
-
 // TODO 抽象Filter
 
 // 消息到封包
-func BuildPacket(data interface{}) *Packet {
+func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 
 	msg := data.(proto.Message)
 
@@ -37,12 +19,12 @@ func BuildPacket(data interface{}) *Packet {
 		log.Fatal(err)
 	}
 
-	msgID := uint32(Name2ID(ReflectProtoName(msg)))
+	meta := NewMessageMeta(msg)
 
 	return &Packet{
-		MsgID: msgID,
+		MsgID: uint32(meta.ID),
 		Data:  rawdata,
-	}
+	}, meta
 }
 
 // 封包到消息

@@ -2,8 +2,6 @@ package socket
 
 import (
 	"fmt"
-	"github.com/davyxu/cellnet"
-	"reflect"
 	"sync"
 )
 
@@ -12,15 +10,6 @@ var (
 	name2idMap  = make(map[string]int)
 	mapperGuard sync.RWMutex
 )
-
-func MapMessage(msgIns interface{}) {
-
-	msgName := reflect.TypeOf(msgIns).String()
-
-	msgID := cellnet.Name2ID(msgName)
-
-	MapNameID(msgName, msgID)
-}
 
 func MapNameID(name string, id int) {
 

@@ -91,7 +91,7 @@ func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 		return
 	}
 
-	pkt := cellnet.BuildPacket(args)
+	pkt, _ := cellnet.BuildPacket(args)
 
 	ses.Send(&coredef.RemoteCallREQ{
 		MsgID:  proto.Uint32(pkt.MsgID),
