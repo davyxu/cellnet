@@ -14,11 +14,13 @@ type EventQueue interface {
 	// 注册事件回调
 	RegisterCallback(id int, f func(interface{}))
 
-	// 截获所有的事件
+	// 设置事件截获钩子, 在CallData中调用钩子
 	InjectData(func(interface{}) bool)
 
+	// 投递事件, 通过队列到达消费者端
 	PostData(data interface{})
 
+	// 直接调用消费者端的handler
 	CallData(data interface{})
 
 	// 延时投递

@@ -55,8 +55,6 @@ func (self *sessionMgr) Remove(ses cellnet.Session) {
 	self.sesMapGuard.Unlock()
 }
 
-// 获
-
 // 获得一个连接
 func (self *sessionMgr) GetSession(id int64) cellnet.Session {
 	self.sesMapGuard.RLock()

@@ -146,14 +146,14 @@ func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltv
 		needNotifyWrite: true,
 	}
 
+	// 退出线程
+	go self.exitThread()
+
 	// 接收线程
 	go self.recvThread(eq)
 
 	// 发送线程
 	go self.sendThread()
-
-	// 退出线程
-	go self.exitThread()
 
 	return self
 }

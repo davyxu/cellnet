@@ -29,7 +29,7 @@
 
 ## 日志
 * 分级日志
-
+* 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
 
 # 第三方库依赖
 
@@ -90,10 +90,7 @@ func client() {
 
 ```
 
-# 新品预告!
-
-## 消息日志
-* 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
+# TODO
 
 ## MongoDB
 * DB内存映射框架
@@ -103,12 +100,11 @@ func client() {
 ## 网关
 * 可定制的消息路由规则
 
-# 备注
-cellnet当前主要开发环境是Windows, 所以工具、Shell相关都会以Windows为主
-后期会对Linux平台的开发环境进行支持
+# Wiki
+https://github.com/davyxu/cellnet/wiki
+这里有文档和架构,设计解析
 
-推荐使用LiteIDE进行开发及查看
-https://github.com/visualfc/liteide
+# 备注
 
 感觉不错请fork和star, 谢谢!
 
