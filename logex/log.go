@@ -10,7 +10,7 @@
 // of each logged message.
 // The Fatal functions call os.Exit(1) after writing the log message.
 // The Panic functions call panic after writing the log message.
-package log
+package logex
 
 import (
 	"fmt"
@@ -62,17 +62,21 @@ type Logger struct {
 	out   io.Writer  // destination for output
 	buf   []byte     // for accumulating text to write
 	level int
+	name  string
 }
 
 // New creates a new Logger.   The out variable sets the
 // destination to which log data will be written.
 // The prefix appears at the beginning of each generated log line.
 // The flag argument defines the logging properties.
-func New(out io.Writer, flag, level int) *Logger {
-	return &Logger{out: out, flag: flag, level: LEVEL_DEBUG}
-}
 
-var std = New(os.Stderr, LstdFlags, LEVEL_DEBUG)
+func New(name string) *Logger {
+	l := &Logger{out: os.Stderr, flag: LstdFlags, level: LEVEL_DEBUG, name: name}
+
+	add(l)
+
+	return l
+}
 
 // Cheap integer to fixed-width decimal ASCII.  Give a negative width to avoid zero-padding.
 // Knows the buffer has capacity.
@@ -94,11 +98,11 @@ func itoa(buf *[]byte, i int, wid int) {
 	*buf = append(*buf, b[bp:]...)
 }
 
-func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int, prefix string) {
+func (self *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int, prefix string) {
 	*buf = append(*buf, prefix...)
 	*buf = append(*buf, ' ')
-	if l.flag&(Ldate|Ltime|Lmicroseconds) != 0 {
-		if l.flag&Ldate != 0 {
+	if self.flag&(Ldate|Ltime|Lmicroseconds) != 0 {
+		if self.flag&Ldate != 0 {
 			year, month, day := t.Date()
 			itoa(buf, year, 4)
 			*buf = append(*buf, '/')
@@ -107,22 +111,22 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int, p
 			itoa(buf, day, 2)
 			*buf = append(*buf, ' ')
 		}
-		if l.flag&(Ltime|Lmicroseconds) != 0 {
+		if self.flag&(Ltime|Lmicroseconds) != 0 {
 			hour, min, sec := t.Clock()
 			itoa(buf, hour, 2)
 			*buf = append(*buf, ':')
 			itoa(buf, min, 2)
 			*buf = append(*buf, ':')
 			itoa(buf, sec, 2)
-			if l.flag&Lmicroseconds != 0 {
+			if self.flag&Lmicroseconds != 0 {
 				*buf = append(*buf, '.')
 				itoa(buf, t.Nanosecond()/1e3, 6)
 			}
 			*buf = append(*buf, ' ')
 		}
 	}
-	if l.flag&(Lshortfile|Llongfile) != 0 {
-		if l.flag&Lshortfile != 0 {
+	if self.flag&(Lshortfile|Llongfile) != 0 {
+		if self.flag&Lshortfile != 0 {
 			short := file
 			for i := len(file) - 1; i > 0; i-- {
 				if file[i] == '/' {
@@ -145,83 +149,90 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int, p
 // already a newline.  Calldepth is used to recover the PC and is
 // provided for generality, although at the moment on all pre-defined
 // paths it will be 2.
-func (l *Logger) Output(calldepth int, prefix string, s string) error {
+func (self *Logger) Output(calldepth int, prefix string, s string) error {
 	now := time.Now() // get this early.
 	var file string
 	var line int
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	if l.flag&(Lshortfile|Llongfile) != 0 {
+	self.mu.Lock()
+	defer self.mu.Unlock()
+	if self.flag&(Lshortfile|Llongfile) != 0 {
 		// release lock while getting caller info - it's expensive.
-		l.mu.Unlock()
+		self.mu.Unlock()
 		var ok bool
 		_, file, line, ok = runtime.Caller(calldepth)
 		if !ok {
 			file = "???"
 			line = 0
 		}
-		l.mu.Lock()
+		self.mu.Lock()
 	}
-	l.buf = l.buf[:0]
-	l.formatHeader(&l.buf, now, file, line, prefix)
-	l.buf = append(l.buf, s...)
+	self.buf = self.buf[:0]
+	self.formatHeader(&self.buf, now, file, line, prefix)
+	self.buf = append(self.buf, s...)
 	if len(s) > 0 && s[len(s)-1] != '\n' {
-		l.buf = append(l.buf, '\n')
+		self.buf = append(self.buf, '\n')
 	}
-	_, err := l.out.Write(l.buf)
+	_, err := self.out.Write(self.buf)
 	return err
 }
 
-func logf(level int, format string, v ...interface{}) {
+func (self *Logger) log(level int, format string, v ...interface{}) {
 
-	if level < std.level {
+	if level < self.level {
 		return
 	}
 
-	std.Output(3, levelString[level], fmt.Sprintf(format, v...))
-}
+	prefix := fmt.Sprintf("%s %s", levelString[level], self.name)
 
-func logln(level int, v ...interface{}) {
-
-	if level < std.level {
-		return
+	if format == "" {
+		self.Output(3, prefix, fmt.Sprintln(v...))
+	} else {
+		self.Output(3, prefix, fmt.Sprintf(format, v...))
 	}
 
-	std.Output(3, levelString[level], fmt.Sprintln(v...))
 }
 
-func Debugf(format string, v ...interface{}) {
+func (self *Logger) Debugf(format string, v ...interface{}) {
 
-	logf(LEVEL_DEBUG, format, v...)
+	self.log(LEVEL_DEBUG, format, v...)
 }
 
-func Debugln(v ...interface{}) {
-	logln(LEVEL_DEBUG, v...)
+func (self *Logger) Debugln(v ...interface{}) {
+	self.log(LEVEL_DEBUG, "", v...)
 }
 
-func Infof(format string, v ...interface{}) {
+func (self *Logger) Infof(format string, v ...interface{}) {
 
-	logf(LEVEL_INFO, format, v...)
+	self.log(LEVEL_INFO, format, v...)
 }
 
-func Infoln(v ...interface{}) {
-	logln(LEVEL_INFO, v...)
+func (self *Logger) Infoln(v ...interface{}) {
+	self.log(LEVEL_INFO, "", v...)
 }
 
-func Warnf(format string, v ...interface{}) {
+func (self *Logger) Warnf(format string, v ...interface{}) {
 
-	logf(LEVEL_WARN, format, v...)
+	self.log(LEVEL_WARN, format, v...)
 }
 
-func Warnln(v ...interface{}) {
-	logln(LEVEL_WARN, v...)
+func (self *Logger) Warnln(v ...interface{}) {
+	self.log(LEVEL_WARN, "", v...)
 }
 
-func Errorf(format string, v ...interface{}) {
+func (self *Logger) Errorf(format string, v ...interface{}) {
 
-	logf(LEVEL_ERROR, format, v...)
+	self.log(LEVEL_ERROR, format, v...)
 }
 
-func Errorln(v ...interface{}) {
-	logln(LEVEL_ERROR, v...)
+func (self *Logger) Errorln(v ...interface{}) {
+	self.log(LEVEL_ERROR, "", v...)
+}
+
+func (self *Logger) Fatalf(format string, v ...interface{}) {
+
+	self.log(LEVEL_FATAL, format, v...)
+}
+
+func (self *Logger) Fatalln(v ...interface{}) {
+	self.log(LEVEL_FATAL, "", v...)
 }
