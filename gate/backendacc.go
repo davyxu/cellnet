@@ -2,7 +2,6 @@ package gate
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 )

@@ -1,15 +1,18 @@
 package rpc
 
 import (
+	"testing"
+
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
+	"github.com/davyxu/golog"
 	"github.com/golang/protobuf/proto"
-	"testing"
 )
+
+var log *golog.Logger = golog.New("test")
 
 var signal *test.SignalTester
 

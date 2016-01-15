@@ -1,10 +1,10 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"net"
 	"time"
+
+	"github.com/davyxu/cellnet"
 )
 
 type socketConnector struct {
@@ -46,7 +46,7 @@ func (self *socketConnector) connect(address string) {
 		// 连不上
 		if err != nil {
 
-			log.Errorln("[socket] cononect failed", err.Error())
+			log.Errorln("cononect failed", err.Error())
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
@@ -60,7 +60,7 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
-		log.Debugln("[socket] connected: ", address)
+		log.Debugln("connected: ", address)
 
 		// 连上了, 记录连接
 		self.conn = cn

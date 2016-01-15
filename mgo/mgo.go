@@ -9,7 +9,6 @@ package mgo
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"gopkg.in/mgo.v2"
 )
 

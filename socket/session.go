@@ -1,10 +1,10 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
-	"github.com/golang/protobuf/proto"
 	"sync"
+
+	"github.com/davyxu/cellnet"
+	"github.com/golang/protobuf/proto"
 )
 
 type closeWritePacket struct {

@@ -1,10 +1,10 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
-	"github.com/golang/protobuf/proto"
 	"reflect"
+
+	"github.com/davyxu/cellnet"
+	"github.com/golang/protobuf/proto"
 )
 
 // 注册连接消息
@@ -19,7 +19,7 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandl
 			rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 			if err != nil {
-				log.Errorln("[cellnet] unmarshaling error:\n", err)
+				log.Errorln("unmarshaling error:\n", err)
 				return
 			}
 

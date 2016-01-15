@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
@@ -66,7 +65,7 @@ func RegisterMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func
 			}, msgMeta.Type)
 
 			if err != nil {
-				log.Errorln("[cellnet] unmarshaling error:\n", err)
+				log.Errorln("unmarshaling error:", err)
 				return
 			}
 

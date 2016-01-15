@@ -1,13 +1,16 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"github.com/davyxu/cellnet/mgo"
 	"github.com/davyxu/cellnet/test"
+	"github.com/davyxu/golog"
 	"gopkg.in/mgo.v2/bson"
-	"testing"
 )
+
+var log *golog.Logger = golog.New("test")
 
 var signal *test.SignalTester
 

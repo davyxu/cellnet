@@ -2,12 +2,12 @@ package rpc
 
 import (
 	"errors"
+	"reflect"
+
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/golang/protobuf/proto"
-	"log"
-	"reflect"
 )
 
 var (
@@ -86,7 +86,7 @@ func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 	ses, err := getPeerSession(p)
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		removeCall(req.id)
 		return
 	}
@@ -119,7 +119,7 @@ func (self *request) done(msg *coredef.RemoteCallACK) {
 	defer removeCall(self.id)
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		return
 	}
 

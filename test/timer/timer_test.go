@@ -1,12 +1,15 @@
 package timer
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
-	"github.com/davyxu/cellnet/test"
 	"testing"
 	"time"
+
+	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/test"
+	"github.com/davyxu/golog"
 )
+
+var log *golog.Logger = golog.New("test")
 
 func TestTimer(t *testing.T) {
 

@@ -1,10 +1,10 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"log"
 	"sync"
 	"sync/atomic"
+
+	"github.com/davyxu/cellnet"
 )
 
 type sessionMgr struct {
@@ -38,7 +38,7 @@ func (self *sessionMgr) Add(ses cellnet.Session) {
 	}
 
 	if tryCount == 0 {
-		log.Println("WARNING: sessionID override!", id)
+		log.Warnln("sessionID override!", id)
 	}
 
 	ltvses := ses.(*ltvSession)

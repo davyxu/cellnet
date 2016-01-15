@@ -1,9 +1,9 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/log"
 	"net"
+
+	"github.com/davyxu/cellnet"
 )
 
 type socketAcceptor struct {
@@ -23,11 +23,11 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorln("[socket] listen failed", err.Error())
+		log.Errorln("listen failed", err.Error())
 		return self
 	}
 
-	log.Debugln("[socket] listening: ", address)
+	log.Debugln("listening: ", address)
 
 	self.running = true
 
