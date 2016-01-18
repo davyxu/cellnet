@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/golang/protobuf/proto"
 )
 
 // 连接到Gate的连接器
@@ -38,8 +37,8 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 			// TODO 用PostData防止多重嵌套?
 			// 调用已注册的回调
 			conn.CallData(&relayEvent{
-				SessionEvent: socket.NewSessionEvent(msg.GetMsgID(), ses, msg.Data),
-				ClientID:     msg.GetClientID(),
+				SessionEvent: socket.NewSessionEvent(msg.MsgID, ses, msg.Data),
+				ClientID:     msg.ClientID,
 			})
 
 		})
@@ -89,7 +88,7 @@ func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
 
 	gateSes.Send(&coredef.DownstreamACK{
 		Data:     userpkt.Data,
-		MsgID:    proto.Uint32(userpkt.MsgID),
+		MsgID:    userpkt.MsgID,
 		ClientID: []int64{clientid},
 	})
 }
@@ -103,7 +102,7 @@ func CloseClient(gateSes cellnet.Session, clientid int64) {
 
 	// 通知关闭
 	gateSes.Send(&coredef.CloseClientACK{
-		ClientID: proto.Int64(clientid),
+		ClientID: clientid,
 	})
 }
 
@@ -133,7 +132,7 @@ func BroadcastToClient(data interface{}) {
 
 	ack := &coredef.DownstreamACK{
 		Data:  pkt.Data,
-		MsgID: proto.Uint32(pkt.MsgID),
+		MsgID: pkt.MsgID,
 	}
 
 	for _, conn := range gateConnArray {
@@ -177,7 +176,7 @@ func BroadcastToClientList(data interface{}, list ClientList) {
 
 		ack := &coredef.DownstreamACK{
 			Data:  pkt.Data,
-			MsgID: proto.Uint32(pkt.MsgID),
+			MsgID: pkt.MsgID,
 		}
 
 		ack.ClientID = clientlist

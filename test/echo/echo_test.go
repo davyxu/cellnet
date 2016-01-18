@@ -8,7 +8,6 @@ import (
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
-	"github.com/golang/protobuf/proto"
 )
 
 var log *golog.Logger = golog.New("test")
@@ -27,7 +26,7 @@ func server() {
 		log.Debugln("server recv:", msg.String())
 
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String(msg.String()),
+			Content: msg.String(),
 		})
 
 	})
@@ -53,7 +52,7 @@ func client() {
 	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String("hello"),
+			Content: "hello",
 		})
 
 	})

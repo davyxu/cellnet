@@ -9,7 +9,6 @@ import (
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
-	"github.com/golang/protobuf/proto"
 )
 
 var log *golog.Logger = golog.New("test")
@@ -29,7 +28,7 @@ func server() {
 		log.Debugln("server recv:", msg.String())
 
 		resp.Feedback(&coredef.TestEchoACK{
-			Content: proto.String(msg.String()),
+			Content: msg.String(),
 		})
 
 	})
@@ -49,10 +48,10 @@ func client() {
 	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
 		rpc.Call(p, &coredef.TestEchoACK{
-			Content: proto.String("rpc hello"),
+			Content: "rpc hello",
 		}, func(msg *coredef.TestEchoACK) {
 
-			log.Debugln("client recv", msg.GetContent())
+			log.Debugln("client recv", msg.Content)
 
 			signal.Done(1)
 		})

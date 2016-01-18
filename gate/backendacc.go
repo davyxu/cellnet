@@ -17,13 +17,13 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 	socket.RegisterSessionMessage(BackendAcceptor, coredef.CloseClientACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.CloseClientACK)
 
-		if msg.ClientID == nil {
+		if msg.ClientID == 0 {
 
 			// 关闭所有客户端
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, close clientid %d", msg.GetClientID())
+					log.Debugf("[gate] backend->client, close clientid %d", msg.ClientID)
 				}
 				ses.Close()
 
@@ -33,18 +33,18 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 		} else {
 
 			// 关闭指定客户端
-			clientSes := ClientAcceptor.GetSession(msg.GetClientID())
+			clientSes := ClientAcceptor.GetSession(msg.ClientID)
 
 			// 找到连接并关闭
 			if clientSes != nil {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, close clientid %d", msg.GetClientID())
+					log.Debugf("[gate] backend->client, close clientid %d", msg.ClientID)
 				}
 
 				clientSes.Close()
 			} else if DebugMode {
-				log.Debugf("[gate] backend->client, client not found, close failed, clientid %d", msg.GetClientID())
+				log.Debugf("[gate] backend->client, client not found, close failed, clientid %d", msg.ClientID)
 			}
 
 		}
@@ -56,17 +56,17 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 		msg := content.(*coredef.DownstreamACK)
 
 		pkt := &cellnet.Packet{
-			MsgID: msg.GetMsgID(),
+			MsgID: msg.MsgID,
 			Data:  msg.Data,
 		}
 
-		if msg.ClientID == nil {
+		if len(msg.ClientID) == 0 {
 
 			// 广播给所有客户端
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+					log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 				}
 
 				ses.RawSend(pkt)
@@ -83,14 +83,14 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 				if clientSes != nil {
 
 					if DebugMode {
-						log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+						log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 					}
 
 					clientSes.RawSend(pkt)
 
 				} else if DebugMode {
 
-					log.Debugf("[gate] backend->client, client not found, msgid: %d clientid %d", msg.GetMsgID(), msg.GetClientID())
+					log.Debugf("[gate] backend->client, client not found, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 				}
 			}
 		}

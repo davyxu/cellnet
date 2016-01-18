@@ -9,7 +9,6 @@ import (
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
-	"github.com/golang/protobuf/proto"
 )
 
 var log *golog.Logger = golog.New("test")
@@ -37,7 +36,7 @@ func backendServer() {
 		signal.Done(2)
 
 		gate.SendToClient(gateSes, clientid, &coredef.TestEchoACK{
-			Content: proto.String(msg.GetContent()),
+			Content: msg.Content,
 		})
 	})
 
@@ -70,7 +69,7 @@ func client() {
 		signal.Done(1)
 
 		ack := &coredef.TestEchoACK{
-			Content: proto.String("hello"),
+			Content: "hello",
 		}
 		ses.Send(ack)
 

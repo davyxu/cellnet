@@ -8,7 +8,6 @@ import (
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
-	"github.com/golang/protobuf/proto"
 )
 
 var log *golog.Logger = golog.New("test")
@@ -25,10 +24,10 @@ func runServer() {
 
 		// 发包后关闭
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String(msg.GetContent()),
+			Content: msg.Content,
 		})
 
-		if msg.GetContent() != "noclose" {
+		if msg.Content != "noclose" {
 			ses.Close()
 		}
 
@@ -50,7 +49,7 @@ func testConnActiveClose() {
 		signal.Done(1)
 		// 连接上发包,告诉服务器不要断开
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String("noclose"),
+			Content: "noclose",
 		})
 
 	})
@@ -92,7 +91,7 @@ func testRecvDisconnected() {
 
 		// 连接上发包
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String("data"),
+			Content: "data",
 		})
 
 		signal.Done(1)

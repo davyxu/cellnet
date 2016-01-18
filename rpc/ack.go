@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/golang/protobuf/proto"
 )
 
 type Response interface {
@@ -21,14 +20,14 @@ func (self *response) Feedback(msg interface{}) {
 	pkt, _ := cellnet.BuildPacket(msg)
 
 	self.ses.Send(&coredef.RemoteCallACK{
-		MsgID:  proto.Uint32(pkt.MsgID),
+		MsgID:  pkt.MsgID,
 		Data:   pkt.Data,
-		CallID: proto.Int64(self.req.GetCallID()),
+		CallID: self.req.CallID,
 	})
 }
 
 func (self *response) ContextID() int {
-	return int(self.req.GetMsgID())
+	return int(self.req.MsgID)
 }
 
 func InstallServer(p cellnet.Peer) {
@@ -60,7 +59,7 @@ func RegisterMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func
 		if ev, ok := data.(*response); ok {
 
 			rawMsg, err := cellnet.ParsePacket(&cellnet.Packet{
-				MsgID: ev.req.GetMsgID(),
+				MsgID: ev.req.MsgID,
 				Data:  ev.req.Data,
 			}, msgMeta.Type)
 

@@ -34,7 +34,7 @@
 # 第三方库依赖
 
 * github.com/golang/protobuf/proto
-* github.com/BurntSushi/toml
+* github.com/davyxu/golog
 * gopkg.in/mgo.v2
 
 
@@ -52,10 +52,10 @@ func server() {
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("server recv:", msg.String())
+		log.Debugln("server recv:", msg.String())
 
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String(msg.String()),
+			Content: msg.String,
 		})
 
 	})
@@ -73,14 +73,14 @@ func client() {
 	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Println("client recv:", msg.String())
+		log.Debugln("client recv:", msg.String())
 
 	})
 
 	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&coredef.TestEchoACK{
-			Content: proto.String("hello"),
+			Content: "hello",
 		})
 
 	})
@@ -112,6 +112,7 @@ https://github.com/davyxu/cellnet/wiki
 
 知乎: http://www.zhihu.com/people/xu-bo-62-87
 
-技术讨论组: 309800774 加群请说明cellnet
-
 邮箱: sunicdavy@qq.com
+
+战魂小筑技术讨论群: 309800774 加群请说明cellnet
+cellnet发问请直接@成都_黑色灵猫

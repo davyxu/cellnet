@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/golang/protobuf/proto"
 )
 
 var ClientAcceptor cellnet.Peer
@@ -28,9 +27,9 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 
 			// 构建路由封包
 			relaypkt, _ := cellnet.BuildPacket(&coredef.UpstreamACK{
-				MsgID:    proto.Uint32(ev.MsgID),
+				MsgID:    ev.MsgID,
 				Data:     ev.Data,
-				ClientID: proto.Int64(ev.Ses.ID()),
+				ClientID: ev.Ses.ID(),
 			})
 
 			// TODO 按照封包和逻辑固定分发

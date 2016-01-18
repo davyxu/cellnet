@@ -7,7 +7,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/coredef"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -94,9 +93,9 @@ func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 	pkt, _ := cellnet.BuildPacket(args)
 
 	ses.Send(&coredef.RemoteCallREQ{
-		MsgID:  proto.Uint32(pkt.MsgID),
+		MsgID:  pkt.MsgID,
 		Data:   pkt.Data,
-		CallID: proto.Int64(req.id),
+		CallID: req.id,
 	})
 
 	// TODO rpc日志
@@ -112,7 +111,7 @@ type request struct {
 func (self *request) done(msg *coredef.RemoteCallACK) {
 
 	rawType, err := cellnet.ParsePacket(&cellnet.Packet{
-		MsgID: msg.GetMsgID(),
+		MsgID: msg.MsgID,
 		Data:  msg.Data,
 	}, self.replyType)
 
@@ -132,7 +131,7 @@ func InstallClient(p cellnet.Peer) {
 	socket.RegisterSessionMessage(p, coredef.RemoteCallACK{}, func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.RemoteCallACK)
 
-		c := getCall(msg.GetCallID())
+		c := getCall(msg.CallID)
 
 		if c == nil {
 			return

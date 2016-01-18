@@ -1,9 +1,7 @@
 package cellnet
 
 import (
-	"github.com/BurntSushi/toml"
 	"log"
-	"os"
 )
 
 var (
@@ -20,8 +18,6 @@ var config configDefine
 
 func init() {
 
-	//ReadConfig(&config)
-
 	RegionID = config.RegionID
 
 	if config.CellLog {
@@ -32,17 +28,4 @@ func init() {
 
 func EnableLog(v bool) {
 	config.CellLog = v
-}
-
-func ReadConfig(data interface{}) {
-
-	if len(os.Args) < 2 {
-		return
-	}
-
-	if _, err := toml.DecodeFile(os.Args[1], data); err != nil {
-		log.Println(err)
-		return
-	}
-
 }

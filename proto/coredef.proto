@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package coredef;
 
 // ==========================================================
@@ -50,12 +52,12 @@ message PeerStop
 // gate -> backend
 message UpstreamACK
 {
-	optional uint32 MsgID = 1;		// 消息号
+	uint32 MsgID = 1;		// 消息号
 	
-	optional bytes Data = 2;		// 用户封包
+	bytes Data = 2;		// 用户封包
 	
 	
-	optional int64 ClientID = 3;	// 玩家在gate的id
+	int64 ClientID = 3;	// 玩家在gate的id
 }
 
 
@@ -63,16 +65,16 @@ message UpstreamACK
 // backend -> gate
 message CloseClientACK
 {
-	optional int64 ClientID = 1;
+	int64 ClientID = 1;
 }
 
 // 路由下行数据
 // backend -> gate
 message DownstreamACK
 {
-	optional uint32 MsgID = 1;		// 消息号
+	uint32 MsgID = 1;		// 消息号
 	
-	optional bytes Data = 2;		// 用户封包
+	bytes Data = 2;		// 用户封包
 	
 	
 	repeated int64 ClientID = 3;	// 要广播的玩家列表
@@ -86,21 +88,21 @@ message DownstreamACK
 // 请求
 message RemoteCallREQ
 {	                 
-	optional uint32 MsgID = 1;		// 消息号
+	uint32 MsgID = 1;		// 消息号
 	
-	optional bytes Data = 2;		// 用户封包
+	bytes Data = 2;		// 用户封包
 	
-	optional int64 CallID = 3;
+	int64 CallID = 3;
 }
 
 // 回应
 message RemoteCallACK
 {
-	optional uint32 MsgID = 1;		// 消息号
+	uint32 MsgID = 1;		// 消息号
 	
-	optional bytes Data = 2;		// 用户封包
+	bytes Data = 2;		// 用户封包
 	
-	optional int64 CallID = 3;
+	int64 CallID = 3;
 }
 
 
@@ -110,5 +112,5 @@ message RemoteCallACK
 // ==========================================================
 message TestEchoACK
 {
-	optional string Content = 1;
+	string Content = 1;
 }
