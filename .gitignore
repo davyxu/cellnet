@@ -1,4 +1,4 @@
-/sample/*/*.exe
-/tools/name2id/*.exe
-/tools/ServiceLauncher/*.cfg
-/test/sendclose/*.exe
+
+
+/proto/protoc-gen-go.exe
+/proto/protoc.exe
