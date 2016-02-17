@@ -49,7 +49,7 @@ func server() {
 
 	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -70,14 +70,14 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
 
 	})
 
-	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&coredef.TestEchoACK{
 			Content: "hello",
