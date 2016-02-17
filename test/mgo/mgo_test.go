@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/mgo"
+	"github.com/davyxu/cellnet/db"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -19,81 +20,84 @@ type char struct {
 	HP   int
 }
 
-func db() {
+func update(db *db.MongoDriver, evq cellnet.EventQueue) {
+	log.Debugln("update")
+
+	db.Execute(func(ses *mgo.Session) {
+
+		col := ses.DB("").C("test")
+
+		col.Update(bson.M{"name": "davy"}, &char{Name: "davy", HP: 1})
+
+		evq.PostData(func() {
+			signal.Done(2)
+		})
+	})
+
+}
+
+func rundb() {
 	pipe := cellnet.NewEventPipe()
 
 	evq := pipe.AddQueue()
 
 	pipe.Start()
 
-	db := mgo.NewDB()
+	mdb := db.NewMongoDriver()
 
 	var err error
 
-	err = db.Start(&mgo.Config{
-		URL:     "127.0.0.1:27017/test",
-		ShowLog: true,
+	err = mdb.Start(&db.Config{
+		URL:       "127.0.0.1:27017/test",
+		ConnCount: 1,
 	})
 
 	if err != nil {
-		log.Errorln("db connect failed:", err)
 		signal.Fail()
 		return
 	}
 
-	db.FindOne(evq, "test", bson.M{"name": "davy"}, func(c *char, _ error) {
+	mdb.Execute(func(ses *mgo.Session) {
 
-		// 没有记录, 创建
-		if c == nil {
-			db.Insert(evq, "test", &char{Name: "davy", HP: 10}, nil)
-			db.Insert(evq, "test", &char{Name: "zerg", HP: 90}, func(_ error) {
+		col := ses.DB("").C("test")
 
-				db.FindOne(evq, "test", bson.M{"name": "davy"}, func(c *char, _ error) {
+		var c char
 
-					if c == nil {
-						signal.Log("can not found record")
-						signal.Fail()
-					} else {
-						log.Debugln(c)
+		err := col.Find(bson.M{"name": "davy"}).One(&c)
+
+		evq.PostData(func() {
+
+			if err == mgo.ErrNotFound {
+
+				mdb.Execute(func(ses *mgo.Session) {
+
+					col := ses.DB("").C("test")
+
+					log.Debugln("insert new")
+
+					col.Insert(&char{Name: "davy", HP: 10})
+					col.Insert(&char{Name: "zerg", HP: 90})
+
+					evq.PostData(func() {
+
 						signal.Done(1)
-					}
+
+						update(mdb, evq)
+					})
 
 				})
 
-			})
-
-			// 有记录, 搞定
-		} else {
-
-			log.Debugln(c)
-			signal.Done(1)
-
-		}
-
-	})
-
-	db.Update(evq, "test", bson.M{"name": "davy"}, &char{Name: "davy", HP: 1}, func(err error) {
-
-		if err != nil {
-			signal.Log("update failed")
-			signal.Fail()
-		}
-
-		db.FindOne(evq, "test", bson.M{"name": "davy"}, func(c *char, _ error) {
-
-			if c == nil {
-				signal.Log("update failed")
-				signal.Fail()
 			} else {
-				if c.HP != 1 {
-					signal.Fail()
-				} else {
-					signal.Done(2)
-				}
 
+				log.Debugln("exist")
+
+				log.Debugln(c)
+
+				signal.Done(1)
+				update(mdb, evq)
 			}
-
 		})
+
 	})
 
 	signal.WaitAndExpect(1, "find failed")
@@ -105,5 +109,5 @@ func TestMongoDB(t *testing.T) {
 
 	signal = test.NewSignalTester(t)
 
-	db()
+	rundb()
 }
