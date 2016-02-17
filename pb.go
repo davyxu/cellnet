@@ -1,12 +1,10 @@
 package cellnet
 
 import (
-	"github.com/golang/protobuf/proto"
-	"log"
 	"reflect"
-)
 
-// TODO 抽象Filter
+	"github.com/golang/protobuf/proto"
+)
 
 // 消息到封包
 func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
@@ -16,10 +14,10 @@ func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 	rawdata, err := proto.Marshal(msg)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Errorln(err)
 	}
 
-	meta := NewMessageMeta(msg)
+	meta := MessageMetaByType(reflect.TypeOf(msg))
 
 	return &Packet{
 		MsgID: uint32(meta.ID),
@@ -29,8 +27,9 @@ func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 
 // 封包到消息
 func ParsePacket(pkt *Packet, msgType reflect.Type) (interface{}, error) {
+	// msgType 为ptr类型, new时需要非ptr型
 
-	rawMsg := reflect.New(msgType).Interface()
+	rawMsg := reflect.New(msgType.Elem()).Interface()
 
 	err := proto.Unmarshal(pkt.Data, rawMsg.(proto.Message))
 

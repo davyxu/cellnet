@@ -22,7 +22,7 @@ func server() {
 	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
 	rpc.InstallServer(p)
 
-	rpc.RegisterMessage(p, coredef.TestEchoACK{}, func(resp rpc.Response, content interface{}) {
+	rpc.RegisterMessage(p, "coredef.TestEchoACK", func(resp rpc.Response, content interface{}) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -45,7 +45,7 @@ func client() {
 
 	rpc.InstallClient(p)
 
-	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		rpc.Call(p, &coredef.TestEchoACK{
 			Content: "rpc hello",

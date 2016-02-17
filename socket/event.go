@@ -2,16 +2,15 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/coredef"
 )
 
 var (
-	Event_SessionConnected = uint32(cellnet.NewMessageMeta(&coredef.SessionConnected{}).ID)
-	Event_SessionClosed    = uint32(cellnet.NewMessageMeta(&coredef.SessionClosed{}).ID)
-	Event_SessionAccepted  = uint32(cellnet.NewMessageMeta(&coredef.SessionAccepted{}).ID)
-	Event_PeerInit         = uint32(cellnet.NewMessageMeta(&coredef.PeerInit{}).ID)
-	Event_PeerStart        = uint32(cellnet.NewMessageMeta(&coredef.PeerStart{}).ID)
-	Event_PeerStop         = uint32(cellnet.NewMessageMeta(&coredef.PeerStop{}).ID)
+	Event_SessionConnected = uint32(cellnet.MessageMetaByName("coredef.SessionConnected").ID)
+	Event_SessionClosed    = uint32(cellnet.MessageMetaByName("coredef.SessionClosed").ID)
+	Event_SessionAccepted  = uint32(cellnet.MessageMetaByName("coredef.SessionAccepted").ID)
+	Event_PeerInit         = uint32(cellnet.MessageMetaByName("coredef.PeerInit").ID)
+	Event_PeerStart        = uint32(cellnet.MessageMetaByName("coredef.PeerStart").ID)
+	Event_PeerStop         = uint32(cellnet.MessageMetaByName("coredef.PeerStop").ID)
 )
 
 // 会话事件

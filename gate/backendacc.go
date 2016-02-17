@@ -14,7 +14,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 	BackendAcceptor = socket.NewAcceptor(pipe)
 
 	// 关闭客户端连接
-	socket.RegisterSessionMessage(BackendAcceptor, coredef.CloseClientACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(BackendAcceptor, "coredef.CloseClientACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.CloseClientACK)
 
 		if msg.ClientID == 0 {
@@ -52,7 +52,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 	})
 
 	// 广播
-	socket.RegisterSessionMessage(BackendAcceptor, coredef.DownstreamACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(BackendAcceptor, "coredef.DownstreamACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.DownstreamACK)
 
 		pkt := &cellnet.Packet{

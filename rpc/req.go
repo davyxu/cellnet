@@ -79,7 +79,7 @@ func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 	req := addCall()
 
 	funcType := reflect.TypeOf(callback)
-	req.replyType = funcType.In(0).Elem()
+	req.replyType = funcType.In(0)
 	req.callback = reflect.ValueOf(callback)
 
 	ses, err := getPeerSession(p)
@@ -128,7 +128,7 @@ func (self *request) done(msg *coredef.RemoteCallACK) {
 func InstallClient(p cellnet.Peer) {
 
 	// 请求端
-	socket.RegisterSessionMessage(p, coredef.RemoteCallACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.RemoteCallACK)
 
 		c := getCall(msg.CallID)

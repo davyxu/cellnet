@@ -1,0 +1,1 @@
+call gen_go.bat coredef.proto

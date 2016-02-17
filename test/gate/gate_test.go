@@ -24,11 +24,11 @@ func backendServer() {
 
 	gate.StartGateConnector(pipe, []string{"127.0.0.1:7201"})
 
-	gate.RegisterSessionMessage(coredef.SessionClosed{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
+	gate.RegisterSessionMessage("coredef.SessionClosed", func(content interface{}, gateSes cellnet.Session, clientid int64) {
 		log.Debugf("client closed gate: %d clientid: %d\n", gateSes.ID(), clientid)
 	})
 
-	gate.RegisterSessionMessage(coredef.TestEchoACK{}, func(content interface{}, gateSes cellnet.Session, clientid int64) {
+	gate.RegisterSessionMessage("coredef.TestEchoACK", func(content interface{}, gateSes cellnet.Session, clientid int64) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
@@ -64,7 +64,7 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7101")
 
-	socket.RegisterSessionMessage(evq, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		signal.Done(1)
 
@@ -77,7 +77,7 @@ func client() {
 
 	})
 
-	socket.RegisterSessionMessage(evq, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())

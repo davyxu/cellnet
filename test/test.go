@@ -22,6 +22,7 @@ func (self *SignalTester) WaitAndExpect(value int, msg string) bool {
 		}
 
 	case <-time.After(2 * time.Second):
+		self.Logf("signal timeout: %d %s", value, msg)
 		self.Fail()
 		return false
 	}

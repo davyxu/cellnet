@@ -8,9 +8,9 @@ import (
 )
 
 // 注册连接消息
-func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Session)) *cellnet.MessageMeta {
+func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler func(interface{}, cellnet.Session)) *cellnet.MessageMeta {
 
-	msgMeta := cellnet.NewMessageMeta(msgIns)
+	msgMeta := cellnet.MessageMetaByName(msgName)
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
@@ -35,9 +35,9 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgIns interface{}, userHandl
 }
 
 // 注册连接消息
-func RegisterPeerMessage(eq cellnet.EventQueue, msgIns interface{}, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
+func RegisterPeerMessage(eq cellnet.EventQueue, msgName string, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
 
-	msgMeta := cellnet.NewMessageMeta(msgIns)
+	msgMeta := cellnet.MessageMetaByName(msgName)
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 

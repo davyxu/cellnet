@@ -29,7 +29,7 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 		*gateIndex = index
 
 		// 广播
-		socket.RegisterSessionMessage(conn, coredef.UpstreamACK{}, func(content interface{}, ses cellnet.Session) {
+		socket.RegisterSessionMessage(conn, "coredef.UpstreamACK", func(content interface{}, ses cellnet.Session) {
 			msg := content.(*coredef.UpstreamACK)
 
 			// 生成派发的消息
@@ -48,12 +48,9 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 }
 
 // 注册连接消息
-func RegisterSessionMessage(msgIns interface{}, userHandler func(interface{}, cellnet.Session, int64)) {
+func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
 
-	msgMeta := cellnet.NewMessageMeta(msgIns)
-
-	// 将消息注册到mapper中, 提供反射用
-	socket.MapNameID(msgMeta.Name, msgMeta.ID)
+	msgMeta := cellnet.MessageMetaByName(msgName)
 
 	for _, conn := range gateConnArray {
 

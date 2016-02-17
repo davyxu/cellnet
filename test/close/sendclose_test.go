@@ -19,7 +19,7 @@ func runServer() {
 
 	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		// 发包后关闭
@@ -44,7 +44,7 @@ func testConnActiveClose() {
 
 	p := socket.NewConnector(pipe).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		signal.Done(1)
 		// 连接上发包,告诉服务器不要断开
@@ -54,7 +54,7 @@ func testConnActiveClose() {
 
 	})
 
-	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
@@ -65,7 +65,7 @@ func testConnActiveClose() {
 
 	})
 
-	socket.RegisterSessionMessage(p, coredef.SessionClosed{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.SessionClosed", func(content interface{}, ses cellnet.Session) {
 
 		log.Debugln("close ok!")
 		// 正常断开
@@ -87,7 +87,7 @@ func testRecvDisconnected() {
 
 	p := socket.NewConnector(pipe).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(p, coredef.SessionConnected{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		// 连接上发包
 		ses.Send(&coredef.TestEchoACK{
@@ -97,7 +97,7 @@ func testRecvDisconnected() {
 		signal.Done(1)
 	})
 
-	socket.RegisterSessionMessage(p, coredef.TestEchoACK{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
@@ -106,7 +106,7 @@ func testRecvDisconnected() {
 
 	})
 
-	socket.RegisterSessionMessage(p, coredef.SessionClosed{}, func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "coredef.SessionClosed", func(content interface{}, ses cellnet.Session) {
 
 		// 断开
 		signal.Done(3)
