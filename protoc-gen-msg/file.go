@@ -32,7 +32,7 @@ func printFile(gen *Generator, file *pbmeta.FileDescriptor) {
 
 		msg := file.Message(i)
 
-		gen.Println("cellnet.RegisterMessage(\"", file.PackageName(), ".", msg.Name(), "\", (*", msg.Name(), ")(nil))")
+		gen.Println("cellnet.RegisterMessageMeta(\"", file.PackageName(), ".", msg.Name(), "\", (*", msg.Name(), ")(nil))")
 	}
 
 	gen.Out()

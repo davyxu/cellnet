@@ -23,7 +23,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, close clientid %d", msg.ClientID)
+					log.Debugf("backend->client, close clientid %d", msg.ClientID)
 				}
 				ses.Close()
 
@@ -39,12 +39,12 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			if clientSes != nil {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, close clientid %d", msg.ClientID)
+					log.Debugf("backend->client, close clientid %d", msg.ClientID)
 				}
 
 				clientSes.Close()
 			} else if DebugMode {
-				log.Debugf("[gate] backend->client, client not found, close failed, clientid %d", msg.ClientID)
+				log.Debugf("backend->client, client not found, close failed, clientid %d", msg.ClientID)
 			}
 
 		}
@@ -66,7 +66,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
+					log.Debugf("backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 				}
 
 				ses.RawSend(pkt)
@@ -83,14 +83,14 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 				if clientSes != nil {
 
 					if DebugMode {
-						log.Debugf("[gate] backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
+						log.Debugf("backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 					}
 
 					clientSes.RawSend(pkt)
 
 				} else if DebugMode {
 
-					log.Debugf("[gate] backend->client, client not found, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
+					log.Debugf("backend->client, client not found, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
 				}
 			}
 		}

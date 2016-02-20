@@ -19,7 +19,7 @@ var (
 )
 
 // 注册消息元信息(代码生成专用)
-func RegisterMessage(name string, msg proto.Message) {
+func RegisterMessageMeta(name string, msg proto.Message) {
 
 	rtype := reflect.TypeOf(msg)
 

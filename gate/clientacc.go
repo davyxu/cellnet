@@ -38,7 +38,7 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 			BackendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("[gate] client->backend, msgid: %d clientid: %d data: %v", ev.MsgID, ev.Ses.ID(), ev.Data)
+					log.Debugf("client->backend, msgid: %d clientid: %d data: %v", ev.MsgID, ev.Ses.ID(), ev.Data)
 				}
 
 				ses.RawSend(relaypkt)

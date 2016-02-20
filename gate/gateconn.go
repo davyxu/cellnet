@@ -61,7 +61,7 @@ func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellne
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 				if err != nil {
-					log.Errorln("[gate] unmarshaling error:\n", err)
+					log.Errorln("unmarshaling error:\n", err)
 					return
 				}
 

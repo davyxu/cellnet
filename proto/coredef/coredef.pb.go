@@ -94,9 +94,9 @@ func (*PeerStop) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5}
 // 路由上行数据
 // gate -> backend
 type UpstreamACK struct {
-	MsgID    uint32 `protobuf:"varint,1,opt,name=MsgID" json:"MsgID,omitempty"`
-	Data     []byte `protobuf:"bytes,2,opt,name=Data,proto3" json:"Data,omitempty"`
-	ClientID int64  `protobuf:"varint,3,opt,name=ClientID" json:"ClientID,omitempty"`
+	MsgID    uint32 `protobuf:"varint,1,opt,name=MsgID,json=msgID" json:"MsgID,omitempty"`
+	Data     []byte `protobuf:"bytes,2,opt,name=Data,json=data,proto3" json:"Data,omitempty"`
+	ClientID int64  `protobuf:"varint,3,opt,name=ClientID,json=clientID" json:"ClientID,omitempty"`
 }
 
 func (m *UpstreamACK) Reset()                    { *m = UpstreamACK{} }
@@ -107,7 +107,7 @@ func (*UpstreamACK) Descriptor() ([]byte, []int) { return fileDescriptor0, []int
 // 关闭客户端
 // backend -> gate
 type CloseClientACK struct {
-	ClientID int64 `protobuf:"varint,1,opt,name=ClientID" json:"ClientID,omitempty"`
+	ClientID int64 `protobuf:"varint,1,opt,name=ClientID,json=clientID" json:"ClientID,omitempty"`
 }
 
 func (m *CloseClientACK) Reset()                    { *m = CloseClientACK{} }
@@ -118,9 +118,9 @@ func (*CloseClientACK) Descriptor() ([]byte, []int) { return fileDescriptor0, []
 // 路由下行数据
 // backend -> gate
 type DownstreamACK struct {
-	MsgID    uint32  `protobuf:"varint,1,opt,name=MsgID" json:"MsgID,omitempty"`
-	Data     []byte  `protobuf:"bytes,2,opt,name=Data,proto3" json:"Data,omitempty"`
-	ClientID []int64 `protobuf:"varint,3,rep,name=ClientID" json:"ClientID,omitempty"`
+	MsgID    uint32  `protobuf:"varint,1,opt,name=MsgID,json=msgID" json:"MsgID,omitempty"`
+	Data     []byte  `protobuf:"bytes,2,opt,name=Data,json=data,proto3" json:"Data,omitempty"`
+	ClientID []int64 `protobuf:"varint,3,rep,name=ClientID,json=clientID" json:"ClientID,omitempty"`
 }
 
 func (m *DownstreamACK) Reset()                    { *m = DownstreamACK{} }
@@ -130,9 +130,9 @@ func (*DownstreamACK) Descriptor() ([]byte, []int) { return fileDescriptor0, []i
 
 // 请求
 type RemoteCallREQ struct {
-	MsgID  uint32 `protobuf:"varint,1,opt,name=MsgID" json:"MsgID,omitempty"`
-	Data   []byte `protobuf:"bytes,2,opt,name=Data,proto3" json:"Data,omitempty"`
-	CallID int64  `protobuf:"varint,3,opt,name=CallID" json:"CallID,omitempty"`
+	MsgID  uint32 `protobuf:"varint,1,opt,name=MsgID,json=msgID" json:"MsgID,omitempty"`
+	Data   []byte `protobuf:"bytes,2,opt,name=Data,json=data,proto3" json:"Data,omitempty"`
+	CallID int64  `protobuf:"varint,3,opt,name=CallID,json=callID" json:"CallID,omitempty"`
 }
 
 func (m *RemoteCallREQ) Reset()                    { *m = RemoteCallREQ{} }
@@ -142,9 +142,9 @@ func (*RemoteCallREQ) Descriptor() ([]byte, []int) { return fileDescriptor0, []i
 
 // 回应
 type RemoteCallACK struct {
-	MsgID  uint32 `protobuf:"varint,1,opt,name=MsgID" json:"MsgID,omitempty"`
-	Data   []byte `protobuf:"bytes,2,opt,name=Data,proto3" json:"Data,omitempty"`
-	CallID int64  `protobuf:"varint,3,opt,name=CallID" json:"CallID,omitempty"`
+	MsgID  uint32 `protobuf:"varint,1,opt,name=MsgID,json=msgID" json:"MsgID,omitempty"`
+	Data   []byte `protobuf:"bytes,2,opt,name=Data,json=data,proto3" json:"Data,omitempty"`
+	CallID int64  `protobuf:"varint,3,opt,name=CallID,json=callID" json:"CallID,omitempty"`
 }
 
 func (m *RemoteCallACK) Reset()                    { *m = RemoteCallACK{} }
@@ -156,7 +156,7 @@ func (*RemoteCallACK) Descriptor() ([]byte, []int) { return fileDescriptor0, []i
 // 测试用消息
 // ==========================================================
 type TestEchoACK struct {
-	Content string `protobuf:"bytes,1,opt,name=Content" json:"Content,omitempty"`
+	Content string `protobuf:"bytes,1,opt,name=Content,json=content" json:"Content,omitempty"`
 }
 
 func (m *TestEchoACK) Reset()                    { *m = TestEchoACK{} }
