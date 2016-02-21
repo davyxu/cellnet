@@ -1,6 +1,8 @@
 package socket
 
 import (
+	_ "github.com/davyxu/cellnet/proto/coredef"
+
 	"github.com/davyxu/cellnet"
 )
 
