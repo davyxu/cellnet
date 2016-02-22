@@ -22,6 +22,11 @@ type socketConnector struct {
 	defaultSes cellnet.Session
 }
 
+// 自动重连间隔=0不重连
+func (self *socketConnector) SetAutoReconnectSec(sec int) {
+	self.autoReconnectSec = sec
+}
+
 func (self *socketConnector) Start(address string) cellnet.Peer {
 
 	if self.working {

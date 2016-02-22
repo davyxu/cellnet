@@ -19,6 +19,15 @@ type Peer interface {
 	SessionManager
 }
 
+type Connector interface {
+
+	// 连接后的Session
+	DefaultSession() Session
+
+	// 自动重连间隔, 0表示不重连, 默认不重连
+	SetAutoReconnectSec(sec int)
+}
+
 type SessionManager interface {
 
 	// 获取一个连接

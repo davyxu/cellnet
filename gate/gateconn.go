@@ -16,27 +16,32 @@ type relayEvent struct {
 	ClientID int64
 }
 
+const defaultReconnectSec = 2
+
 func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 
 	gateConnArray = make([]cellnet.Peer, len(addressList))
 
 	for index, addr := range addressList {
 
-		conn := socket.NewConnector(pipe).Start(addr)
-		gateConnArray[index] = conn
+		peer := socket.NewConnector(pipe)
+		peer.(cellnet.Connector).SetAutoReconnectSec(defaultReconnectSec)
 
-		gateIndex := new(int)
-		*gateIndex = index
+		peer.Start(addr)
+		gateConnArray[index] = peer
+
+		//		gateIndex := new(int)
+		//		*gateIndex = index
 
 		// 广播
-		socket.RegisterSessionMessage(conn, "coredef.UpstreamACK", func(content interface{}, ses cellnet.Session) {
+		socket.RegisterSessionMessage(peer, "coredef.UpstreamACK", func(content interface{}, ses cellnet.Session) {
 			msg := content.(*coredef.UpstreamACK)
 
 			// 生成派发的消息
 
 			// TODO 用PostData防止多重嵌套?
 			// 调用已注册的回调
-			conn.CallData(&relayEvent{
+			peer.CallData(&relayEvent{
 				SessionEvent: socket.NewSessionEvent(msg.MsgID, ses, msg.Data),
 				ClientID:     msg.ClientID,
 			})
