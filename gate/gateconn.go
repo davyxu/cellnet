@@ -22,6 +22,11 @@ func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 
 	gateConnArray = make([]cellnet.Peer, len(addressList))
 
+	if len(addressList) == 0 {
+		log.Warnf("empty gate address list")
+		return
+	}
+
 	for index, addr := range addressList {
 
 		peer := socket.NewConnector(pipe)

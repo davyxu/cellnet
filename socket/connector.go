@@ -45,6 +45,8 @@ func (self *socketConnector) connect(address string) {
 
 	for {
 
+		log.Infoln("connecting: ", address)
+
 		// 开始连接
 		cn, err := net.Dial("tcp", address)
 
@@ -65,7 +67,7 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
-		log.Debugln("connected: ", address)
+		log.Infoln("connected: ", address)
 
 		// 连上了, 记录连接
 		self.conn = cn

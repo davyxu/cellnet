@@ -25,6 +25,9 @@ type EventQueue interface {
 
 	// 延时投递
 	DelayPostData(dur time.Duration, callback func())
+
+	// 开启并发模式
+	EnableConcurrenceMode(enable bool)
 }
 
 type evQueue struct {
@@ -34,6 +37,12 @@ type evQueue struct {
 	queue chan interface{}
 
 	inject func(interface{}) bool
+
+	concurrenceMode bool
+}
+
+func (self *evQueue) EnableConcurrenceMode(enable bool) {
+	self.concurrenceMode = enable
 }
 
 // 注册事件回调
@@ -68,7 +77,19 @@ func (self *evQueue) Exists(id int) bool {
 
 // 派发到队列
 func (self *evQueue) PostData(data interface{}) {
-	self.queue <- data
+
+	self.rawPost(data)
+}
+
+func (self *evQueue) rawPost(data interface{}) {
+
+	if self.concurrenceMode {
+
+		self.CallData(data)
+
+	} else {
+		self.queue <- data
+	}
 }
 
 func (self *evQueue) DelayPostData(dur time.Duration, callback func()) {
@@ -76,7 +97,7 @@ func (self *evQueue) DelayPostData(dur time.Duration, callback func()) {
 
 		time.AfterFunc(dur, func() {
 
-			self.queue <- callback
+			self.rawPost(callback)
 		})
 
 	}()

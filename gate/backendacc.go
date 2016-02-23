@@ -13,6 +13,9 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 
 	BackendAcceptor = socket.NewAcceptor(pipe)
 
+	// 默认开启并发
+	BackendAcceptor.EnableConcurrenceMode(true)
+
 	// 关闭客户端连接
 	socket.RegisterSessionMessage(BackendAcceptor, "coredef.CloseClientACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*coredef.CloseClientACK)

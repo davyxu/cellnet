@@ -13,6 +13,9 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 
 	ClientAcceptor = socket.NewAcceptor(pipe)
 
+	// 默认开启并发
+	ClientAcceptor.EnableConcurrenceMode(true)
+
 	// 所有接收到的消息转发到后台
 	ClientAcceptor.InjectData(func(data interface{}) bool {
 
