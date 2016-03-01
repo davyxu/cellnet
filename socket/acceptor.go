@@ -37,7 +37,8 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			conn, err := ln.Accept()
 
 			if err != nil {
-				continue
+				log.Errorln(err)
+				break
 			}
 
 			ses := newSession(NewPacketStream(conn), self.EventQueue, self)
