@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/pbmeta"
 )
 
@@ -32,7 +33,9 @@ func printFile(gen *Generator, file *pbmeta.FileDescriptor) {
 
 		msg := file.Message(i)
 
-		gen.Println("cellnet.RegisterMessageMeta(\"", file.PackageName(), ".", msg.Name(), "\", (*", msg.Name(), ")(nil))")
+		msgFullName := file.PackageName() + "." + msg.Name()
+
+		gen.Println("cellnet.RegisterMessageMeta(\"", msgFullName, "\", (*", msg.Name(), ")(nil), ", int(util.StringHashNoCase(msgFullName)), ")")
 	}
 
 	gen.Out()

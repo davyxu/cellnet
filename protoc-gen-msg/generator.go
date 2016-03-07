@@ -51,7 +51,7 @@ func (self *Generator) Print(str ...interface{}) {
 			fmt.Fprintf(self, "%t", s)
 		case *bool:
 			fmt.Fprintf(self, "%t", *s)
-		case int, int32:
+		case int, int32, uint, uint32:
 			fmt.Fprintf(self, "%d", s)
 		case *int32:
 			fmt.Fprintf(self, "%d", *s)
@@ -62,8 +62,8 @@ func (self *Generator) Print(str ...interface{}) {
 		case *float64:
 			fmt.Fprintf(self, "%g", *s)
 		default:
-			panic("here")
 			self.Fail(fmt.Sprintf("unknown type in printer: %T", v))
+			panic("here")
 
 		}
 	}

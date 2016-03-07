@@ -3,7 +3,6 @@ package cellnet
 import (
 	"reflect"
 
-	"github.com/davyxu/cellnet/util"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -20,14 +19,14 @@ var (
 )
 
 // 注册消息元信息(代码生成专用)
-func RegisterMessageMeta(name string, msg proto.Message) {
+func RegisterMessageMeta(name string, msg proto.Message, id int) {
 
 	rtype := reflect.TypeOf(msg)
 
 	meta := &MessageMeta{
 		Type: rtype,
 		Name: name,
-		ID:   int(util.StringHashNoCase(name)),
+		ID:   id,
 	}
 
 	name2msgmeta[name] = meta
