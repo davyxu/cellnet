@@ -17,6 +17,8 @@ type socketAcceptor struct {
 
 func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
+	log.Infoln("listening: ", address)
+
 	ln, err := net.Listen("tcp", address)
 
 	self.listener = ln
@@ -26,8 +28,6 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 		log.Errorln("listen failed", err.Error())
 		return self
 	}
-
-	log.Debugln("listening: ", address)
 
 	self.running = true
 

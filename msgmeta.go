@@ -15,6 +15,7 @@ type MessageMeta struct {
 
 var (
 	name2msgmeta    = make(map[string]*MessageMeta)
+	id2msgmeta      = make(map[int]*MessageMeta)
 	msgtype2msgmeta = make(map[reflect.Type]*MessageMeta)
 )
 
@@ -31,6 +32,7 @@ func RegisterMessageMeta(name string, msg proto.Message) {
 
 	name2msgmeta[name] = meta
 	msgtype2msgmeta[rtype] = meta
+	id2msgmeta[meta.ID] = meta
 }
 
 // 根据名字查找消息元信息
@@ -45,6 +47,15 @@ func MessageMetaByName(name string) *MessageMeta {
 // 根据类型名字查找消息元信息
 func MessageMetaByType(rtype reflect.Type) *MessageMeta {
 	if v, ok := msgtype2msgmeta[rtype]; ok {
+		return v
+	}
+
+	return nil
+}
+
+// 根据id查找消息元信息
+func MessageMetaByID(id int) *MessageMeta {
+	if v, ok := id2msgmeta[id]; ok {
 		return v
 	}
 

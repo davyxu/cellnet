@@ -18,6 +18,7 @@ type relayEvent struct {
 
 const defaultReconnectSec = 2
 
+// 后台服务器到gate的连接
 func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
 
 	gateConnArray = make([]cellnet.Peer, len(addressList))
@@ -68,6 +69,8 @@ func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellne
 
 			if ev, ok := data.(*relayEvent); ok {
 
+				log.Debugf("gate->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.ClientID)
+
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 				if err != nil {
@@ -93,6 +96,8 @@ func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
 
 	userpkt, _ := cellnet.BuildPacket(data)
 
+	log.Debugf("backend->gate, msg: %s(%d) clientid: %d", getMsgName(userpkt.MsgID), userpkt.MsgID, clientid)
+
 	gateSes.Send(&coredef.DownstreamACK{
 		Data:     userpkt.Data,
 		MsgID:    userpkt.MsgID,
@@ -106,6 +111,8 @@ func CloseClient(gateSes cellnet.Session, clientid int64) {
 	if gateSes == nil {
 		return
 	}
+
+	log.Debugf("backend->gate, CloseClient clientid: %d", clientid)
 
 	// 通知关闭
 	gateSes.Send(&coredef.CloseClientACK{

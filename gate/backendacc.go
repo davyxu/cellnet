@@ -86,14 +86,14 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 				if clientSes != nil {
 
 					if DebugMode {
-						log.Debugf("backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
+						log.Debugf("backend->client, msg: %s(%d) clientid: %d", getMsgName(msg.MsgID), msg.MsgID, msg.ClientID)
 					}
 
 					clientSes.RawSend(pkt)
 
 				} else if DebugMode {
 
-					log.Debugf("backend->client, client not found, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
+					log.Debugf("backend->client, client not found, msg: %s(%d) clientid: %d", getMsgName(msg.MsgID), msg.MsgID, msg.ClientID)
 				}
 			}
 		}

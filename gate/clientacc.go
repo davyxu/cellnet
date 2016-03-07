@@ -8,6 +8,15 @@ import (
 
 var ClientAcceptor cellnet.Peer
 
+func getMsgName(msgid uint32) string {
+
+	if meta := cellnet.MessageMetaByID(int(msgid)); meta != nil {
+		return meta.Name
+	}
+
+	return ""
+}
+
 // 开启客户端侦听通道
 func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 
@@ -41,7 +50,7 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 			BackendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("client->backend, msgid: %d clientid: %d data: %v", ev.MsgID, ev.Ses.ID(), ev.Data)
+					log.Debugf("client->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.Ses.ID())
 				}
 
 				ses.RawSend(relaypkt)
