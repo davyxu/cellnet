@@ -1,4 +1,4 @@
-package gate
+package router
 
 import (
 	"github.com/davyxu/cellnet"
@@ -8,7 +8,7 @@ import (
 
 // 连接到Gate的连接器
 
-var gateConnArray []cellnet.Peer
+var routerConnArray []cellnet.Peer
 
 type relayEvent struct {
 	*socket.SessionEvent
@@ -18,26 +18,26 @@ type relayEvent struct {
 
 const defaultReconnectSec = 2
 
-// 后台服务器到gate的连接
-func StartGateConnector(pipe cellnet.EventPipe, addressList []string) {
+// 后台服务器到router的连接
+func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerName string) {
 
-	gateConnArray = make([]cellnet.Peer, len(addressList))
+	routerConnArray = make([]cellnet.Peer, len(addressList))
 
 	if len(addressList) == 0 {
-		log.Warnf("empty gate address list")
+		log.Warnf("empty router address list")
 		return
 	}
 
 	for index, addr := range addressList {
 
 		peer := socket.NewConnector(pipe)
+		peer.SetName(peerName)
+
 		peer.(cellnet.Connector).SetAutoReconnectSec(defaultReconnectSec)
 
 		peer.Start(addr)
-		gateConnArray[index] = peer
 
-		//		gateIndex := new(int)
-		//		*gateIndex = index
+		routerConnArray[index] = peer
 
 		// 广播
 		socket.RegisterSessionMessage(peer, "coredef.UpstreamACK", func(content interface{}, ses cellnet.Session) {
@@ -63,13 +63,13 @@ func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellne
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 
-	for _, conn := range gateConnArray {
+	for _, conn := range routerConnArray {
 
 		conn.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 			if ev, ok := data.(*relayEvent); ok {
 
-				log.Debugf("gate->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.ClientID)
+				log.Debugf("router->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.ClientID)
 
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
@@ -88,17 +88,17 @@ func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellne
 }
 
 // 将消息发送到客户端
-func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
+func SendToClient(routerSes cellnet.Session, clientid int64, data interface{}) {
 
-	if gateSes == nil {
+	if routerSes == nil {
 		return
 	}
 
 	userpkt, _ := cellnet.BuildPacket(data)
 
-	log.Debugf("backend->gate, msg: %s(%d) clientid: %d", getMsgName(userpkt.MsgID), userpkt.MsgID, clientid)
+	log.Debugf("backend->router, msg: %s(%d) clientid: %d", getMsgName(userpkt.MsgID), userpkt.MsgID, clientid)
 
-	gateSes.Send(&coredef.DownstreamACK{
+	routerSes.Send(&coredef.DownstreamACK{
 		Data:     userpkt.Data,
 		MsgID:    userpkt.MsgID,
 		ClientID: []int64{clientid},
@@ -106,16 +106,16 @@ func SendToClient(gateSes cellnet.Session, clientid int64, data interface{}) {
 }
 
 // 通知网关关闭客户端连接
-func CloseClient(gateSes cellnet.Session, clientid int64) {
+func CloseClient(routerSes cellnet.Session, clientid int64) {
 
-	if gateSes == nil {
+	if routerSes == nil {
 		return
 	}
 
-	log.Debugf("backend->gate, CloseClient clientid: %d", clientid)
+	log.Debugf("backend->router, CloseClient clientid: %d", clientid)
 
 	// 通知关闭
-	gateSes.Send(&coredef.CloseClientACK{
+	routerSes.Send(&coredef.CloseClientACK{
 		ClientID: clientid,
 	})
 }
@@ -125,7 +125,7 @@ func CloseAllClient() {
 
 	ack := &coredef.CloseClientACK{}
 
-	for _, conn := range gateConnArray {
+	for _, conn := range routerConnArray {
 		ses := conn.(connSesManager).DefaultSession()
 		if ses == nil {
 			continue
@@ -139,7 +139,7 @@ type connSesManager interface {
 	DefaultSession() cellnet.Session
 }
 
-// 发送给所有gate的所有客户端
+// 发送给所有router的所有客户端
 func BroadcastToClient(data interface{}) {
 
 	pkt, _ := cellnet.BuildPacket(data)
@@ -149,7 +149,7 @@ func BroadcastToClient(data interface{}) {
 		MsgID: pkt.MsgID,
 	}
 
-	for _, conn := range gateConnArray {
+	for _, conn := range routerConnArray {
 		ses := conn.(connSesManager).DefaultSession()
 		if ses == nil {
 			continue
@@ -162,10 +162,10 @@ func BroadcastToClient(data interface{}) {
 // 客户端列表
 type ClientList map[cellnet.Session][]int64
 
-func (self ClientList) Add(gateSes cellnet.Session, clientid int64) {
+func (self ClientList) Add(routerSes cellnet.Session, clientid int64) {
 
 	// 事件
-	list, ok := self[gateSes]
+	list, ok := self[routerSes]
 
 	// 新建
 	if !ok {

@@ -1,4 +1,4 @@
-package gate
+package router
 
 import (
 	"github.com/davyxu/cellnet"
@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet/socket"
 )
 
-var ClientAcceptor cellnet.Peer
+var FrontendAcceptor cellnet.Peer
 
 func getMsgName(msgid uint32) string {
 
@@ -17,16 +17,17 @@ func getMsgName(msgid uint32) string {
 	return ""
 }
 
-// 开启客户端侦听通道
-func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
+// 开启前端侦听通道
+func StartFrontendAcceptor(pipe cellnet.EventPipe, address string, peerName string) {
 
-	ClientAcceptor = socket.NewAcceptor(pipe)
+	FrontendAcceptor = socket.NewAcceptor(pipe)
+	FrontendAcceptor.SetName(peerName)
 
 	// 默认开启并发
-	ClientAcceptor.EnableConcurrenceMode(true)
+	FrontendAcceptor.EnableConcurrenceMode(true)
 
 	// 所有接收到的消息转发到后台
-	ClientAcceptor.InjectData(func(data interface{}) bool {
+	FrontendAcceptor.InjectData(func(data interface{}) bool {
 
 		if ev, ok := data.(*socket.SessionEvent); ok {
 
@@ -50,7 +51,7 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 			BackendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
-					log.Debugf("client->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.Ses.ID())
+					log.Debugf("client->frontend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.Ses.ID())
 				}
 
 				ses.RawSend(relaypkt)
@@ -63,6 +64,6 @@ func StartClientAcceptor(pipe cellnet.EventPipe, address string) {
 		return false
 	})
 
-	ClientAcceptor.Start(address)
+	FrontendAcceptor.Start(address)
 
 }

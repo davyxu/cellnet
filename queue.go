@@ -26,7 +26,7 @@ type EventQueue interface {
 	// 延时投递
 	DelayPostData(dur time.Duration, callback func())
 
-	// 开启并发模式
+	// 开启并发模式, 回调被调用的线程为post方线程
 	EnableConcurrenceMode(enable bool)
 }
 
@@ -85,9 +85,12 @@ func (self *evQueue) rawPost(data interface{}) {
 
 	if self.concurrenceMode {
 
+		// 不通过pipe, 直接调用回调
 		self.CallData(data)
 
 	} else {
+
+		// 通过queue转换到pipe的线程
 		self.queue <- data
 	}
 }

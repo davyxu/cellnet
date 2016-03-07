@@ -17,19 +17,19 @@ type socketAcceptor struct {
 
 func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
-	log.Infoln("listening: ", address)
-
 	ln, err := net.Listen("tcp", address)
 
 	self.listener = ln
 
 	if err != nil {
 
-		log.Errorln("listen failed", err.Error())
+		log.Errorf("#listen failed(%s) %v", self.name, err.Error())
 		return self
 	}
 
 	self.running = true
+
+	log.Debugf("#listen(%s) %s ", self.name, address)
 
 	// 接受线程
 	go func() {
@@ -50,6 +50,8 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			ses.OnClose = func() {
 				self.sessionMgr.Remove(ses)
 			}
+
+			log.Debugf("#accepted(%s) sid: %d", self.name, ses.ID())
 
 			// 通知逻辑
 			self.PostData(NewSessionEvent(Event_SessionAccepted, ses, nil))

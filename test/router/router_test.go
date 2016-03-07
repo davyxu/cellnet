@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/gate"
 	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/router"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
@@ -18,24 +18,24 @@ var signal *test.SignalTester
 // 后台服务器
 func backendServer() {
 
-	gate.DebugMode = true
+	router.DebugMode = true
 
 	pipe := cellnet.NewEventPipe()
 
-	gate.StartGateConnector(pipe, []string{"127.0.0.1:7201"})
+	router.StartBackendConnector(pipe, []string{"127.0.0.1:7201"}, "svc->backend")
 
-	gate.RegisterSessionMessage("coredef.SessionClosed", func(content interface{}, gateSes cellnet.Session, clientid int64) {
-		log.Debugf("client closed gate: %d clientid: %d\n", gateSes.ID(), clientid)
+	router.RegisterSessionMessage("coredef.SessionClosed", func(content interface{}, routerSes cellnet.Session, clientid int64) {
+		log.Debugf("client closed router: %d clientid: %d\n", routerSes.ID(), clientid)
 	})
 
-	gate.RegisterSessionMessage("coredef.TestEchoACK", func(content interface{}, gateSes cellnet.Session, clientid int64) {
+	router.RegisterSessionMessage("coredef.TestEchoACK", func(content interface{}, routerSes cellnet.Session, clientid int64) {
 		msg := content.(*coredef.TestEchoACK)
 
-		log.Debugf("recv relay,  gate: %d clientid: %d\n", gateSes.ID(), clientid)
+		log.Debugf("recv relay,  router: %d clientid: %d\n", routerSes.ID(), clientid)
 
 		signal.Done(2)
 
-		gate.SendToClient(gateSes, clientid, &coredef.TestEchoACK{
+		router.SendToClient(routerSes, clientid, &coredef.TestEchoACK{
 			Content: msg.Content,
 		})
 	})
@@ -44,14 +44,14 @@ func backendServer() {
 }
 
 // 网关服务器
-func gateServer() {
+func routerServer() {
 
-	gate.DebugMode = true
+	router.DebugMode = true
 
 	pipe := cellnet.NewEventPipe()
 
-	gate.StartBackendAcceptor(pipe, "127.0.0.1:7201")
-	gate.StartClientAcceptor(pipe, "127.0.0.1:7101")
+	router.StartBackendAcceptor(pipe, "127.0.0.1:7201", "svc->backend")
+	router.StartFrontendAcceptor(pipe, "127.0.0.1:7101", "client->router")
 
 	pipe.Start()
 
@@ -87,7 +87,7 @@ func client() {
 
 	pipe.Start()
 
-	signal.WaitAndExpect(1, "not connceted to gate")
+	signal.WaitAndExpect(1, "not connceted to router")
 	signal.WaitAndExpect(2, "not recv client msg")
 	signal.WaitAndExpect(3, "not recv server msg")
 
@@ -97,7 +97,7 @@ func TestGate(t *testing.T) {
 
 	signal = test.NewSignalTester(t)
 
-	gateServer()
+	routerServer()
 	backendServer()
 	client()
 

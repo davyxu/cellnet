@@ -45,15 +45,13 @@ func (self *socketConnector) connect(address string) {
 
 	for {
 
-		log.Infoln("connecting: ", address)
-
 		// 开始连接
 		cn, err := net.Dial("tcp", address)
 
 		// 连不上
 		if err != nil {
 
-			log.Errorln("cononect failed", err.Error())
+			log.Errorln("#connect failed(%s) %v", self.name, err.Error())
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
@@ -67,8 +65,6 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
-		log.Infoln("connected: ", address)
-
 		// 连上了, 记录连接
 		self.conn = cn
 
@@ -76,6 +72,8 @@ func (self *socketConnector) connect(address string) {
 		ses := newSession(NewPacketStream(cn), self.EventQueue, self)
 		self.sessionMgr.Add(ses)
 		self.defaultSes = ses
+
+		log.Debugf("#connected(%s) %s sid: %d", self.name, address, ses.id)
 
 		// 内部断开回调
 		ses.OnClose = func() {

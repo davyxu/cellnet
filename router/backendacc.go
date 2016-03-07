@@ -1,4 +1,4 @@
-package gate
+package router
 
 import (
 	"github.com/davyxu/cellnet"
@@ -9,9 +9,10 @@ import (
 var BackendAcceptor cellnet.Peer
 
 // 开启后台服务器的侦听通道
-func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
+func StartBackendAcceptor(pipe cellnet.EventPipe, address string, peerName string) {
 
 	BackendAcceptor = socket.NewAcceptor(pipe)
+	BackendAcceptor.SetName(peerName)
 
 	// 默认开启并发
 	BackendAcceptor.EnableConcurrenceMode(true)
@@ -23,7 +24,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 		if msg.ClientID == 0 {
 
 			// 关闭所有客户端
-			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
+			FrontendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
 					log.Debugf("backend->client, close clientid %d", msg.ClientID)
@@ -36,7 +37,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 		} else {
 
 			// 关闭指定客户端
-			clientSes := ClientAcceptor.GetSession(msg.ClientID)
+			clientSes := FrontendAcceptor.GetSession(msg.ClientID)
 
 			// 找到连接并关闭
 			if clientSes != nil {
@@ -66,7 +67,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 		if len(msg.ClientID) == 0 {
 
 			// 广播给所有客户端
-			ClientAcceptor.IterateSession(func(ses cellnet.Session) bool {
+			FrontendAcceptor.IterateSession(func(ses cellnet.Session) bool {
 
 				if DebugMode {
 					log.Debugf("backend->client, msgid: %d clientid %d", msg.MsgID, msg.ClientID)
@@ -81,7 +82,7 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string) {
 
 			// 指定客户端发送
 			for _, clientid := range msg.ClientID {
-				clientSes := ClientAcceptor.GetSession(clientid)
+				clientSes := FrontendAcceptor.GetSession(clientid)
 
 				if clientSes != nil {
 
