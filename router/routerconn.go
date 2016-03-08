@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet/socket"
 )
 
-// 连接到Gate的连接器
+// Backend的各种服务器端使用以下代码
 
 var routerConnArray []cellnet.Peer
 
@@ -19,7 +19,7 @@ type relayEvent struct {
 const defaultReconnectSec = 2
 
 // 后台服务器到router的连接
-func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerName string) {
+func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerName string, svcName string) {
 
 	routerConnArray = make([]cellnet.Peer, len(addressList))
 
@@ -38,6 +38,17 @@ func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerNam
 		peer.Start(addr)
 
 		routerConnArray[index] = peer
+
+		// 连上网关时, 发送自己的服务器名字进行注册
+		socket.RegisterSessionMessage(peer, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+
+			log.Debugln("connected")
+
+			ses.Send(&coredef.RegisterRouterBackendACK{
+				Name: svcName,
+			})
+
+		})
 
 		// 广播
 		socket.RegisterSessionMessage(peer, "coredef.UpstreamACK", func(content interface{}, ses cellnet.Session) {
@@ -62,6 +73,11 @@ func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerNam
 func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
+
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return
+	}
 
 	for _, conn := range routerConnArray {
 

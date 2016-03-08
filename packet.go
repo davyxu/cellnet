@@ -6,6 +6,6 @@ type Packet struct {
 	Data  []byte
 }
 
-func (self Packet) ContextID() int {
-	return int(self.MsgID)
+func (self Packet) ContextID() uint32 {
+	return self.MsgID
 }

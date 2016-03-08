@@ -22,7 +22,7 @@ func backendServer() {
 
 	pipe := cellnet.NewEventPipe()
 
-	router.StartBackendConnector(pipe, []string{"127.0.0.1:7201"}, "svc->backend")
+	router.StartBackendConnector(pipe, []string{"127.0.0.1:7201"}, "svc->backend", "game")
 
 	router.RegisterSessionMessage("coredef.SessionClosed", func(content interface{}, routerSes cellnet.Session, clientid int64) {
 		log.Debugf("client closed router: %d clientid: %d\n", routerSes.ID(), clientid)

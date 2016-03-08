@@ -9,17 +9,17 @@ import (
 type MessageMeta struct {
 	Type reflect.Type
 	Name string
-	ID   int
+	ID   uint32
 }
 
 var (
 	name2msgmeta    = make(map[string]*MessageMeta)
-	id2msgmeta      = make(map[int]*MessageMeta)
+	id2msgmeta      = make(map[uint32]*MessageMeta)
 	msgtype2msgmeta = make(map[reflect.Type]*MessageMeta)
 )
 
 // 注册消息元信息(代码生成专用)
-func RegisterMessageMeta(name string, msg proto.Message, id int) {
+func RegisterMessageMeta(name string, msg proto.Message, id uint32) {
 
 	rtype := reflect.TypeOf(msg)
 
@@ -53,7 +53,7 @@ func MessageMetaByType(rtype reflect.Type) *MessageMeta {
 }
 
 // 根据id查找消息元信息
-func MessageMetaByID(id int) *MessageMeta {
+func MessageMetaByID(id uint32) *MessageMeta {
 	if v, ok := id2msgmeta[id]; ok {
 		return v
 	}

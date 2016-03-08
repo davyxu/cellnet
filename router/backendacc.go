@@ -6,6 +6,8 @@ import (
 	"github.com/davyxu/cellnet/socket"
 )
 
+// agent服务器需要对接后方各种服务器使用以下代码
+
 var BackendAcceptor cellnet.Peer
 
 // 开启后台服务器的侦听通道
@@ -16,6 +18,21 @@ func StartBackendAcceptor(pipe cellnet.EventPipe, address string, peerName strin
 
 	// 默认开启并发
 	BackendAcceptor.EnableConcurrenceMode(true)
+
+	// 收到后端服务器发来的注册, 标示连接
+	socket.RegisterSessionMessage(BackendAcceptor, "coredef.RegisterRouterBackendACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*coredef.RegisterRouterBackendACK)
+
+		registerBackend(ses, msg.Name)
+
+	})
+
+	// 断开连接时, 刷新路由
+	socket.RegisterSessionMessage(BackendAcceptor, "coredef.SessionClosed", func(content interface{}, ses cellnet.Session) {
+
+		closeBackend(ses)
+
+	})
 
 	// 关闭客户端连接
 	socket.RegisterSessionMessage(BackendAcceptor, "coredef.CloseClientACK", func(content interface{}, ses cellnet.Session) {

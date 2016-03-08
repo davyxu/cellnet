@@ -51,7 +51,7 @@ func (self *socketConnector) connect(address string) {
 		// 连不上
 		if err != nil {
 
-			log.Errorln("#connect failed(%s) %v", self.name, err.Error())
+			log.Errorf("#connect failed(%s) %v", self.name, err.Error())
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {

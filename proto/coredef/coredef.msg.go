@@ -17,6 +17,7 @@ func init() {
 	cellnet.RegisterMessageMeta("coredef.UpstreamACK", (*UpstreamACK)(nil), 762952537)
 	cellnet.RegisterMessageMeta("coredef.CloseClientACK", (*CloseClientACK)(nil), 379851567)
 	cellnet.RegisterMessageMeta("coredef.DownstreamACK", (*DownstreamACK)(nil), 3820982158)
+	cellnet.RegisterMessageMeta("coredef.RegisterRouterBackendACK", (*RegisterRouterBackendACK)(nil), 3006466942)
 	cellnet.RegisterMessageMeta("coredef.RemoteCallREQ", (*RemoteCallREQ)(nil), 2289557267)
 	cellnet.RegisterMessageMeta("coredef.RemoteCallACK", (*RemoteCallACK)(nil), 3811386225)
 	cellnet.RegisterMessageMeta("coredef.TestEchoACK", (*TestEchoACK)(nil), 2828690649)

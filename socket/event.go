@@ -1,6 +1,8 @@
 package socket
 
 import (
+	"fmt"
+
 	_ "github.com/davyxu/cellnet/proto/coredef"
 
 	"github.com/davyxu/cellnet"
@@ -21,6 +23,10 @@ type SessionEvent struct {
 	Ses cellnet.Session
 }
 
+func (self SessionEvent) String() string {
+	return fmt.Sprintf("SessionEvent msgid: %d data: %v", self.MsgID, self.Data)
+}
+
 func NewSessionEvent(msgid uint32, s cellnet.Session, data []byte) *SessionEvent {
 	return &SessionEvent{
 		Packet: &cellnet.Packet{MsgID: msgid, Data: data},
@@ -34,8 +40,12 @@ type PeerEvent struct {
 	P     cellnet.Peer
 }
 
-func (self PeerEvent) ContextID() int {
-	return int(self.MsgID)
+func (self PeerEvent) ContextID() uint32 {
+	return self.MsgID
+}
+
+func (self PeerEvent) String() string {
+	return fmt.Sprintf("PeerEvent msgid: %d", self.MsgID)
 }
 
 func NewPeerEvent(msgid uint32, p cellnet.Peer) *PeerEvent {

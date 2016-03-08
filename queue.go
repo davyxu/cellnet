@@ -12,7 +12,7 @@ import (
 type EventQueue interface {
 
 	// 注册事件回调
-	RegisterCallback(id int, f func(interface{}))
+	RegisterCallback(id uint32, f func(interface{}))
 
 	// 设置事件截获钩子, 在CallData中调用钩子
 	InjectData(func(interface{}) bool)
@@ -32,7 +32,7 @@ type EventQueue interface {
 
 type evQueue struct {
 	// 保证注册发生在初始化, 读取发生在之后可以不用锁
-	contextMap map[int][]func(interface{})
+	contextMap map[uint32][]func(interface{})
 
 	queue chan interface{}
 
@@ -46,7 +46,7 @@ func (self *evQueue) EnableConcurrenceMode(enable bool) {
 }
 
 // 注册事件回调
-func (self *evQueue) RegisterCallback(id int, f func(interface{})) {
+func (self *evQueue) RegisterCallback(id uint32, f func(interface{})) {
 
 	// 事件
 	em, ok := self.contextMap[id]
@@ -69,7 +69,7 @@ func (self *evQueue) InjectData(f func(interface{}) bool) {
 	self.inject = f
 }
 
-func (self *evQueue) Exists(id int) bool {
+func (self *evQueue) Exists(id uint32) bool {
 	_, ok := self.contextMap[id]
 
 	return ok
@@ -110,7 +110,7 @@ func (self *evQueue) Count() int {
 	return len(self.contextMap)
 }
 
-func (self *evQueue) CountByID(id int) int {
+func (self *evQueue) CountByID(id uint32) int {
 	if v, ok := self.contextMap[id]; ok {
 		return len(v)
 	}
@@ -119,7 +119,7 @@ func (self *evQueue) CountByID(id int) int {
 }
 
 type contentIndexer interface {
-	ContextID() int
+	ContextID() uint32
 }
 
 // 通过数据接口调用
@@ -133,6 +133,7 @@ func (self *evQueue) CallData(data interface{}) {
 	switch d := data.(type) {
 	// ID索引的消息
 	case contentIndexer:
+
 		if carr, ok := self.contextMap[d.ContextID()]; ok {
 
 			// 遍历所有的回调
@@ -144,6 +145,8 @@ func (self *evQueue) CallData(data interface{}) {
 	// 直接回调
 	case func():
 		d()
+	default:
+		log.Errorln("unknown queue data: ", data)
 	}
 
 }
@@ -152,7 +155,7 @@ const queueLength = 10
 
 func newEventQueue() *evQueue {
 	self := &evQueue{
-		contextMap: make(map[int][]func(interface{})),
+		contextMap: make(map[uint32][]func(interface{})),
 		queue:      make(chan interface{}, queueLength),
 	}
 

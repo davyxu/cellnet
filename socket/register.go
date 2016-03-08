@@ -12,6 +12,11 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return nil
+	}
+
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 		if ev, ok := data.(*SessionEvent); ok {
@@ -38,6 +43,11 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 func RegisterPeerMessage(eq cellnet.EventQueue, msgName string, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
+
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return nil
+	}
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
