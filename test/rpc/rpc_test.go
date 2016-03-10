@@ -19,7 +19,9 @@ func server() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
+	p := socket.NewAcceptor(pipe)
+	p.SetName("server")
+	p.Start("127.0.0.1:7201")
 	rpc.InstallServer(p)
 
 	rpc.RegisterMessage(p, "coredef.TestEchoACK", func(resp rpc.Response, content interface{}) {
@@ -41,7 +43,9 @@ func client() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewConnector(pipe).Start("127.0.0.1:7201")
+	p := socket.NewConnector(pipe)
+	p.SetName("client")
+	p.Start("127.0.0.1:7201")
 
 	rpc.InstallClient(p)
 

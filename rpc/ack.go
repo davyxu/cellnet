@@ -26,8 +26,8 @@ func (self *response) Feedback(msg interface{}) {
 	})
 }
 
-func (self *response) ContextID() int {
-	return int(self.req.MsgID)
+func (self *response) ContextID() uint32 {
+	return self.req.MsgID
 }
 
 func InstallServer(p cellnet.Peer) {
