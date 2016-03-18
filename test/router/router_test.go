@@ -24,11 +24,11 @@ func backendServer() {
 
 	router.StartBackendConnector(pipe, []string{"127.0.0.1:7201"}, "svc->backend", "game")
 
-	router.RegisterSessionMessage("coredef.SessionClosed", func(content interface{}, routerSes cellnet.Session, clientid int64) {
+	router.RegisterMessage("coredef.SessionClosed", func(content interface{}, routerSes cellnet.Session, clientid int64) {
 		log.Debugf("client closed router: %d clientid: %d\n", routerSes.ID(), clientid)
 	})
 
-	router.RegisterSessionMessage("coredef.TestEchoACK", func(content interface{}, routerSes cellnet.Session, clientid int64) {
+	router.RegisterMessage("coredef.TestEchoACK", func(content interface{}, routerSes cellnet.Session, clientid int64) {
 		msg := content.(*coredef.TestEchoACK)
 
 		log.Debugf("recv relay,  router: %d clientid: %d\n", routerSes.ID(), clientid)

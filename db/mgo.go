@@ -13,7 +13,7 @@ import (
 
 type Config struct {
 	URL       string // username:password@tcp(address:port)/dbname   ?authSource=admin
-	ConnCount int    // 连接量
+	ConnCount int32  // 连接量
 }
 
 type MongoDriver struct {
@@ -44,7 +44,7 @@ func (self *MongoDriver) Start(cfg *Config) error {
 
 	// Dial出来的ses底层共享连接池, Copy可以使用这些连接
 
-	for i := 0; i < self.ConnCount-1; i++ {
+	for i := 0; i < int(self.ConnCount)-1; i++ {
 
 		self.sesChan <- ses.Copy()
 	}

@@ -70,7 +70,7 @@ func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerNam
 }
 
 // 注册连接消息
-func RegisterSessionMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
+func RegisterMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 
