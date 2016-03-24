@@ -90,6 +90,7 @@ func client() {
 # TODO
 
 ## MongoDB
+* 网关处理多同名svc时的转发
 * DB内存映射框架
 * DB存储日志
 

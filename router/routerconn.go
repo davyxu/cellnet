@@ -42,8 +42,6 @@ func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerNam
 		// 连上网关时, 发送自己的服务器名字进行注册
 		socket.RegisterSessionMessage(peer, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
-			log.Debugln("connected")
-
 			ses.Send(&coredef.RegisterRouterBackendACK{
 				Name: svcName,
 			})
