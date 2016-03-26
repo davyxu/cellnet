@@ -185,10 +185,19 @@ func (self ClientList) Add(routerSes cellnet.Session, clientid int64) {
 	if !ok {
 
 		list = make([]int64, 0)
-
 	}
 
 	list = append(list, clientid)
+
+	self[routerSes] = list
+}
+
+func (self ClientList) Get(ses cellnet.Session) []int64 {
+	if v, ok := self[ses]; ok {
+		return v
+	}
+
+	return nil
 }
 
 func NewClientList() ClientList {
