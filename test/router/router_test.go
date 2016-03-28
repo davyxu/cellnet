@@ -33,11 +33,21 @@ func backendServer() {
 
 		log.Debugf("recv relay,  router: %d clientid: %d\n", routerSes.ID(), clientid)
 
-		signal.Done(2)
+		// issue #2. 客户端列表未添加到map, @lantiao reported
+		cllist := router.NewClientList()
+		cllist.Add(routerSes, 1)
+		cllist.Add(routerSes, 2)
+
+		list := cllist.Get(routerSes)
+
+		if list[0] == 1 && list[1] == 2 {
+			signal.Done(2)
+		}
 
 		router.SendToClient(routerSes, clientid, &coredef.TestEchoACK{
 			Content: msg.Content,
 		})
+
 	})
 
 	pipe.Start()
