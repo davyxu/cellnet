@@ -42,7 +42,17 @@ func (self *ltvSession) Send(data interface{}) {
 
 	pkt, meta := cellnet.BuildPacket(data)
 
-	log.Debugf("#send(%s) sid: %d %s(%d)|%s", self.FromPeer().Name(), self.ID(), meta.Name, len(pkt.Data), data.(proto.Message).String())
+	if EnableMessageLog {
+		msgLog(&MessageLogInfo{
+			Dir:       "send",
+			PeerName:  self.FromPeer().Name(),
+			SessionID: self.ID(),
+			Name:      meta.Name,
+			Size:      int32(len(pkt.Data)),
+			Data:      data.(proto.Message).String(),
+		})
+
+	}
 
 	self.RawSend(pkt)
 }

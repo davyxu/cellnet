@@ -28,7 +28,17 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 				return
 			}
 
-			log.Debugf("#recv(%s) sid: %d %s(%d)|%s", ev.Ses.FromPeer().Name(), ev.Ses.ID(), msgMeta.Name, len(ev.Packet.Data), rawMsg.(proto.Message).String())
+			if EnableMessageLog {
+				msgLog(&MessageLogInfo{
+					Dir:       "recv",
+					PeerName:  ev.Ses.FromPeer().Name(),
+					SessionID: ev.Ses.ID(),
+					Name:      msgMeta.Name,
+					Size:      int32(len(ev.Packet.Data)),
+					Data:      rawMsg.(proto.Message).String(),
+				})
+
+			}
 
 			userHandler(rawMsg, ev.Ses)
 
