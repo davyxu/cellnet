@@ -67,7 +67,7 @@ func StartBackendConnector(pipe cellnet.EventPipe, addressList []string, peerNam
 
 }
 
-// 注册连接消息
+// 注册从网关接收到的消息
 func RegisterMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
@@ -83,14 +83,18 @@ func RegisterMessage(msgName string, userHandler func(interface{}, cellnet.Sessi
 
 			if ev, ok := data.(*relayEvent); ok {
 
-				log.Debugf("router->backend, msg: %s(%d) clientid: %d", getMsgName(ev.MsgID), ev.MsgID, ev.ClientID)
-
 				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 				if err != nil {
 					log.Errorln("unmarshaling error:\n", err)
 					return
 				}
+
+				msgContent := rawMsg.(interface {
+					String() string
+				}).String()
+
+				log.Debugf("router->backend clientid: %d %s(%d) size: %d|%s", ev.ClientID, getMsgName(ev.MsgID), ev.MsgID, len(ev.Packet.Data), msgContent)
 
 				userHandler(rawMsg, ev.Ses, ev.ClientID)
 
@@ -108,9 +112,13 @@ func SendToClient(routerSes cellnet.Session, clientid int64, data interface{}) {
 		return
 	}
 
+	msgContent := data.(interface {
+		String() string
+	}).String()
+
 	userpkt, _ := cellnet.BuildPacket(data)
 
-	log.Debugf("backend->router, msg: %s(%d) clientid: %d", getMsgName(userpkt.MsgID), userpkt.MsgID, clientid)
+	log.Debugf("backend->router clientid: %d %s(%d) size: %d |%s", clientid, getMsgName(userpkt.MsgID), userpkt.MsgID, len(userpkt.Data), msgContent)
 
 	routerSes.Send(&coredef.DownstreamACK{
 		Data:     userpkt.Data,
@@ -126,7 +134,7 @@ func CloseClient(routerSes cellnet.Session, clientid int64) {
 		return
 	}
 
-	log.Debugf("backend->router, CloseClient clientid: %d", clientid)
+	log.Debugf("backend->router clientid: %d CloseClient", clientid)
 
 	// 通知关闭
 	routerSes.Send(&coredef.CloseClientACK{
@@ -136,6 +144,8 @@ func CloseClient(routerSes cellnet.Session, clientid int64) {
 
 // 广播所有的客户端
 func CloseAllClient() {
+
+	log.Debugf("backend->router CloseAllClient")
 
 	ack := &coredef.CloseClientACK{}
 
@@ -156,12 +166,18 @@ type connSesManager interface {
 // 发送给所有router的所有客户端
 func BroadcastToClient(data interface{}) {
 
+	msgContent := data.(interface {
+		String() string
+	}).String()
+
 	pkt, _ := cellnet.BuildPacket(data)
 
 	ack := &coredef.DownstreamACK{
 		Data:  pkt.Data,
 		MsgID: pkt.MsgID,
 	}
+
+	log.Debugf("backend->router BroadcastToClient %s(%d) size: %d|%s", getMsgName(pkt.MsgID), pkt.MsgID, len(pkt.Data), msgContent)
 
 	for _, conn := range routerConnArray {
 		ses := conn.(connSesManager).DefaultSession()
@@ -207,7 +223,13 @@ func NewClientList() ClientList {
 // 发送给指定客户端列表的客户端
 func BroadcastToClientList(data interface{}, list ClientList) {
 
+	msgContent := data.(interface {
+		String() string
+	}).String()
+
 	pkt, _ := cellnet.BuildPacket(data)
+
+	log.Debugf("backend->router BroadcastToClientList %s(%d) size: %d|%s", getMsgName(pkt.MsgID), pkt.MsgID, len(pkt.Data), msgContent)
 
 	for ses, clientlist := range list {
 

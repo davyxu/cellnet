@@ -34,6 +34,7 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 					PeerName:  ev.Ses.FromPeer().Name(),
 					SessionID: ev.Ses.ID(),
 					Name:      msgMeta.Name,
+					ID:        msgMeta.ID,
 					Size:      int32(len(ev.Packet.Data)),
 					Data:      rawMsg.(proto.Message).String(),
 				})

@@ -5,6 +5,7 @@ type MessageLogInfo struct {
 	PeerName  string
 	SessionID int64
 	Name      string
+	ID        uint32
 	Size      int32
 	Data      string
 }

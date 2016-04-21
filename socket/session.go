@@ -48,6 +48,7 @@ func (self *ltvSession) Send(data interface{}) {
 			PeerName:  self.FromPeer().Name(),
 			SessionID: self.ID(),
 			Name:      meta.Name,
+			ID:        meta.ID,
 			Size:      int32(len(pkt.Data)),
 			Data:      data.(proto.Message).String(),
 		})
