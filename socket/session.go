@@ -132,22 +132,6 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	self.endSync.Done()
 }
 
-// 退出线程
-func (self *ltvSession) exitThread() {
-
-	// 布置接收和发送2个任务
-	self.endSync.Add(2)
-
-	// 等待2个任务结束
-	self.endSync.Wait()
-
-	// 在这里断开session与逻辑的所有关系
-	if self.OnClose != nil {
-		self.OnClose()
-	}
-
-}
-
 func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
 
 	self := &ltvSession{
@@ -157,8 +141,20 @@ func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltv
 		needNotifyWrite: true,
 	}
 
-	// 退出线程
-	go self.exitThread()
+	// 布置接收和发送2个任务
+	// bug fix感谢viwii提供的线索
+	self.endSync.Add(2)
+
+	go func() {
+
+		// 等待2个任务结束
+		self.endSync.Wait()
+
+		// 在这里断开session与逻辑的所有关系
+		if self.OnClose != nil {
+			self.OnClose()
+		}
+	}()
 
 	// 接收线程
 	go self.recvThread(eq)
