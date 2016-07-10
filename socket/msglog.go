@@ -15,9 +15,10 @@ var EnableMessageLog bool = true
 
 func msgLog(info *MessageLogInfo) {
 
-	if msgLogHook != nil && msgLogHook(info) {
+	if msgLogHook == nil || (msgLogHook != nil && msgLogHook(info)) {
 
 		log.Debugf("#%s(%s) sid: %d %s(%d)|%s", info.Dir, info.PeerName, info.SessionID, info.Name, info.Size, info.Data)
+
 	}
 
 }
