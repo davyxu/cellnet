@@ -36,7 +36,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.ProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 // 一个连接接入
 type SessionAccepted struct {
@@ -191,6 +193,8 @@ func init() {
 	proto.RegisterType((*RemoteCallACK)(nil), "coredef.RemoteCallACK")
 	proto.RegisterType((*TestEchoACK)(nil), "coredef.TestEchoACK")
 }
+
+func init() { proto.RegisterFile("coredef.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
 	// 304 bytes of a gzipped FileDescriptorProto

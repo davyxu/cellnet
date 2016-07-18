@@ -35,7 +35,7 @@ func printFile(gen *Generator, file *pbmeta.FileDescriptor) {
 
 		msgFullName := file.PackageName() + "." + msg.Name()
 
-		gen.Println("cellnet.RegisterMessageMeta(\"", msgFullName, "\", (*", msg.Name(), ")(nil), ", int(util.StringHashNoCase(msgFullName)), ")")
+		gen.Println("cellnet.RegisterMessageMeta(\"", msgFullName, "\", (*", msg.Name(), ")(nil), ", int(util.StringHash(msgFullName)), ")")
 	}
 
 	gen.Out()

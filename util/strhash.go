@@ -1,9 +1,5 @@
 package util
 
-import (
-	"strings"
-)
-
 var crcTable []uint32 = make([]uint32, 256)
 
 const crcPOLY uint32 = 0x04c11db7
@@ -40,10 +36,8 @@ func initCRCTable() {
 }
 
 // 字符串转为32位整形值
-func StringHashNoCase(s string) uint32 {
+func StringHash(s string) uint32 {
 	initCRCTable()
-
-	s = strings.ToUpper(s)
 
 	var hash uint32
 	var b uint32
