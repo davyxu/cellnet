@@ -104,7 +104,7 @@ https://github.com/davyxu/cellnet/wiki
 
 # 备注
 
-感觉不错请fork和star, 谢谢!
+感觉不错请star, 谢谢!
 
 博客: http://www.cppblog.com/sunicdavy
 
