@@ -1,4 +1,4 @@
-set outdir=.\coredef
+set outdir=.\gamedef
 set plugindir=..\..\..\..\..\bin
 mkdir %outdir%
 protoc.exe --plugin=protoc-gen-go=%plugindir%\protoc-gen-go.exe --go_out %outdir% --proto_path "." %*

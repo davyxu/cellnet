@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
@@ -20,12 +20,12 @@ func server() {
 
 	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.TestEchoACK)
+	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
 
-		ses.Send(&coredef.TestEchoACK{
+		ses.Send(&gamedef.TestEchoACK{
 			Content: msg.String(),
 		})
 
@@ -41,17 +41,17 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.TestEchoACK)
+	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
 
 		signal.Done(1)
 	})
 
-	socket.RegisterSessionMessage(evq, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
-		ses.Send(&coredef.TestEchoACK{
+		ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
 		})
 

@@ -144,7 +144,7 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
 
 	self := &ltvSession{
-		writeChan:       make(chan interface{}),
+		writeChan:       make(chan interface{}, 50),
 		stream:          stream,
 		p:               p,
 		needNotifyWrite: true,

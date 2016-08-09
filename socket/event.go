@@ -3,18 +3,18 @@ package socket
 import (
 	"fmt"
 
-	_ "github.com/davyxu/cellnet/proto/coredef"
+	_ "github.com/davyxu/cellnet/proto/gamedef"
 
 	"github.com/davyxu/cellnet"
 )
 
 var (
-	Event_SessionConnected = uint32(cellnet.MessageMetaByName("coredef.SessionConnected").ID)
-	Event_SessionClosed    = uint32(cellnet.MessageMetaByName("coredef.SessionClosed").ID)
-	Event_SessionAccepted  = uint32(cellnet.MessageMetaByName("coredef.SessionAccepted").ID)
-	Event_PeerInit         = uint32(cellnet.MessageMetaByName("coredef.PeerInit").ID)
-	Event_PeerStart        = uint32(cellnet.MessageMetaByName("coredef.PeerStart").ID)
-	Event_PeerStop         = uint32(cellnet.MessageMetaByName("coredef.PeerStop").ID)
+	Event_SessionConnected = uint32(cellnet.MessageMetaByName("gamedef.SessionConnected").ID)
+	Event_SessionClosed    = uint32(cellnet.MessageMetaByName("gamedef.SessionClosed").ID)
+	Event_SessionAccepted  = uint32(cellnet.MessageMetaByName("gamedef.SessionAccepted").ID)
+	Event_PeerInit         = uint32(cellnet.MessageMetaByName("gamedef.PeerInit").ID)
+	Event_PeerStart        = uint32(cellnet.MessageMetaByName("gamedef.PeerStart").ID)
+	Event_PeerStop         = uint32(cellnet.MessageMetaByName("gamedef.PeerStop").ID)
 )
 
 // 会话事件

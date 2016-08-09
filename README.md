@@ -13,11 +13,6 @@
 * 封包类型采用Type-Length-Value的私有tcp封包, 自带序列号防御简单的封包复制
 * 消息统一使用Protobuf格式进行通信
 
-## 网关
-* 基本的网关透传框架
-* 广播,列表广播
-* 可定制的消息路由规则
-
 ## RPC
 * 异步远程过程调用
 
@@ -89,18 +84,16 @@ func client() {
 
 # TODO
 
-## 网关
-* 处理多同名svc时的转发
 
 ## MongoDB
 
-* DB内存映射框架
 * DB存储日志
 
 
 # Wiki
 https://github.com/davyxu/cellnet/wiki
 这里有文档和架构,设计解析
+
 
 # 备注
 

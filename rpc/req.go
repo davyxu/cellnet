@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 )
 
@@ -92,7 +92,7 @@ func Call(p cellnet.Peer, args interface{}, callback interface{}) {
 
 	pkt, _ := cellnet.BuildPacket(args)
 
-	ses.Send(&coredef.RemoteCallREQ{
+	ses.Send(&gamedef.RemoteCallREQ{
 		MsgID:  pkt.MsgID,
 		Data:   pkt.Data,
 		CallID: req.id,
@@ -108,7 +108,7 @@ type request struct {
 	replyType reflect.Type
 }
 
-func (self *request) done(msg *coredef.RemoteCallACK) {
+func (self *request) done(msg *gamedef.RemoteCallACK) {
 
 	rawType, err := cellnet.ParsePacket(&cellnet.Packet{
 		MsgID: msg.MsgID,
@@ -128,8 +128,8 @@ func (self *request) done(msg *coredef.RemoteCallACK) {
 func InstallClient(p cellnet.Peer) {
 
 	// 请求端
-	socket.RegisterSessionMessage(p, "coredef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.RemoteCallACK)
+	socket.RegisterSessionMessage(p, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.RemoteCallACK)
 
 		c := getCall(msg.CallID)
 

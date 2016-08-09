@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 )
 
@@ -12,14 +12,14 @@ type Response interface {
 
 type response struct {
 	ses cellnet.Session
-	req *coredef.RemoteCallREQ
+	req *gamedef.RemoteCallREQ
 }
 
 func (self *response) Feedback(msg interface{}) {
 
 	pkt, _ := cellnet.BuildPacket(msg)
 
-	self.ses.Send(&coredef.RemoteCallACK{
+	self.ses.Send(&gamedef.RemoteCallACK{
 		MsgID:  pkt.MsgID,
 		Data:   pkt.Data,
 		CallID: self.req.CallID,
@@ -33,8 +33,8 @@ func (self *response) ContextID() uint32 {
 func InstallServer(p cellnet.Peer) {
 
 	// 服务端
-	socket.RegisterSessionMessage(p, "coredef.RemoteCallREQ", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.RemoteCallREQ)
+	socket.RegisterSessionMessage(p, "gamedef.RemoteCallREQ", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.RemoteCallREQ)
 
 		p.CallData(&response{
 			ses: ses,

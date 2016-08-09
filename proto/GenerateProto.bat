@@ -1,1 +1,1 @@
-call gen_go.bat coredef.proto
+call gen_go.bat core.proto

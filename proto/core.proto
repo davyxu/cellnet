@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package coredef;
+package gamedef;
 
 // ==========================================================
 // 系统消息
@@ -41,53 +41,7 @@ message PeerStart
 message PeerStop
 {
 	
-}
-
-// ==========================================================
-// router网关协议
-// ==========================================================
-
-
-// 路由上行数据
-// router -> backend
-message UpstreamACK
-{
-	uint32 MsgID = 1;		// 消息号
-	
-	bytes Data = 2;		// 用户封包
-	
-	
-	int64 ClientID = 3;	// 玩家在router的id
-}
-
-
-// 关闭客户端
-// backend -> router
-message CloseClientACK
-{
-	int64 ClientID = 1;
-}
-
-// 路由下行数据
-// backend -> router
-message DownstreamACK
-{
-	uint32 MsgID = 1;		// 消息号
-	
-	bytes Data = 2;		// 用户封包
-	
-	
-	repeated int64 ClientID = 3;	// 要广播的玩家列表
-}
-
-
-// 后台服务器到网关注册自己的连接
-// backend -> router
-message RegisterRouterBackendACK
-{
-	string Name = 1;				// 服务器名称, 标示连接
-}
-	
+}	
 
 
 // ==========================================================
