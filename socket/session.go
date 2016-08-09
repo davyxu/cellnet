@@ -2,6 +2,7 @@ package socket
 
 import (
 	"sync"
+	"time"
 
 	"github.com/davyxu/cellnet"
 	"github.com/golang/protobuf/proto"
@@ -64,7 +65,15 @@ func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
 		return
 	}
 
-	self.writeChan <- pkt
+	// 发送超时
+	select {
+	case <-time.After(time.Second * 2):
+		log.Warnf("send error: timeout 0x%x", pkt.MsgID)
+		return
+	case self.writeChan <- pkt:
+		return
+	}
+
 }
 
 // 发送线程
