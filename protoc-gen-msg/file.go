@@ -19,13 +19,16 @@ func printFile(gen *Generator, file *pbmeta.FileDescriptor) {
 
 	gen.Println("package ", file.PackageName())
 	gen.Println()
-	gen.Println("import (")
-	gen.In()
-	gen.Println("\"github.com/davyxu/cellnet\"")
-	gen.Out()
-	gen.Println(")")
 
-	gen.Println()
+	if file.MessageCount() > 0 {
+		gen.Println("import (")
+		gen.In()
+		gen.Println("\"github.com/davyxu/cellnet\"")
+		gen.Out()
+		gen.Println(")")
+		gen.Println()
+	}
+
 	gen.Println("func init() {")
 	gen.In()
 
