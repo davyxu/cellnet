@@ -1,9 +1,5 @@
 package cellnet
 
-import (
-	"reflect"
-)
-
 type EventPipe interface {
 	AddQueue() EventQueue
 
@@ -34,6 +30,11 @@ func (self *evPipe) AddQueue() EventQueue {
 	return q
 }
 
+type combinedEvent struct {
+	q *evQueue
+	e interface{}
+}
+
 func (self *evPipe) Start() {
 
 	// 开始后, 不能修改数组
@@ -41,20 +42,18 @@ func (self *evPipe) Start() {
 
 	go func() {
 
-		cases := make([]reflect.SelectCase, len(self.qarray))
+		combinedChannel := make(chan *combinedEvent)
 
-		// 按照队列(peer)数量开始做case
-		for i, q := range self.qarray {
-			cases[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(q.queue)}
+		for _, q := range self.qarray {
+			go func(q *evQueue) {
+				for v := range q.queue {
+					combinedChannel <- &combinedEvent{q: q, e: v}
+				}
+			}(q)
 		}
 
-		for {
-
-			if index, value, ok := reflect.Select(cases); ok {
-
-				self.qarray[index].CallData(value.Interface())
-			}
-
+		for v := range combinedChannel {
+			v.q.CallData(v.e)
 		}
 
 	}()
