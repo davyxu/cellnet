@@ -29,6 +29,16 @@
 * github.com/davyxu/golog
 * gopkg.in/mgo.v2
 
+# 性能测试
+
+CPU: i5 6500 3.2GHz
+
+虚拟机系统: CentOS 7 x64
+
+1000连接 同时对服务器进行实时PingPong测试, 100% CPU占用
+
+QPS: 55000
+
 
 # 例子
 ## Echo
@@ -97,6 +107,7 @@ https://github.com/davyxu/cellnet/wiki
 
 # 贡献者
 viwii
+IronsDu
 
 # 备注
 
