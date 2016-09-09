@@ -106,8 +106,10 @@ https://github.com/davyxu/cellnet/wiki
 
 
 # 贡献者
-viwii
-IronsDu
+
+viwii(374497460@qq.com)
+
+IronsDu(duzhongwei@qq.com)
 
 # 备注
 
