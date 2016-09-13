@@ -1,13 +1,15 @@
 package socket
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/davyxu/cellnet"
 	"io"
 	"net"
 	"sync"
+
+	"github.com/davyxu/cellnet"
 )
 
 const (
@@ -18,7 +20,7 @@ const (
 // 封包流
 type PacketStream interface {
 	Read() (*cellnet.Packet, error)
-	Write(pkt *cellnet.Packet) error
+	Write(pkt *cellnet.Packet, flush bool) error
 	Close() error
 	Raw() net.Conn
 }
@@ -28,6 +30,12 @@ type ltvStream struct {
 	sendser      uint16
 	conn         net.Conn
 	sendtagGuard sync.RWMutex
+
+	sdWriter  *bufio.Writer
+	sdHeadBuf *bytes.Buffer
+
+	rdHeadBuf    []byte
+	rdHeadReader *bytes.Reader
 }
 
 var (
@@ -39,30 +47,30 @@ var (
 // 从socket读取1个封包,并返回
 func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 
-	headdata := make([]byte, PackageHeaderSize)
+	if _, err = self.rdHeadReader.Seek(0, 0); err != nil {
+		return nil, err
+	}
 
-	if _, err = io.ReadFull(self.conn, headdata); err != nil {
+	if _, err = io.ReadFull(self.conn, self.rdHeadBuf); err != nil {
 		return nil, err
 	}
 
 	p = &cellnet.Packet{}
 
-	headbuf := bytes.NewReader(headdata)
-
 	// 读取ID
-	if err = binary.Read(headbuf, binary.LittleEndian, &p.MsgID); err != nil {
+	if err = binary.Read(self.rdHeadReader, binary.LittleEndian, &p.MsgID); err != nil {
 		return nil, err
 	}
 
 	// 读取序号
 	var ser uint16
-	if err = binary.Read(headbuf, binary.LittleEndian, &ser); err != nil {
+	if err = binary.Read(self.rdHeadReader, binary.LittleEndian, &ser); err != nil {
 		return nil, err
 	}
 
 	// 读取整包大小
 	var fullsize uint16
-	if err = binary.Read(headbuf, binary.LittleEndian, &fullsize); err != nil {
+	if err = binary.Read(self.rdHeadReader, binary.LittleEndian, &fullsize); err != nil {
 		return nil, err
 	}
 
@@ -94,41 +102,47 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 }
 
 // 将一个封包发送到socket
-func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
+func (self *ltvStream) Write(pkt *cellnet.Packet, flush bool) (err error) {
 
-	outbuff := bytes.NewBuffer([]byte{})
+	self.sdHeadBuf.Reset()
 
 	// 防止将Send放在go内造成的多线程冲突问题
 	self.sendtagGuard.Lock()
 	defer self.sendtagGuard.Unlock()
 
 	// 写ID
-	if err = binary.Write(outbuff, binary.LittleEndian, pkt.MsgID); err != nil {
-		return
+	if err = binary.Write(self.sdHeadBuf, binary.LittleEndian, pkt.MsgID); err != nil {
+		return err
 	}
 
 	// 写序号
-	if err = binary.Write(outbuff, binary.LittleEndian, self.sendser); err != nil {
-		return
+	if err = binary.Write(self.sdHeadBuf, binary.LittleEndian, self.sendser); err != nil {
+		return err
 	}
 
 	// 写包大小
-	if err = binary.Write(outbuff, binary.LittleEndian, uint16(len(pkt.Data)+PackageHeaderSize)); err != nil {
-		return
+	if err = binary.Write(self.sdHeadBuf, binary.LittleEndian, uint16(len(pkt.Data)+PackageHeaderSize)); err != nil {
+		return err
 	}
 
 	// 发包头
-	if _, err = self.conn.Write(outbuff.Bytes()); err != nil {
+	if _, err = self.sdWriter.Write(self.sdHeadBuf.Bytes()); err != nil {
 		return err
 	}
 
 	// 发包内容
-	if _, err = self.conn.Write(pkt.Data); err != nil {
+	if _, err = self.sdWriter.Write(pkt.Data); err != nil {
 		return err
 	}
 
 	// 增加序号值
 	self.sendser++
+
+	if flush {
+		if err = self.sdWriter.Flush(); err != nil && err != io.ErrShortWrite {
+			return err
+		}
+	}
 
 	return
 }
@@ -145,9 +159,16 @@ func (self *ltvStream) Raw() net.Conn {
 
 // 封包流 relay模式: 在封包头有clientid信息
 func NewPacketStream(conn net.Conn) PacketStream {
-	return &ltvStream{
-		conn:    conn,
-		recvser: 1,
-		sendser: 1,
+
+	s := &ltvStream{
+		conn:      conn,
+		recvser:   1,
+		sendser:   1,
+		sdWriter:  bufio.NewWriter(conn),
+		sdHeadBuf: bytes.NewBuffer([]byte{}),
+		rdHeadBuf: make([]byte, PackageHeaderSize),
 	}
+	s.rdHeadReader = bytes.NewReader(s.rdHeadBuf)
+
+	return s
 }
