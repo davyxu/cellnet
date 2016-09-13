@@ -15,52 +15,51 @@ import (
 var log *golog.Logger = golog.New("main")
 
 func main() {
-	gen := New()
 
 	// 读取protoc请求
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
-		gen.Error(err, "reading input")
+		log.Errorln("reading input")
 	}
+
+	var Request plugin.CodeGeneratorRequest   // The input.
+	var Response plugin.CodeGeneratorResponse // The output.
 
 	// 解析请求
-	if err := proto.Unmarshal(data, gen.Request); err != nil {
-		gen.Error(err, "parsing input proto")
+	if err := proto.Unmarshal(data, &Request); err != nil {
+		log.Errorln("parsing input proto")
 	}
 
-	if len(gen.Request.FileToGenerate) == 0 {
-		gen.Fail("no files to generate")
+	if len(Request.FileToGenerate) == 0 {
+		log.Errorln("no files to generate")
 	}
 
 	// 建立解析池
 	pool := pbmeta.NewDescriptorPool(&pbprotos.FileDescriptorSet{
-		File: gen.Request.ProtoFile,
+		File: Request.ProtoFile,
 	})
 
-	gen.Response.File = make([]*plugin.CodeGeneratorResponse_File, 0)
+	Response.File = make([]*plugin.CodeGeneratorResponse_File, 0)
 
-	for i := 0; i < pool.FileCount(); i++ {
-		file := pool.File(i)
+	contenxt, ok := printFile(pool)
 
-		gen.Reset()
-
-		printFile(gen, file)
-
-		gen.Response.File = append(gen.Response.File, &plugin.CodeGeneratorResponse_File{
-			Name:    proto.String(changeExt(file.FileName())),
-			Content: proto.String(gen.String()),
-		})
-
+	if !ok {
+		os.Exit(1)
 	}
 
+	Response.File = append(Response.File, &plugin.CodeGeneratorResponse_File{
+		Name:    proto.String(Request.GetParameter()),
+		Content: proto.String(contenxt),
+	})
+
 	// 发回处理结果
-	data, err = proto.Marshal(gen.Response)
+	data, err = proto.Marshal(&Response)
 	if err != nil {
-		gen.Error(err, "failed to marshal output proto")
+		log.Errorln("failed to marshal output proto")
 	}
 	_, err = os.Stdout.Write(data)
 	if err != nil {
-		gen.Error(err, "failed to write output proto")
+		log.Errorln("failed to write output proto")
 	}
 
 }
