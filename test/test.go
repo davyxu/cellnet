@@ -9,6 +9,12 @@ type SignalTester struct {
 	*testing.T
 
 	signal chan int
+
+	timeout time.Duration
+}
+
+func (self *SignalTester) SetTimeout(du time.Duration) {
+	self.timeout = du
 }
 
 func (self *SignalTester) WaitAndExpect(value int, msg string) bool {
@@ -21,7 +27,7 @@ func (self *SignalTester) WaitAndExpect(value int, msg string) bool {
 			return false
 		}
 
-	case <-time.After(2 * time.Second):
+	case <-time.After(self.timeout):
 		self.Logf("signal timeout: %d %s", value, msg)
 		self.Fail()
 		return false
@@ -37,7 +43,8 @@ func (self *SignalTester) Done(value int) {
 func NewSignalTester(t *testing.T) *SignalTester {
 
 	return &SignalTester{
-		T:      t,
-		signal: make(chan int),
+		T:       t,
+		timeout: 2 * time.Second,
+		signal:  make(chan int),
 	}
 }
