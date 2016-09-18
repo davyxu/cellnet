@@ -3,46 +3,50 @@
 
 
 # 特性
+
 ## 异步单线程多进程架构
   
 * 无需处理繁琐的多线程安全问题
+
 * 底层IO仍然使用goroutine进行处理, 保证IO吞吐率
-* 性能敏感的业务拆离为单独进程进行处理
+
+* 发送时自动合并封包(性能效果决定于实际请求和发送比例)
 
 ## 数据协议
+
 * 封包类型采用Type-Length-Value的私有tcp封包, 自带序列号防御简单的封包复制
+
 * 消息统一使用Protobuf格式进行通信
 
-## RPC
-* 异步远程过程调用
+* 自动生成消息ID
 
-## 模块化
-* 鼓励使用统一的模块化命名及拆分方法进行隔离降偶
+## RPC
+
+* 异步远程过程调用
 
 ## 日志
 * 分级日志
+
 * 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
 
 # 第三方库依赖
 
 * github.com/golang/protobuf/proto
+
 * github.com/davyxu/golog
+
 * gopkg.in/mgo.v2
 
 # 性能测试
 
 go test -v github.com/davyxu/cellnet/benchmark
 
-CPU: i7 6700 3.4GHz
+CPU: i7 6700 3.4GHz 8核
 
 localhost 1000连接 同时对服务器进行实时PingPong测试
 
-
-##　Windows 7 x64  8核
-平均 QPS: 102801
-
-## VMWare + CentOS 6.5 x64 8核
-平均 QPS: 103041
+##　Windows 7 x64, VMWare + CentOS 6.5 x64
+平均 QPS: 13.7w
 
 
 # 例子
