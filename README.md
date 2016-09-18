@@ -31,13 +31,18 @@
 
 # 性能测试
 
-CPU: i5 6500 3.2GHz
+go test -v github.com/davyxu/cellnet/test/benchmark
 
-虚拟机系统: CentOS 7 x64
+CPU: i7 6700 3.4GHz
 
-1000连接 同时对服务器进行实时PingPong测试, 100% CPU占用
+localhost 1000连接 同时对服务器进行实时PingPong测试
 
-QPS: 55000
+
+##　Windows 7 x64  8核
+平均 QPS: 102801
+
+## VMWare + CentOS 6.5 x64 8核
+平均 QPS: 103041
 
 
 # 例子

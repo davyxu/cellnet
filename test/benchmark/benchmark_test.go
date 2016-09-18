@@ -82,10 +82,10 @@ func NewQPSMeter(pipe cellnet.EventPipe) *QPSMeter {
 const benchmarkAddress = "127.0.0.1:7201"
 
 // 客户端并发数量
-const clientCount = 300
+const clientCount = 1000
 
 // 测试时间(秒)
-const benchmarkSeconds = 5
+const benchmarkSeconds = 10
 
 func server() {
 
