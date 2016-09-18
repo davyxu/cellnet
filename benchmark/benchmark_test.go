@@ -55,6 +55,10 @@ func (self *QPSMeter) Turn() (ret int) {
 // 均值
 func (self *QPSMeter) Average() int {
 
+	self.qpsGuard.Lock()
+
+	defer self.qpsGuard.Unlock()
+
 	if self.count == 0 {
 		return 0
 	}

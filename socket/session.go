@@ -2,7 +2,6 @@ package socket
 
 import (
 	"sync"
-	"time"
 
 	"github.com/davyxu/cellnet"
 	"github.com/golang/protobuf/proto"
@@ -24,9 +23,7 @@ type ltvSession struct {
 
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
-	sendList      []interface{}
-	sendListGuard sync.Mutex
-	sendListCond  *sync.Cond
+	sendList *PacketList
 }
 
 func (self *ltvSession) ID() int64 {
@@ -38,7 +35,7 @@ func (self *ltvSession) FromPeer() cellnet.Peer {
 }
 
 func (self *ltvSession) Close() {
-	self.pushSendMsg(closeWritePacket{})
+	self.sendList.Add(&cellnet.Packet{})
 }
 
 func (self *ltvSession) Send(data interface{}) {
@@ -64,60 +61,38 @@ func (self *ltvSession) Send(data interface{}) {
 func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
 
 	if pkt != nil {
-		self.pushSendMsg(pkt)
+		self.sendList.Add(pkt)
 	}
-}
-
-func (self *ltvSession) pushSendMsg(msg interface{}) {
-	self.sendListGuard.Lock()
-	self.sendList = append(self.sendList, msg)
-	self.sendListGuard.Unlock()
-
-	self.sendListCond.Signal()
 }
 
 // 发送线程
 func (self *ltvSession) sendThread() {
 
-	packetList := make([]*cellnet.Packet, 0)
-
 	for {
-		self.sendListGuard.Lock()
-
-		for len(self.sendList) == 0 {
-			self.sendListCond.Wait()
-		}
-
-		self.sendListGuard.Unlock()
-
-		//强制sleep，积累消息(用于批量flush)
-		time.Sleep(time.Millisecond)
+		packetList := self.sendList.BeginPick()
 
 		willExit := false
 
-		self.sendListGuard.Lock()
+		for _, p := range packetList {
 
-		for _, v := range self.sendList {
-			switch v.(type) {
-			case *cellnet.Packet:
-				packetList = append(packetList, v.(*cellnet.Packet))
-			case closeWritePacket:
+			if p.MsgID == 0 {
 				willExit = true
-			}
-		}
-		self.sendList = self.sendList[0:0]
+			} else {
 
-		self.sendListGuard.Unlock()
+				if err := self.stream.Write(p); err != nil {
+					willExit = true
+					break
+				}
 
-		for i, p := range packetList {
-			//当发送最后一个消息,且后续消息列表为空时，进行flush
-			if err := self.stream.Write(p, len(packetList) == (i+1) && len(self.sendList) == 0); err != nil {
-				willExit = true
-				break
 			}
+
 		}
 
-		packetList = packetList[0:0]
+		self.sendList.EndPick()
+
+		if err := self.stream.Flush(); err != nil {
+			willExit = true
+		}
 
 		if willExit {
 			goto exitsendloop
@@ -175,9 +150,8 @@ func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltv
 		stream:          stream,
 		p:               p,
 		needNotifyWrite: true,
+		sendList:        NewPacketList(),
 	}
-
-	self.sendListCond = sync.NewCond(&self.sendListGuard)
 
 	// 布置接收和发送2个任务
 	// bug fix感谢viwii提供的线索
