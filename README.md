@@ -39,7 +39,7 @@
 
 # 性能测试
 
-go test -v github.com/davyxu/cellnet/benchmark
+go test -v github.com/davyxu/cellnet/benchmark/io
 
 CPU: i7 6700 3.4GHz 8核
 

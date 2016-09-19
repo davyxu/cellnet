@@ -1,11 +1,11 @@
 package benchmark
 
 import (
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/benchmark"
 	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
@@ -15,72 +15,6 @@ import (
 var log *golog.Logger = golog.New("test")
 
 var signal *test.SignalTester
-
-type QPSMeter struct {
-	qpsGuard sync.Mutex
-	qps      int
-	total    int
-
-	count int
-}
-
-func (self *QPSMeter) Acc() int {
-	self.qpsGuard.Lock()
-
-	defer self.qpsGuard.Unlock()
-
-	self.qps++
-
-	return self.count
-}
-
-// 一轮计算
-func (self *QPSMeter) Turn() (ret int) {
-	self.qpsGuard.Lock()
-
-	if self.qps > 0 {
-		ret = self.qps
-	}
-
-	self.total += self.qps
-
-	self.qps = 0
-	self.count++
-
-	self.qpsGuard.Unlock()
-
-	return
-}
-
-// 均值
-func (self *QPSMeter) Average() int {
-
-	self.qpsGuard.Lock()
-
-	defer self.qpsGuard.Unlock()
-
-	if self.count == 0 {
-		return 0
-	}
-
-	return self.total / self.count
-}
-
-func NewQPSMeter(pipe cellnet.EventPipe) *QPSMeter {
-
-	self := &QPSMeter{}
-
-	timeEvq := pipe.AddQueue()
-
-	cellnet.NewTimer(timeEvq, time.Second, func(t *cellnet.Timer) {
-
-		qps := self.Turn()
-
-		log.Infof("QPS: %d", qps)
-	})
-
-	return self
-}
 
 // 测试地址
 const benchmarkAddress = "127.0.0.1:7201"
@@ -95,7 +29,11 @@ func server() {
 
 	pipe := cellnet.NewEventPipe()
 
-	qpsm := NewQPSMeter(pipe)
+	qpsm := benchmark.NewQPSMeter(pipe, func(qps int) {
+
+		log.Infof("QPS: %d", qps)
+
+	})
 
 	evq := socket.NewAcceptor(pipe).Start(benchmarkAddress)
 
