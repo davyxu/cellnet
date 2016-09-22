@@ -11,48 +11,36 @@ type EventPipe interface {
 }
 
 type evPipe struct {
-	qarray []*evQueue
-
-	arrayLock  bool
 	exitSignal chan int
+
+	dataChan chan *dataTask
 }
 
 func (self *evPipe) AddQueue() EventQueue {
 
-	if self.arrayLock {
-		panic("Pipe already start, can not addqueue any more")
-	}
-
 	q := newEventQueue()
 
-	self.qarray = append(self.qarray, q)
+	go func(q *evQueue) {
+
+		for v := range q.queue {
+			self.dataChan <- &dataTask{q: q, e: v}
+		}
+
+	}(q)
 
 	return q
 }
 
-type combinedEvent struct {
+type dataTask struct {
 	q *evQueue
 	e interface{}
 }
 
 func (self *evPipe) Start() {
 
-	// 开始后, 不能修改数组
-	self.arrayLock = true
-
 	go func() {
 
-		combinedChannel := make(chan *combinedEvent)
-
-		for _, q := range self.qarray {
-			go func(q *evQueue) {
-				for v := range q.queue {
-					combinedChannel <- &combinedEvent{q: q, e: v}
-				}
-			}(q)
-		}
-
-		for v := range combinedChannel {
+		for v := range self.dataChan {
 			v.q.CallData(v.e)
 		}
 
@@ -70,7 +58,7 @@ func (self *evPipe) Wait() int {
 
 func NewEventPipe() EventPipe {
 	return &evPipe{
-		qarray:     make([]*evQueue, 0),
 		exitSignal: make(chan int),
+		dataChan:   make(chan *dataTask),
 	}
 }
