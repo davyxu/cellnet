@@ -1,5 +1,9 @@
 package cellnet
 
+import (
+	"runtime/debug"
+)
+
 type EventPipe interface {
 	AddQueue() EventQueue
 
@@ -8,57 +12,75 @@ type EventPipe interface {
 	Stop(int)
 
 	Wait() int
+
+	// 开启捕获错误, 错误不会崩溃
+	EnableCaputrePanic(enable bool)
 }
 
-type evPipe struct {
+type lineralTask struct {
+	q *evQueue
+	e interface{}
+}
+
+type lineraPipe struct {
 	exitSignal chan int
 
-	dataChan chan *dataTask
+	dataChan chan *lineralTask
+
+	capturePanic bool
 }
 
-func (self *evPipe) AddQueue() EventQueue {
+func (self *lineraPipe) AddQueue() EventQueue {
 
 	q := newEventQueue()
 
 	go func(q *evQueue) {
-
 		for v := range q.queue {
-			self.dataChan <- &dataTask{q: q, e: v}
+			self.dataChan <- &lineralTask{q: q, e: v}
 		}
-
 	}(q)
 
 	return q
 }
 
-type dataTask struct {
-	q *evQueue
-	e interface{}
+func (self *lineraPipe) EnableCaputrePanic(enable bool) {
+	self.capturePanic = enable
 }
 
-func (self *evPipe) Start() {
+func (self *lineraPipe) Start() {
 
 	go func() {
-
 		for v := range self.dataChan {
-			v.q.CallData(v.e)
+			self.protectedCall(v.q, v.e)
 		}
-
 	}()
+}
+func (self *lineraPipe) protectedCall(q *evQueue, data interface{}) {
+	if self.capturePanic {
+		defer func() {
 
+			if err := recover(); err != nil {
+				log.Fatalln(err)
+				debug.PrintStack()
+			}
+
+		}()
+	}
+
+	q.CallData(data)
 }
 
-func (self *evPipe) Stop(result int) {
+func (self *lineraPipe) Stop(result int) {
 	self.exitSignal <- result
 }
 
-func (self *evPipe) Wait() int {
+func (self *lineraPipe) Wait() int {
 	return <-self.exitSignal
 }
 
 func NewEventPipe() EventPipe {
-	return &evPipe{
+	return &lineraPipe{
 		exitSignal: make(chan int),
-		dataChan:   make(chan *dataTask),
+		dataChan:   make(chan *lineralTask),
 	}
 }
