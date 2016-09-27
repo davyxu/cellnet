@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/davyxu/cellnet"
-	"github.com/golang/protobuf/proto"
 )
 
 // 注册连接消息
@@ -26,19 +25,6 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 			if err != nil {
 				log.Errorln("unmarshaling error:\n", err)
 				return
-			}
-
-			if EnableMessageLog {
-				msgLog(&MessageLogInfo{
-					Dir:       "recv",
-					PeerName:  ev.Ses.FromPeer().Name(),
-					SessionID: ev.Ses.ID(),
-					Name:      msgMeta.Name,
-					ID:        msgMeta.ID,
-					Size:      int32(len(ev.Packet.Data)),
-					Data:      rawMsg.(proto.Message).String(),
-				})
-
 			}
 
 			userHandler(rawMsg, ev.Ses)

@@ -128,6 +128,29 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 			break
 		}
 
+		// 消息日志要多损耗一次解析性能
+		if EnableMessageLog {
+
+			meta := cellnet.MessageMetaByID(pkt.MsgID)
+			if meta != nil {
+
+				rawMsg, err := cellnet.ParsePacket(pkt, meta.Type)
+				if err == nil {
+
+					msgLog(&MessageLogInfo{
+						Dir:       "recv",
+						PeerName:  self.FromPeer().Name(),
+						SessionID: self.ID(),
+						Name:      meta.Name,
+						ID:        meta.ID,
+						Size:      int32(len(pkt.Data)),
+						Data:      rawMsg.(proto.Message).String(),
+					})
+				}
+			}
+
+		}
+
 		// 逻辑封包
 		eq.PostData(&SessionEvent{
 			Packet: pkt,
