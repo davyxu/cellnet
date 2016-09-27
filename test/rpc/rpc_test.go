@@ -23,7 +23,7 @@ func server() {
 	p.SetName("server")
 	p.Start("127.0.0.1:9201")
 
-	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(resp rpc.Response, content interface{}) {
+	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(content interface{}, resp rpc.Response) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())

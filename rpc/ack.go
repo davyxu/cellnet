@@ -33,7 +33,7 @@ func (self *response) ContextID() uint32 {
 var needRegisterServer bool = true
 
 // 注册连接消息
-func RegisterMessage(eq cellnet.EventQueue, msgName string, userHandler func(Response, interface{})) {
+func RegisterMessage(eq cellnet.EventQueue, msgName string, userHandler func(interface{}, Response)) {
 
 	if needRegisterServer {
 
@@ -67,7 +67,7 @@ func RegisterMessage(eq cellnet.EventQueue, msgName string, userHandler func(Res
 				return
 			}
 
-			userHandler(ev, rawMsg)
+			userHandler(rawMsg, ev)
 
 		}
 
