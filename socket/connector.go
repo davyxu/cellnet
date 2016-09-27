@@ -20,6 +20,8 @@ type socketConnector struct {
 	working bool // 重入锁
 
 	defaultSes cellnet.Session
+
+	tryConnTimes int // 尝试连接次数
 }
 
 // 自动重连间隔=0不重连
@@ -40,10 +42,14 @@ func (self *socketConnector) Start(address string) cellnet.Peer {
 	return self
 }
 
+const reportConnectFailedLimitTimes = 3
+
 func (self *socketConnector) connect(address string) {
 	self.working = true
 
 	for {
+
+		self.tryConnTimes++
 
 		// 开始连接
 		cn, err := net.Dial("tcp", address)
@@ -51,7 +57,13 @@ func (self *socketConnector) connect(address string) {
 		// 连不上
 		if err != nil {
 
-			log.Errorf("#connect failed(%s) %v", self.name, err.Error())
+			if self.tryConnTimes <= reportConnectFailedLimitTimes {
+				log.Errorf("#connect failed(%s) %v", self.name, err.Error())
+			}
+
+			if self.tryConnTimes == reportConnectFailedLimitTimes {
+				log.Errorf("continue reconnecting, but mute log")
+			}
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
@@ -64,6 +76,8 @@ func (self *socketConnector) connect(address string) {
 			// 继续连接
 			continue
 		}
+
+		self.tryConnTimes = 0
 
 		// 连上了, 记录连接
 		self.conn = cn
