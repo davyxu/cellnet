@@ -17,7 +17,7 @@ func msgLog(info *MessageLogInfo) {
 
 	if msgLogHook == nil || (msgLogHook != nil && msgLogHook(info)) {
 
-		log.Debugf("#%s(%s) sid: %d %s(%d)|%s", info.Dir, info.PeerName, info.SessionID, info.Name, info.Size, info.Data)
+		log.Debugf("#%s(%s) sid: %d %s size: %d | %s", info.Dir, info.PeerName, info.SessionID, info.Name, info.Size, info.Data)
 
 	}
 

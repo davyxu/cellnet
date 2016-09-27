@@ -1,5 +1,9 @@
 package cellnet
 
+import (
+	"runtime/debug"
+)
+
 type EventPipe interface {
 	AddQueue() EventQueue
 
@@ -8,69 +12,75 @@ type EventPipe interface {
 	Stop(int)
 
 	Wait() int
+
+	// 开启捕获错误, 错误不会崩溃
+	EnableCaputrePanic(enable bool)
 }
 
-type evPipe struct {
-	qarray []*evQueue
-
-	arrayLock  bool
-	exitSignal chan int
-}
-
-func (self *evPipe) AddQueue() EventQueue {
-
-	if self.arrayLock {
-		panic("Pipe already start, can not addqueue any more")
-	}
-
-	q := newEventQueue()
-
-	self.qarray = append(self.qarray, q)
-
-	return q
-}
-
-type combinedEvent struct {
+type lineralTask struct {
 	q *evQueue
 	e interface{}
 }
 
-func (self *evPipe) Start() {
+type lineraPipe struct {
+	exitSignal chan int
 
-	// 开始后, 不能修改数组
-	self.arrayLock = true
+	dataChan chan *lineralTask
 
-	go func() {
-
-		combinedChannel := make(chan *combinedEvent)
-
-		for _, q := range self.qarray {
-			go func(q *evQueue) {
-				for v := range q.queue {
-					combinedChannel <- &combinedEvent{q: q, e: v}
-				}
-			}(q)
-		}
-
-		for v := range combinedChannel {
-			v.q.CallData(v.e)
-		}
-
-	}()
-
+	capturePanic bool
 }
 
-func (self *evPipe) Stop(result int) {
+func (self *lineraPipe) AddQueue() EventQueue {
+
+	q := newEventQueue()
+
+	go func(q *evQueue) {
+		for v := range q.queue {
+			self.dataChan <- &lineralTask{q: q, e: v}
+		}
+	}(q)
+
+	return q
+}
+
+func (self *lineraPipe) EnableCaputrePanic(enable bool) {
+	self.capturePanic = enable
+}
+
+func (self *lineraPipe) Start() {
+
+	go func() {
+		for v := range self.dataChan {
+			self.protectedCall(v.q, v.e)
+		}
+	}()
+}
+func (self *lineraPipe) protectedCall(q *evQueue, data interface{}) {
+	if self.capturePanic {
+		defer func() {
+
+			if err := recover(); err != nil {
+				log.Fatalln(err)
+				debug.PrintStack()
+			}
+
+		}()
+	}
+
+	q.CallData(data)
+}
+
+func (self *lineraPipe) Stop(result int) {
 	self.exitSignal <- result
 }
 
-func (self *evPipe) Wait() int {
+func (self *lineraPipe) Wait() int {
 	return <-self.exitSignal
 }
 
 func NewEventPipe() EventPipe {
-	return &evPipe{
-		qarray:     make([]*evQueue, 0),
+	return &lineraPipe{
 		exitSignal: make(chan int),
+		dataChan:   make(chan *lineralTask),
 	}
 }
