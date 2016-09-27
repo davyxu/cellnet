@@ -73,7 +73,7 @@ func (self *socketConnector) connect(address string) {
 		self.sessionMgr.Add(ses)
 		self.defaultSes = ses
 
-		log.Debugf("#connected(%s) %s sid: %d", self.name, address, ses.id)
+		log.Infof("#connected(%s) %s sid: %d", self.name, address, ses.id)
 
 		// 内部断开回调
 		ses.OnClose = func() {

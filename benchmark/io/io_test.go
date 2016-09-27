@@ -74,10 +74,10 @@ func client() {
 
 }
 
-func TestBenchmark(t *testing.T) {
+func TestIO(t *testing.T) {
 
 	// 屏蔽socket层的调试日志
-	golog.SetLevelByString("socket", "info")
+	golog.SetLevelByString("socket", "error")
 
 	signal = test.NewSignalTester(t)
 

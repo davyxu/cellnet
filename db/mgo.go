@@ -29,7 +29,7 @@ func (self *MongoDriver) Start(cfg *Config) error {
 		return nil
 	}
 
-	log.Debugf("db connection %d", self.ConnCount)
+	log.Infof("db connection %d", self.ConnCount)
 
 	ses, err := mgo.Dial(self.URL)
 	if err != nil {

@@ -30,23 +30,26 @@ func (self *response) ContextID() uint32 {
 	return self.req.MsgID
 }
 
-func InstallServer(p cellnet.Peer) {
-
-	// 服务端
-	socket.RegisterSessionMessage(p, "gamedef.RemoteCallREQ", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*gamedef.RemoteCallREQ)
-
-		p.CallData(&response{
-			ses: ses,
-			req: msg,
-		})
-
-	})
-
-}
+var needRegisterServer bool = true
 
 // 注册连接消息
 func RegisterMessage(eq cellnet.EventQueue, msgName string, userHandler func(Response, interface{})) {
+
+	if needRegisterServer {
+
+		// 服务端
+		socket.RegisterSessionMessage(eq, "gamedef.RemoteCallREQ", func(content interface{}, ses cellnet.Session) {
+			msg := content.(*gamedef.RemoteCallREQ)
+
+			eq.CallData(&response{
+				ses: ses,
+				req: msg,
+			})
+
+		})
+
+		needRegisterServer = false
+	}
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 

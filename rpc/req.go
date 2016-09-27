@@ -3,6 +3,7 @@ package rpc
 import (
 	"errors"
 	"reflect"
+	"sync"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/gamedef"
@@ -10,13 +11,10 @@ import (
 )
 
 var (
-	callMap = make(map[int64]*request)
-	idacc   int64
+	reqByID  = make(map[int64]*request)
+	reqGuard sync.RWMutex
+	idacc    int64
 )
-
-type connSes interface {
-	DefaultSession() cellnet.Session
-}
 
 var (
 	errInvalidPeerSession   error = errors.New("rpc: invalid peer type, require connector")
@@ -24,24 +22,28 @@ var (
 )
 
 // 添加一个rpc的调用信息
-func addCall() *request {
+func addCall(req *request) {
+
+	reqGuard.Lock()
 
 	idacc++
 
-	req := &request{
-		id: idacc,
-	}
+	req.id = idacc
 
 	// TODO 底层支持timer, 抛出一个超时检测, 清理map
-	callMap[req.id] = req
+	reqByID[req.id] = req
 
-	return req
+	reqGuard.Unlock()
+
 }
 
 // 获取一个rpc调用信息
 func getCall(id int64) *request {
 
-	if v, ok := callMap[id]; ok {
+	reqGuard.RLock()
+	defer reqGuard.RUnlock()
+
+	if v, ok := reqByID[id]; ok {
 
 		return v
 	}
@@ -50,55 +52,71 @@ func getCall(id int64) *request {
 }
 
 func removeCall(id int64) {
-	delete(callMap, id)
+	reqGuard.Lock()
+	delete(reqByID, id)
+	reqGuard.Unlock()
 }
 
 // 从peer获取rpc使用的session
-func getPeerSession(p cellnet.Peer) (cellnet.Session, error) {
+func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventQueue, error) {
 
 	var ses cellnet.Session
 
-	if connPeer, ok := p.(connSes); ok {
+	switch p.(type) {
+	case cellnet.Peer:
+		if connPeer, ok := p.(interface {
+			DefaultSession() cellnet.Session
+		}); ok {
 
-		ses = connPeer.DefaultSession()
+			ses = connPeer.DefaultSession()
 
-	} else {
+		} else {
 
-		return nil, errInvalidPeerSession
+			return nil, nil, errInvalidPeerSession
+		}
+	case cellnet.Session:
+		ses = p.(cellnet.Session)
 	}
 
 	if ses == nil {
-		return nil, errConnectorSesNotReady
+		return nil, nil, errConnectorSesNotReady
 	}
 
-	return ses, nil
+	return ses, ses.FromPeer().(cellnet.EventQueue), nil
 }
 
-func Call(p cellnet.Peer, args interface{}, callback interface{}) {
+// 传入peer或者session
+func Call(p interface{}, args interface{}, callback interface{}) {
 
-	req := addCall()
-
-	funcType := reflect.TypeOf(callback)
-	req.replyType = funcType.In(0)
-	req.callback = reflect.ValueOf(callback)
-
-	ses, err := getPeerSession(p)
+	ses, evq, err := getPeerSession(p)
 
 	if err != nil {
 		log.Errorln(err)
-		removeCall(req.id)
 		return
 	}
 
-	pkt, _ := cellnet.BuildPacket(args)
+	_, msg := newRequest(evq, args, callback)
 
-	ses.Send(&gamedef.RemoteCallREQ{
-		MsgID:  pkt.MsgID,
-		Data:   pkt.Data,
-		CallID: req.id,
-	})
+	ses.Send(msg)
 
 	// TODO rpc日志
+}
+
+// 传入peer或者session
+func CallSync(p interface{}, args interface{}, callback interface{}) {
+	ses, evq, err := getPeerSession(p)
+
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	req, msg := newRequest(evq, args, callback)
+	req.recvied = make(chan bool)
+
+	ses.Send(msg)
+
+	<-req.recvied
 
 }
 
@@ -106,6 +124,7 @@ type request struct {
 	id        int64
 	callback  reflect.Value
 	replyType reflect.Type
+	recvied   chan bool
 }
 
 func (self *request) done(msg *gamedef.RemoteCallACK) {
@@ -122,22 +141,52 @@ func (self *request) done(msg *gamedef.RemoteCallACK) {
 		return
 	}
 
+	// 这里的反射, 会影响非常少的效率, 但因为外部写法简单, 就算了
 	self.callback.Call([]reflect.Value{reflect.ValueOf(rawType)})
+
+	if self.recvied != nil {
+		self.recvied <- true
+	}
+
 }
 
-func InstallClient(p cellnet.Peer) {
+var needRegisterClient bool = true
+var needRegisterClientGuard sync.Mutex
 
-	// 请求端
-	socket.RegisterSessionMessage(p, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*gamedef.RemoteCallACK)
+func newRequest(evq cellnet.EventQueue, args interface{}, callback interface{}) (*request, interface{}) {
 
-		c := getCall(msg.CallID)
+	needRegisterClientGuard.Lock()
+	if needRegisterClient {
+		// 请求端
+		socket.RegisterSessionMessage(evq, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
+			msg := content.(*gamedef.RemoteCallACK)
 
-		if c == nil {
-			return
-		}
+			c := getCall(msg.CallID)
 
-		c.done(msg)
-	})
+			if c == nil {
+				return
+			}
 
+			c.done(msg)
+		})
+
+		needRegisterClient = false
+	}
+	needRegisterClientGuard.Unlock()
+
+	req := &request{}
+
+	funcType := reflect.TypeOf(callback)
+	req.replyType = funcType.In(0)
+	req.callback = reflect.ValueOf(callback)
+
+	pkt, _ := cellnet.BuildPacket(args)
+
+	addCall(req)
+
+	return req, &gamedef.RemoteCallREQ{
+		MsgID:  pkt.MsgID,
+		Data:   pkt.Data,
+		CallID: req.id,
+	}
 }

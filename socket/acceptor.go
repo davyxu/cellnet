@@ -29,7 +29,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 	self.running = true
 
-	log.Debugf("#listen(%s) %s ", self.name, address)
+	log.Infof("#listen(%s) %s ", self.name, address)
 
 	// 接受线程
 	go func() {
@@ -54,7 +54,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 					self.sessionMgr.Remove(ses)
 				}
 
-				log.Debugf("#accepted(%s) sid: %d", self.name, ses.ID())
+				log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
 
 				// 通知逻辑
 				self.PostData(NewSessionEvent(Event_SessionAccepted, ses, nil))

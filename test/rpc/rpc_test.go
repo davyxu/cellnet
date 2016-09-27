@@ -21,8 +21,7 @@ func server() {
 
 	p := socket.NewAcceptor(pipe)
 	p.SetName("server")
-	p.Start("127.0.0.1:7201")
-	rpc.InstallServer(p)
+	p.Start("127.0.0.1:9201")
 
 	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(resp rpc.Response, content interface{}) {
 		msg := content.(*gamedef.TestEchoACK)
@@ -45,14 +44,12 @@ func client() {
 
 	p := socket.NewConnector(pipe)
 	p.SetName("client")
-	p.Start("127.0.0.1:7201")
-
-	rpc.InstallClient(p)
+	p.Start("127.0.0.1:9201")
 
 	socket.RegisterSessionMessage(p, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		rpc.Call(p, &gamedef.TestEchoACK{
-			Content: "rpc hello",
+			Content: "rpc async call",
 		}, func(msg *gamedef.TestEchoACK) {
 
 			log.Debugln("client recv", msg.Content)
