@@ -1,4 +1,4 @@
-# Cellnet
+# cellnet
 简单,方便,高效的Go语言的游戏服务器底层
 
 
@@ -39,14 +39,15 @@
 
 # 性能测试
 
-go test -v github.com/davyxu/cellnet/benchmark/io
+命令行: go test -v github.com/davyxu/cellnet/benchmark/io
 
 CPU: i7 6700 3.4GHz 8核
 
-localhost 1000连接 同时对服务器进行实时PingPong测试
+测试用例: localhost 1000连接 同时对服务器进行实时PingPong测试
 
-##　Windows 7 x64, VMWare + CentOS 6.5 x64
-平均 QPS: 13.7w
+平台: Windows 7 x64/CentOS 6.5 x64
+
+QPS: 13.7w
 
 
 # 例子

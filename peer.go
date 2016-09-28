@@ -12,6 +12,10 @@ type Peer interface {
 	SetName(string)
 	Name() string
 
+	// Session最大包大小, 超过这个数字, 接收视为错误, 断开连接
+	SetMaxPacketSize(size int)
+	MaxPacketSize() int
+
 	// 事件
 	EventQueue
 

@@ -11,7 +11,7 @@ type closeWritePacket struct {
 }
 
 type ltvSession struct {
-	stream PacketStream
+	stream *ltvStream
 
 	OnClose func() // 关闭函数回调
 
@@ -68,27 +68,36 @@ func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
 // 发送线程
 func (self *ltvSession) sendThread() {
 
+	var writeList []*cellnet.Packet
+
 	for {
-		packetList := self.sendList.BeginPick()
 
 		willExit := false
+		writeList = writeList[0:0]
+
+		// 复制出队列
+		packetList := self.sendList.BeginPick()
 
 		for _, p := range packetList {
 
 			if p.MsgID == 0 {
 				willExit = true
 			} else {
-
-				if err := self.stream.Write(p); err != nil {
-					willExit = true
-					break
-				}
-
+				writeList = append(writeList, p)
 			}
-
 		}
 
 		self.sendList.EndPick()
+
+		// 写队列
+		for _, p := range writeList {
+
+			if err := self.stream.Write(p); err != nil {
+				willExit = true
+				break
+			}
+
+		}
 
 		if err := self.stream.Flush(); err != nil {
 			willExit = true
@@ -167,7 +176,7 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	self.endSync.Done()
 }
 
-func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
+func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
 
 	self := &ltvSession{
 		stream:          stream,
@@ -175,6 +184,9 @@ func newSession(stream PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *ltv
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),
 	}
+
+	// 使用peer的统一设置
+	self.stream.maxPacketSize = p.MaxPacketSize()
 
 	// 布置接收和发送2个任务
 	// bug fix感谢viwii提供的线索

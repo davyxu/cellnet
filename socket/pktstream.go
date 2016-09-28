@@ -14,7 +14,6 @@ import (
 
 const (
 	PackageHeaderSize = 8 // MsgID(uint32) + Ser(uint16) + Size(uint16)
-	MaxPacketSize     = 1024 * 8
 )
 
 // 封包流
@@ -37,6 +36,8 @@ type ltvStream struct {
 
 	inputHeadBuffer []byte
 	headReader      *bytes.Reader
+
+	maxPacketSize int
 }
 
 var (
@@ -76,7 +77,7 @@ func (self *ltvStream) Read() (p *cellnet.Packet, err error) {
 	}
 
 	// 封包太大
-	if fullsize > MaxPacketSize {
+	if self.maxPacketSize > 0 && int(fullsize) > self.maxPacketSize {
 		return nil, packageTooBig
 	}
 
@@ -162,7 +163,7 @@ func (self *ltvStream) Raw() net.Conn {
 }
 
 // 封包流 relay模式: 在封包头有clientid信息
-func NewPacketStream(conn net.Conn) PacketStream {
+func NewPacketStream(conn net.Conn) *ltvStream {
 
 	s := &ltvStream{
 		conn:             conn,
