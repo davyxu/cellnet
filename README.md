@@ -117,9 +117,17 @@ https://github.com/davyxu/cellnet/wiki
 
 # 贡献者
 
-viwii(viwii@sina.cn)
+欢迎提供dev分支的pull request
 
-IronsDu(duzhongwei@qq.com)
+bug请直接通过issue提交
+
+凡提交代码和建议, bug的童鞋, 均会在下列贡献者名单者出现
+
+viwii(viwii@sina.cn), 提供一个可能造成死锁的bug
+
+IronsDu(duzhongwei@qq.com), 大幅度性能优化
+
+Chris Lonng(chris@lonng.org), 提供一个最大封包约束造成服务器间连接断开的bug
 
 # 备注
 
