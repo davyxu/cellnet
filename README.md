@@ -1,5 +1,5 @@
 # cellnet
-简单,方便,高效的Go语言的游戏服务器底层
+简单,方便,高效的跨平台服务器网络库
 
 
 # 特性
@@ -61,12 +61,12 @@ func server() {
 
 	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.TestEchoACK)
+	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
 
-		ses.Send(&coredef.TestEchoACK{
+		ses.Send(&gamedef.TestEchoACK{
 			Content: msg.String,
 		})
 
@@ -82,16 +82,16 @@ func client() {
 
 	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
 
-	socket.RegisterSessionMessage(evq, "coredef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*coredef.TestEchoACK)
+	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
 
 	})
 
-	socket.RegisterSessionMessage(evq, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(evq, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
-		ses.Send(&coredef.TestEchoACK{
+		ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
 		})
 
@@ -102,16 +102,90 @@ func client() {
 
 ```
 
-# TODO
+# 文件夹功能
 
+benchmark\		性能测试用例
 
-## MongoDB
+db\				db封装
 
-* DB存储日志
+proto\			cellnet内部的proto
+
+protoc-gen-msg\ 消息id生成
+
+rpc\			异步远程过程调用封装
+
+socket\			套接字,拆包等封装
+
+test\			测试用例/例子
+
+util\			工具库
+
+# FAQ
+
+问: 为什么接收消息回调必须需要手动转换类型, 例如: msg := content.(*gamedef.TestEchoACK), 而不是参数上写成参数类型?
+	
+答: cellnet这么设计是考虑到可以将参数进行多层传递, 如果写成不同消息类型, 传递就麻烦很多
+
+这里鼓励消息注册者可以进行消息注册函数的封装, 在网关里, 就对socket.RegisterSessionMessage进行封装
+	
+```golang
+func RegisterMessage(msgName string, userHandler func(interface{}, cellnet.Session, int64)) {
+
+	msgMeta := cellnet.MessageMetaByName(msgName)
+
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return
+	}
+
+	for _, conn := range routerConnArray {
+
+		conn.RegisterCallback(msgMeta.ID, func(data interface{}) {
+
+			if ev, ok := data.(*relayEvent); ok {
+
+				rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
+
+				if err != nil {
+					log.Errorln("unmarshaling error:\n", err)
+					return
+				}
+
+				msgContent := rawMsg.(interface {
+					String() string
+				}).String()				
+
+				userHandler(rawMsg, ev.Ses, ev.ClientID)
+
+			}
+
+		})
+	}
+
+}
+
+```
+
+再来一个外层封装
+```golang
+func RegisterExternMessage(msgName string, userHandler func(interface{}, *Player)) {
+
+	backend.RegisterMessage(msgName, func(content interface{}, routerSes cellnet.Session, clientid int64) {
+
+		if player, ok := PlayerByID[clientid]; ok {
+
+			userHandler(content, player)
+		}
+	})
+
+}
+```
+
 
 
 # Wiki
 https://github.com/davyxu/cellnet/wiki
+
 这里有文档和架构,设计解析
 
 

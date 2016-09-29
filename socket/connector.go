@@ -62,7 +62,7 @@ func (self *socketConnector) connect(address string) {
 			}
 
 			if self.tryConnTimes == reportConnectFailedLimitTimes {
-				log.Errorf("continue reconnecting, but mute log")
+				log.Errorf("(%s) continue reconnecting, but mute log", self.name)
 			}
 
 			// 没重连就退出
