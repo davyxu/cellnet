@@ -17,37 +17,37 @@ type EventPipe interface {
 	EnableCaputrePanic(enable bool)
 }
 
-type lineralTask struct {
+type linearTask struct {
 	q *evQueue
 	e interface{}
 }
 
-type lineraPipe struct {
+type linearPipe struct {
 	exitSignal chan int
 
-	dataChan chan *lineralTask
+	dataChan chan *linearTask
 
 	capturePanic bool
 }
 
-func (self *lineraPipe) AddQueue() EventQueue {
+func (self *linearPipe) AddQueue() EventQueue {
 
 	q := newEventQueue()
 
 	go func(q *evQueue) {
 		for v := range q.queue {
-			self.dataChan <- &lineralTask{q: q, e: v}
+			self.dataChan <- &linearTask{q: q, e: v}
 		}
 	}(q)
 
 	return q
 }
 
-func (self *lineraPipe) EnableCaputrePanic(enable bool) {
+func (self *linearPipe) EnableCaputrePanic(enable bool) {
 	self.capturePanic = enable
 }
 
-func (self *lineraPipe) Start() {
+func (self *linearPipe) Start() {
 
 	go func() {
 		for v := range self.dataChan {
@@ -55,7 +55,7 @@ func (self *lineraPipe) Start() {
 		}
 	}()
 }
-func (self *lineraPipe) protectedCall(q *evQueue, data interface{}) {
+func (self *linearPipe) protectedCall(q *evQueue, data interface{}) {
 	if self.capturePanic {
 		defer func() {
 
@@ -70,17 +70,17 @@ func (self *lineraPipe) protectedCall(q *evQueue, data interface{}) {
 	q.CallData(data)
 }
 
-func (self *lineraPipe) Stop(result int) {
+func (self *linearPipe) Stop(result int) {
 	self.exitSignal <- result
 }
 
-func (self *lineraPipe) Wait() int {
+func (self *linearPipe) Wait() int {
 	return <-self.exitSignal
 }
 
 func NewEventPipe() EventPipe {
-	return &lineraPipe{
+	return &linearPipe{
 		exitSignal: make(chan int),
-		dataChan:   make(chan *lineralTask),
+		dataChan:   make(chan *linearTask),
 	}
 }
