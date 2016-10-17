@@ -25,11 +25,11 @@ func (self *MongoDriver) Start(cfg *Config) error {
 	self.Config = cfg
 
 	if self.ConnCount == 0 {
-		log.Warnln("no db connection")
+		log.Warnln("No db connection")
 		return nil
 	}
 
-	log.Infof("db connection %d", self.ConnCount)
+	log.Infof("DB connection %d", self.ConnCount)
 
 	ses, err := mgo.Dial(self.URL)
 	if err != nil {

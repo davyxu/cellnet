@@ -25,9 +25,6 @@ type EventQueue interface {
 
 	// 延时投递
 	DelayPostData(dur time.Duration, callback func())
-
-	// 开启并发模式, 回调被调用的线程为post方线程
-	EnableConcurrenceMode(enable bool)
 }
 
 type evQueue struct {
@@ -37,12 +34,6 @@ type evQueue struct {
 	queue chan interface{}
 
 	inject func(interface{}) bool
-
-	concurrenceMode bool
-}
-
-func (self *evQueue) EnableConcurrenceMode(enable bool) {
-	self.concurrenceMode = enable
 }
 
 // 注册事件回调
@@ -83,16 +74,8 @@ func (self *evQueue) PostData(data interface{}) {
 
 func (self *evQueue) rawPost(data interface{}) {
 
-	if self.concurrenceMode {
-
-		// 不通过pipe, 直接调用回调
-		self.CallData(data)
-
-	} else {
-
-		// 通过queue转换到pipe的线程
-		self.queue <- data
-	}
+	// 通过queue转换到pipe的线程
+	self.queue <- data
 }
 
 func (self *evQueue) DelayPostData(dur time.Duration, callback func()) {
