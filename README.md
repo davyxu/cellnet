@@ -211,8 +211,6 @@ Chris Lonng(chris@lonng.org), 提供一个最大封包约束造成服务器间�
 
 知乎: http://www.zhihu.com/people/xu-bo-62-87
 
-邮箱: sunicdavy@qq.com
+提交bug及特性: https://github.com/davyxu/cellnet/issues
 
-战魂小筑技术讨论群: 309800774 加群请说明cellnet
-
-cellnet发问请直接@成都_黑色灵猫
+贡献代码: https://github.com/davyxu/cellnet/pulls
