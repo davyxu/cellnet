@@ -25,7 +25,7 @@ func (self *MongoDriver) Start(cfg *Config) error {
 	self.Config = cfg
 
 	if self.ConnCount == 0 {
-		log.Warnln("No db connection")
+		log.Warnln("DB connection zero")
 		return nil
 	}
 

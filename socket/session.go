@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/davyxu/cellnet"
-	"github.com/golang/protobuf/proto"
 )
 
 type closeWritePacket struct {
@@ -40,20 +39,9 @@ func (self *ltvSession) Close() {
 
 func (self *ltvSession) Send(data interface{}) {
 
-	pkt, meta := cellnet.BuildPacket(data)
+	pkt, _ := cellnet.BuildPacket(data)
 
-	if EnableMessageLog {
-		msgLog(&MessageLogInfo{
-			Dir:       "send",
-			PeerName:  self.FromPeer().Name(),
-			SessionID: self.ID(),
-			Name:      meta.Name,
-			ID:        meta.ID,
-			Size:      int32(len(pkt.Data)),
-			Data:      data.(proto.Message).String(),
-		})
-
-	}
+	msgLog("send", self, pkt)
 
 	self.RawSend(pkt)
 }
@@ -132,33 +120,18 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 
 		if err != nil {
 
+			ev := NewSessionEvent(Event_SessionClosed, self, nil)
+
+			msgLog("recv", self, ev.Packet)
+
 			// 断开事件
-			eq.PostData(NewSessionEvent(Event_SessionClosed, self, nil))
+			eq.PostData(ev)
 			break
 		}
 
 		// 消息日志要多损耗一次解析性能
-		if EnableMessageLog {
 
-			meta := cellnet.MessageMetaByID(pkt.MsgID)
-			if meta != nil {
-
-				rawMsg, err := cellnet.ParsePacket(pkt, meta.Type)
-				if err == nil {
-
-					msgLog(&MessageLogInfo{
-						Dir:       "recv",
-						PeerName:  self.FromPeer().Name(),
-						SessionID: self.ID(),
-						Name:      meta.Name,
-						ID:        meta.ID,
-						Size:      int32(len(pkt.Data)),
-						Data:      rawMsg.(proto.Message).String(),
-					})
-				}
-			}
-
-		}
+		msgLog("recv", self, pkt)
 
 		// 逻辑封包
 		eq.PostData(&SessionEvent{
