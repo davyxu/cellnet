@@ -68,7 +68,7 @@ func (self *sessionMgr) GetSession(id int64) cellnet.Session {
 	return nil
 }
 
-func (self *sessionMgr) IterateSession(callback func(cellnet.Session) bool) {
+func (self *sessionMgr) VisitSession(callback func(cellnet.Session) bool) {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 

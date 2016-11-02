@@ -13,9 +13,9 @@ type MessageMeta struct {
 }
 
 var (
-	name2msgmeta    = make(map[string]*MessageMeta)
-	id2msgmeta      = make(map[uint32]*MessageMeta)
-	msgtype2msgmeta = make(map[reflect.Type]*MessageMeta)
+	name2msgmeta    = map[string]*MessageMeta{}
+	id2msgmeta      = map[uint32]*MessageMeta{}
+	msgtype2msgmeta = map[reflect.Type]*MessageMeta{}
 )
 
 // 注册消息元信息(代码生成专用)

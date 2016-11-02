@@ -38,7 +38,7 @@ type SessionManager interface {
 	GetSession(int64) Session
 
 	// 遍历连接
-	IterateSession(func(Session) bool)
+	VisitSession(func(Session) bool)
 
 	// 连接数量
 	SessionCount() int

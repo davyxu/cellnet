@@ -85,7 +85,7 @@ func msgLog(dir string, ses cellnet.Session, pkt *cellnet.Packet) {
 
 var msgLogHook func(*MessageLogInfo) bool
 
-func SetMessageLogHook(hook func(*MessageLogInfo) bool) {
+func HookMessageLog(hook func(*MessageLogInfo) bool) {
 	msgLogHook = hook
 }
 
