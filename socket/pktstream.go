@@ -128,12 +128,12 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 	}
 
 	// 发包头
-	if _, err = self.outputWriter.Write(self.outputHeadBuffer.Bytes()); err != nil {
+	if err = self.writeFull(self.outputHeadBuffer.Bytes()); err != nil {
 		return err
 	}
 
 	// 发包内容
-	if _, err = self.outputWriter.Write(pkt.Data); err != nil {
+	if err = self.writeFull(pkt.Data); err != nil {
 		return err
 	}
 
@@ -141,6 +141,31 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 	self.sendser++
 
 	return
+}
+
+// 完整发送所有封包
+func (self *ltvStream) writeFull(p []byte) error {
+
+	sizeToWrite := len(p)
+
+	for {
+
+		n, err := self.outputWriter.Write(p)
+
+		if err != nil {
+			return err
+		}
+
+		if n >= sizeToWrite {
+			break
+		}
+
+		copy(p[0:sizeToWrite-n], p[n:sizeToWrite])
+		sizeToWrite -= n
+	}
+
+	return nil
+
 }
 
 const sendTotalTryCount = 100
