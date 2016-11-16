@@ -143,13 +143,22 @@ func (self *ltvStream) Write(pkt *cellnet.Packet) (err error) {
 	return
 }
 
+const sendTotalTryCount = 100
+
 func (self *ltvStream) Flush() error {
 
-	if err := self.outputWriter.Flush(); err != nil && err != io.ErrShortWrite {
-		return err
+	var err error
+	for tryTimes := 0; tryTimes < sendTotalTryCount; tryTimes++ {
+
+		err = self.outputWriter.Flush()
+
+		// 如果没写完, flush底层会将没发完的buff准备好, 我们只需要重新调一次flush
+		if err != io.ErrShortWrite {
+			break
+		}
 	}
 
-	return nil
+	return err
 }
 
 // 关闭
