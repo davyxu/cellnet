@@ -117,7 +117,18 @@ rpc\			异步远程过程调用封装
 socket\			套接字,拆包等封装
 
 test\			测试用例/例子
-
+   
+	close\		发送消息后保证消息送达后再断开连接
+	
+   	echo\		常见的pingpong测试， 最简单的例子
+	
+	mgo\		mongodb异步读取例子
+	
+	rpc\		异步远程过程调用
+	
+	timer\		异步计时器
+	
+	
 util\			工具库
 
 # FAQ
