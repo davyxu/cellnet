@@ -16,7 +16,7 @@
 
 * 封包类型采用Type-Length-Value的私有tcp封包, 自带序列号防御简单的封包复制
 
-* 消息统一使用Protobuf格式进行通信
+* 消息统一使用Protobuf格式进行通信, 有自定义需求可以修改实现
 
 * 自动生成消息ID
 
@@ -57,39 +57,40 @@ QPS: 13.7w
 
 func server() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7234")
+	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
 
 		ses.Send(&gamedef.TestEchoACK{
-			Content: msg.String,
+			Content: msg.String(),
 		})
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 
 }
 
 func client() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := socket.NewConnector(pipe).Start("127.0.0.1:7234")
+	evd := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
 
+		signal.Done(1)
 	})
 
-	socket.RegisterSessionMessage(evq, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
@@ -97,7 +98,7 @@ func client() {
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 }
 
 ```
@@ -116,7 +117,7 @@ rpc\			异步远程过程调用封装
 
 socket\			套接字,拆包等封装
 
-test\			测试用例/例子
+sample\			测试用例/例子
    
 	close\		发送消息后保证消息送达后再断开连接
 	
@@ -191,8 +192,10 @@ func RegisterExternMessage(msgName string, userHandler func(interface{}, *Player
 
 }
 ```
+# 版本历史
+2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/master/README.md)
 
-
+2015.8	v1版本
 
 # Wiki
 https://github.com/davyxu/cellnet/wiki

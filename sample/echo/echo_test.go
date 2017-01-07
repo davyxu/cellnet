@@ -5,8 +5,8 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/gamedef"
+	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
 )
 
@@ -16,11 +16,11 @@ var signal *test.SignalTester
 
 func server() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
+	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -31,17 +31,17 @@ func server() {
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 
 }
 
 func client() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := socket.NewConnector(pipe).Start("127.0.0.1:7201")
+	evd := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterSessionMessage(evq, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
@@ -49,7 +49,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	socket.RegisterSessionMessage(evq, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
@@ -57,7 +57,7 @@ func client() {
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 
 	signal.WaitAndExpect(1, "not recv data")
 

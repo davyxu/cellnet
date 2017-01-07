@@ -3,18 +3,14 @@ package socket
 import (
 	"fmt"
 
-	_ "github.com/davyxu/cellnet/proto/gamedef"
-
 	"github.com/davyxu/cellnet"
+	_ "github.com/davyxu/cellnet/proto/gamedef"
 )
 
 var (
 	Event_SessionConnected = uint32(cellnet.MessageMetaByName("gamedef.SessionConnected").ID)
 	Event_SessionClosed    = uint32(cellnet.MessageMetaByName("gamedef.SessionClosed").ID)
 	Event_SessionAccepted  = uint32(cellnet.MessageMetaByName("gamedef.SessionAccepted").ID)
-	Event_PeerInit         = uint32(cellnet.MessageMetaByName("gamedef.PeerInit").ID)
-	Event_PeerStart        = uint32(cellnet.MessageMetaByName("gamedef.PeerStart").ID)
-	Event_PeerStop         = uint32(cellnet.MessageMetaByName("gamedef.PeerStop").ID)
 )
 
 // 会话事件
@@ -32,22 +28,4 @@ func NewSessionEvent(msgid uint32, s cellnet.Session, data []byte) *SessionEvent
 		Packet: &cellnet.Packet{MsgID: msgid, Data: data},
 		Ses:    s,
 	}
-}
-
-// 端事件
-type PeerEvent struct {
-	MsgID uint32
-	P     cellnet.Peer
-}
-
-func (self PeerEvent) ContextID() uint32 {
-	return self.MsgID
-}
-
-func (self PeerEvent) String() string {
-	return fmt.Sprintf("PeerEvent msgid: %d", self.MsgID)
-}
-
-func NewPeerEvent(msgid uint32, p cellnet.Peer) *PeerEvent {
-	return &PeerEvent{MsgID: msgid, P: p}
 }

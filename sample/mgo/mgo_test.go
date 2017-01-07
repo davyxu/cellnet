@@ -5,7 +5,7 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/db"
-	"github.com/davyxu/cellnet/test"
+	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/golog"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -20,7 +20,7 @@ type char struct {
 	HP   int
 }
 
-func update(db *db.MongoDriver, evq cellnet.EventQueue) {
+func update(db *db.MongoDriver, queue cellnet.EventQueue) {
 	log.Debugln("update")
 
 	db.Execute(func(ses *mgo.Session) {
@@ -29,7 +29,7 @@ func update(db *db.MongoDriver, evq cellnet.EventQueue) {
 
 		col.Update(bson.M{"name": "davy"}, &char{Name: "davy", HP: 1})
 
-		evq.PostData(func() {
+		queue.Post(nil, func() {
 			signal.Done(2)
 		})
 	})
@@ -37,11 +37,9 @@ func update(db *db.MongoDriver, evq cellnet.EventQueue) {
 }
 
 func rundb() {
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := pipe.AddQueue()
-
-	pipe.Start()
+	queue.StartLoop()
 
 	mdb := db.NewMongoDriver()
 
@@ -65,7 +63,7 @@ func rundb() {
 
 		err := col.Find(bson.M{"name": "davy"}).One(&c)
 
-		evq.PostData(func() {
+		queue.Post(nil, func() {
 
 			if err == mgo.ErrNotFound {
 
@@ -78,11 +76,11 @@ func rundb() {
 					col.Insert(&char{Name: "davy", HP: 10})
 					col.Insert(&char{Name: "zerg", HP: 90})
 
-					evq.PostData(func() {
+					queue.Post(nil, func() {
 
 						signal.Done(1)
 
-						update(mdb, evq)
+						update(mdb, queue)
 					})
 
 				})
@@ -94,7 +92,7 @@ func rundb() {
 				log.Debugln(c)
 
 				signal.Done(1)
-				update(mdb, evq)
+				update(mdb, queue)
 			}
 		})
 

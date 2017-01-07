@@ -17,7 +17,7 @@ type Peer interface {
 	MaxPacketSize() int
 
 	// 事件
-	EventQueue
+	EventDispatcher
 
 	// 连接管理
 	SessionManager

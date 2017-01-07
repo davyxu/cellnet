@@ -8,7 +8,7 @@ import (
 )
 
 type socketConnector struct {
-	*peerProfile
+	*peerBase
 	*sessionMgr
 
 	conn net.Conn
@@ -36,8 +36,6 @@ func (self *socketConnector) Start(address string) cellnet.Peer {
 	}
 
 	go self.connect(address)
-
-	self.PostData(NewPeerEvent(Event_PeerStart, self))
 
 	return self
 }
@@ -83,7 +81,7 @@ func (self *socketConnector) connect(address string) {
 		self.conn = cn
 
 		// 创建Session
-		ses := newSession(NewPacketStream(cn), self.EventQueue, self)
+		ses := newSession(NewPacketStream(cn), self, self)
 		self.sessionMgr.Add(ses)
 		self.defaultSes = ses
 
@@ -96,7 +94,7 @@ func (self *socketConnector) connect(address string) {
 		}
 
 		// 抛出事件
-		self.PostData(NewSessionEvent(Event_SessionConnected, ses, nil))
+		self.Post(self, NewSessionEvent(Event_SessionConnected, ses, nil))
 
 		if <-self.closeSignal {
 
@@ -124,8 +122,6 @@ func (self *socketConnector) Stop() {
 
 	if self.conn != nil {
 
-		self.PostData(NewPeerEvent(Event_PeerStop, self))
-
 		self.conn.Close()
 	}
 
@@ -135,14 +131,12 @@ func (self *socketConnector) DefaultSession() cellnet.Session {
 	return self.defaultSes
 }
 
-func NewConnector(pipe cellnet.EventPipe) cellnet.Peer {
+func NewConnector(evq cellnet.EventQueue) cellnet.Peer {
 	self := &socketConnector{
 		sessionMgr:  newSessionManager(),
-		peerProfile: newPeerProfile(pipe.AddQueue()),
+		peerBase:    newPeerBase(evq),
 		closeSignal: make(chan bool),
 	}
-
-	self.PostData(NewPeerEvent(Event_PeerInit, self))
 
 	return self
 }

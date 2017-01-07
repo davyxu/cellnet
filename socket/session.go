@@ -125,7 +125,7 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 			msgLog("recv", self, ev.Packet)
 
 			// 断开事件
-			eq.PostData(ev)
+			eq.Post(self.p, ev)
 			break
 		}
 
@@ -134,7 +134,7 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 		msgLog("recv", self, pkt)
 
 		// 逻辑封包
-		eq.PostData(&SessionEvent{
+		eq.Post(self.p, &SessionEvent{
 			Packet: pkt,
 			Ses:    self,
 		})

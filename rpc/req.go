@@ -58,7 +58,7 @@ func removeCall(id int64) {
 }
 
 // 从peer获取rpc使用的session
-func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventQueue, error) {
+func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventDispatcher, error) {
 
 	var ses cellnet.Session
 
@@ -82,20 +82,20 @@ func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventQueue, error) 
 		return nil, nil, errConnectorSesNotReady
 	}
 
-	return ses, ses.FromPeer().(cellnet.EventQueue), nil
+	return ses, ses.FromPeer().(cellnet.EventDispatcher), nil
 }
 
 // 传入peer或者session
 func Call(p interface{}, args interface{}, callback interface{}) {
 
-	ses, evq, err := getPeerSession(p)
+	ses, evd, err := getPeerSession(p)
 
 	if err != nil {
 		log.Errorln(err)
 		return
 	}
 
-	_, msg := newRequest(evq, args, callback)
+	_, msg := newRequest(evd, args, callback)
 
 	ses.Send(msg)
 
@@ -153,12 +153,12 @@ func (self *request) done(msg *gamedef.RemoteCallACK) {
 var needRegisterClient bool = true
 var needRegisterClientGuard sync.Mutex
 
-func newRequest(evq cellnet.EventQueue, args interface{}, callback interface{}) (*request, interface{}) {
+func newRequest(evd cellnet.EventDispatcher, args interface{}, callback interface{}) (*request, interface{}) {
 
 	needRegisterClientGuard.Lock()
 	if needRegisterClient {
 		// 请求端
-		socket.RegisterSessionMessage(evq, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
+		socket.RegisterMessage(evd, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
 			msg := content.(*gamedef.RemoteCallACK)
 
 			c := getCall(msg.CallID)

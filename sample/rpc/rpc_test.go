@@ -6,8 +6,8 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/davyxu/cellnet/test"
 	"github.com/davyxu/golog"
 )
 
@@ -17,9 +17,9 @@ var signal *test.SignalTester
 
 func server() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(pipe)
+	p := socket.NewAcceptor(queue)
 	p.SetName("server")
 	p.Start("127.0.0.1:9201")
 
@@ -34,19 +34,19 @@ func server() {
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 
 }
 
 func client() {
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	p := socket.NewConnector(pipe)
+	p := socket.NewConnector(queue)
 	p.SetName("client")
 	p.Start("127.0.0.1:9201")
 
-	socket.RegisterSessionMessage(p, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(p, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		rpc.Call(p, &gamedef.TestEchoACK{
 			Content: "rpc async call",
@@ -59,7 +59,7 @@ func client() {
 
 	})
 
-	pipe.Start()
+	queue.StartLoop()
 
 	signal.WaitAndExpect(1, "not recv data")
 }

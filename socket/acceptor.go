@@ -7,7 +7,7 @@ import (
 )
 
 type socketAcceptor struct {
-	*peerProfile
+	*peerBase
 	*sessionMgr
 
 	listener net.Listener
@@ -44,7 +44,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			// 处理连接进入独立线程, 防止accept无法响应
 			go func() {
 
-				ses := newSession(NewPacketStream(conn), self.EventQueue, self)
+				ses := newSession(NewPacketStream(conn), self, self)
 
 				// 添加到管理器
 				self.sessionMgr.Add(ses)
@@ -57,14 +57,12 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
 
 				// 通知逻辑
-				self.PostData(NewSessionEvent(Event_SessionAccepted, ses, nil))
+				self.Post(self, NewSessionEvent(Event_SessionAccepted, ses, nil))
 			}()
 
 		}
 
 	}()
-
-	self.PostData(NewPeerEvent(Event_PeerStart, self))
 
 	return self
 }
@@ -75,21 +73,17 @@ func (self *socketAcceptor) Stop() {
 		return
 	}
 
-	self.PostData(NewPeerEvent(Event_PeerStop, self))
-
 	self.running = false
 
 	self.listener.Close()
 }
 
-func NewAcceptor(pipe cellnet.EventPipe) cellnet.Peer {
+func NewAcceptor(evq cellnet.EventQueue) cellnet.Peer {
 
 	self := &socketAcceptor{
-		sessionMgr:  newSessionManager(),
-		peerProfile: newPeerProfile(pipe.AddQueue()),
+		sessionMgr: newSessionManager(),
+		peerBase:   newPeerBase(evq),
 	}
-
-	self.PostData(NewPeerEvent(Event_PeerInit, self))
 
 	return self
 }

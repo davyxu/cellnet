@@ -24,7 +24,7 @@ func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 
 			select {
 			case <-time.After(dur):
-				eq.PostData(func() {
+				eq.Post(nil, func() {
 
 					callback(self)
 				})

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/test"
+	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/golog"
 )
 
@@ -15,17 +15,15 @@ func TestTimer(t *testing.T) {
 
 	signal := test.NewSignalTester(t)
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := pipe.AddQueue()
-
-	pipe.Start()
+	queue.StartLoop()
 
 	const testTimes = 3
 
 	var count int = testTimes
 
-	cellnet.NewTimer(evq, time.Second, func(t *cellnet.Timer) {
+	cellnet.NewTimer(queue, time.Second, func(t *cellnet.Timer) {
 		log.Debugln("timer 1 sec tick")
 
 		signal.Done(1)
@@ -50,15 +48,13 @@ func TestDelay(t *testing.T) {
 
 	signal := test.NewSignalTester(t)
 
-	pipe := cellnet.NewEventPipe()
+	queue := cellnet.NewEventQueue()
 
-	evq := pipe.AddQueue()
-
-	pipe.Start()
+	queue.StartLoop()
 
 	log.Debugln("delay 1 sec begin")
 
-	evq.DelayPostData(time.Second, func() {
+	queue.DelayPost(nil, time.Second, func() {
 
 		log.Debugln("delay done")
 		signal.Done(1)
