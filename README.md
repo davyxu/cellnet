@@ -193,7 +193,7 @@ func RegisterExternMessage(msgName string, userHandler func(interface{}, *Player
 }
 ```
 # 版本历史
-2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/master/README.md)
+2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/master/CHANGES.md)
 
 2015.8	v1版本
 
