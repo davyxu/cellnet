@@ -20,14 +20,14 @@ var signal *test.SignalTester
 const benchmarkAddress = "127.0.0.1:7201"
 
 // 客户端并发数量
-const clientCount = 1000
+const clientCount = 100
 
 // 测试时间(秒)
 const benchmarkSeconds = 10
 
 func server() {
 
-	queue := cellnet.NewEventQueue2()
+	queue := cellnet.NewEventQueue()
 	qpsm := benchmark.NewQPSMeter(queue, func(qps int) {
 
 		log.Infof("QPS: %d", qps)
@@ -36,7 +36,7 @@ func server() {
 
 	evd := socket.NewAcceptor(queue).Start(benchmarkAddress)
 
-	socket.RegisterSessionMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 
 		if qpsm.Acc() > benchmarkSeconds {
 			signal.Done(1)
@@ -53,17 +53,17 @@ func server() {
 
 func client() {
 
-	queue := cellnet.NewEventQueue2()
+	queue := cellnet.NewEventQueue()
 
 	evd := socket.NewConnector(queue).Start(benchmarkAddress)
 
-	socket.RegisterSessionMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&gamedef.TestEchoACK{})
 
 	})
 
-	socket.RegisterSessionMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&gamedef.TestEchoACK{})
 

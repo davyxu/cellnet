@@ -41,13 +41,19 @@
 
 命令行: go test -v github.com/davyxu/cellnet/benchmark/io
 
-CPU: i7 6700 3.4GHz 8核
+平台: Windows 7 x64/CentOS 6.5 x64
 
 测试用例: localhost 1000连接 同时对服务器进行实时PingPong测试
 
-平台: Windows 7 x64/CentOS 6.5 x64
+配置1: i7 6700 3.4GHz 8核
 
-QPS: 13.7w
+QPS: 11.7w
+
+配置2: i5 4590 3.3GHz 4核
+
+QPS: 10.1w
+
+
 
 
 # 例子
