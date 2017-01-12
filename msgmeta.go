@@ -61,6 +61,16 @@ func MessageMetaByID(id uint32) *MessageMeta {
 	return nil
 }
 
+// 根据id查找消息名, 没找到返回空
+func MessageNameByID(id uint32) string {
+
+	if meta := MessageMetaByID(id); meta != nil {
+		return meta.Name
+	}
+
+	return ""
+}
+
 // 遍历消息元信息
 func VisitMessageMeta(callback func(*MessageMeta)) {
 

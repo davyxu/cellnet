@@ -19,7 +19,7 @@ func RegisterMessage(evd cellnet.EventDispatcher, msgName string, userHandler fu
 			rawMsg, err := cellnet.ParsePacket(ev.Packet, msgMeta.Type)
 
 			if err != nil {
-				log.Errorln("unmarshaling error:\n", err)
+				log.Errorf("unmarshaling error: %v, raw: %v", err, ev.Packet)
 				return
 			}
 
