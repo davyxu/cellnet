@@ -12,7 +12,7 @@ import (
 )
 
 type Config struct {
-	URL       string // username:password@tcp(address:port)/dbname   ?authSource=admin
+	DSN       string // username:password@tcp(address:port)/dbname   ?authSource=admin
 	ConnCount int32  // 连接量
 }
 
@@ -29,9 +29,9 @@ func (self *MongoDriver) Start(cfg *Config) error {
 		return nil
 	}
 
-	log.Infof("DB connecting...(%s)", self.URL)
+	log.Infof("Mongo connecting...(%s)", self.DSN)
 
-	ses, err := mgo.Dial(self.URL)
+	ses, err := mgo.Dial(self.DSN)
 	if err != nil {
 
 		log.Errorf("%s", err)

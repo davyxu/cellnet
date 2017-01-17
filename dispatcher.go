@@ -10,6 +10,9 @@ type EventDispatcher interface {
 
 	// 直接调用消费者端的handler
 	CallData(data interface{})
+
+	// 清除所有回调
+	Clear()
 }
 
 type evDispatcher struct {
@@ -41,6 +44,11 @@ func (self *evDispatcher) RegisterCallback(id uint32, f func(interface{})) {
 func (self *evDispatcher) InjectData(f func(interface{}) bool) {
 
 	self.inject = f
+}
+
+func (self *evDispatcher) Clear() {
+
+	self.handlerByMsgPeer = make(map[uint32][]func(interface{}))
 }
 
 func (self *evDispatcher) Exists(id uint32) bool {
