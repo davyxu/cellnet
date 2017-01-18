@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"path"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
@@ -13,9 +14,8 @@ type MessageMeta struct {
 }
 
 var (
-	name2msgmeta    = map[string]*MessageMeta{}
-	id2msgmeta      = map[uint32]*MessageMeta{}
-	msgtype2msgmeta = map[reflect.Type]*MessageMeta{}
+	name2msgmeta = map[string]*MessageMeta{}
+	id2msgmeta   = map[uint32]*MessageMeta{}
 )
 
 // 注册消息元信息(代码生成专用)
@@ -30,7 +30,6 @@ func RegisterMessageMeta(name string, msg proto.Message, id uint32) {
 	}
 
 	name2msgmeta[name] = meta
-	msgtype2msgmeta[rtype] = meta
 	id2msgmeta[meta.ID] = meta
 }
 
@@ -43,13 +42,14 @@ func MessageMetaByName(name string) *MessageMeta {
 	return nil
 }
 
-// 根据类型名字查找消息元信息
-func MessageMetaByType(rtype reflect.Type) *MessageMeta {
-	if v, ok := msgtype2msgmeta[rtype]; ok {
-		return v
+func MessageFullName(rtype reflect.Type) string {
+
+	if rtype.Kind() == reflect.Ptr {
+		rtype = rtype.Elem()
 	}
 
-	return nil
+	return path.Base(rtype.PkgPath()) + "." + rtype.Name()
+
 }
 
 // 根据id查找消息元信息

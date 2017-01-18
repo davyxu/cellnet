@@ -27,7 +27,7 @@ func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 		log.Errorln(err)
 	}
 
-	meta := MessageMetaByType(reflect.TypeOf(msg))
+	meta := MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
 
 	return &Packet{
 		MsgID: uint32(meta.ID),
