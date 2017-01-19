@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/proto/gamedef"
 )
 
 type socketConnector struct {
@@ -65,6 +66,8 @@ func (self *socketConnector) connect(address string) {
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
+
+				self.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &gamedef.SessionConnectFailed{Reason: err.Error()}))
 				break
 			}
 

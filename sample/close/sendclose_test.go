@@ -67,7 +67,9 @@ func testConnActiveClose() {
 
 	socket.RegisterMessage(p, "gamedef.SessionClosed", func(content interface{}, ses cellnet.Session) {
 
-		log.Debugln("close ok!")
+		msg := content.(*gamedef.SessionClosed)
+
+		log.Debugln("close ok!", msg.Reason)
 		// 正常断开
 		signal.Done(3)
 

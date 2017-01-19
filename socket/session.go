@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/proto/gamedef"
 )
 
 type closeWritePacket struct {
@@ -108,6 +109,15 @@ exitsendloop:
 	self.endSync.Done()
 }
 
+func BuildInternalErrorPacket(msgid uint32, err error) {
+
+	switch msgid {
+	case Event_SessionClosed:
+		cellnet.BuildPacket(&gamedef.SessionClosed{})
+	}
+
+}
+
 // 接收线程
 func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	var err error
@@ -120,7 +130,7 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 
 		if err != nil {
 
-			ev := NewSessionEvent(Event_SessionClosed, self, nil)
+			ev := newSessionEvent(Event_SessionClosed, self, &gamedef.SessionClosed{Reason: err.Error()})
 
 			msgLog("recv", self, ev.Packet)
 

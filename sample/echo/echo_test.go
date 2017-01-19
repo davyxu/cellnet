@@ -57,6 +57,14 @@ func client() {
 
 	})
 
+	socket.RegisterMessage(evd, "gamedef.SessionConnectFailed", func(content interface{}, ses cellnet.Session) {
+
+		msg := content.(*gamedef.SessionConnectFailed)
+
+		log.Debugln(msg.Reason)
+
+	})
+
 	queue.StartLoop()
 
 	signal.WaitAndExpect(1, "not recv data")

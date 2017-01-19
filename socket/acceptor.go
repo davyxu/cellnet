@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/proto/gamedef"
 )
 
 type socketAcceptor struct {
@@ -37,7 +38,8 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			conn, err := ln.Accept()
 
 			if err != nil {
-				log.Errorln(err)
+				log.Errorf("#accept failed(%s) %v", self.name, err.Error())
+				self.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &gamedef.SessionAcceptFailed{Reason: err.Error()}))
 				break
 			}
 
