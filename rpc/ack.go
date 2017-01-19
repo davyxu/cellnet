@@ -30,12 +30,11 @@ func (self *response) ContextID() uint32 {
 	return self.req.MsgID
 }
 
-var needRegisterServer bool = true
-
 // 注册连接消息
 func RegisterMessage(evd cellnet.EventDispatcher, msgName string, userHandler func(interface{}, Response)) {
 
-	if needRegisterServer {
+	// not registed ? reg it
+	if socket.MessageRegistedCount(evd, "gamedef.RemoteCallREQ") == 0 {
 
 		// 服务端
 		socket.RegisterMessage(evd, "gamedef.RemoteCallREQ", func(content interface{}, ses cellnet.Session) {
@@ -48,12 +47,11 @@ func RegisterMessage(evd cellnet.EventDispatcher, msgName string, userHandler fu
 
 		})
 
-		needRegisterServer = false
 	}
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 
-	evd.RegisterCallback(msgMeta.ID, func(data interface{}) {
+	evd.AddCallback(msgMeta.ID, func(data interface{}) {
 
 		if ev, ok := data.(*response); ok {
 

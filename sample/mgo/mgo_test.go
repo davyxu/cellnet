@@ -46,7 +46,7 @@ func rundb() {
 	var err error
 
 	err = mdb.Start(&db.Config{
-		URL:       "127.0.0.1:27017/test",
+		DSN:       "127.0.0.1:27017/test",
 		ConnCount: 1,
 	})
 
