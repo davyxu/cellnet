@@ -226,7 +226,7 @@ Chris Lonng(chris@lonng.org), 提供一个最大封包约束造成服务器间�
 
 博客: http://www.cppblog.com/sunicdavy
 
-知乎: http://www.zhihu.com/people/xu-bo-62-87
+知乎: http://www.zhihu.com/people/sunicdavy
 
 提交bug及特性: https://github.com/davyxu/cellnet/issues
 
