@@ -157,7 +157,7 @@ func (self *evDispatcher) CountByID(id uint32) int {
 	return 0
 }
 
-type contentIndexer2 interface {
+type contentIndexer interface {
 	ContextID() uint32
 }
 
@@ -166,7 +166,7 @@ func (self *evDispatcher) CallData(data interface{}) {
 
 	switch d := data.(type) {
 	// ID索引的消息
-	case contentIndexer2:
+	case contentIndexer:
 
 		if self == nil {
 			log.Errorf("recv indexed event, but event dispatcher nil, id: %d", d.ContextID())
