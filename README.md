@@ -35,8 +35,6 @@
 
 * github.com/davyxu/golog
 
-* gopkg.in/mgo.v2
-
 # 性能测试
 
 命令行: go test -v github.com/davyxu/cellnet/benchmark/io
@@ -155,7 +153,7 @@ func RegisterMessage(msgName string, userHandler func(interface{}, cellnet.Sessi
 
 	for _, conn := range routerConnArray {
 
-		conn.RegisterCallback(msgMeta.ID, func(data interface{}) {
+		conn.AddCallback(msgMeta.ID, func(data interface{}) {
 
 			if ev, ok := data.(*relayEvent); ok {
 

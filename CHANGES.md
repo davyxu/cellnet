@@ -23,3 +23,5 @@
 - EventDispatcher处理回调
 
 - 处理DB, Timer等不依赖Dispatcher(Peer)逻辑时, 在Post时, Dispatcher可以指定nil, 通过data的函数得到异步返回
+
+- 去掉MongoDB支持
