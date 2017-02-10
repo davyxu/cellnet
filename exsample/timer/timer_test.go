@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/sample"
+	"github.com/davyxu/cellnet/exsample"
 	"github.com/davyxu/golog"
 )
 

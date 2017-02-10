@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/exsample"
 	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
 )
