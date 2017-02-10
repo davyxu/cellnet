@@ -109,15 +109,6 @@ exitsendloop:
 	self.endSync.Done()
 }
 
-func BuildInternalErrorPacket(msgid uint32, err error) {
-
-	switch msgid {
-	case Event_SessionClosed:
-		cellnet.BuildPacket(&gamedef.SessionClosed{})
-	}
-
-}
-
 // 接收线程
 func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	var err error

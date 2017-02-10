@@ -14,34 +14,33 @@ type MessageMeta struct {
 }
 
 var (
-	name2msgmeta = map[string]*MessageMeta{}
-	id2msgmeta   = map[uint32]*MessageMeta{}
+	metaByName = map[string]*MessageMeta{}
+	metaByID   = map[uint32]*MessageMeta{}
 )
 
 // 注册消息元信息(代码生成专用)
 func RegisterMessageMeta(name string, msg proto.Message, id uint32) {
 
-	rtype := reflect.TypeOf(msg)
-
 	meta := &MessageMeta{
-		Type: rtype,
+		Type: reflect.TypeOf(msg),
 		Name: name,
 		ID:   id,
 	}
 
-	name2msgmeta[name] = meta
-	id2msgmeta[meta.ID] = meta
+	metaByName[name] = meta
+	metaByID[meta.ID] = meta
 }
 
 // 根据名字查找消息元信息
 func MessageMetaByName(name string) *MessageMeta {
-	if v, ok := name2msgmeta[name]; ok {
+	if v, ok := metaByName[name]; ok {
 		return v
 	}
 
 	return nil
 }
 
+// 消息全名
 func MessageFullName(rtype reflect.Type) string {
 
 	if rtype.Kind() == reflect.Ptr {
@@ -54,7 +53,7 @@ func MessageFullName(rtype reflect.Type) string {
 
 // 根据id查找消息元信息
 func MessageMetaByID(id uint32) *MessageMeta {
-	if v, ok := id2msgmeta[id]; ok {
+	if v, ok := metaByID[id]; ok {
 		return v
 	}
 
@@ -74,7 +73,7 @@ func MessageNameByID(id uint32) string {
 // 遍历消息元信息
 func VisitMessageMeta(callback func(*MessageMeta)) {
 
-	for _, meta := range name2msgmeta {
+	for _, meta := range metaByName {
 		callback(meta)
 	}
 
