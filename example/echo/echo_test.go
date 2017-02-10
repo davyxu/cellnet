@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/exsample"
+	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
@@ -20,7 +20,14 @@ func server() {
 
 	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	dispatcher := socket.NewDispatcherHandler()
+
+	evd.SetHandler(socket.NewReadPacketHandler(
+		dispatcher,
+		queue,
+	))
+
+	socket.RegisterHandler(dispatcher, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -41,7 +48,14 @@ func client() {
 
 	evd := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	dispatcher := socket.NewDispatcherHandler()
+
+	evd.SetHandler(socket.NewReadPacketHandler(
+		dispatcher,
+		queue,
+	))
+
+	socket.RegisterHandler(dispatcher, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
 		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
@@ -49,7 +63,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterHandler(dispatcher, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
 		ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
@@ -57,13 +71,13 @@ func client() {
 
 	})
 
-	socket.RegisterMessage(evd, "gamedef.SessionConnectFailed", func(content interface{}, ses cellnet.Session) {
+	//	socket.RegisterMessage(evd, "gamedef.SessionConnectFailed", func(content interface{}, ses cellnet.Session) {
 
-		msg := content.(*gamedef.SessionConnectFailed)
+	//		msg := content.(*gamedef.SessionConnectFailed)
 
-		log.Debugln(msg.Reason)
+	//		log.Debugln(msg.Reason)
 
-	})
+	//	})
 
 	queue.StartLoop()
 

@@ -8,6 +8,16 @@ type peerBase struct {
 	cellnet.EventQueue
 	name          string
 	maxPacketSize int
+
+	headHandler cellnet.Handler
+}
+
+func (self *peerBase) SetHandler(h cellnet.Handler) {
+	self.headHandler = h
+}
+
+func (self *peerBase) GetHandler() cellnet.Handler {
+	return self.headHandler
 }
 
 func (self *peerBase) SetName(name string) {

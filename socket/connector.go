@@ -67,7 +67,12 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				self.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &gamedef.SessionConnectFailed{Reason: err.Error()}))
+				//self.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &gamedef.SessionConnectFailed{Reason: err.Error()}))
+
+				ev := NewSessionEvent(0, self.defaultSes, nil)
+				ev.Packet, _ = cellnet.BuildPacket(&gamedef.SessionConnectFailed{Reason: err.Error()})
+
+				self.GetHandler().Call(SessionEvent_ConnectFailed, NewSessionEvent(0, self.defaultSes, nil))
 				break
 			}
 
@@ -96,8 +101,10 @@ func (self *socketConnector) connect(address string) {
 			self.closeSignal <- true
 		}
 
+		self.GetHandler().Call(SessionEvent_Connected, NewSessionEvent(0, ses, nil))
+
 		// 抛出事件
-		self.Post(self, NewSessionEvent(Event_SessionConnected, ses, nil))
+		//self.Post(self, NewSessionEvent(Event_SessionConnected, ses, nil))
 
 		if <-self.closeSignal {
 

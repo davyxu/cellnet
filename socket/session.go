@@ -7,12 +7,7 @@ import (
 	"github.com/davyxu/cellnet/proto/gamedef"
 )
 
-type closeWritePacket struct {
-}
-
-type ltvSession struct {
-	stream *ltvStream
-
+type SocketSession struct {
 	OnClose func() // 关闭函数回调
 
 	id int64
@@ -23,22 +18,25 @@ type ltvSession struct {
 
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
+	// handler相关上下文
+	stream *ltvStream
+
 	sendList *PacketList
 }
 
-func (self *ltvSession) ID() int64 {
+func (self *SocketSession) ID() int64 {
 	return self.id
 }
 
-func (self *ltvSession) FromPeer() cellnet.Peer {
+func (self *SocketSession) FromPeer() cellnet.Peer {
 	return self.p
 }
 
-func (self *ltvSession) Close() {
+func (self *SocketSession) Close() {
 	self.sendList.Add(&cellnet.Packet{})
 }
 
-func (self *ltvSession) Send(data interface{}) {
+func (self *SocketSession) Send(data interface{}) {
 
 	pkt, _ := cellnet.BuildPacket(data)
 
@@ -47,7 +45,7 @@ func (self *ltvSession) Send(data interface{}) {
 	self.RawSend(pkt)
 }
 
-func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
+func (self *SocketSession) RawSend(pkt *cellnet.Packet) {
 
 	if pkt != nil {
 		self.sendList.Add(pkt)
@@ -55,7 +53,7 @@ func (self *ltvSession) RawSend(pkt *cellnet.Packet) {
 }
 
 // 发送线程
-func (self *ltvSession) sendThread() {
+func (self *SocketSession) sendThread() {
 
 	var writeList []*cellnet.Packet
 
@@ -109,8 +107,27 @@ exitsendloop:
 	self.endSync.Done()
 }
 
+func (self *SocketSession) recvThread2(eq cellnet.EventQueue) {
+
+	for {
+
+		ev := NewSessionEvent(0, self, nil)
+
+		if self.p.GetHandler().Call(SessionEvent_Recv, ev) != nil {
+			break
+		}
+	}
+
+	if self.needNotifyWrite {
+		self.Close()
+	}
+
+	// 通知接收线程ok
+	self.endSync.Done()
+}
+
 // 接收线程
-func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
+func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
 	var err error
 	var pkt *cellnet.Packet
 
@@ -150,9 +167,9 @@ func (self *ltvSession) recvThread(eq cellnet.EventQueue) {
 	self.endSync.Done()
 }
 
-func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSession {
+func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
 
-	self := &ltvSession{
+	self := &SocketSession{
 		stream:          stream,
 		p:               p,
 		needNotifyWrite: true,
@@ -178,7 +195,7 @@ func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *ltvSe
 	}()
 
 	// 接收线程
-	go self.recvThread(eq)
+	go self.recvThread2(eq)
 
 	// 发送线程
 	go self.sendThread()

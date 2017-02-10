@@ -21,6 +21,10 @@ type Peer interface {
 
 	// 连接管理
 	SessionManager
+
+	SetHandler(h Handler)
+
+	GetHandler() Handler
 }
 
 type Connector interface {

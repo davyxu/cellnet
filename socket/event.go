@@ -19,6 +19,8 @@ var (
 type SessionEvent struct {
 	*cellnet.Packet
 	Ses cellnet.Session
+
+	H *cellnet.Handler
 }
 
 func (self SessionEvent) String() string {
@@ -42,3 +44,13 @@ func newSessionEvent(msgid uint32, s cellnet.Session, msg interface{}) *SessionE
 	}
 
 }
+
+const (
+	SessionEvent_Unknown = iota
+	SessionEvent_Connected
+	SessionEvent_ConnectFailed
+	SessionEvent_Accepted
+	SessionEvent_AcceptFailed
+	SessionEvent_Recv
+	SessionEvent_Send
+)

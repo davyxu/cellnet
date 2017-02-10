@@ -41,7 +41,7 @@ func (self *sessionMgr) Add(ses cellnet.Session) {
 		log.Warnln("sessionID override!", id)
 	}
 
-	ltvses := ses.(*ltvSession)
+	ltvses := ses.(*SocketSession)
 
 	ltvses.id = id
 

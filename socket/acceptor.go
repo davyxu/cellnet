@@ -39,7 +39,12 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 			if err != nil {
 				log.Errorf("#accept failed(%s) %v", self.name, err.Error())
-				self.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &gamedef.SessionAcceptFailed{Reason: err.Error()}))
+				//self.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &gamedef.SessionAcceptFailed{Reason: err.Error()}))
+
+				ev := NewSessionEvent(0, nil, nil)
+				ev.Packet, _ = cellnet.BuildPacket(&gamedef.SessionAcceptFailed{Reason: err.Error()})
+				self.GetHandler().Call(SessionEvent_AcceptFailed, ev)
+
 				break
 			}
 
@@ -59,7 +64,9 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
 
 				// 通知逻辑
-				self.Post(self, NewSessionEvent(Event_SessionAccepted, ses, nil))
+				//self.Post(self, NewSessionEvent(Event_SessionAccepted, ses, nil))
+
+				self.GetHandler().Call(SessionEvent_Accepted, NewSessionEvent(0, ses, nil))
 			}()
 
 		}
