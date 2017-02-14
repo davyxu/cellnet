@@ -20,19 +20,12 @@ func server() {
 
 	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
 
-	dispatcher := socket.NewDispatcherHandler()
-
-	evd.SetHandler(socket.NewReadPacketHandler(
-		dispatcher,
-		queue,
-	))
-
-	socket.RegisterHandler(dispatcher, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*gamedef.TestEchoACK)
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
 
-		ses.Send(&gamedef.TestEchoACK{
+		ev.Ses.Send(&gamedef.TestEchoACK{
 			Content: msg.String(),
 		})
 
@@ -46,38 +39,33 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	dh := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	dispatcher := socket.NewDispatcherHandler()
-
-	evd.SetHandler(socket.NewReadPacketHandler(
-		dispatcher,
-		queue,
-	))
-
-	socket.RegisterHandler(dispatcher, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
-		msg := content.(*gamedef.TestEchoACK)
+	socket.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.String())
 
 		signal.Done(1)
 	})
 
-	socket.RegisterHandler(dispatcher, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(dh, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
-		ses.Send(&gamedef.TestEchoACK{
+		log.Debugln("client connected:")
+
+		ev.Ses.Send(&gamedef.TestEchoACK{
 			Content: "hello",
 		})
 
 	})
 
-	//	socket.RegisterMessage(evd, "gamedef.SessionConnectFailed", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(dh, "gamedef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
 
-	//		msg := content.(*gamedef.SessionConnectFailed)
+		msg := ev.Msg.(*gamedef.SessionConnectFailed)
 
-	//		log.Debugln(msg.Reason)
+		log.Debugln(msg.Reason)
 
-	//	})
+	})
 
 	queue.StartLoop()
 

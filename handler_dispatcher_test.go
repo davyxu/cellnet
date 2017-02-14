@@ -1,18 +1,15 @@
 package cellnet
 
-import (
-	"testing"
-)
-
+/*
 var result []string
 
-func makeDispatcher() EventDispatcher {
+func makeDispatcher() *DispatcherHandler {
 
 	result = make([]string, 0)
 
-	dispatcher := NewEventDispatcher()
+	dispatcher := NewDispatcherHandler()
 
-	dispatcher.AddCallback(1, func(interface{}) {
+	dispatcher.AddCallback(1, func(interface{}) error {
 		result = append(result, "A")
 	}).Tag = "A"
 
@@ -111,3 +108,5 @@ func TestDispatcherVisitRemoveExceptTail(t *testing.T) {
 	}
 
 }
+
+*/

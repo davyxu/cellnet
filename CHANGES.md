@@ -1,4 +1,31 @@
+# V3版本
+## 版本特性
+
+- 全面使用Handler处理封包接收,发送, 解析, 日志, RPC等结构
+
+- 支持自由定义封包处理管线
+
+## 变化及修改
+
+- 大幅降低底层内存分配, GC降低后, benchmark提升1w QPS
+
+- socket.RegisterMessage参数统一为*SessionEvent
+
+- 去除RPC包装, 解包封包的重复代码. 无需callid支持, 封包变小
+
+
 # V2版本
+
+## 版本特性
+
+- 实现单线程逻辑时, 全局只有1个EventQueue. 而不是一个Peer一个Queue
+
+- EventDispatcher处理回调
+
+- 处理DB, Timer等不依赖Dispatcher(Peer)逻辑时, 在Post时, Dispatcher可以指定nil, 通过data的函数得到异步返回
+
+- 去掉MongoDB支持
+
 
 ## 变化及修改
 
@@ -16,12 +43,3 @@
 
 - 例子/测试用例使用sample文件夹命名
 
-## V2版本特性
-
-- 实现单线程逻辑时, 全局只有1个EventQueue. 而不是一个Peer一个Queue
-
-- EventDispatcher处理回调
-
-- 处理DB, Timer等不依赖Dispatcher(Peer)逻辑时, 在Post时, Dispatcher可以指定nil, 通过data的函数得到异步返回
-
-- 去掉MongoDB支持

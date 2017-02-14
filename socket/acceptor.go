@@ -18,19 +18,21 @@ type socketAcceptor struct {
 
 func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
+	self.address = address
+
 	ln, err := net.Listen("tcp", address)
 
 	self.listener = ln
 
 	if err != nil {
 
-		log.Errorf("#listen failed(%s) %v", self.name, err.Error())
+		log.Errorf("#listen failed(%s) %v", self.nameOrAddress(), err.Error())
 		return self
 	}
 
 	self.running = true
 
-	log.Infof("#listen(%s) %s ", self.name, address)
+	log.Infof("#listen(%s) ", self.nameOrAddress())
 
 	// 接受线程
 	go func() {
@@ -38,12 +40,11 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			conn, err := ln.Accept()
 
 			if err != nil {
-				log.Errorf("#accept failed(%s) %v", self.name, err.Error())
-				//self.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &gamedef.SessionAcceptFailed{Reason: err.Error()}))
+				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
 
-				ev := NewSessionEvent(0, nil, nil)
-				ev.Packet, _ = cellnet.BuildPacket(&gamedef.SessionAcceptFailed{Reason: err.Error()})
-				self.GetHandler().Call(SessionEvent_AcceptFailed, ev)
+				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_AcceptFailed, nil).FromMessage(&gamedef.SessionAcceptFailed{Reason: err.Error()})
+
+				cellnet.HandlerCallFirst(self.recvHandler, ev)
 
 				break
 			}
@@ -61,12 +62,12 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 					self.sessionMgr.Remove(ses)
 				}
 
-				log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
+				//log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
 
 				// 通知逻辑
-				//self.Post(self, NewSessionEvent(Event_SessionAccepted, ses, nil))
+				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Accepted, ses).FromMeta(Meta_SessionAccepted)
 
-				self.GetHandler().Call(SessionEvent_Accepted, NewSessionEvent(0, ses, nil))
+				cellnet.HandlerCallFirst(self.recvHandler, ev)
 			}()
 
 		}

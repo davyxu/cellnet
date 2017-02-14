@@ -6,8 +6,8 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/benchmark"
+	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/gamedef"
-	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
 )
@@ -36,14 +36,14 @@ func server() {
 
 	evd := socket.NewAcceptor(queue).Start(benchmarkAddress)
 
-	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 
 		if qpsm.Acc() > benchmarkSeconds {
 			signal.Done(1)
 			log.Infof("Average QPS: %d", qpsm.Average())
 		}
 
-		ses.Send(&gamedef.TestEchoACK{})
+		ev.Ses.Send(&gamedef.TestEchoACK{})
 
 	})
 
@@ -57,15 +57,15 @@ func client() {
 
 	evd := socket.NewConnector(queue).Start(benchmarkAddress)
 
-	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 
-		ses.Send(&gamedef.TestEchoACK{})
+		ev.Ses.Send(&gamedef.TestEchoACK{})
 
 	})
 
-	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
-		ses.Send(&gamedef.TestEchoACK{})
+		ev.Ses.Send(&gamedef.TestEchoACK{})
 
 	})
 

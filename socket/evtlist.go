@@ -6,25 +6,25 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type PacketList struct {
-	list      []*cellnet.Packet
+type eventList struct {
+	list      []*cellnet.SessionEvent
 	listGuard sync.Mutex
 	listCond  *sync.Cond
 }
 
-func (self *PacketList) Add(p *cellnet.Packet) {
+func (self *eventList) Add(ev *cellnet.SessionEvent) {
 	self.listGuard.Lock()
-	self.list = append(self.list, p)
+	self.list = append(self.list, ev)
 	self.listGuard.Unlock()
 
 	self.listCond.Signal()
 }
 
-func (self *PacketList) Reset() {
+func (self *eventList) Reset() {
 	self.list = self.list[0:0]
 }
 
-func (self *PacketList) BeginPick() []*cellnet.Packet {
+func (self *eventList) BeginPick() []*cellnet.SessionEvent {
 
 	self.listGuard.Lock()
 
@@ -39,14 +39,14 @@ func (self *PacketList) BeginPick() []*cellnet.Packet {
 	return self.list
 }
 
-func (self *PacketList) EndPick() {
+func (self *eventList) EndPick() {
 
 	self.Reset()
 	self.listGuard.Unlock()
 }
 
-func NewPacketList() *PacketList {
-	self := &PacketList{}
+func NewPacketList() *eventList {
+	self := &eventList{}
 	self.listCond = sync.NewCond(&self.listGuard)
 
 	return self

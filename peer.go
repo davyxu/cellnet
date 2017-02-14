@@ -12,19 +12,21 @@ type Peer interface {
 	SetName(string)
 	Name() string
 
+	// 地址
+	Address() string
+
 	// Session最大包大小, 超过这个数字, 接收视为错误, 断开连接
 	SetMaxPacketSize(size int)
 	MaxPacketSize() int
 
-	// 事件
 	EventDispatcher
 
 	// 连接管理
 	SessionManager
 
-	SetHandler(h Handler)
+	SetHandler(recv, send EventHandler)
 
-	GetHandler() Handler
+	GetHandler() (recv, send EventHandler)
 }
 
 type Connector interface {

@@ -14,14 +14,13 @@ type EventQueue interface {
 	Wait() int
 
 	// 投递事件, 通过队列到达消费者端
-	Post(evd EventDispatcher, data interface{})
+	Post(data interface{})
 
 	// 延时投递
-	DelayPost(evd EventDispatcher, dur time.Duration, data interface{})
+	DelayPost(dur time.Duration, data interface{})
 }
 
 type queueData struct {
-	evd  EventDispatcher
 	data interface{}
 }
 
@@ -34,38 +33,36 @@ type evQueue struct {
 }
 
 // 派发到队列
-func (self *evQueue) Post(evd EventDispatcher, data interface{}) {
+func (self *evQueue) Post(data interface{}) {
 
-	self.queue <- queueData{evd: evd, data: data}
+	self.queue <- queueData{data: data}
 }
 
-func (self *evQueue) DelayPost(evd EventDispatcher, dur time.Duration, data interface{}) {
+func (self *evQueue) DelayPost(dur time.Duration, data interface{}) {
 	go func() {
 
 		time.AfterFunc(dur, func() {
 
-			self.Post(evd, data)
+			self.Post(data)
 		})
 
 	}()
 }
 
-func (self *evQueue) protectedCall(evd EventDispatcher, data interface{}) {
+func (self *evQueue) protectedCall(data interface{}) {
 
 	if self.capturePanic {
 		defer func() {
 
 			if err := recover(); err != nil {
-				log.Fatalln(err)
+				//log.Fatalln(err)
 				debug.PrintStack()
 			}
 
 		}()
 	}
 
-	if evd != nil {
-		evd.CallData(data)
-	} else if f, ok := data.(func()); ok {
+	if f, ok := data.(func()); ok {
 		f()
 	}
 
@@ -75,7 +72,7 @@ func (self *evQueue) StartLoop() {
 
 	go func() {
 		for v := range self.queue {
-			self.protectedCall(v.evd, v.data)
+			self.protectedCall(v.data)
 		}
 	}()
 }

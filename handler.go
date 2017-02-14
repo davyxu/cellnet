@@ -1,36 +1,106 @@
 package cellnet
 
-type Handler interface {
-	Call(int, interface{}) error
+import "reflect"
+
+type EventHandler interface {
+	Call(*SessionEvent) error
+
+	SetNext(EventHandler) EventHandler
+	Next() EventHandler
+
+	SetTag(interface{})
+	Tag() interface{}
+	MatchTag(interface{}) bool
 }
 
-//func (self *Handler) Call(ev int, data interface{}, h **Handler) error {
+type BaseEventHandler struct {
+	next EventHandler
+	tag  interface{}
+}
 
-//	*h = self.next
+func (self *BaseEventHandler) SetTag(t interface{}) {
+	self.tag = t
+}
 
-//	return self.entry(ev, data)
-//}
+func (self *BaseEventHandler) Tag() interface{} {
+	return self.tag
+}
 
-//func LinkHandler(list ...func(int, interface{}) error) (head *Handler) {
+func (self *BaseEventHandler) MatchTag(t interface{}) bool {
+	return self.tag == t
+}
 
-//	var prev **Handler
-//	for _, v := range list {
+func (self *BaseEventHandler) SetNext(h EventHandler) EventHandler {
+	self.next = h
+	return h
+}
 
-//		this := &Handler{
-//			entry: v,
-//		}
+func (self *BaseEventHandler) Next() EventHandler {
+	return self.next
+}
 
-//		if prev != nil {
-//			(*prev).next = this
+func (self *BaseEventHandler) CallNext(ev *SessionEvent) error {
 
-//		} else {
-//			head = this
-//		}
+	return HandlerCallNext(self.next, ev)
+}
 
-//		prev = &this
+func HandlerCallFirst(h EventHandler, ev *SessionEvent) error {
+	if EnableHandlerLog {
+		log.Debugf("HandlerFirst: %s %s", HandlerName(h), ev.String())
+	}
 
-//	}
+	return h.Call(ev)
+}
 
-//	return head
+func HandlerCallNext(h EventHandler, ev *SessionEvent) error {
+	if EnableHandlerLog {
+		log.Debugf("HandlerNext: %s %s", HandlerName(h), ev.String())
+	}
 
-//}
+	if h == nil {
+		return nil
+	}
+
+	return h.Call(ev)
+}
+
+var EnableHandlerLog bool
+
+// 显示handler的名称
+func HandlerName(h EventHandler) string {
+	if h == nil {
+		return "nil"
+	}
+
+	return reflect.TypeOf(h).Elem().Name()
+}
+
+// handler的类型
+func HandlerType(h EventHandler) reflect.Type {
+	return reflect.TypeOf(h).Elem()
+}
+
+// 链接一连串handler, 返回第一个
+func LinkHandler(hlist ...EventHandler) EventHandler {
+
+	var pre EventHandler
+
+	for _, h := range hlist {
+
+		if h == nil {
+			continue
+		}
+
+		if pre != nil {
+			pre.SetNext(h)
+		}
+
+		pre = h
+	}
+
+	if len(hlist) == 0 {
+		return nil
+	}
+
+	return hlist[0]
+}

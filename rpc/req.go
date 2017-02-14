@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 )
 
@@ -58,13 +57,13 @@ func removeCall(id int64) {
 }
 
 // 从peer获取rpc使用的session
-func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventDispatcher, error) {
+func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
 
 	var ses cellnet.Session
 
-	switch p.(type) {
+	switch ud.(type) {
 	case cellnet.Peer:
-		if connPeer, ok := p.(interface {
+		if connPeer, ok := ud.(interface {
 			DefaultSession() cellnet.Session
 		}); ok {
 
@@ -75,50 +74,48 @@ func getPeerSession(p interface{}) (cellnet.Session, cellnet.EventDispatcher, er
 			return nil, nil, errInvalidPeerSession
 		}
 	case cellnet.Session:
-		ses = p.(cellnet.Session)
+		ses = ud.(cellnet.Session)
 	}
 
 	if ses == nil {
 		return nil, nil, errConnectorSesNotReady
 	}
 
-	return ses, ses.FromPeer().(cellnet.EventDispatcher), nil
+	return ses, ses.FromPeer(), nil
 }
 
 // 传入peer或者session
-func Call(p interface{}, args interface{}, callback interface{}) {
+func Call(ud interface{}, args interface{}, userCallback func(*cellnet.SessionEvent)) {
 
-	ses, evd, err := getPeerSession(p)
+	ses, p, err := getPeerSession(ud)
 
 	if err != nil {
 		log.Errorln(err)
 		return
 	}
 
-	_, msg := newRequest(evd, args, callback)
+	newRequest(p, args, userCallback)
 
-	ses.Send(msg)
-
-	// TODO rpc日志
+	ses.Send(args)
 }
 
 // 传入peer或者session
-func CallSync(p interface{}, args interface{}, callback interface{}) {
-	ses, evq, err := getPeerSession(p)
+//func CallSync(p interface{}, args interface{}, callback interface{}) {
+//	ses, evq, err := getPeerSession(p)
 
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
+//	if err != nil {
+//		log.Errorln(err)
+//		return
+//	}
 
-	req, msg := newRequest(evq, args, callback)
-	req.recvied = make(chan bool)
+//	req, msg := newRequest(evq, args, callback)
+//	req.recvied = make(chan bool)
 
-	ses.Send(msg)
+//	ses.Send(msg)
 
-	<-req.recvied
+//	<-req.recvied
 
-}
+//}
 
 type request struct {
 	id        int64
@@ -127,66 +124,60 @@ type request struct {
 	recvied   chan bool
 }
 
-func (self *request) done(msg *gamedef.RemoteCallACK) {
+// socket.EncodePacketHandler -> socket.MsgLogHandler -> rpc.BoxHandler -> socket.WritePacketHandler
 
-	rawType, err := cellnet.ParsePacket(&cellnet.Packet{
-		MsgID: msg.MsgID,
-		Data:  msg.Data,
-	}, self.replyType)
+func installSendHandler(p cellnet.Peer, send cellnet.EventHandler) {
+	// 发送的Handler
+	if cellnet.HandlerName(send) == "EncodePacketHandler" {
 
-	defer removeCall(self.id)
+		var start cellnet.EventHandler
 
-	if err != nil {
-		log.Errorln(err)
-		return
+		if cellnet.HandlerName(send.Next()) == "MsgLogHandler" {
+			start = send.Next()
+		} else {
+			start = send
+		}
+
+		// 已经装过了
+		if start.MatchTag("rpc") {
+			return
+		}
+
+		first := NewBoxHandler()
+		first.SetTag("rpc")
+
+		cellnet.LinkHandler(start, first, socket.NewWritePacketHandler())
+
+	} else {
+		panic("unknown send handler struct")
+	}
+}
+
+//  socket.DispatcherHandler -> rpc.UnboxHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
+func installRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, args interface{}, userCallback func(*cellnet.SessionEvent)) {
+
+	// 接收
+	msgName := cellnet.MessageFullName(reflect.TypeOf(args))
+	meta := cellnet.MessageMetaByName(msgName)
+
+	if meta == nil {
+		panic("can not found rpc message:" + msgName)
 	}
 
-	// 这里的反射, 会影响非常少的效率, 但因为外部写法简单, 就算了
-	self.callback.Call([]reflect.Value{reflect.ValueOf(rawType)})
+	// RPC消息只能被注册1个
+	if p.CountByID(int(meta.ID)) == 0 {
 
-	if self.recvied != nil {
-		self.recvied <- true
+		p.AddHandler(int(meta.ID), buildRecvHandler(meta, userCallback, nil))
+
 	}
 
 }
 
-var needRegisterClient bool = true
-var needRegisterClientGuard sync.Mutex
+func newRequest(p cellnet.Peer, args interface{}, userCallback func(*cellnet.SessionEvent)) {
 
-func newRequest(evd cellnet.EventDispatcher, args interface{}, callback interface{}) (*request, interface{}) {
+	recv, send := p.GetHandler()
 
-	needRegisterClientGuard.Lock()
-	if needRegisterClient {
-		// 请求端
-		socket.RegisterMessage(evd, "gamedef.RemoteCallACK", func(content interface{}, ses cellnet.Session) {
-			msg := content.(*gamedef.RemoteCallACK)
+	installSendHandler(p, send)
+	installRecvHandler(p, recv, args, userCallback)
 
-			c := getCall(msg.CallID)
-
-			if c == nil {
-				return
-			}
-
-			c.done(msg)
-		})
-
-		needRegisterClient = false
-	}
-	needRegisterClientGuard.Unlock()
-
-	req := &request{}
-
-	funcType := reflect.TypeOf(callback)
-	req.replyType = funcType.In(0)
-	req.callback = reflect.ValueOf(callback)
-
-	pkt, _ := cellnet.BuildPacket(args)
-
-	addCall(req)
-
-	return req, &gamedef.RemoteCallREQ{
-		MsgID:  pkt.MsgID,
-		Data:   pkt.Data,
-		CallID: req.id,
-	}
 }

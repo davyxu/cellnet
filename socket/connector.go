@@ -45,6 +45,7 @@ const reportConnectFailedLimitTimes = 3
 
 func (self *socketConnector) connect(address string) {
 	self.working = true
+	self.address = address
 
 	for {
 
@@ -57,22 +58,19 @@ func (self *socketConnector) connect(address string) {
 		if err != nil {
 
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
-				log.Errorf("#connect failed(%s) %v", self.name, err.Error())
+				log.Errorf("#connect failed(%s) %v", self.nameOrAddress(), err.Error())
 			}
 
 			if self.tryConnTimes == reportConnectFailedLimitTimes {
-				log.Errorf("(%s) continue reconnecting, but mute log", self.name)
+				log.Errorf("(%s) continue reconnecting, but mute log", self.nameOrAddress())
 			}
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				//self.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &gamedef.SessionConnectFailed{Reason: err.Error()}))
+				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_ConnectFailed, self.defaultSes).FromMessage(&gamedef.SessionConnectFailed{Reason: err.Error()})
 
-				ev := NewSessionEvent(0, self.defaultSes, nil)
-				ev.Packet, _ = cellnet.BuildPacket(&gamedef.SessionConnectFailed{Reason: err.Error()})
-
-				self.GetHandler().Call(SessionEvent_ConnectFailed, NewSessionEvent(0, self.defaultSes, nil))
+				cellnet.HandlerCallFirst(self.recvHandler, ev)
 				break
 			}
 
@@ -93,18 +91,14 @@ func (self *socketConnector) connect(address string) {
 		self.sessionMgr.Add(ses)
 		self.defaultSes = ses
 
-		log.Infof("#connected(%s) %s sid: %d", self.name, address, ses.id)
-
 		// 内部断开回调
 		ses.OnClose = func() {
 			self.sessionMgr.Remove(ses)
 			self.closeSignal <- true
 		}
 
-		self.GetHandler().Call(SessionEvent_Connected, NewSessionEvent(0, ses, nil))
-
-		// 抛出事件
-		//self.Post(self, NewSessionEvent(Event_SessionConnected, ses, nil))
+		ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Connected, ses).FromMeta(Meta_SessionConnected)
+		cellnet.HandlerCallFirst(self.recvHandler, ev)
 
 		if <-self.closeSignal {
 

@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/gamedef"
 )
 
 type SocketSession struct {
@@ -19,9 +18,9 @@ type SocketSession struct {
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
 	// handler相关上下文
-	stream *ltvStream
+	stream *PacketStream
 
-	sendList *PacketList
+	sendList *eventList
 }
 
 func (self *SocketSession) ID() int64 {
@@ -33,29 +32,29 @@ func (self *SocketSession) FromPeer() cellnet.Peer {
 }
 
 func (self *SocketSession) Close() {
-	self.sendList.Add(&cellnet.Packet{})
+	self.sendList.Add(nil)
 }
 
 func (self *SocketSession) Send(data interface{}) {
 
-	pkt, _ := cellnet.BuildPacket(data)
+	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, self)
+	ev.Msg = data
 
-	msgLog("send", self, pkt)
+	self.RawSend(ev)
 
-	self.RawSend(pkt)
 }
 
-func (self *SocketSession) RawSend(pkt *cellnet.Packet) {
+func (self *SocketSession) RawSend(ev *cellnet.SessionEvent) {
 
-	if pkt != nil {
-		self.sendList.Add(pkt)
-	}
+	_, send := self.p.GetHandler()
+
+	cellnet.HandlerCallFirst(send, ev)
 }
 
 // 发送线程
 func (self *SocketSession) sendThread() {
 
-	var writeList []*cellnet.Packet
+	var writeList []*cellnet.SessionEvent
 
 	for {
 
@@ -65,21 +64,22 @@ func (self *SocketSession) sendThread() {
 		// 复制出队列
 		packetList := self.sendList.BeginPick()
 
-		for _, p := range packetList {
+		for _, ev := range packetList {
 
-			if p.MsgID == 0 {
+			if ev == nil {
 				willExit = true
+				break
 			} else {
-				writeList = append(writeList, p)
+				writeList = append(writeList, ev)
 			}
 		}
 
 		self.sendList.EndPick()
 
 		// 写队列
-		for _, p := range writeList {
+		for _, ev := range writeList {
 
-			if err := self.stream.Write(p); err != nil {
+			if err := self.stream.Write(ev); err != nil {
 				willExit = true
 				break
 			}
@@ -107,56 +107,17 @@ exitsendloop:
 	self.endSync.Done()
 }
 
-func (self *SocketSession) recvThread2(eq cellnet.EventQueue) {
-
-	for {
-
-		ev := NewSessionEvent(0, self, nil)
-
-		if self.p.GetHandler().Call(SessionEvent_Recv, ev) != nil {
-			break
-		}
-	}
-
-	if self.needNotifyWrite {
-		self.Close()
-	}
-
-	// 通知接收线程ok
-	self.endSync.Done()
-}
-
-// 接收线程
 func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
-	var err error
-	var pkt *cellnet.Packet
 
 	for {
 
-		// 从Socket读取封包
-		pkt, err = self.stream.Read()
+		ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Recv, self)
 
-		if err != nil {
+		recv, _ := self.p.GetHandler()
 
-			ev := newSessionEvent(Event_SessionClosed, self, &gamedef.SessionClosed{Reason: err.Error()})
-
-			msgLog("recv", self, ev.Packet)
-
-			// 断开事件
-			eq.Post(self.p, ev)
+		if cellnet.HandlerCallFirst(recv, ev) != nil {
 			break
 		}
-
-		// 消息日志要多损耗一次解析性能
-
-		msgLog("recv", self, pkt)
-
-		// 逻辑封包
-		eq.Post(self.p, &SessionEvent{
-			Packet: pkt,
-			Ses:    self,
-		})
-
 	}
 
 	if self.needNotifyWrite {
@@ -167,7 +128,48 @@ func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
 	self.endSync.Done()
 }
 
-func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
+//// 接收线程
+//func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
+//	var err error
+//	var pkt *cellnet.Packet
+
+//	for {
+
+//		// 从Socket读取封包
+//		pkt, err = self.stream.Read()
+
+//		if err != nil {
+
+//			ev := newSessionEvent(Event_SessionClosed, self, &gamedef.SessionClosed{Reason: err.Error()})
+
+//			msgLog("recv", self, ev.Packet)
+
+//			// 断开事件
+//			eq.Post(self.p, ev)
+//			break
+//		}
+
+//		// 消息日志要多损耗一次解析性能
+
+//		msgLog("recv", self, pkt)
+
+//		// 逻辑封包
+//		eq.Post(self.p, &SessionEvent{
+//			Packet: pkt,
+//			Ses:    self,
+//		})
+
+//	}
+
+//	if self.needNotifyWrite {
+//		self.Close()
+//	}
+
+//	// 通知接收线程ok
+//	self.endSync.Done()
+//}
+
+func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
 
 	self := &SocketSession{
 		stream:          stream,
@@ -195,7 +197,7 @@ func newSession(stream *ltvStream, eq cellnet.EventQueue, p cellnet.Peer) *Socke
 	}()
 
 	// 接收线程
-	go self.recvThread2(eq)
+	go self.recvThread(eq)
 
 	// 发送线程
 	go self.sendThread()
