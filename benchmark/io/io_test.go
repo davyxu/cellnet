@@ -6,8 +6,8 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/benchmark"
+	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/gamedef"
-	"github.com/davyxu/cellnet/sample"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
 )
