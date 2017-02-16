@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"errors"
 	"reflect"
 
 	"github.com/davyxu/cellnet"
@@ -27,21 +28,57 @@ func buildRecvHandler(meta *cellnet.MessageMeta, userCallback func(ev *cellnet.S
 	return cellnet.LinkHandler(socket.NewDecodePacketHandler(metaWrapper), NewUnboxHandler(), socket.NewDecodePacketHandler(meta), socket.NewCallbackHandler(userCallback), signalHandler)
 }
 
-func installRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, args interface{}, userCallback func(*cellnet.SessionEvent)) {
+var ErrReplayMessageNotFound = errors.New("Reply message name not found")
 
-	// 接收
-	msgName := cellnet.MessageFullName(reflect.TypeOf(args))
+// 安装异步的接收回调
+func installAsyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg interface{}, userCallback interface{}) error {
+
+	funcType := reflect.TypeOf(userCallback)
+
+	msgName := cellnet.MessageFullName(funcType.In(0))
 	meta := cellnet.MessageMetaByName(msgName)
-
 	if meta == nil {
-		panic("can not found rpc message:" + msgName)
+		return ErrReplayMessageNotFound
+	}
+
+	// RPC消息不能用于普通消息
+	// TODO 客户端请求时, 可以注册多个, 在处理完成时, 删除回调
+	if p.CountByID(int(meta.ID)) == 0 {
+
+		hl := cellnet.LinkHandler(
+			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
+			NewUnboxHandler(),
+			socket.NewDecodePacketHandler(meta),
+			NewReflectCallHandler(userCallback),
+		)
+
+		p.AddHandler(int(meta.ID), hl)
+	}
+
+	return nil
+}
+
+// 安装同步的接收回调
+func installSyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg interface{}, msgName string, retChan chan interface{}) error {
+
+	meta := cellnet.MessageMetaByName(msgName)
+	if meta == nil {
+		return ErrReplayMessageNotFound
 	}
 
 	// RPC消息只能被注册1个
 	// TODO 客户端请求时, 可以注册多个, 在处理完成时, 删除回调
 	if p.CountByID(int(meta.ID)) == 0 {
 
-		p.AddHandler(int(meta.ID), buildRecvHandler(meta, userCallback, nil))
+		hl := cellnet.LinkHandler(
+			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
+			NewUnboxHandler(),
+			socket.NewDecodePacketHandler(meta),
+			NewRetChanHandler(retChan),
+		)
+
+		p.AddHandler(int(meta.ID), hl)
 	}
 
+	return nil
 }

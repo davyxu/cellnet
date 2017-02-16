@@ -12,6 +12,52 @@ var (
 	errConnectorSesNotReady error = errors.New("rpc: connector session not ready")
 )
 
+// ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
+func Call(ud interface{}, reqMsg interface{}, userCallback interface{}) error {
+
+	ses, p, err := getPeerSession(ud)
+
+	if err != nil {
+		return err
+	}
+
+	recv, send := p.GetHandler()
+
+	installSendHandler(p, send)
+
+	if err := installAsyncRecvHandler(p, recv, reqMsg, userCallback); err != nil {
+		return err
+	}
+
+	ses.Send(reqMsg)
+
+	return nil
+}
+
+// 发出请求, 接收到服务器返回后才返回, ud: peer/session,   reqMsg:请求用的消息, ackMsgName: 返回消息类型名, 返回消息为返回值
+func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string) (interface{}, error) {
+
+	ses, p, err := getPeerSession(ud)
+
+	if err != nil {
+		return nil, err
+	}
+
+	recv, send := p.GetHandler()
+
+	installSendHandler(p, send)
+
+	ret := make(chan interface{})
+
+	if err := installSyncRecvHandler(p, recv, reqMsg, ackMsgName, ret); err != nil {
+		return nil, err
+	}
+
+	ses.Send(reqMsg)
+
+	return <-ret, nil
+}
+
 // 从peer获取rpc使用的session
 func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
 
@@ -38,24 +84,6 @@ func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
 	}
 
 	return ses, ses.FromPeer(), nil
-}
-
-// 传入peer或者session
-func Call(ud interface{}, args interface{}, userCallback func(*cellnet.SessionEvent)) {
-
-	ses, p, err := getPeerSession(ud)
-
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
-
-	recv, send := p.GetHandler()
-
-	installSendHandler(p, send)
-	installRecvHandler(p, recv, args, userCallback)
-
-	ses.Send(args)
 }
 
 // socket.EncodePacketHandler -> socket.MsgLogHandler -> rpc.BoxHandler -> socket.WritePacketHandler

@@ -38,7 +38,8 @@ func server() {
 
 }
 
-func client() {
+// 异步阻塞调用的rpc: 适用于逻辑服与逻辑服之间互相查询数据
+func asyncClient() {
 
 	queue := cellnet.NewEventQueue()
 
@@ -49,15 +50,50 @@ func client() {
 	socket.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		rpc.Call(p, &gamedef.TestEchoACK{
-			Content: "rpc async call",
-		}, func(rpcEv *cellnet.SessionEvent) {
+			Content: "async",
+		}, func(msg *gamedef.TestEchoACK) {
 
-			msg := rpcEv.Msg.(*gamedef.TestEchoACK)
-
-			log.Debugln("client recv", msg.Content)
+			log.Debugln("client async recv:", msg.Content)
 
 			signal.Done(1)
 		})
+
+	})
+
+	queue.StartLoop()
+
+	signal.WaitAndExpect(1, "not recv data")
+}
+
+// 同步阻塞调用的rpc: 适用于web后台向逻辑服查询数据后生成页面
+func syncClient() {
+
+	queue := cellnet.NewEventQueue()
+
+	p := socket.NewConnector(queue)
+	p.SetName("client")
+	p.Start("127.0.0.1:9201")
+
+	socket.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+
+		// 这里使用goroutine包裹调用原因: 避免当前消息不返回, 无法继续处理rpc的消息接收
+		// 正式使用时, CallSync被调用的消息所在的Peer, 与CallSync第一个参数使用Peer一定是不同Peer
+		go func() {
+
+			result, err := rpc.CallSync(p, &gamedef.TestEchoACK{
+				Content: "sync",
+			}, "gamedef.TestEchoACK")
+
+			if err != nil {
+				signal.Log(err)
+				return
+			}
+
+			msg := result.(*gamedef.TestEchoACK)
+			log.Debugln("client sync recv:", msg.Content)
+
+			signal.Done(1)
+		}()
 
 	})
 
@@ -72,6 +108,8 @@ func TestRPC(t *testing.T) {
 
 	server()
 
-	client()
+	asyncClient()
+
+	syncClient()
 
 }
