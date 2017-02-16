@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/gamedef"
+	"github.com/davyxu/cellnet/proto/pb/gamedef"
 )
 
 type BoxHandler struct {

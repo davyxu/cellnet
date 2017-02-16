@@ -2,7 +2,7 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/proto/gamedef"
+	_ "github.com/davyxu/cellnet/proto/pb/gamedef"
 )
 
 var (

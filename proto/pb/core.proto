@@ -41,17 +41,6 @@ message SessionClosed
 // RPC
 // ==========================================================
 
-// 请求
-message RemoteCallREQ
-{	                 
-	uint32 MsgID = 1;		// 消息号
-	
-	bytes Data = 2;		// 用户封包
-	
-	int64 CallID = 3;
-}
-
-// 回应
 message RemoteCallACK
 {
 	uint32 MsgID = 1;		// 消息号

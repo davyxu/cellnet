@@ -21,13 +21,14 @@ package gamedef
 {{if gt .TotalMessages 0}}
 import (
 	"github.com/davyxu/cellnet"
+	"reflect"
 )
 {{end}}
 
 func init() {
 	{{range .Protos}}
 	// {{.Name}}{{range .Messages}}
-	cellnet.RegisterMessageMeta("{{.FullName}}", (*{{.Name}})(nil), {{.MsgID}})	{{end}}
+	cellnet.RegisterMessageMeta("{{.FullName}}", reflect.TypeOf((*{{.Name}})(nil)).Elem(), {{.MsgID}})	{{end}}
 	{{end}}
 }
 

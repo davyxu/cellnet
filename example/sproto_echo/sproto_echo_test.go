@@ -1,12 +1,12 @@
-package echo
+package sproto_echo
 
 import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/codec/pb"
+	"github.com/davyxu/cellnet/codec/sproto"
 	"github.com/davyxu/cellnet/example"
-	"github.com/davyxu/cellnet/proto/pb/gamedef"
+	"github.com/davyxu/cellnet/proto/sproto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
 )
@@ -20,6 +20,7 @@ func server() {
 	queue := cellnet.NewEventQueue()
 
 	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
+	evd.SetName("server")
 
 	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -27,7 +28,7 @@ func server() {
 		log.Debugln("server recv:", msg.Content)
 
 		ev.Send(&gamedef.TestEchoACK{
-			Content: msg.String(),
+			Content: msg.Content,
 		})
 
 	})
@@ -41,6 +42,7 @@ func client() {
 	queue := cellnet.NewEventQueue()
 
 	dh := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	dh.SetName("client")
 
 	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -74,7 +76,10 @@ func client() {
 
 }
 
-func TestEcho(t *testing.T) {
+func TestSprotoEcho(t *testing.T) {
+
+	socket.DefaultCodec = "sproto"
+	sprotocodec.AutoRegisterMessageMeta(gamedef.SProtoStructs)
 
 	signal = test.NewSignalTester(t)
 

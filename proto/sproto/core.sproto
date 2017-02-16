@@ -1,0 +1,23 @@
+.SessionAccepted {
+
+}
+	
+.SessionConnected {
+
+}
+	
+.SessionAcceptFailed {
+	Reason 0: string
+}
+	
+.SessionConnectFailed {	
+	Reason 0: string
+}
+	
+.SessionClosed {
+
+}
+
+.TestEchoACK {
+	Content 0: string
+}	

@@ -2,12 +2,12 @@ package cellnet
 
 func MessageRegistedCount(evd EventDispatcher, msgName string) int {
 
-	msgMeta := MessageMetaByName(msgName)
-	if msgMeta == nil {
+	meta := MessageMetaByName(msgName)
+	if meta == nil {
 		return 0
 	}
 
-	return evd.CountByID(int(msgMeta.ID))
+	return evd.CountByID(int(meta.ID))
 }
 
 type RegisterMessageContext struct {

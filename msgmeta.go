@@ -3,8 +3,6 @@ package cellnet
 import (
 	"path"
 	"reflect"
-
-	"github.com/golang/protobuf/proto"
 )
 
 type MessageMeta struct {
@@ -19,10 +17,10 @@ var (
 )
 
 // 注册消息元信息(代码生成专用)
-func RegisterMessageMeta(name string, msg proto.Message, id uint32) {
+func RegisterMessageMeta(name string, msgType reflect.Type, id uint32) {
 
 	meta := &MessageMeta{
-		Type: reflect.TypeOf(msg),
+		Type: msgType,
 		Name: name,
 		ID:   id,
 	}

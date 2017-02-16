@@ -9,7 +9,7 @@ type DecodePacketHandler struct {
 
 func (self *DecodePacketHandler) Call(ev *SessionEvent) (err error) {
 
-	ev.Msg = reflect.New(self.meta.Type.Elem()).Interface()
+	ev.Msg = reflect.New(self.meta.Type).Interface()
 
 	ev.Meta = self.meta
 

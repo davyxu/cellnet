@@ -63,11 +63,13 @@ func (self *peerBase) MaxPacketSize() int {
 	return self.maxPacketSize
 }
 
+var DefaultCodec string = "pb"
+
 func newPeerBase(queue cellnet.EventQueue) *peerBase {
 
 	self := &peerBase{
 		EventQueue:        queue,
-		codec:             cellnet.FetchCodec("pb"),
+		codec:             cellnet.FetchCodec(DefaultCodec),
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
 	}
 
