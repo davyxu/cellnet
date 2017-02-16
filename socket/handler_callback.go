@@ -35,6 +35,8 @@ func NewCallbackHandler(userCallback func(*cellnet.SessionEvent)) cellnet.EventH
 	}
 }
 
+// 注册消息处理回调
+// cellnet.DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
 func RegisterMessage(dh cellnet.EventDispatcher, msgName string, userCallback func(*cellnet.SessionEvent)) *RegisterMessageContext {
 
 	meta := cellnet.MessageMetaByName(msgName)
@@ -45,6 +47,28 @@ func RegisterMessage(dh cellnet.EventDispatcher, msgName string, userCallback fu
 	}
 
 	ctx := dh.AddHandler(int(meta.ID), cellnet.LinkHandler(NewDecodePacketHandler(meta), NewCallbackHandler(userCallback)))
+
+	return &RegisterMessageContext{MessageMeta: meta, HandlerContext: ctx}
+}
+
+// 注册消息处理的一系列Handler
+// cellnet.DispatcherHandler -> socket.DecodePacketHandler -> ...
+func RegisterHandler(dh cellnet.EventDispatcher, msgName string, handlers ...cellnet.EventHandler) *RegisterMessageContext {
+
+	meta := cellnet.MessageMetaByName(msgName)
+
+	if meta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return nil
+	}
+
+	decoder := NewDecodePacketHandler(meta)
+
+	if len(handlers) > 0 {
+		decoder.SetNext(cellnet.LinkHandler(handlers...))
+	}
+
+	ctx := dh.AddHandler(int(meta.ID), decoder)
 
 	return &RegisterMessageContext{MessageMeta: meta, HandlerContext: ctx}
 }

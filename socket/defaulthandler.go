@@ -16,7 +16,7 @@ func BuildSendHandler(useMsgLog bool) cellnet.EventHandler {
 }
 
 // socket.ReadPacketHandler -> socket.MsgLogHandler -> socket.DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
-func BuildWriteHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler, q cellnet.EventQueue) cellnet.EventHandler {
+func BuildRecvHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler, q cellnet.EventQueue) cellnet.EventHandler {
 
 	if useMsgLog {
 

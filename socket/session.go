@@ -40,15 +40,19 @@ func (self *SocketSession) Send(data interface{}) {
 	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, self)
 	ev.Msg = data
 
-	self.RawSend(ev)
+	self.RawSend(nil, ev)
 
 }
 
-func (self *SocketSession) RawSend(ev *cellnet.SessionEvent) {
+func (self *SocketSession) RawSend(sendHandler cellnet.EventHandler, ev *cellnet.SessionEvent) {
 
-	_, send := self.p.GetHandler()
+	if sendHandler == nil {
+		_, sendHandler = self.p.GetHandler()
+	}
 
-	cellnet.HandlerCallFirst(send, ev)
+	ev.Ses = self
+
+	cellnet.HandlerCallFirst(sendHandler, ev)
 }
 
 // 发送线程

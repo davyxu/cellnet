@@ -14,6 +14,7 @@ const (
 	SessionEvent_ConnectFailed
 	SessionEvent_Accepted
 	SessionEvent_AcceptFailed
+	SessionEvent_Closed
 	SessionEvent_Recv
 	SessionEvent_Send
 )
@@ -52,9 +53,11 @@ func (self *SessionEvent) DirString() string {
 		return "connected"
 	case SessionEvent_Accepted:
 		return "accepted"
+	case SessionEvent_Closed:
+		return "closed"
 	}
 
-	return "unknown"
+	return fmt.Sprintf("unknown(%d)", self.Type)
 }
 
 func (self *SessionEvent) TypeString() string {
@@ -69,9 +72,11 @@ func (self *SessionEvent) TypeString() string {
 		return "SessionEvent_ConnectFailed"
 	case SessionEvent_Accepted:
 		return "SessionEvent_Accepted"
+	case SessionEvent_Closed:
+		return "SessionEvent_Closed"
 	}
 
-	return "unknown"
+	return fmt.Sprintf("unknown(%d)", self.Type)
 }
 
 func (self *SessionEvent) SessionID() int64 {

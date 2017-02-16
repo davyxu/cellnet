@@ -7,6 +7,8 @@ type EventDispatcher interface {
 
 	RemoveHandler(id int)
 
+	Call(*SessionEvent) error
+
 	// 清除所有回调
 	Clear()
 

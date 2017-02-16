@@ -6,7 +6,7 @@ type Session interface {
 	Send(interface{})
 
 	// 直接发送封包
-	RawSend(*SessionEvent)
+	RawSend(EventHandler, *SessionEvent)
 
 	// 断开
 	Close()

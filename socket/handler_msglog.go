@@ -9,14 +9,13 @@ type MsgLogHandler struct {
 func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) (err error) {
 
 	// 找到消息需要屏蔽
-	if _, ok := msgMetaByID[ev.MsgID]; ok {
-		return
-	}
+	if _, ok := msgMetaByID[ev.MsgID]; !ok {
 
-	if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
+		if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
 
-		log.Debugf("#%s(%s) sid: %d %s size: %d | %s", ev.DirString(), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
+			log.Debugf("#%s(%s) sid: %d %s size: %d | %s", ev.DirString(), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
 
+		}
 	}
 
 	return self.CallNext(ev)
