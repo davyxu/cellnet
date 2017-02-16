@@ -28,7 +28,7 @@ func server() {
 
 		log.Debugln("server recv:", msg.String())
 
-		ev.Ses.Send(&gamedef.TestEchoACK{
+		ev.Send(&gamedef.TestEchoACK{
 			Content: msg.String(),
 		})
 

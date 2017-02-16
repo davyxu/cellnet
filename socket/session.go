@@ -40,7 +40,7 @@ func (self *SocketSession) Send(data interface{}) {
 	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, self)
 	ev.Msg = data
 
-	self.RawSend(nil, ev)
+	self.RawSend(ev.SendHandler, ev)
 
 }
 

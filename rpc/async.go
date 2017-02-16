@@ -46,7 +46,7 @@ func installAsyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg i
 
 		hl := cellnet.LinkHandler(
 			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
-			NewUnboxHandler(),
+			NewUnboxHandler(nil),
 			socket.NewDecodePacketHandler(meta),
 			NewReflectCallHandler(userCallback),
 		)

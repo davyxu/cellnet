@@ -7,6 +7,8 @@ import (
 
 type UnboxHandler struct {
 	cellnet.BaseEventHandler
+
+	feedbackHandler cellnet.EventHandler
 }
 
 func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) error {
@@ -17,10 +19,14 @@ func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) error {
 	ev.Meta = cellnet.MessageMetaByID(wrapper.MsgID)
 	ev.Data = wrapper.Data
 
+	ev.SendHandler = self.feedbackHandler
+
 	return self.CallNext(ev)
 }
 
-func NewUnboxHandler() cellnet.EventHandler {
-	return &UnboxHandler{}
+func NewUnboxHandler(feedbackHandler cellnet.EventHandler) cellnet.EventHandler {
+	return &UnboxHandler{
+		feedbackHandler: feedbackHandler,
+	}
 
 }

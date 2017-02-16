@@ -43,7 +43,7 @@ func installSyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg in
 
 		hl := cellnet.LinkHandler(
 			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
-			NewUnboxHandler(),
+			NewUnboxHandler(nil),
 			socket.NewDecodePacketHandler(meta),
 			NewRetChanHandler(retChan),
 		)

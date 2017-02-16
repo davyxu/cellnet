@@ -17,6 +17,11 @@ type EventDispatcher interface {
 	CountByID(id int) int
 
 	VisitCallback(callback func(int, *HandlerContext) VisitOperation)
+
+	// 没有匹配id的, 默认执行的handler
+	SetFallbackHandler(h EventHandler)
+
+	FallbackHandler() EventHandler
 }
 
 type HandlerContext struct {
@@ -29,6 +34,17 @@ type HandlerContext struct {
 type DispatcherHandler struct {
 	BaseEventHandler
 	handlerByID map[int][]*HandlerContext
+
+	fallbackHandler EventHandler
+}
+
+func (self *DispatcherHandler) SetFallbackHandler(h EventHandler) {
+
+	self.fallbackHandler = h
+}
+
+func (self *DispatcherHandler) FallbackHandler() EventHandler {
+	return self.fallbackHandler
 }
 
 func (self *DispatcherHandler) AddHandler(id int, h EventHandler) *HandlerContext {
@@ -68,6 +84,8 @@ func (self *DispatcherHandler) Call(ev *SessionEvent) error {
 			}
 		}
 
+	} else if self.fallbackHandler != nil {
+		return HandlerCallNext(self.fallbackHandler, ev)
 	}
 
 	return nil

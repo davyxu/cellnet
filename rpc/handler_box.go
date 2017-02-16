@@ -26,6 +26,7 @@ func (self *BoxHandler) Call(ev *cellnet.SessionEvent) error {
 }
 
 func NewBoxHandler() cellnet.EventHandler {
+
 	return &BoxHandler{}
 
 }

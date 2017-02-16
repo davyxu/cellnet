@@ -21,13 +21,36 @@ const (
 
 // 会话事件
 type SessionEvent struct {
-	Type  EventType    // 事件类型
+	Type EventType // 事件类型
+
 	MsgID uint32       // 消息ID
 	Msg   interface{}  // 消息对象
 	Meta  *MessageMeta // 消息扩展内容
 	Data  []byte       // 消息序列化后的数据
-	Ses   Session      // 会话
-	Tag   interface{}  // 事件的连接
+
+	Tag interface{} // 事件的连接
+
+	Ses         Session      // 会话
+	SendHandler EventHandler // 发送handler override
+}
+
+// 兼容普通消息发送和rpc消息返回, 推荐
+func (self *SessionEvent) Send(data interface{}) {
+
+	ev := NewSessionEvent(SessionEvent_Send, self.Ses)
+	ev.Msg = data
+
+	self.Ses.RawSend(self.SendHandler, ev)
+
+}
+
+func (self *SessionEvent) Reset(t EventType) {
+	self.Type = t
+	self.MsgID = 0
+	self.Msg = nil
+	self.Meta = nil
+	self.Data = nil
+	self.Tag = nil
 }
 
 func (self *SessionEvent) PeerName() string {

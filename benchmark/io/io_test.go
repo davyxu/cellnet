@@ -43,7 +43,7 @@ func server() {
 			log.Infof("Average QPS: %d", qpsm.Average())
 		}
 
-		ev.Ses.Send(&gamedef.TestEchoACK{})
+		ev.Send(&gamedef.TestEchoACK{})
 
 	})
 
@@ -59,13 +59,13 @@ func client() {
 
 	socket.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 
-		ev.Ses.Send(&gamedef.TestEchoACK{})
+		ev.Send(&gamedef.TestEchoACK{})
 
 	})
 
 	socket.RegisterMessage(evd, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
-		ev.Ses.Send(&gamedef.TestEchoACK{})
+		ev.Send(&gamedef.TestEchoACK{})
 
 	})
 

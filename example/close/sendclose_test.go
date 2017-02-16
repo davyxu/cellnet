@@ -25,7 +25,7 @@ func runServer() {
 		log.Debugln("server recv ")
 
 		// 发包后关闭
-		ev.Ses.Send(&gamedef.TestEchoACK{
+		ev.Send(&gamedef.TestEchoACK{
 			Content: msg.Content,
 		})
 
@@ -52,7 +52,7 @@ func testConnActiveClose() {
 		log.Debugln("send no close")
 
 		// 连接上发包,告诉服务器不要断开
-		ev.Ses.Send(&gamedef.TestEchoACK{
+		ev.Send(&gamedef.TestEchoACK{
 			Content: "noclose",
 		})
 
@@ -96,7 +96,7 @@ func testRecvDisconnected() {
 	socket.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		// 连接上发包
-		ev.Ses.Send(&gamedef.TestEchoACK{
+		ev.Send(&gamedef.TestEchoACK{
 			Content: "data",
 		})
 
