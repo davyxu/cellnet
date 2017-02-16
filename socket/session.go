@@ -21,6 +21,8 @@ type SocketSession struct {
 	stream *PacketStream
 
 	sendList *eventList
+
+	q cellnet.EventQueue
 }
 
 func (self *SocketSession) ID() int64 {
@@ -132,59 +134,7 @@ func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
 	self.endSync.Done()
 }
 
-//// 接收线程
-//func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
-//	var err error
-//	var pkt *cellnet.Packet
-
-//	for {
-
-//		// 从Socket读取封包
-//		pkt, err = self.stream.Read()
-
-//		if err != nil {
-
-//			ev := newSessionEvent(Event_SessionClosed, self, &gamedef.SessionClosed{Reason: err.Error()})
-
-//			msgLog("recv", self, ev.Packet)
-
-//			// 断开事件
-//			eq.Post(self.p, ev)
-//			break
-//		}
-
-//		// 消息日志要多损耗一次解析性能
-
-//		msgLog("recv", self, pkt)
-
-//		// 逻辑封包
-//		eq.Post(self.p, &SessionEvent{
-//			Packet: pkt,
-//			Ses:    self,
-//		})
-
-//	}
-
-//	if self.needNotifyWrite {
-//		self.Close()
-//	}
-
-//	// 通知接收线程ok
-//	self.endSync.Done()
-//}
-
-func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
-
-	self := &SocketSession{
-		stream:          stream,
-		p:               p,
-		needNotifyWrite: true,
-		sendList:        NewPacketList(),
-	}
-
-	// 使用peer的统一设置
-	self.stream.maxPacketSize = p.MaxPacketSize()
-
+func (self *SocketSession) run() {
 	// 布置接收和发送2个任务
 	// bug fix感谢viwii提供的线索
 	self.endSync.Add(2)
@@ -201,10 +151,24 @@ func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *So
 	}()
 
 	// 接收线程
-	go self.recvThread(eq)
+	go self.recvThread(self.q)
 
 	// 发送线程
 	go self.sendThread()
+}
+
+func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
+
+	self := &SocketSession{
+		stream:          stream,
+		p:               p,
+		q:               eq,
+		needNotifyWrite: true,
+		sendList:        NewPacketList(),
+	}
+
+	// 使用peer的统一设置
+	self.stream.maxPacketSize = p.MaxPacketSize()
 
 	return self
 }

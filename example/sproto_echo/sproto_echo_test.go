@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
+	_ "github.com/davyxu/cellnet/codec/pb" // 系统底层需要使用pb
 	"github.com/davyxu/cellnet/codec/sproto"
 	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/sproto/gamedef"
@@ -78,7 +79,7 @@ func client() {
 
 func TestSprotoEcho(t *testing.T) {
 
-	socket.DefaultCodec = "sproto"
+	socket.PeerDefaultCodec = "sproto"
 	sprotocodec.AutoRegisterMessageMeta(gamedef.SProtoStructs)
 
 	signal = test.NewSignalTester(t)

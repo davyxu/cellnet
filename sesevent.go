@@ -22,19 +22,31 @@ const (
 type SessionEvent struct {
 	Type EventType // 事件类型
 
-	MsgID uint32       // 消息ID
-	Msg   interface{}  // 消息对象
-	Meta  *MessageMeta // 消息扩展内容
-	Data  []byte       // 消息序列化后的数据
+	MsgID uint32      // 消息ID
+	Msg   interface{} // 消息对象
+	Data  []byte      // 消息序列化后的数据
 
 	Tag interface{} // 事件的连接
 
-	Ses         Session      // 会话
-	SendHandler EventHandler // 发送handler override
+	Ses           Session      // 会话
+	SendHandler   EventHandler // 发送handler override
+	OverrideCodec Codec        // 用于解码的override
+}
+
+func (self *SessionEvent) PacketCodec() Codec {
+	if self.Ses == nil {
+		return nil
+	}
+
+	return self.Ses.FromPeer().PacketCodec()
 }
 
 // 兼容普通消息发送和rpc消息返回, 推荐
 func (self *SessionEvent) Send(data interface{}) {
+
+	if self.Ses == nil {
+		return
+	}
 
 	self.Reset(SessionEvent_Send)
 	self.Msg = data
@@ -47,7 +59,6 @@ func (self *SessionEvent) Reset(t EventType) {
 	self.Type = t
 	self.MsgID = 0
 	self.Msg = nil
-	self.Meta = nil
 	self.Data = nil
 	self.Tag = nil
 }
@@ -63,23 +74,6 @@ func (self *SessionEvent) PeerName() string {
 	}
 
 	return self.Ses.FromPeer().Address()
-}
-
-func (self *SessionEvent) DirString() string {
-	switch self.Type {
-	case SessionEvent_Recv:
-		return "recv"
-	case SessionEvent_Send:
-		return "send"
-	case SessionEvent_Connected:
-		return "connected"
-	case SessionEvent_Accepted:
-		return "accepted"
-	case SessionEvent_Closed:
-		return "closed"
-	}
-
-	return fmt.Sprintf("unknown(%d)", self.Type)
 }
 
 func (self *SessionEvent) TypeString() string {
@@ -134,11 +128,12 @@ func (self *SessionEvent) MsgString() string {
 
 func (self *SessionEvent) MsgName() string {
 
-	if self.Meta == nil {
+	meta := MessageMetaByID(self.MsgID)
+	if meta == nil {
 		return ""
 	}
 
-	return self.Meta.Name
+	return meta.Name
 }
 
 func (self *SessionEvent) String() string {
@@ -147,15 +142,13 @@ func (self *SessionEvent) String() string {
 
 func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 
-	self.Meta = MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
-	if self.Meta != nil {
-		self.MsgID = self.Meta.ID
+	meta := MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
+	if meta != nil {
+		self.MsgID = meta.ID
 	}
 
-	codec := self.Ses.FromPeer().PacketCodec()
-
 	var err error
-	self.Data, err = codec.Encode(msg)
+	self.Data, err = self.PacketCodec().Encode(msg)
 
 	if err != nil {
 		log.Errorln(err)
@@ -165,9 +158,9 @@ func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 }
 
 func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
-	self.Meta = meta
+
 	if meta != nil {
-		self.MsgID = self.Meta.ID
+		self.MsgID = meta.ID
 	}
 
 	return self

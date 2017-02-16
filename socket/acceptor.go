@@ -43,6 +43,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
 
 				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_AcceptFailed, nil).FromMessage(&gamedef.SessionAcceptFailed{Reason: err.Error()})
+				ev.OverrideCodec = sysEventCodec
 
 				cellnet.HandlerCallFirst(self.recvHandler, ev)
 
@@ -62,10 +63,13 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 					self.sessionMgr.Remove(ses)
 				}
 
+				ses.run()
+
 				//log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
 
 				// 通知逻辑
 				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Accepted, ses).FromMeta(Meta_SessionAccepted)
+				ev.OverrideCodec = sysEventCodec
 
 				cellnet.HandlerCallFirst(self.recvHandler, ev)
 			}()

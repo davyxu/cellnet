@@ -1,9 +1,35 @@
 package socket
 
-import "github.com/davyxu/cellnet"
+import (
+	"fmt"
+
+	"github.com/davyxu/cellnet"
+)
 
 type MsgLogHandler struct {
 	cellnet.BaseEventHandler
+}
+
+func dirString(ev *cellnet.SessionEvent) string {
+
+	switch ev.Type {
+	case cellnet.SessionEvent_Recv:
+		return "recv"
+	case cellnet.SessionEvent_Send:
+		return "send"
+	case cellnet.SessionEvent_Connected:
+		return "connected"
+	case cellnet.SessionEvent_ConnectFailed:
+		return "connectfailed"
+	case cellnet.SessionEvent_Accepted:
+		return "accepted"
+	case cellnet.SessionEvent_AcceptFailed:
+		return "acceptefailed"
+	case cellnet.SessionEvent_Closed:
+		return "closed"
+	}
+
+	return fmt.Sprintf("unknown(%d)", ev.Type)
 }
 
 func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) (err error) {
@@ -13,7 +39,7 @@ func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) (err error) {
 
 		if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
 
-			log.Debugf("#%s(%s) sid: %d %s size: %d | %s", ev.DirString(), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
+			log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
 
 		}
 	}

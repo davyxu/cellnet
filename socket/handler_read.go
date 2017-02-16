@@ -23,6 +23,7 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) (ret error) {
 		if err != nil {
 			ev.FromMessage(&gamedef.SessionClosed{Reason: err.Error()})
 			ev.Type = cellnet.SessionEvent_Closed
+			ev.OverrideCodec = sysEventCodec
 
 			ret = err
 		}

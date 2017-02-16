@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/codec/pb"
+	_ "github.com/davyxu/cellnet/codec/pb" // 匿名import, 注册pb编码
 	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
