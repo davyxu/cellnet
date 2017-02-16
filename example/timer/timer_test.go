@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
+	_ "github.com/davyxu/cellnet/codec/pb"
 	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/golog"
 )

@@ -2,8 +2,7 @@ package cellnet
 
 import (
 	"fmt"
-
-	"github.com/golang/protobuf/proto"
+	"reflect"
 )
 
 type EventType int
@@ -37,10 +36,10 @@ type SessionEvent struct {
 // 兼容普通消息发送和rpc消息返回, 推荐
 func (self *SessionEvent) Send(data interface{}) {
 
-	ev := NewSessionEvent(SessionEvent_Send, self.Ses)
-	ev.Msg = data
+	self.Reset(SessionEvent_Send)
+	self.Msg = data
 
-	self.Ses.RawSend(self.SendHandler, ev)
+	self.Ses.RawSend(self.SendHandler, self)
 
 }
 
@@ -124,7 +123,13 @@ func (self *SessionEvent) MsgString() string {
 		return ""
 	}
 
-	return self.Msg.(proto.Message).String()
+	if stringer, ok := self.Msg.(interface {
+		String() string
+	}); ok {
+		return stringer.String()
+	}
+
+	return ""
 }
 
 func (self *SessionEvent) MsgName() string {
@@ -141,9 +146,19 @@ func (self *SessionEvent) String() string {
 }
 
 func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
-	self.Data, self.Meta = BuildPacket(msg)
+
+	self.Meta = MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
 	if self.Meta != nil {
 		self.MsgID = self.Meta.ID
+	}
+
+	codec := self.Ses.FromPeer().PacketCodec()
+
+	var err error
+	self.Data, err = codec.Encode(msg)
+
+	if err != nil {
+		log.Errorln(err)
 	}
 
 	return self

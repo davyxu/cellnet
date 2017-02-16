@@ -5,11 +5,13 @@
 
 - 支持自由定义封包处理管线
 
+- 新增编码器扩展, 默认为protobuf编码
+
 ## 变化及修改
 
 - 大幅降低底层内存分配, GC降低后, benchmark提升1w QPS
 
-- socket.RegisterMessage参数统一为*SessionEvent
+- 现在使用cellnet.RegisterMessage注册消息, 回调参数统一为*SessionEvent
 
 - 去除RPC包装, 解包封包的重复代码. 无需callid支持, 封包变小
 

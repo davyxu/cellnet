@@ -1,38 +1,28 @@
 package cellnet
 
-import (
-	"reflect"
+//// 消息到封包
+//func BuildPacket(msgObj interface{}) ([]byte, error) {
 
-	"github.com/golang/protobuf/proto"
-)
+//	msg := msgObj.(proto.Message)
 
-// 消息到封包
-func BuildPacket(msgObj interface{}) ([]byte, *MessageMeta) {
+//	rawdata, err := proto.Marshal(msg)
 
-	msg := msgObj.(proto.Message)
+//	if err != nil {
+//		return nil, err
+//	}
 
-	rawdata, err := proto.Marshal(msg)
+//	return rawdata, nil
+//}
 
-	if err != nil {
-		log.Errorln(err)
-	}
+//// 封包到消息
+//func ParsePacket(data []byte, msgObj interface{}) error {
+//	// msgType 为ptr类型, new时需要非ptr型
 
-	meta := MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
+//	err := proto.Unmarshal(data, msgObj.(proto.Message))
 
-	return rawdata, meta
-}
+//	if err != nil {
+//		return err
+//	}
 
-// 封包到消息
-func ParsePacket(data []byte, msgType reflect.Type) (interface{}, error) {
-	// msgType 为ptr类型, new时需要非ptr型
-
-	rawMsg := reflect.New(msgType.Elem()).Interface()
-
-	err := proto.Unmarshal(data, rawMsg.(proto.Message))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return rawMsg, nil
-}
+//	return nil
+//}

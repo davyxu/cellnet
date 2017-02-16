@@ -7,10 +7,10 @@ func BuildSendHandler(useMsgLog bool) cellnet.EventHandler {
 
 	if useMsgLog {
 
-		return cellnet.LinkHandler(NewEncodePacketHandler(), NewMsgLogHandler(), NewWritePacketHandler())
+		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewMsgLogHandler(), NewWritePacketHandler())
 	} else {
 
-		return cellnet.LinkHandler(NewEncodePacketHandler(), NewWritePacketHandler())
+		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewWritePacketHandler())
 	}
 
 }

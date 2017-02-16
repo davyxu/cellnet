@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
+	_ "github.com/davyxu/cellnet/codec/pb"
 	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/rpc"
@@ -47,7 +48,7 @@ func asyncClient() {
 	p.SetName("client")
 	p.Start("127.0.0.1:9201")
 
-	socket.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		rpc.Call(p, &gamedef.TestEchoACK{
 			Content: "async",
@@ -74,7 +75,7 @@ func syncClient() {
 	p.SetName("client")
 	p.Start("127.0.0.1:9201")
 
-	socket.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		// 这里使用goroutine包裹调用原因: 避免当前消息不返回, 无法继续处理rpc的消息接收
 		// 正式使用时, CallSync被调用的消息所在的Peer, 与CallSync第一个参数使用Peer一定是不同Peer

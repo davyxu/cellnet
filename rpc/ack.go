@@ -11,10 +11,10 @@ func buildSendHandler() cellnet.EventHandler {
 
 	if socket.EnableMessageLog {
 
-		return cellnet.LinkHandler(socket.NewEncodePacketHandler(), socket.NewMsgLogHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), socket.NewMsgLogHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
 	} else {
 
-		return cellnet.LinkHandler(socket.NewEncodePacketHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
 	}
 }
 
@@ -27,9 +27,9 @@ func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *celln
 	sendHandler := buildSendHandler()
 
 	p.AddHandler(int(meta.ID), cellnet.LinkHandler(
-		socket.NewDecodePacketHandler(metaWrapper),
+		cellnet.NewDecodePacketHandler(metaWrapper),
 		NewUnboxHandler(sendHandler), // rpc服务端收到消息时, 用定制的handler返回消息, 而不是peer默认的
-		socket.NewDecodePacketHandler(meta),
-		socket.NewCallbackHandler(userCallback),
+		cellnet.NewDecodePacketHandler(meta),
+		cellnet.NewCallbackHandler(userCallback),
 	))
 }

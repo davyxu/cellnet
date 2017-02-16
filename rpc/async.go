@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/socket"
 )
 
 // ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
@@ -45,9 +44,9 @@ func installAsyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg i
 	if p.CountByID(int(meta.ID)) == 0 {
 
 		hl := cellnet.LinkHandler(
-			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
+			cellnet.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
 			NewUnboxHandler(nil),
-			socket.NewDecodePacketHandler(meta),
+			cellnet.NewDecodePacketHandler(meta),
 			NewReflectCallHandler(userCallback),
 		)
 

@@ -2,10 +2,8 @@ package cellnet
 
 type Peer interface {
 
-	// 开启
+	// 开启/关闭
 	Start(address string) Peer
-
-	// 关闭
 	Stop()
 
 	// 名字
@@ -19,14 +17,19 @@ type Peer interface {
 	SetMaxPacketSize(size int)
 	MaxPacketSize() int
 
+	// 派发器
 	EventDispatcher
 
 	// 连接管理
 	SessionManager
 
+	//  Handler
 	SetHandler(recv, send EventHandler)
-
 	GetHandler() (recv, send EventHandler)
+
+	// Codec
+	PacketCodec() Codec
+	SetPacketCodec(c Codec)
 }
 
 type Connector interface {

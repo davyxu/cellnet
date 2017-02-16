@@ -1,9 +1,6 @@
 package rpc
 
-import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/socket"
-)
+import "github.com/davyxu/cellnet"
 
 // 发出请求, 接收到服务器返回后才返回, ud: peer/session,   reqMsg:请求用的消息, ackMsgName: 返回消息类型名, 返回消息为返回值
 func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string) (interface{}, error) {
@@ -42,9 +39,9 @@ func installSyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg in
 	if p.CountByID(int(meta.ID)) == 0 {
 
 		hl := cellnet.LinkHandler(
-			socket.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
+			cellnet.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
 			NewUnboxHandler(nil),
-			socket.NewDecodePacketHandler(meta),
+			cellnet.NewDecodePacketHandler(meta),
 			NewRetChanHandler(retChan),
 		)
 
