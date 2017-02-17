@@ -28,9 +28,22 @@ type SessionEvent struct {
 
 	Tag interface{} // 事件的连接
 
-	Ses           Session      // 会话
-	SendHandler   EventHandler // 发送handler override
-	OverrideCodec Codec        // 用于解码的override
+	Ses         Session      // 会话
+	SendHandler EventHandler // 发送handler override
+
+}
+
+func (self *SessionEvent) IsSystemEvent() bool {
+	switch self.Type {
+	case SessionEvent_Connected,
+		SessionEvent_ConnectFailed,
+		SessionEvent_Accepted,
+		SessionEvent_AcceptFailed,
+		SessionEvent_Closed:
+		return true
+	}
+
+	return false
 }
 
 func (self *SessionEvent) PacketCodec() Codec {

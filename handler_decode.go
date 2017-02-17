@@ -9,26 +9,19 @@ type DecodePacketHandler struct {
 
 func (self *DecodePacketHandler) Call(ev *SessionEvent) (err error) {
 
-	// 创建消息
-	ev.Msg = reflect.New(self.meta.Type).Interface()
+	// 系统消息不做处理
+	if !ev.IsSystemEvent() {
 
-	var codec Codec
-	if ev.OverrideCodec != nil {
-		codec = ev.OverrideCodec
-	} else {
-		codec = ev.PacketCodec()
-	}
+		// 创建消息
+		ev.Msg = reflect.New(self.meta.Type).Interface()
 
-	if codec == nil {
-		panic("require codec")
-	}
+		// 解析消息
+		err = ev.PacketCodec().Decode(ev.Data, ev.Msg)
 
-	// 解析消息
-	err = codec.Decode(ev.Data, ev.Msg)
-
-	if err != nil {
-		log.Errorf("unmarshaling error: %v, raw: %v", err, ev)
-		return
+		if err != nil {
+			log.Errorf("unmarshaling error: %v, raw: %v", err, ev)
+			return
+		}
 	}
 
 	return self.CallNext(ev)

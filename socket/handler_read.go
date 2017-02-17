@@ -21,17 +21,14 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) (ret error) {
 		err := rawSes.stream.Read(ev)
 
 		if err != nil {
-			ev.FromMessage(&gamedef.SessionClosed{Reason: err.Error()})
-			ev.Type = cellnet.SessionEvent_Closed
-			ev.OverrideCodec = sysEventCodec
+
+			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &gamedef.SessionClosed{Reason: err.Error()})
 
 			ret = err
 		}
 
 		// 逻辑封包
 	}
-
-	//log.Debugln(ev.String())
 
 	self.q.Post(func() {
 		self.CallNext(ev)

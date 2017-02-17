@@ -71,9 +71,7 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				ev := cellnet.NewSessionEvent(cellnet.SessionEvent_ConnectFailed, self.defaultSes).FromMessage(&gamedef.SessionConnectFailed{Reason: err.Error()})
-				ev.OverrideCodec = sysEventCodec
-				cellnet.HandlerCallFirst(self.recvHandler, ev)
+				callSystemEvent(ses, cellnet.SessionEvent_ConnectFailed, &gamedef.SessionConnectFailed{Reason: err.Error()}, self.recvHandler)
 				break
 			}
 
@@ -101,9 +99,7 @@ func (self *socketConnector) connect(address string) {
 			self.closeSignal <- true
 		}
 
-		ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Connected, ses).FromMeta(Meta_SessionConnected)
-		ev.OverrideCodec = sysEventCodec
-		cellnet.HandlerCallFirst(self.recvHandler, ev)
+		callSystemEventByMeta(ses, cellnet.SessionEvent_Connected, Meta_SessionConnected, self.recvHandler)
 
 		if <-self.closeSignal {
 
