@@ -7,4 +7,4 @@ go build -o %CURR_DIR%\sprotogen.exe github.com/davyxu/gosproto/sprotogen
 cd %CURR_DIR%
 
 : Generate go source file by sproto
-sprotogen --type=go --out=.\gamedef\core.go --gopackage=gamedef %*
+sprotogen --type=go --out=.\gamedef\core.go --package=gamedef --cellnet_reg=true %*

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/codec/pb"
 	"github.com/davyxu/cellnet/example"
+	"github.com/davyxu/cellnet/proto/pb/coredef"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
@@ -47,7 +47,7 @@ func testConnActiveClose() {
 
 	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	cellnet.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		signal.Done(1)
 		log.Debugln("send no close")
@@ -70,9 +70,9 @@ func testConnActiveClose() {
 
 	})
 
-	cellnet.RegisterMessage(p, "gamedef.SessionClosed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionClosed", func(ev *cellnet.SessionEvent) {
 
-		msg := ev.Msg.(*gamedef.SessionClosed)
+		msg := ev.Msg.(*coredef.SessionClosed)
 
 		log.Debugln("close ok!", msg.Reason)
 		// 正常断开
@@ -94,7 +94,7 @@ func testRecvDisconnected() {
 
 	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-	cellnet.RegisterMessage(p, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		// 连接上发包
 		ev.Send(&gamedef.TestEchoACK{
@@ -113,7 +113,7 @@ func testRecvDisconnected() {
 
 	})
 
-	cellnet.RegisterMessage(p, "gamedef.SessionClosed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionClosed", func(ev *cellnet.SessionEvent) {
 
 		// 断开
 		signal.Done(3)

@@ -13,6 +13,10 @@ import (
 type sprotoCodec struct {
 }
 
+func (self *sprotoCodec) Name() string {
+	return "sproto"
+}
+
 func (self *sprotoCodec) Encode(msgObj interface{}) ([]byte, error) {
 
 	return sproto.Encode(msgObj)
@@ -36,7 +40,7 @@ func AutoRegisterMessageMeta(msgTypes []reflect.Type) {
 
 		msgName := fmt.Sprintf("%s.%s", path.Base(tp.PkgPath()), tp.Name())
 
-		cellnet.RegisterMessageMeta(msgName, tp, util.StringHash(msgName))
+		cellnet.RegisterMessageMeta("sproto", msgName, tp, util.StringHash(msgName))
 	}
 
 }

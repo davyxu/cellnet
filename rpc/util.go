@@ -12,7 +12,7 @@ var (
 	ErrConnectorSesNotReady  error = errors.New("rpc: Connector session not ready")
 	ErrReplayMessageNotFound       = errors.New("rpc: Reply message name not found")
 
-	metaWrapper = cellnet.MessageMetaByName("gamedef.RemoteCallACK")
+	metaWrapper = cellnet.MessageMetaByName("coredef.RemoteCallACK")
 )
 
 // 从peer获取rpc使用的session

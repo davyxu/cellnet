@@ -8,6 +8,10 @@ import (
 type pbCodec struct {
 }
 
+func (self *pbCodec) Name() string {
+	return "pb"
+}
+
 func (self *pbCodec) Encode(msgObj interface{}) ([]byte, error) {
 
 	msg := msgObj.(proto.Message)

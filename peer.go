@@ -26,10 +26,6 @@ type Peer interface {
 	//  Handler
 	SetHandler(recv, send EventHandler)
 	GetHandler() (recv, send EventHandler)
-
-	// Codec
-	PacketCodec() Codec
-	SetPacketCodec(c Codec)
 }
 
 type Connector interface {

@@ -2,13 +2,12 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/proto/pb/gamedef"
 )
 
 var (
-	Meta_SessionConnected     = cellnet.MessageMetaByName("gamedef.SessionConnected")
-	Meta_SessionClosed        = cellnet.MessageMetaByName("gamedef.SessionClosed")
-	Meta_SessionAccepted      = cellnet.MessageMetaByName("gamedef.SessionAccepted")
-	Meta_SessionAcceptFailed  = cellnet.MessageMetaByName("gamedef.SessionAcceptFailed")
-	Meta_SessionConnectFailed = cellnet.MessageMetaByName("gamedef.SessionConnectFailed")
+	Meta_SessionConnected     = cellnet.MessageMetaByName("coredef.SessionConnected")
+	Meta_SessionClosed        = cellnet.MessageMetaByName("coredef.SessionClosed")
+	Meta_SessionAccepted      = cellnet.MessageMetaByName("coredef.SessionAccepted")
+	Meta_SessionAcceptFailed  = cellnet.MessageMetaByName("coredef.SessionAcceptFailed")
+	Meta_SessionConnectFailed = cellnet.MessageMetaByName("coredef.SessionConnectFailed")
 )

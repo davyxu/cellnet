@@ -2,7 +2,7 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/gamedef"
+	"github.com/davyxu/cellnet/proto/pb/coredef"
 )
 
 type ReadPacketHandler struct {
@@ -22,7 +22,7 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) (ret error) {
 
 		if err != nil {
 
-			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &gamedef.SessionClosed{Reason: err.Error()})
+			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &coredef.SessionClosed{Reason: err.Error()})
 
 			ret = err
 		}

@@ -46,14 +46,6 @@ func (self *SessionEvent) IsSystemEvent() bool {
 	return false
 }
 
-func (self *SessionEvent) PacketCodec() Codec {
-	if self.Ses == nil {
-		return nil
-	}
-
-	return self.Ses.FromPeer().PacketCodec()
-}
-
 // 兼容普通消息发送和rpc消息返回, 推荐
 func (self *SessionEvent) Send(data interface{}) {
 
@@ -160,8 +152,13 @@ func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 		self.MsgID = meta.ID
 	}
 
+	if meta.Codec == nil {
+		log.Errorf("message codec not found: %s", meta.Name)
+		return self
+	}
+
 	var err error
-	self.Data, err = self.PacketCodec().Encode(msg)
+	self.Data, err = meta.Codec.Encode(msg)
 
 	if err != nil {
 		log.Errorln(err)

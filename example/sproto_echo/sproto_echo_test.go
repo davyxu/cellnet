@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/codec/pb" // 系统底层需要使用pb
-	"github.com/davyxu/cellnet/codec/sproto"
 	"github.com/davyxu/cellnet/example"
+	"github.com/davyxu/cellnet/proto/pb/coredef"
 	"github.com/davyxu/cellnet/proto/sproto/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
@@ -53,7 +52,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	cellnet.RegisterMessage(dh, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		log.Debugln("client connected")
 
@@ -63,9 +62,9 @@ func client() {
 
 	})
 
-	cellnet.RegisterMessage(dh, "gamedef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "coredef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
 
-		msg := ev.Msg.(*gamedef.SessionConnectFailed)
+		msg := ev.Msg.(*coredef.SessionConnectFailed)
 
 		log.Debugln(msg.Reason)
 
@@ -78,9 +77,6 @@ func client() {
 }
 
 func TestSprotoEcho(t *testing.T) {
-
-	socket.PeerDefaultCodec = "sproto"
-	sprotocodec.AutoRegisterMessageMeta(gamedef.SProtoStructs)
 
 	signal = test.NewSignalTester(t)
 

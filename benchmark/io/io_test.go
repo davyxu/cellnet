@@ -6,7 +6,6 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/benchmark"
-	_ "github.com/davyxu/cellnet/codec/pb"
 	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
@@ -64,7 +63,7 @@ func client() {
 
 	})
 
-	cellnet.RegisterMessage(evd, "gamedef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(evd, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		ev.Send(&gamedef.TestEchoACK{})
 

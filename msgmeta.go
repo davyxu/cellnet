@@ -1,14 +1,16 @@
 package cellnet
 
 import (
+	"fmt"
 	"path"
 	"reflect"
 )
 
 type MessageMeta struct {
-	Type reflect.Type
-	Name string
-	ID   uint32
+	Type  reflect.Type
+	Name  string
+	ID    uint32
+	Codec Codec
 }
 
 var (
@@ -17,12 +19,25 @@ var (
 )
 
 // 注册消息元信息(代码生成专用)
-func RegisterMessageMeta(name string, msgType reflect.Type, id uint32) {
+func RegisterMessageMeta(codecName string, name string, msgType reflect.Type, id uint32) {
 
 	meta := &MessageMeta{
-		Type: msgType,
-		Name: name,
-		ID:   id,
+		Type:  msgType,
+		Name:  name,
+		ID:    id,
+		Codec: FetchCodec(codecName),
+	}
+
+	if meta.Codec == nil {
+		panic("codec not register! " + codecName)
+	}
+
+	if _, ok := metaByName[name]; ok {
+		panic("duplicate message meta register by name: " + name)
+	}
+
+	if _, ok := metaByID[meta.ID]; ok {
+		panic(fmt.Sprintf("duplicate message meta register by id: %d", meta.ID))
 	}
 
 	metaByName[name] = meta

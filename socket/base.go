@@ -14,8 +14,6 @@ type peerBase struct {
 	sendHandler cellnet.EventHandler
 
 	*cellnet.DispatcherHandler
-
-	codec cellnet.Codec
 }
 
 func (self *peerBase) nameOrAddress() string {
@@ -28,14 +26,6 @@ func (self *peerBase) nameOrAddress() string {
 
 func (self *peerBase) Address() string {
 	return self.address
-}
-
-func (self *peerBase) PacketCodec() cellnet.Codec {
-	return self.codec
-}
-
-func (self *peerBase) SetPacketCodec(c cellnet.Codec) {
-	self.codec = c
 }
 
 func (self *peerBase) SetHandler(recv, send cellnet.EventHandler) {
@@ -67,7 +57,6 @@ func newPeerBase(queue cellnet.EventQueue) *peerBase {
 
 	self := &peerBase{
 		EventQueue:        queue,
-		codec:             cellnet.FetchCodec(PeerDefaultCodec),
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
 	}
 
