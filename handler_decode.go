@@ -33,6 +33,11 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) (err error) {
 }
 
 func NewDecodePacketHandler(meta *MessageMeta) EventHandler {
+
+	if meta == nil {
+		panic("decode meta not define")
+	}
+
 	return &DecodePacketHandler{
 		meta: meta,
 	}
