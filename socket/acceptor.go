@@ -32,7 +32,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 	self.running = true
 
-	log.Infof("#listen(%s) ", self.nameOrAddress())
+	log.Infof("#listen(%s) %s", self.name, self.address)
 
 	// 接受线程
 	go func() {

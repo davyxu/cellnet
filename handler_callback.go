@@ -1,5 +1,7 @@
 package cellnet
 
+import "fmt"
+
 func MessageRegistedCount(evd EventDispatcher, msgName string) int {
 
 	meta := MessageMetaByName(msgName)
@@ -40,8 +42,7 @@ func RegisterMessage(dh EventDispatcher, msgName string, userCallback func(*Sess
 	meta := MessageMetaByName(msgName)
 
 	if meta == nil {
-		log.Errorf("message register failed, %s", msgName)
-		return nil
+		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
 	ctx := dh.AddHandler(int(meta.ID), LinkHandler(NewDecodePacketHandler(meta), NewCallbackHandler(userCallback)))
@@ -56,8 +57,7 @@ func RegisterHandler(dh EventDispatcher, msgName string, handlers ...EventHandle
 	meta := MessageMetaByName(msgName)
 
 	if meta == nil {
-		log.Errorf("message register failed, %s", msgName)
-		return nil
+		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
 	decoder := NewDecodePacketHandler(meta)

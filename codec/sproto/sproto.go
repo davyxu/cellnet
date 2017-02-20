@@ -35,6 +35,7 @@ func AutoRegisterMessageMeta(msgTypes []reflect.Type) {
 	for _, tp := range msgTypes {
 
 		msgName := fmt.Sprintf("%s.%s", path.Base(tp.PkgPath()), tp.Name())
+
 		cellnet.RegisterMessageMeta(msgName, tp, util.StringHash(msgName))
 	}
 
