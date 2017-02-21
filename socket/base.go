@@ -16,6 +16,10 @@ type peerBase struct {
 	*cellnet.DispatcherHandler
 }
 
+func (self *peerBase) Queue() cellnet.EventQueue {
+	return self.EventQueue
+}
+
 func (self *peerBase) nameOrAddress() string {
 	if self.name != "" {
 		return self.name

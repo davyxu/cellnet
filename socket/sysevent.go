@@ -12,7 +12,7 @@ func callSystemEvent(ses cellnet.Session, e cellnet.EventType, msg interface{}, 
 
 	castToSystemEvent(ev, e, msg)
 
-	cellnet.HandlerCallFirst(h, ev)
+	cellnet.HandlerChainCall(h, ev)
 }
 
 func castToSystemEvent(ev *cellnet.SessionEvent, e cellnet.EventType, msg interface{}) {
@@ -35,5 +35,5 @@ func callSystemEventByMeta(ses cellnet.Session, e cellnet.EventType, meta *celln
 
 	ev.FromMeta(meta)
 
-	cellnet.HandlerCallFirst(h, ev)
+	cellnet.HandlerChainCall(h, ev)
 }

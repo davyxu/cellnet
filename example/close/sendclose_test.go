@@ -19,11 +19,12 @@ func runServer() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
+	p.SetName("server")
 
 	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
-		log.Debugln("server recv ")
+		log.Debugln("server recv ", msg.Content)
 
 		// 发包后关闭
 		ev.Send(&gamedef.TestEchoACK{
@@ -46,6 +47,7 @@ func testConnActiveClose() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	p.SetName("client.connActiveClose")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
@@ -93,12 +95,13 @@ func testRecvDisconnected() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	p.SetName("client.recvDisconnected")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		// 连接上发包
 		ev.Send(&gamedef.TestEchoACK{
-			Content: "data",
+			Content: "RecvDisconnected",
 		})
 
 		signal.Done(1)

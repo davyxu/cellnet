@@ -9,9 +9,7 @@ type BoxHandler struct {
 	cellnet.BaseEventHandler
 }
 
-func (self *BoxHandler) Call(ev *cellnet.SessionEvent) error {
-
-	msgID := ev.MsgID
+func (self *BoxHandler) Call(ev *cellnet.SessionEvent) {
 
 	// 来自encode之后的消息
 	ev.FromMessage(&coredef.RemoteCallACK{
@@ -19,10 +17,6 @@ func (self *BoxHandler) Call(ev *cellnet.SessionEvent) error {
 		Data:  ev.Data,
 	})
 
-	// 消息ID不能用RemoteCallACK, 还是用消息本体
-	ev.MsgID = msgID
-
-	return self.CallNext(ev)
 }
 
 func NewBoxHandler() cellnet.EventHandler {

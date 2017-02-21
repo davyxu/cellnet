@@ -32,7 +32,7 @@ func dirString(ev *cellnet.SessionEvent) string {
 	return fmt.Sprintf("unknown(%d)", ev.Type)
 }
 
-func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) (err error) {
+func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) {
 
 	// 找到消息需要屏蔽
 	if _, ok := msgMetaByID[ev.MsgID]; !ok {
@@ -44,7 +44,6 @@ func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) (err error) {
 		}
 	}
 
-	return self.CallNext(ev)
 }
 
 func NewMsgLogHandler() cellnet.EventHandler {

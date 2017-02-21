@@ -26,6 +26,8 @@ type Peer interface {
 	//  Handler
 	SetHandler(recv, send EventHandler)
 	GetHandler() (recv, send EventHandler)
+
+	Queue() EventQueue
 }
 
 type Connector interface {

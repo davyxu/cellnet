@@ -11,7 +11,7 @@ type ReadPacketHandler struct {
 	q cellnet.EventQueue
 }
 
-func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) (ret error) {
+func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 	switch ev.Type {
 	case cellnet.SessionEvent_Recv:
@@ -24,17 +24,12 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) (ret error) {
 
 			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &coredef.SessionClosed{Reason: err.Error()})
 
-			ret = err
+			ev.EndRecvLoop = true
 		}
 
 		// 逻辑封包
 	}
 
-	self.q.Post(func() {
-		self.CallNext(ev)
-	})
-
-	return
 }
 
 func NewReadPacketHandler(q cellnet.EventQueue) cellnet.EventHandler {

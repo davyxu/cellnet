@@ -11,7 +11,7 @@ type UnboxHandler struct {
 	feedbackHandler cellnet.EventHandler
 }
 
-func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) error {
+func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) {
 
 	wrapper := ev.Msg.(*coredef.RemoteCallACK)
 
@@ -20,7 +20,6 @@ func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) error {
 
 	ev.SendHandler = self.feedbackHandler
 
-	return self.CallNext(ev)
 }
 
 func NewUnboxHandler(feedbackHandler cellnet.EventHandler) cellnet.EventHandler {

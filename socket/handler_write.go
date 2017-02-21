@@ -6,12 +6,11 @@ type WritePacketHandler struct {
 	cellnet.BaseEventHandler
 }
 
-func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) error {
+func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) {
 
 	rawSes := ev.Ses.(*SocketSession)
 	rawSes.sendList.Add(ev)
 
-	return nil
 }
 
 func NewWritePacketHandler() cellnet.EventHandler {

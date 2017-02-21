@@ -3,11 +3,13 @@ package cellnet
 type EventDispatcher interface {
 
 	// 注册事件回调
-	AddHandler(id int, h EventHandler) *HandlerContext
+	AddHandler(id int, h EventHandler)
+
+	GetHandlerByID(id int) EventHandler
 
 	RemoveHandler(id int)
 
-	Call(*SessionEvent) error
+	Call(*SessionEvent)
 
 	// 清除所有回调
 	Clear()
@@ -15,57 +17,64 @@ type EventDispatcher interface {
 	Count() int
 
 	CountByID(id int) int
-
-	VisitCallback(callback func(int, *HandlerContext) VisitOperation)
-
-	// 没有匹配id的, 默认执行的handler
-	SetFallbackHandler(h EventHandler)
-
-	FallbackHandler() EventHandler
-}
-
-type HandlerContext struct {
-	ID      int
-	Handler EventHandler
-
-	Tag interface{}
 }
 
 type DispatcherHandler struct {
 	BaseEventHandler
-	handlerByID map[int][]*HandlerContext
+	handlerByID map[int]EventHandler
 
-	fallbackHandler EventHandler
+	headerHandler map[EventHandler]bool
 }
 
-func (self *DispatcherHandler) SetFallbackHandler(h EventHandler) {
+// 将连续调用的handler视为一个连接体 id -> Handler1 -> Handler1.1 -> Handler2 -> Handler 2.1
 
-	self.fallbackHandler = h
-}
-
-func (self *DispatcherHandler) FallbackHandler() EventHandler {
-	return self.fallbackHandler
-}
-
-func (self *DispatcherHandler) AddHandler(id int, h EventHandler) *HandlerContext {
-
-	// 事件
-	ctxList, ok := self.handlerByID[id]
-
-	if !ok {
-		ctxList = make([]*HandlerContext, 0)
+func (self *DispatcherHandler) GetHandlerByID(id int) EventHandler {
+	if exists, ok := self.handlerByID[int(id)]; ok {
+		return exists
 	}
 
-	newCtx := &HandlerContext{
-		ID:      id,
-		Handler: h,
+	return nil
+}
+
+func (self *DispatcherHandler) AddHandler(id int, h EventHandler) {
+
+	// 回调不允许在多个id被注册
+	if _, ok := self.headerHandler[h]; ok {
+		panic("Duplicate header handler")
 	}
 
-	ctxList = append(ctxList, newCtx)
+	self.headerHandler[h] = true
 
-	self.handlerByID[int(id)] = ctxList
+	if exists, ok := self.handlerByID[int(id)]; ok {
 
-	return newCtx
+		// 找到尾巴
+		head := findTail(exists)
+
+		// 连上去
+		if head != nil {
+			head.SetNext(h)
+			return
+		}
+
+	}
+
+	self.handlerByID[int(id)] = h
+
+}
+
+func findTail(origin EventHandler) EventHandler {
+
+	h := origin
+
+	for h != nil {
+
+		if h.Next() == nil {
+			return h
+		}
+	}
+
+	return nil
+
 }
 
 func (self *DispatcherHandler) RemoveHandler(id int) {
@@ -73,88 +82,22 @@ func (self *DispatcherHandler) RemoveHandler(id int) {
 	delete(self.handlerByID, id)
 }
 
-func (self *DispatcherHandler) Call(ev *SessionEvent) error {
-
-	if ctxList, ok := self.handlerByID[int(ev.MsgID)]; ok {
-
-		for _, ctx := range ctxList {
-
-			if err := HandlerCallNext(ctx.Handler, ev); err != nil {
-				return err
-			}
-		}
-
-	} else if self.fallbackHandler != nil {
-		return HandlerCallNext(self.fallbackHandler, ev)
-	}
-
+func (self *DispatcherHandler) Next() EventHandler {
 	return nil
 }
 
-type VisitOperation int
+func (self *DispatcherHandler) Call(ev *SessionEvent) {
 
-const (
-	VisitOperation_Continue = iota // 循环下一个
-	VisitOperation_Remove          // 删除当前元素
-	VisitOperation_Exit            // 退出循环
-)
+	if h, ok := self.handlerByID[int(ev.MsgID)]; ok {
 
-func (self *DispatcherHandler) VisitCallback(callback func(int, *HandlerContext) VisitOperation) {
-
-	var needDelete []int
-
-	for id, ctxList := range self.handlerByID {
-
-		var needRefresh bool
-
-		var index = 0
-		for {
-
-			if index >= len(ctxList) {
-				break
-			}
-
-			ctx := ctxList[index]
-
-			op := callback(id, ctx)
-
-			switch op {
-			case VisitOperation_Exit:
-				goto endloop
-			case VisitOperation_Remove:
-
-				if len(ctxList) == 1 {
-					needDelete = append(needDelete, id)
-				}
-
-				ctxList = append(ctxList[:index], ctxList[index+1:]...)
-
-				needRefresh = true
-			case VisitOperation_Continue:
-				index++
-			}
-
-		}
-
-		if needRefresh {
-			self.handlerByID[id] = ctxList
-		}
-
-	}
-
-endloop:
-
-	if len(needDelete) > 0 {
-		for _, id := range needDelete {
-			delete(self.handlerByID, id)
-		}
+		HandlerChainCall(h, ev)
 	}
 
 }
 
 func (self *DispatcherHandler) Clear() {
 
-	self.handlerByID = make(map[int][]*HandlerContext)
+	self.handlerByID = make(map[int]EventHandler)
 }
 
 func (self *DispatcherHandler) Exists(id int) bool {
@@ -170,8 +113,8 @@ func (self *DispatcherHandler) Count() int {
 
 func (self *DispatcherHandler) CountByID(id int) int {
 
-	if v, ok := self.handlerByID[id]; ok {
-		return len(v)
+	if _, ok := self.handlerByID[id]; ok {
+		return 1
 	}
 
 	return 0
@@ -179,6 +122,7 @@ func (self *DispatcherHandler) CountByID(id int) int {
 
 func NewDispatcherHandler() *DispatcherHandler {
 	return &DispatcherHandler{
-		handlerByID: make(map[int][]*HandlerContext),
+		handlerByID:   make(map[int]EventHandler),
+		headerHandler: make(map[EventHandler]bool),
 	}
 }

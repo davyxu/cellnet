@@ -7,11 +7,9 @@ type RetChanHandler struct {
 	ret chan interface{}
 }
 
-func (self *RetChanHandler) Call(ev *cellnet.SessionEvent) error {
+func (self *RetChanHandler) Call(ev *cellnet.SessionEvent) {
 
 	self.ret <- ev.Msg
-
-	return self.CallNext(ev)
 }
 
 func NewRetChanHandler(ret chan interface{}) cellnet.EventHandler {

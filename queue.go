@@ -14,10 +14,10 @@ type EventQueue interface {
 	Wait() int
 
 	// 投递事件, 通过队列到达消费者端
-	Post(data interface{})
+	Post(callback func())
 
 	// 延时投递
-	DelayPost(dur time.Duration, data interface{})
+	DelayPost(dur time.Duration, callback func())
 }
 
 type queueData struct {
@@ -25,7 +25,7 @@ type queueData struct {
 }
 
 type evQueue struct {
-	queue chan queueData
+	queue chan func()
 
 	exitSignal chan int
 
@@ -33,23 +33,23 @@ type evQueue struct {
 }
 
 // 派发到队列
-func (self *evQueue) Post(data interface{}) {
+func (self *evQueue) Post(callback func()) {
 
-	self.queue <- queueData{data: data}
+	self.queue <- callback
 }
 
-func (self *evQueue) DelayPost(dur time.Duration, data interface{}) {
+func (self *evQueue) DelayPost(dur time.Duration, callback func()) {
 	go func() {
 
 		time.AfterFunc(dur, func() {
 
-			self.Post(data)
+			self.Post(callback)
 		})
 
 	}()
 }
 
-func (self *evQueue) protectedCall(data interface{}) {
+func (self *evQueue) protectedCall(callback func()) {
 
 	if self.capturePanic {
 		defer func() {
@@ -62,17 +62,14 @@ func (self *evQueue) protectedCall(data interface{}) {
 		}()
 	}
 
-	if f, ok := data.(func()); ok {
-		f()
-	}
-
+	callback()
 }
 
 func (self *evQueue) StartLoop() {
 
 	go func() {
-		for v := range self.queue {
-			self.protectedCall(v.data)
+		for callback := range self.queue {
+			self.protectedCall(callback)
 		}
 	}()
 }
@@ -87,7 +84,7 @@ func (self *evQueue) Wait() int {
 
 func NewEventQueue() EventQueue {
 	self := &evQueue{
-		queue:      make(chan queueData, 10),
+		queue:      make(chan func(), 10),
 		exitSignal: make(chan int),
 	}
 

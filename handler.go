@@ -3,10 +3,10 @@ package cellnet
 import "reflect"
 
 type EventHandler interface {
-	Call(*SessionEvent) error
+	Call(*SessionEvent)
 
-	SetNext(EventHandler) EventHandler
 	Next() EventHandler
+	SetNext(EventHandler) EventHandler
 
 	SetTag(interface{})
 	Tag() interface{}
@@ -30,38 +30,13 @@ func (self *BaseEventHandler) MatchTag(t interface{}) bool {
 	return self.tag == t
 }
 
-func (self *BaseEventHandler) SetNext(h EventHandler) EventHandler {
-	self.next = h
-	return h
-}
-
 func (self *BaseEventHandler) Next() EventHandler {
 	return self.next
 }
 
-func (self *BaseEventHandler) CallNext(ev *SessionEvent) error {
-
-	return HandlerCallNext(self.next, ev)
-}
-
-func HandlerCallFirst(h EventHandler, ev *SessionEvent) error {
-	if EnableHandlerLog {
-		log.Debugf("HandlerFirst: %s %s", HandlerName(h), ev.String())
-	}
-
-	return h.Call(ev)
-}
-
-func HandlerCallNext(h EventHandler, ev *SessionEvent) error {
-	if EnableHandlerLog {
-		log.Debugf("HandlerNext: %s %s", HandlerName(h), ev.String())
-	}
-
-	if h == nil {
-		return nil
-	}
-
-	return h.Call(ev)
+func (self *BaseEventHandler) SetNext(next EventHandler) EventHandler {
+	self.next = next
+	return next
 }
 
 var EnableHandlerLog bool
@@ -73,11 +48,6 @@ func HandlerName(h EventHandler) string {
 	}
 
 	return reflect.TypeOf(h).Elem().Name()
-}
-
-// handler的类型
-func HandlerType(h EventHandler) reflect.Type {
-	return reflect.TypeOf(h).Elem()
 }
 
 // 链接一连串handler, 返回第一个
@@ -103,4 +73,32 @@ func LinkHandler(hlist ...EventHandler) EventHandler {
 	}
 
 	return hlist[0]
+}
+
+func HandlerChainListName(h EventHandler) {
+
+	for h != nil {
+
+		if EnableHandlerLog {
+			log.Debugf("%s", HandlerName(h))
+		}
+
+		h = h.Next()
+	}
+
+}
+
+func HandlerChainCall(h EventHandler, ev *SessionEvent) {
+
+	for h != nil {
+
+		if EnableHandlerLog {
+			log.Debugf("%s [%s] <%s> MsgID: %d(%s) {%s} Raw: (%d)%v", ev.TypeString(), ev.PeerName(), HandlerName(h), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data)
+		}
+
+		h.Call(ev)
+
+		h = h.Next()
+	}
+
 }

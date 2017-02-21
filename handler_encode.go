@@ -4,11 +4,9 @@ type EncodePacketHandler struct {
 	BaseEventHandler
 }
 
-func (self *EncodePacketHandler) Call(ev *SessionEvent) error {
+func (self *EncodePacketHandler) Call(ev *SessionEvent) {
 
 	ev.FromMessage(ev.Msg)
-
-	return self.CallNext(ev)
 
 }
 

@@ -23,12 +23,12 @@ func (self *SignalTester) WaitAndExpect(value int, msg string) bool {
 	case v := <-self.signal:
 		if v != value {
 			self.Fail()
-			self.Logf("%s\n", msg)
+			self.Errorf("%s\n", msg)
 			return false
 		}
 
 	case <-time.After(self.timeout):
-		self.Logf("signal timeout: %d %s", value, msg)
+		self.Errorf("signal timeout: %d %s", value, msg)
 		self.Fail()
 		return false
 	}

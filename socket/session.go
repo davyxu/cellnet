@@ -54,7 +54,7 @@ func (self *SocketSession) RawSend(sendHandler cellnet.EventHandler, ev *cellnet
 
 	ev.Ses = self
 
-	cellnet.HandlerCallFirst(sendHandler, ev)
+	cellnet.HandlerChainCall(sendHandler, ev)
 }
 
 // 发送线程
@@ -115,15 +115,18 @@ exitsendloop:
 
 func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
 
+	recv, _ := self.p.GetHandler()
+
 	for {
 
 		ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Recv, self)
 
-		recv, _ := self.p.GetHandler()
+		cellnet.HandlerChainCall(recv, ev)
 
-		if cellnet.HandlerCallFirst(recv, ev) != nil {
+		if ev.EndRecvLoop {
 			break
 		}
+
 	}
 
 	if self.needNotifyWrite {

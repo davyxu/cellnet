@@ -1,44 +1,34 @@
 package cellnet
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type DecodePacketHandler struct {
 	BaseEventHandler
-	meta *MessageMeta
 }
 
-func (self *DecodePacketHandler) Call(ev *SessionEvent) (err error) {
+func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 
 	// 系统消息不做处理
 	if !ev.IsSystemEvent() {
 
-		if self.meta.Codec == nil {
-			log.Errorf("message codec not found: %s", self.meta.Name)
+		meta := MessageMetaByID(ev.MsgID)
+
+		if meta.Codec == nil {
 			return
 		}
 
 		// 创建消息
-		ev.Msg = reflect.New(self.meta.Type).Interface()
+		ev.Msg = reflect.New(meta.Type).Interface()
 
 		// 解析消息
-		err = self.meta.Codec.Decode(ev.Data, ev.Msg)
-
-		if err != nil {
-			log.Errorf("unmarshaling error: %v, raw: %v", err, ev)
-			return
-		}
+		meta.Codec.Decode(ev.Data, ev.Msg)
 	}
 
-	return self.CallNext(ev)
 }
 
-func NewDecodePacketHandler(meta *MessageMeta) EventHandler {
+func NewDecodePacketHandler() EventHandler {
 
-	if meta == nil {
-		panic("decode meta not define")
-	}
-
-	return &DecodePacketHandler{
-		meta: meta,
-	}
+	return &DecodePacketHandler{}
 }

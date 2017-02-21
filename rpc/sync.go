@@ -11,13 +11,13 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string) (interface{
 		return nil, err
 	}
 
-	recv, send := p.GetHandler()
+	_, send := p.GetHandler()
 
 	installSendHandler(p, send)
 
 	ret := make(chan interface{})
 
-	if err := installSyncRecvHandler(p, recv, reqMsg, ackMsgName, ret); err != nil {
+	if err := installSyncRecvHandler(p, ackMsgName, ret); err != nil {
 		return nil, err
 	}
 
@@ -27,7 +27,7 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string) (interface{
 }
 
 // 安装同步的接收回调
-func installSyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg interface{}, msgName string, retChan chan interface{}) error {
+func installSyncRecvHandler(p cellnet.Peer, msgName string, retChan chan interface{}) error {
 
 	meta := cellnet.MessageMetaByName(msgName)
 	if meta == nil {
@@ -39,9 +39,8 @@ func installSyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg in
 	if p.CountByID(int(meta.ID)) == 0 {
 
 		hl := cellnet.LinkHandler(
-			cellnet.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
 			NewUnboxHandler(nil),
-			cellnet.NewDecodePacketHandler(meta),
+			cellnet.NewDecodePacketHandler(),
 			NewRetChanHandler(retChan),
 		)
 

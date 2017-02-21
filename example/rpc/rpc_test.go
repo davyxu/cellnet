@@ -104,12 +104,14 @@ func syncClient() {
 
 func TestRPC(t *testing.T) {
 
+	cellnet.EnableHandlerLog = true
+
 	signal = test.NewSignalTester(t)
 
 	server()
 
 	asyncClient()
 
-	syncClient()
+	//syncClient()
 
 }

@@ -7,19 +7,19 @@ import (
 )
 
 // ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
-func Call(ud interface{}, reqMsg interface{}, userCallback interface{}) error {
+func Call(sesOrPeer interface{}, reqMsg interface{}, userCallback interface{}) error {
 
-	ses, p, err := getPeerSession(ud)
+	ses, p, err := getPeerSession(sesOrPeer)
 
 	if err != nil {
 		return err
 	}
 
-	recv, send := p.GetHandler()
+	_, send := p.GetHandler()
 
 	installSendHandler(p, send)
 
-	if err := installAsyncRecvHandler(p, recv, reqMsg, userCallback); err != nil {
+	if err := installAsyncRecvHandler(p, userCallback); err != nil {
 		return err
 	}
 
@@ -29,7 +29,7 @@ func Call(ud interface{}, reqMsg interface{}, userCallback interface{}) error {
 }
 
 // 安装异步的接收回调
-func installAsyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg interface{}, userCallback interface{}) error {
+func installAsyncRecvHandler(p cellnet.Peer, userCallback interface{}) error {
 
 	funcType := reflect.TypeOf(userCallback)
 
@@ -44,9 +44,9 @@ func installAsyncRecvHandler(p cellnet.Peer, recv cellnet.EventHandler, reqMsg i
 	if p.CountByID(int(meta.ID)) == 0 {
 
 		hl := cellnet.LinkHandler(
-			cellnet.NewDecodePacketHandler(metaWrapper), // RemoteCall的Meta
+			cellnet.NewDecodePacketHandler(), // RemoteCall的Meta
 			NewUnboxHandler(nil),
-			cellnet.NewDecodePacketHandler(meta),
+			cellnet.NewDecodePacketHandler(),
 			NewReflectCallHandler(userCallback),
 		)
 

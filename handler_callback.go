@@ -14,7 +14,6 @@ func MessageRegistedCount(evd EventDispatcher, msgName string) int {
 
 type RegisterMessageContext struct {
 	*MessageMeta
-	*HandlerContext
 }
 
 type CallbackHandler struct {
@@ -22,11 +21,10 @@ type CallbackHandler struct {
 	userCallback func(*SessionEvent)
 }
 
-func (self *CallbackHandler) Call(ev *SessionEvent) error {
+func (self *CallbackHandler) Call(ev *SessionEvent) {
 
 	self.userCallback(ev)
 
-	return self.CallNext(ev)
 }
 
 func NewCallbackHandler(userCallback func(*SessionEvent)) EventHandler {
@@ -37,7 +35,7 @@ func NewCallbackHandler(userCallback func(*SessionEvent)) EventHandler {
 
 // 注册消息处理回调
 // DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
-func RegisterMessage(dh EventDispatcher, msgName string, userCallback func(*SessionEvent)) *RegisterMessageContext {
+func RegisterMessage(p Peer, msgName string, userCallback func(*SessionEvent)) *RegisterMessageContext {
 
 	meta := MessageMetaByName(msgName)
 
@@ -45,14 +43,14 @@ func RegisterMessage(dh EventDispatcher, msgName string, userCallback func(*Sess
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	ctx := dh.AddHandler(int(meta.ID), LinkHandler(NewDecodePacketHandler(meta), NewCallbackHandler(userCallback)))
+	p.AddHandler(int(meta.ID), LinkHandler(NewQueuePostHandler(p.Queue()), NewCallbackHandler(userCallback)))
 
-	return &RegisterMessageContext{MessageMeta: meta, HandlerContext: ctx}
+	return &RegisterMessageContext{MessageMeta: meta}
 }
 
 // 注册消息处理的一系列Handler
 // DispatcherHandler -> socket.DecodePacketHandler -> ...
-func RegisterHandler(dh EventDispatcher, msgName string, handlers ...EventHandler) *RegisterMessageContext {
+func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *RegisterMessageContext {
 
 	meta := MessageMetaByName(msgName)
 
@@ -60,13 +58,12 @@ func RegisterHandler(dh EventDispatcher, msgName string, handlers ...EventHandle
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	decoder := NewDecodePacketHandler(meta)
-
+	poster := NewQueuePostHandler(p.Queue())
 	if len(handlers) > 0 {
-		decoder.SetNext(LinkHandler(handlers...))
+		poster.SetNext(LinkHandler(handlers...))
 	}
 
-	ctx := dh.AddHandler(int(meta.ID), decoder)
+	p.AddHandler(int(meta.ID), poster)
 
-	return &RegisterMessageContext{MessageMeta: meta, HandlerContext: ctx}
+	return &RegisterMessageContext{MessageMeta: meta}
 }
