@@ -2,16 +2,6 @@ package cellnet
 
 import "fmt"
 
-func MessageRegistedCount(evd EventDispatcher, msgName string) int {
-
-	meta := MessageMetaByName(msgName)
-	if meta == nil {
-		return 0
-	}
-
-	return evd.CountByID(int(meta.ID))
-}
-
 type RegisterMessageContext struct {
 	*MessageMeta
 }

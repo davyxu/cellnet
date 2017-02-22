@@ -5,6 +5,8 @@ package gamedef
 
 import (
 	"reflect"
+	"github.com/davyxu/gosproto"
+	"github.com/davyxu/goobjfmt"
 	"github.com/davyxu/cellnet/codec/sproto"
 )
 
@@ -12,9 +14,11 @@ type TestEchoACK struct {
 	Content string `sproto:"string,0,name=Content"`
 }
 
+func (self *TestEchoACK) String() string { return goobjfmt.CompactTextString(self) }
+
 var SProtoStructs = []reflect.Type{
 
-	reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
+	reflect.TypeOf((*TestEchoACK)(nil)).Elem(), // 1899977859
 }
 
 func init() {

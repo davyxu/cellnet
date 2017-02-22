@@ -13,7 +13,8 @@ import (
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var asyncSignal *test.SignalTester
+var syncSignal *test.SignalTester
 
 func server() {
 
@@ -44,25 +45,33 @@ func asyncClient() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewConnector(queue)
-	p.SetName("client")
+	p.SetName("client.async")
 	p.Start("127.0.0.1:9201")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
-		rpc.Call(p, &gamedef.TestEchoACK{
-			Content: "async",
-		}, func(msg *gamedef.TestEchoACK) {
+		for i := 0; i < 2; i++ {
 
-			log.Debugln("client async recv:", msg.Content)
+			copy := i + 1
 
-			signal.Done(1)
-		})
+			rpc.Call(p, &gamedef.TestEchoACK{
+				Content: "async",
+			}, "gamedef.TestEchoACK", func(rpcev *cellnet.SessionEvent) {
+				msg := rpcev.Msg.(*gamedef.TestEchoACK)
+
+				log.Debugln(copy, "client async recv:", msg.Content)
+
+				asyncSignal.Done(copy)
+			})
+
+		}
 
 	})
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect(1, "not recv data")
+	asyncSignal.WaitAndExpect(1, "async not recv data 1")
+	asyncSignal.WaitAndExpect(2, "async not recv data 2")
 }
 
 // 同步阻塞调用的rpc: 适用于web后台向逻辑服查询数据后生成页面
@@ -71,47 +80,51 @@ func syncClient() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewConnector(queue)
-	p.SetName("client")
+	p.SetName("client.sync")
 	p.Start("127.0.0.1:9201")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
-		// 这里使用goroutine包裹调用原因: 避免当前消息不返回, 无法继续处理rpc的消息接收
-		// 正式使用时, CallSync被调用的消息所在的Peer, 与CallSync第一个参数使用Peer一定是不同Peer
-		go func() {
+		for i := 0; i < 2; i++ {
 
-			result, err := rpc.CallSync(p, &gamedef.TestEchoACK{
-				Content: "sync",
-			}, "gamedef.TestEchoACK")
+			// 这里使用goroutine包裹调用原因: 避免当前消息不返回, 无法继续处理rpc的消息接收
+			// 正式使用时, CallSync被调用的消息所在的Peer, 与CallSync第一个参数使用Peer一定是不同Peer
+			go func(id int) {
 
-			if err != nil {
-				signal.Log(err)
-				return
-			}
+				result, err := rpc.CallSync(p, &gamedef.TestEchoACK{
+					Content: "sync",
+				}, "gamedef.TestEchoACK")
 
-			msg := result.(*gamedef.TestEchoACK)
-			log.Debugln("client sync recv:", msg.Content)
+				if err != nil {
+					syncSignal.Log(err)
+					return
+				}
 
-			signal.Done(1)
-		}()
+				msg := result.(*gamedef.TestEchoACK)
+				log.Debugln("client sync recv:", msg.Content, id*100)
+
+				syncSignal.Done(id * 100)
+			}(i + 1)
+
+		}
 
 	})
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect(1, "not recv data")
+	syncSignal.WaitAndExpect(100, "sync not recv data 100")
+	syncSignal.WaitAndExpect(200, "sync not recv data 200")
 }
 
 func TestRPC(t *testing.T) {
 
-	cellnet.EnableHandlerLog = true
-
-	signal = test.NewSignalTester(t)
+	asyncSignal = test.NewSignalTester(t)
+	syncSignal = test.NewSignalTester(t)
 
 	server()
 
 	asyncClient()
 
-	//syncClient()
+	syncClient()
 
 }

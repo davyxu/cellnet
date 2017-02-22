@@ -15,7 +15,8 @@ type EventHandler interface {
 
 type BaseEventHandler struct {
 	next EventHandler
-	tag  interface{}
+
+	tag interface{}
 }
 
 func (self *BaseEventHandler) SetTag(t interface{}) {
@@ -93,7 +94,7 @@ func HandlerChainCall(h EventHandler, ev *SessionEvent) {
 	for h != nil {
 
 		if EnableHandlerLog {
-			log.Debugf("%s [%s] <%s> MsgID: %d(%s) {%s} Raw: (%d)%v", ev.TypeString(), ev.PeerName(), HandlerName(h), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data)
+			log.Debugf("%d %s [%s] <%s> MsgID: %d(%s) {%s} Raw: (%d)%v Tag: %v TransmitTag: %v", ev.UID, ev.TypeString(), ev.PeerName(), HandlerName(h), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data, ev.Tag, ev.TransmitTag)
 		}
 
 		h.Call(ev)

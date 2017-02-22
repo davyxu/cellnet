@@ -1,128 +1,122 @@
 package cellnet
 
+import "sync"
+
 type EventDispatcher interface {
 
 	// 注册事件回调
-	AddHandler(id int, h EventHandler)
+	AddHandler(id int, h EventHandler) int
 
-	GetHandlerByID(id int) EventHandler
+	GetHandlerByIndex(id, index int) EventHandler
 
-	RemoveHandler(id int)
+	RemoveHandler(id, index int)
 
 	Call(*SessionEvent)
 
 	// 清除所有回调
 	Clear()
+}
 
-	Count() int
-
-	CountByID(id int) int
+type multiHandlerKey struct {
+	id    int
+	index int
 }
 
 type DispatcherHandler struct {
 	BaseEventHandler
-	handlerByID map[int]EventHandler
 
-	headerHandler map[EventHandler]bool
+	handlerByKey      map[multiHandlerKey]EventHandler
+	handlerByKeyGuard sync.RWMutex
 }
 
 // 将连续调用的handler视为一个连接体 id -> Handler1 -> Handler1.1 -> Handler2 -> Handler 2.1
 
-func (self *DispatcherHandler) GetHandlerByID(id int) EventHandler {
-	if exists, ok := self.handlerByID[int(id)]; ok {
-		return exists
-	}
+// 返回添加id对应的index, 删除需要两者
+func (self *DispatcherHandler) AddHandler(id int, h EventHandler) int {
 
-	return nil
+	self.handlerByKeyGuard.Lock()
+
+	key := self.findFreeIndex(id)
+	self.handlerByKey[key] = h
+
+	self.handlerByKeyGuard.Unlock()
+
+	return key.index
 }
 
-func (self *DispatcherHandler) AddHandler(id int, h EventHandler) {
+func (self *DispatcherHandler) findFreeIndex(id int) multiHandlerKey {
 
-	// 回调不允许在多个id被注册
-	if _, ok := self.headerHandler[h]; ok {
-		panic("Duplicate header handler")
-	}
+	key := multiHandlerKey{id, 0}
 
-	self.headerHandler[h] = true
+	for index := 0; ; index++ {
 
-	if exists, ok := self.handlerByID[int(id)]; ok {
+		key.index = index
 
-		// 找到尾巴
-		head := findTail(exists)
-
-		// 连上去
-		if head != nil {
-			head.SetNext(h)
-			return
-		}
-
-	}
-
-	self.handlerByID[int(id)] = h
-
-}
-
-func findTail(origin EventHandler) EventHandler {
-
-	h := origin
-
-	for h != nil {
-
-		if h.Next() == nil {
-			return h
+		if v, ok := self.handlerByKey[key]; !ok || v == nil {
+			return key
 		}
 	}
 
-	return nil
+}
+
+func (self *DispatcherHandler) Call(ev *SessionEvent) {
+
+	key := multiHandlerKey{int(ev.MsgID), 0}
+
+	for index := 0; ; index++ {
+
+		key.index = index
+
+		self.handlerByKeyGuard.RLock()
+		h, ok := self.handlerByKey[key]
+		self.handlerByKeyGuard.RUnlock()
+
+		if ok {
+			HandlerChainCall(h, ev)
+		} else {
+			break
+		}
+	}
 
 }
 
-func (self *DispatcherHandler) RemoveHandler(id int) {
+// 移除handler
+func (self *DispatcherHandler) RemoveHandler(id, index int) {
 
-	delete(self.handlerByID, id)
+	self.handlerByKeyGuard.Lock()
+	self.handlerByKey[multiHandlerKey{id, index}] = nil
+	self.handlerByKeyGuard.Unlock()
 }
 
 func (self *DispatcherHandler) Next() EventHandler {
 	return nil
 }
 
-func (self *DispatcherHandler) Call(ev *SessionEvent) {
-
-	if h, ok := self.handlerByID[int(ev.MsgID)]; ok {
-
-		HandlerChainCall(h, ev)
-	}
-
-}
-
 func (self *DispatcherHandler) Clear() {
 
-	self.handlerByID = make(map[int]EventHandler)
+	self.handlerByKeyGuard.Lock()
+	self.handlerByKey = make(map[multiHandlerKey]EventHandler)
+	self.handlerByKeyGuard.Unlock()
 }
 
-func (self *DispatcherHandler) Exists(id int) bool {
+// index 根据注册顺序, 从0~n
+func (self *DispatcherHandler) GetHandlerByIndex(id, index int) EventHandler {
 
-	_, ok := self.handlerByID[id]
+	self.handlerByKeyGuard.RLock()
+	h, ok := self.handlerByKey[multiHandlerKey{id, index}]
+	self.handlerByKeyGuard.RUnlock()
 
-	return ok
-}
-
-func (self *DispatcherHandler) Count() int {
-	return len(self.handlerByID)
-}
-
-func (self *DispatcherHandler) CountByID(id int) int {
-
-	if _, ok := self.handlerByID[id]; ok {
-		return 1
+	if ok {
+		return h
 	}
 
-	return 0
+	return nil
 }
 
 func NewDispatcherHandler() *DispatcherHandler {
-	return &DispatcherHandler{
-		handlerByID:   make(map[int]EventHandler),
-		headerHandler: make(map[EventHandler]bool),
-	}
+	self := &DispatcherHandler{}
+
+	self.Clear()
+
+	return self
 }

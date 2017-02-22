@@ -7,14 +7,27 @@ import (
 
 //  socket.DispatcherHandler -> rpc.UnboxHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
 
-func buildSendHandler() cellnet.EventHandler {
+var (
+	sendHandlerWithLog cellnet.EventHandler
+	sendHandler        cellnet.EventHandler
+)
+
+func getSendHandler() cellnet.EventHandler {
 
 	if socket.EnableMessageLog {
 
-		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), socket.NewMsgLogHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		if sendHandlerWithLog == nil {
+			sendHandlerWithLog = cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), socket.NewMsgLogHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		}
+
+		return sendHandlerWithLog
 	} else {
 
-		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		if sendHandler == nil {
+			sendHandler = cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewBoxHandler(), socket.NewWritePacketHandler())
+		}
+
+		return sendHandler
 	}
 }
 
@@ -24,27 +37,5 @@ func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *celln
 
 	meta := cellnet.MessageMetaByName(msgName)
 
-	sendHandler := buildSendHandler()
-
-	raw := p.GetHandlerByID(int(metaWrapper.ID))
-	if raw == nil {
-		// rpc服务端收到消息时, 用定制的handler返回消息, 而不是peer默认的
-		raw = NewUnboxHandler(sendHandler)
-		p.AddHandler(int(metaWrapper.ID), raw)
-	}
-
-	var rpcDispatcher *cellnet.DispatcherHandler
-	rawDispatcher := raw.Next()
-	if rawDispatcher == nil {
-		rpcDispatcher = cellnet.NewDispatcherHandler()
-		raw.SetNext(rpcDispatcher)
-	} else {
-		rpcDispatcher = rawDispatcher.(*cellnet.DispatcherHandler)
-	}
-
-	rpcDispatcher.AddHandler(int(meta.ID), cellnet.LinkHandler(
-		cellnet.NewDecodePacketHandler(),
-		cellnet.NewQueuePostHandler(p.Queue()),
-		cellnet.NewCallbackHandler(userCallback),
-	))
+	installACKHandler(p, int(meta.ID), cellnet.NewCallbackHandler(userCallback) )
 }

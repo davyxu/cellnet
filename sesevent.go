@@ -3,6 +3,7 @@ package cellnet
 import (
 	"fmt"
 	"reflect"
+	"sync/atomic"
 )
 
 type EventType int
@@ -20,13 +21,16 @@ const (
 
 // 会话事件
 type SessionEvent struct {
+	UID int64
+
 	Type EventType // 事件类型
 
 	MsgID uint32      // 消息ID
 	Msg   interface{} // 消息对象
 	Data  []byte      // 消息序列化后的数据
 
-	Tag interface{} // 事件的连接
+	Tag         interface{} // 事件的连接, 一个处理流程后被Reset
+	TransmitTag interface{} // 接收过程可以传递到发送过程, 不会被清空
 
 	Ses         Session      // 会话
 	SendHandler EventHandler // 发送handler override
@@ -54,19 +58,12 @@ func (self *SessionEvent) Send(data interface{}) {
 		return
 	}
 
-	self.Reset(SessionEvent_Send)
-	self.Msg = data
+	ev := NewSessionEvent(SessionEvent_Send, self.Ses)
+	ev.Msg = data
+	ev.TransmitTag = self.TransmitTag
 
-	self.Ses.RawSend(self.SendHandler, self)
+	self.Ses.RawSend(self.SendHandler, ev)
 
-}
-
-func (self *SessionEvent) Reset(t EventType) {
-	self.Type = t
-	self.MsgID = 0
-	self.Msg = nil
-	self.Data = nil
-	self.Tag = nil
 }
 
 func (self *SessionEvent) PeerName() string {
@@ -181,5 +178,13 @@ func NewSessionEvent(t EventType, s Session) *SessionEvent {
 	return &SessionEvent{
 		Type: t,
 		Ses:  s,
+		UID:  genSesEvUID(),
 	}
+}
+
+var evuid int64
+
+func genSesEvUID() int64 {
+	atomic.AddInt64(&evuid, 1)
+	return evuid
 }

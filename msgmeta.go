@@ -56,6 +56,10 @@ func MessageMetaByName(name string) *MessageMeta {
 // 消息全名
 func MessageFullName(rtype reflect.Type) string {
 
+	if rtype == nil {
+		panic("empty msg type")
+	}
+
 	if rtype.Kind() == reflect.Ptr {
 		rtype = rtype.Elem()
 	}

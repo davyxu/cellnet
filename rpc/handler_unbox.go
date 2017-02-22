@@ -18,6 +18,9 @@ func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) {
 	ev.MsgID = wrapper.MsgID
 	ev.Data = wrapper.Data
 
+	// 服务器接收后, 发送时, 需要使用CallID
+	ev.TransmitTag = wrapper.CallID
+
 	ev.SendHandler = self.feedbackHandler
 
 }

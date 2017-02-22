@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/socket"
 )
 
 var (
@@ -41,32 +40,4 @@ func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
 	}
 
 	return ses, ses.FromPeer(), nil
-}
-
-// socket.EncodePacketHandler -> socket.MsgLogHandler -> rpc.BoxHandler -> socket.WritePacketHandler
-func installSendHandler(p cellnet.Peer, send cellnet.EventHandler) {
-	// 发送的Handler
-	if cellnet.HandlerName(send) == "EncodePacketHandler" {
-
-		var start cellnet.EventHandler
-
-		if cellnet.HandlerName(send.Next()) == "MsgLogHandler" {
-			start = send.Next()
-		} else {
-			start = send
-		}
-
-		// 已经装过了
-		if start.MatchTag("rpc") {
-			return
-		}
-
-		first := NewBoxHandler()
-		first.SetTag("rpc")
-
-		cellnet.LinkHandler(start, first, socket.NewWritePacketHandler())
-
-	} else {
-		panic("unknown send handler struct")
-	}
 }

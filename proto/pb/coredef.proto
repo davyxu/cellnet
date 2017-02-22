@@ -47,5 +47,5 @@ message RemoteCallACK
 	
 	bytes Data = 2;		// 用户封包
 	
-	int64 CallID = 3;
+	int32 CallID = 3;
 }
