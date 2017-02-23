@@ -1,6 +1,9 @@
 package socket
 
-import "github.com/davyxu/cellnet"
+import (
+	"github.com/davyxu/cellnet"
+	"sync"
+)
 
 // Peer间的共享数据
 type peerBase struct {
@@ -9,9 +12,9 @@ type peerBase struct {
 	address       string
 	maxPacketSize int
 
-	recvHandler cellnet.EventHandler
-
-	sendHandler cellnet.EventHandler
+	recvHandler  cellnet.EventHandler
+	sendHandler  cellnet.EventHandler
+	handlerGuard sync.RWMutex
 
 	*cellnet.DispatcherHandler
 }
@@ -33,12 +36,27 @@ func (self *peerBase) Address() string {
 }
 
 func (self *peerBase) SetHandler(recv, send cellnet.EventHandler) {
+	self.handlerGuard.Lock()
 	self.recvHandler = recv
 	self.sendHandler = send
+	self.handlerGuard.Unlock()
 }
 
 func (self *peerBase) GetHandler() (recv, send cellnet.EventHandler) {
-	return self.recvHandler, self.sendHandler
+	self.handlerGuard.RLock()
+	recv = self.recvHandler
+	send = self.sendHandler
+	self.handlerGuard.RUnlock()
+
+	return
+}
+
+func (self *peerBase) safeRecvHandler() (ret cellnet.EventHandler) {
+	self.handlerGuard.RLock()
+	ret = self.recvHandler
+	self.handlerGuard.RUnlock()
+
+	return
 }
 
 func (self *peerBase) SetName(name string) {

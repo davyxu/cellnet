@@ -175,11 +175,16 @@ func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
 }
 
 func NewSessionEvent(t EventType, s Session) *SessionEvent {
-	return &SessionEvent{
+	self := &SessionEvent{
 		Type: t,
 		Ses:  s,
-		UID:  genSesEvUID(),
 	}
+
+	if EnableHandlerLog {
+		self.UID = genSesEvUID()
+	}
+
+	return self
 }
 
 var evuid int64
