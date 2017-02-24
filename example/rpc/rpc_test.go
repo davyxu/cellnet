@@ -112,8 +112,9 @@ func syncClient() {
 
 	queue.StartLoop()
 
-	syncSignal.WaitAndExpect(100, "sync not recv data 100")
 	syncSignal.WaitAndExpect(200, "sync not recv data 200")
+	syncSignal.WaitAndExpect(100, "sync not recv data 100")
+
 }
 
 func TestRPC(t *testing.T) {
