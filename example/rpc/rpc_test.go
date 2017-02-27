@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/davyxu/cellnet"
@@ -83,6 +84,9 @@ func syncClient() {
 	p.SetName("client.sync")
 	p.Start("127.0.0.1:9201")
 
+	var numGuard sync.Mutex
+	var num int
+
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
 		for i := 0; i < 2; i++ {
@@ -103,7 +107,14 @@ func syncClient() {
 				msg := result.(*gamedef.TestEchoACK)
 				log.Debugln("client sync recv:", msg.Content, id*100)
 
-				syncSignal.Done(id * 100)
+				numGuard.Lock()
+				num++
+				numGuard.Unlock()
+
+				if num >= 2 {
+					syncSignal.Done(100)
+				}
+
 			}(i + 1)
 
 		}
@@ -112,8 +123,8 @@ func syncClient() {
 
 	queue.StartLoop()
 
-	syncSignal.WaitAndExpect(100, "sync not recv data 100")
-	syncSignal.WaitAndExpect(200, "sync not recv data 200")
+	syncSignal.WaitAndExpect(100, "sync not recv data ")
+
 }
 
 func TestRPC(t *testing.T) {
