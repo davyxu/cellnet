@@ -23,7 +23,10 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 		ev.Msg = reflect.New(meta.Type).Interface()
 
 		// 解析消息
-		meta.Codec.Decode(ev.Data, ev.Msg)
+		err := meta.Codec.Decode(ev.Data, ev.Msg)
+		if err != nil {
+			log.Errorln(err)
+		}
 	}
 
 }
