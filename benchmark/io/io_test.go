@@ -89,6 +89,6 @@ func TestIO(t *testing.T) {
 		go client()
 	}
 
-	signal.WaitAndExpect(1, "recv time out")
+	signal.WaitAndExpect("recv time out", 1)
 
 }

@@ -37,10 +37,10 @@ func TestTimer(t *testing.T) {
 	})
 
 	for i := 0; i < testTimes; i++ {
-		signal.WaitAndExpect(1, "timer not tick")
+		signal.WaitAndExpect("timer not tick", 1)
 	}
 
-	signal.WaitAndExpect(2, "timer not stop")
+	signal.WaitAndExpect("timer not stop", 2)
 
 }
 
@@ -60,5 +60,5 @@ func TestDelay(t *testing.T) {
 		signal.Done(1)
 	})
 
-	signal.WaitAndExpect(1, "delay not work")
+	signal.WaitAndExpect("delay not work", 1)
 }

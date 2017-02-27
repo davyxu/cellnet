@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/davyxu/cellnet"
@@ -71,8 +70,7 @@ func asyncClient() {
 
 	queue.StartLoop()
 
-	asyncSignal.WaitAndExpect(1, "async not recv data 1")
-	asyncSignal.WaitAndExpect(2, "async not recv data 2")
+	asyncSignal.WaitAndExpect("async not recv data ", 1, 2)
 }
 
 // 同步阻塞调用的rpc: 适用于web后台向逻辑服查询数据后生成页面
@@ -83,9 +81,6 @@ func syncClient() {
 	p := socket.NewConnector(queue)
 	p.SetName("client.sync")
 	p.Start("127.0.0.1:9201")
-
-	var numGuard sync.Mutex
-	var num int
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
 
@@ -107,13 +102,7 @@ func syncClient() {
 				msg := result.(*gamedef.TestEchoACK)
 				log.Debugln("client sync recv:", msg.Content, id*100)
 
-				numGuard.Lock()
-				num++
-				numGuard.Unlock()
-
-				if num >= 2 {
-					syncSignal.Done(100)
-				}
+				syncSignal.Done(id * 100)
 
 			}(i + 1)
 
@@ -123,7 +112,7 @@ func syncClient() {
 
 	queue.StartLoop()
 
-	syncSignal.WaitAndExpect(100, "sync not recv data ")
+	syncSignal.WaitAndExpect("sync not recv data ", 100, 200)
 
 }
 

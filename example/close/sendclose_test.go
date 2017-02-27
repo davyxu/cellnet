@@ -84,9 +84,9 @@ func testConnActiveClose() {
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect(1, "TestConnActiveClose not connected")
-	signal.WaitAndExpect(2, "TestConnActiveClose not recv msg")
-	signal.WaitAndExpect(3, "TestConnActiveClose not close")
+	signal.WaitAndExpect("TestConnActiveClose not connected", 1)
+	signal.WaitAndExpect("TestConnActiveClose not recv msg", 2)
+	signal.WaitAndExpect("TestConnActiveClose not close", 3)
 }
 
 // 接收封包后被断开
@@ -124,9 +124,9 @@ func testRecvDisconnected() {
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect(1, "TestRecvDisconnected not connected")
-	signal.WaitAndExpect(2, "TestRecvDisconnected not recv msg")
-	signal.WaitAndExpect(3, "TestRecvDisconnected not closed")
+	signal.WaitAndExpect("TestRecvDisconnected not connected", 1)
+	signal.WaitAndExpect("TestRecvDisconnected not recv msg", 2)
+	signal.WaitAndExpect("TestRecvDisconnected not closed", 3)
 
 }
 

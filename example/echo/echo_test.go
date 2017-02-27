@@ -19,7 +19,7 @@ func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
+	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
 
 	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -40,7 +40,7 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	dh := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	dh := socket.NewConnector(queue).Start("127.0.0.1:7301")
 
 	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -70,7 +70,7 @@ func client() {
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect(1, "not recv data")
+	signal.WaitAndExpect("not recv data", 1)
 
 }
 
