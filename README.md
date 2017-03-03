@@ -35,6 +35,14 @@
 
 * github.com/davyxu/golog
 
+
+
+# 获取+编译
+
+```
+	go get -u -v github.com/davyxu/cellnet
+```
+
 # 性能测试
 
 命令行: go test -v github.com/davyxu/cellnet/benchmark/io

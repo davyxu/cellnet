@@ -15,7 +15,7 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 
 		meta := MessageMetaByID(ev.MsgID)
 
-		if meta.Codec == nil {
+		if meta == nil || meta.Codec == nil {
 			return
 		}
 

@@ -11,10 +11,6 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string) (interface{
 		return nil, err
 	}
 
-	//_, send := p.GetHandler()
-
-	//installSendHandler(p, send)
-
 	ret := make(chan interface{})
 
 	rpcid, err := installSyncRecvHandler(p, ackMsgName, ret)
