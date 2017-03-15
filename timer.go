@@ -15,8 +15,8 @@ func (self *Timer) Stop() {
 func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 
 	self := &Timer{
-		exit: make(chan bool),
-	}
+        make(chan bool),
+    }
 
 	go func() {
 
