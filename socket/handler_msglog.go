@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/davyxu/cellnet"
+	"sync"
 )
 
 type MsgLogHandler struct {
@@ -15,6 +16,8 @@ func dirString(ev *cellnet.SessionEvent) string {
 	switch ev.Type {
 	case cellnet.SessionEvent_Recv:
 		return "recv"
+	case cellnet.SessionEvent_Post:
+		return "post"
 	case cellnet.SessionEvent_Send:
 		return "send"
 	case cellnet.SessionEvent_Connected:
@@ -34,22 +37,22 @@ func dirString(ev *cellnet.SessionEvent) string {
 
 func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) {
 
-	// 找到消息需要屏蔽
-	if _, ok := msgMetaByID[ev.MsgID]; !ok {
+	if IsBlockedMessageByID(ev.MsgID) {
+		return
+	}
 
-		if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
+	if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
 
-			// 需要在收到消息, 不经过decoder时, 就要打印出来, 所以手动解开消息, 有少许耗费
-			var msgString string
-			if ev.Msg == nil {
-				msgString = messageString(ev)
-			} else {
-				msgString = ev.MsgString()
-			}
-
-			log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), msgString)
-
+		// 需要在收到消息, 不经过decoder时, 就要打印出来, 所以手动解开消息, 有少许耗费
+		var msgString string
+		if ev.Msg == nil {
+			msgString = messageString(ev)
+		} else {
+			msgString = ev.MsgString()
 		}
+
+		log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), msgString)
+
 	}
 
 }
@@ -77,14 +80,29 @@ func NewMsgLogHandler() cellnet.EventHandler {
 
 }
 
-// 是否启用消息日志
-var EnableMessageLog bool = true
+var (
 
-var msgLogHook func(*cellnet.SessionEvent) bool
-var msgMetaByID = make(map[uint32]*cellnet.MessageMeta)
+	// 是否启用消息日志
+	EnableMessageLog bool = true
+
+	msgLogHook       func(*cellnet.SessionEvent) bool
+	msgMetaByID      = map[uint32]*cellnet.MessageMeta{}
+	msgMetaByIDGuard sync.RWMutex
+)
 
 func HookMessageLog(hook func(*cellnet.SessionEvent) bool) {
 	msgLogHook = hook
+}
+
+func IsBlockedMessageByID(msgid uint32) bool {
+	msgMetaByIDGuard.RLock()
+	defer msgMetaByIDGuard.RUnlock()
+
+	if _, ok := msgMetaByID[msgid]; ok {
+		return true
+	}
+
+	return false
 }
 
 func BlockMessageLog(msgName string) {
@@ -95,6 +113,8 @@ func BlockMessageLog(msgName string) {
 		return
 	}
 
+	msgMetaByIDGuard.Lock()
 	msgMetaByID[meta.ID] = meta
+	msgMetaByIDGuard.Unlock()
 
 }

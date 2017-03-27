@@ -18,7 +18,7 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 		ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
 
 		if err != nil {
-			log.Errorln(err)
+			log.Errorln(err, ev.MsgID)
 		}
 	}
 

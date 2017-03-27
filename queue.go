@@ -51,6 +51,10 @@ func (self *evQueue) DelayPost(dur time.Duration, callback func()) {
 
 func (self *evQueue) protectedCall(callback func()) {
 
+	if callback == nil {
+		return
+	}
+
 	if self.capturePanic {
 		defer func() {
 

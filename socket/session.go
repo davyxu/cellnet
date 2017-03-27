@@ -57,6 +57,25 @@ func (self *SocketSession) RawSend(sendHandler cellnet.EventHandler, ev *cellnet
 	cellnet.HandlerChainCall(sendHandler, ev)
 }
 
+func (self *SocketSession) Post(data interface{}) {
+
+	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Post, self)
+
+	ev.FromMessage(data)
+
+	self.RawPost(ev.SendHandler, ev)
+}
+
+func (self *SocketSession) RawPost(recvHandler cellnet.EventHandler, ev *cellnet.SessionEvent) {
+	if recvHandler == nil {
+		recvHandler, _ = self.p.GetHandler()
+	}
+
+	ev.Ses = self
+
+	cellnet.HandlerChainCall(recvHandler, ev)
+}
+
 // 发送线程
 func (self *SocketSession) sendThread() {
 

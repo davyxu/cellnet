@@ -17,6 +17,7 @@ const (
 	SessionEvent_Closed
 	SessionEvent_Recv
 	SessionEvent_Send
+	SessionEvent_Post
 )
 
 // 会话事件
