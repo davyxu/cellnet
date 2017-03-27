@@ -5,34 +5,33 @@ import (
 )
 
 type Timer struct {
-	exit chan bool
+	tick *time.Ticker
+	done chan struct{}
 }
 
 func (self *Timer) Stop() {
-	self.exit <- true
+	self.done <- struct{}{}
 }
 
 func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 
 	self := &Timer{
-		exit: make(chan bool),
+		tick: time.NewTicker(dur),
+		done: make(chan struct{}),
 	}
 
 	go func() {
-
+		defer self.tick.Stop()
 		for {
-
 			select {
-			case <-time.After(dur):
+			case <-self.tick.C:
 				eq.Post(nil, func() {
-
 					callback(self)
 				})
-			case <-self.exit:
-				goto exit
+			case <-self.done:
+				return
 			}
 		}
-	exit:
 	}()
 
 	return self
