@@ -61,9 +61,11 @@ func (self *SocketSession) Post(data interface{}) {
 
 	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Post, self)
 
-	ev.FromMessage(data)
+	ev.Msg = data
 
-	self.RawPost(ev.SendHandler, ev)
+	MsgLog(ev)
+
+	self.p.Call(ev)
 }
 
 func (self *SocketSession) RawPost(recvHandler cellnet.EventHandler, ev *cellnet.SessionEvent) {

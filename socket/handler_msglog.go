@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/davyxu/cellnet"
+	"reflect"
 	"sync"
 )
 
@@ -37,6 +38,26 @@ func dirString(ev *cellnet.SessionEvent) string {
 
 func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) {
 
+	MsgLog(ev)
+}
+
+// Msg
+// Data, MsgID
+
+func MsgLog(ev *cellnet.SessionEvent) {
+
+	// send和post时
+	if ev.MsgID == 0 && ev.Msg != nil {
+		meta := cellnet.MessageMetaByName(cellnet.MessageFullName(reflect.TypeOf(ev.Msg)))
+		if meta != nil {
+			ev.MsgID = meta.ID
+		}
+	} else {
+		// 接收时
+
+		ev.Msg, _ = cellnet.DecodeMessage(ev.MsgID, ev.Data)
+	}
+
 	if IsBlockedMessageByID(ev.MsgID) {
 		return
 	}
@@ -44,33 +65,10 @@ func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) {
 	if msgLogHook == nil || (msgLogHook != nil && msgLogHook(ev)) {
 
 		// 需要在收到消息, 不经过decoder时, 就要打印出来, 所以手动解开消息, 有少许耗费
-		var msgString string
-		if ev.Msg == nil {
-			msgString = messageString(ev)
-		} else {
-			msgString = ev.MsgString()
-		}
 
-		log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), msgString)
+		log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
 
 	}
-
-}
-
-func messageString(ev *cellnet.SessionEvent) string {
-
-	msg, _ := cellnet.DecodeMessage(ev.MsgID, ev.Data)
-	if msg == nil {
-		return ""
-	}
-
-	if stringer, ok := msg.(interface {
-		String() string
-	}); ok {
-		return stringer.String()
-	}
-
-	return ""
 
 }
 
