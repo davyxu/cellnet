@@ -39,14 +39,12 @@ func (self *evQueue) Post(callback func()) {
 }
 
 func (self *evQueue) DelayPost(dur time.Duration, callback func()) {
-	go func() {
 
-		time.AfterFunc(dur, func() {
+	time.AfterFunc(dur, func() {
 
-			self.Post(callback)
-		})
+		self.Post(callback)
+	})
 
-	}()
 }
 
 func (self *evQueue) protectedCall(callback func()) {

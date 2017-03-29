@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/timer"
 )
 
 type QPSMeter struct {
@@ -61,7 +62,7 @@ func NewQPSMeter(evq cellnet.EventQueue, callback func(int)) *QPSMeter {
 
 	self := &QPSMeter{}
 
-	cellnet.NewTimer(evq, time.Second, func(t *cellnet.Timer) {
+	timer.Tick(evq, time.Second, func() {
 
 		qps := self.Turn()
 

@@ -6,12 +6,13 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/example"
+	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-func TestTimer(t *testing.T) {
+func TestAfterTimer(t *testing.T) {
 
 	signal := test.NewSignalTester(t)
 
@@ -19,29 +20,46 @@ func TestTimer(t *testing.T) {
 
 	queue.StartLoop()
 
-	const testTimes = 3
-
-	var count int = testTimes
-
-	cellnet.NewTimer(queue, time.Second, func(t *cellnet.Timer) {
-		log.Debugln("timer 1 sec tick")
+	timer.After(queue, 500*time.Millisecond, func() {
+		log.Debugln("after 100 ms")
 
 		signal.Done(1)
-
-		count--
-
-		if count == 0 {
-			t.Stop()
-			signal.Done(2)
-		}
 	})
 
-	for i := 0; i < testTimes; i++ {
-		signal.WaitAndExpect("timer not tick", 1)
-	}
+	timer.After(queue, 800*time.Millisecond, func() {
+		log.Debugln("after 200 ms")
 
-	signal.WaitAndExpect("timer not stop", 2)
+		signal.Done(2)
+	})
 
+	signal.WaitAndExpect("1 sec after not done", 1)
+
+	signal.WaitAndExpect("2 sec after not done", 2)
+}
+
+func TestTickerTimer(t *testing.T) {
+
+	signal := test.NewSignalTester(t)
+	signal.SetTimeout(60 * time.Second)
+
+	queue := cellnet.NewEventQueue()
+
+	queue.StartLoop()
+
+	var count int
+	timer.Tick(queue, time.Millisecond*100, func(stopper timer.TickStopper) {
+		log.Debugln("tick 100 ms", count)
+
+		count++
+
+		if count >= 10 {
+			signal.Done(1)
+			stopper.Stop()
+		}
+
+	})
+
+	signal.WaitAndExpect("100ms * 10 times ticker not done", 1)
 }
 
 func TestDelay(t *testing.T) {
