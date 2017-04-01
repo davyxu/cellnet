@@ -146,9 +146,14 @@ func (self *SessionEvent) String() string {
 
 func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 
-	meta := MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
+	fullName := MessageFullName(reflect.TypeOf(msg))
+
+	meta := MessageMetaByName(fullName)
 	if meta != nil {
 		self.MsgID = meta.ID
+	} else {
+		log.Errorln("message meta not found: %s %v", fullName, msg)
+		return self
 	}
 
 	if meta.Codec == nil {
