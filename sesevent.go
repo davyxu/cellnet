@@ -152,7 +152,7 @@ func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 	if meta != nil {
 		self.MsgID = meta.ID
 	} else {
-		log.Errorln("message meta not found: %s %v", fullName, msg)
+		log.Errorf("message meta not found: %s %v", fullName, msg)
 		return self
 	}
 
