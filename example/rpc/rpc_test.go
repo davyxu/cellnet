@@ -92,7 +92,7 @@ func syncClient() {
 
 				result, err := rpc.CallSync(p, &gamedef.TestEchoACK{
 					Content: "sync",
-				}, "gamedef.TestEchoACK")
+				}, "gamedef.TestEchoACK", 5)
 
 				if err != nil {
 					syncSignal.Log(err)
