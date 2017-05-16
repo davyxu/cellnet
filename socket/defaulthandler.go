@@ -20,10 +20,10 @@ func BuildRecvHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler, q c
 
 	if useMsgLog {
 
-		return cellnet.LinkHandler(NewReadPacketHandler(q), NewMsgLogHandler(), cellnet.NewDecodePacketHandler(), dispatcher)
+		return cellnet.LinkHandler(NewReadPacketHandler(), NewMsgLogHandler(), cellnet.NewDecodePacketHandler(), dispatcher)
 
 	} else {
-		return cellnet.LinkHandler(NewReadPacketHandler(q), cellnet.NewDecodePacketHandler(), dispatcher)
+		return cellnet.LinkHandler(NewReadPacketHandler(), cellnet.NewDecodePacketHandler(), dispatcher)
 	}
 
 }

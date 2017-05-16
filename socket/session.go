@@ -106,7 +106,7 @@ func (self *SocketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
-			if err := self.stream.Write(ev); err != nil {
+			if err := self.stream.Write(ev.MsgID, ev.Data); err != nil {
 				willExit = true
 				break
 			}
