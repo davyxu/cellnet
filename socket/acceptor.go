@@ -50,7 +50,9 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			// 处理连接进入独立线程, 防止accept无法响应
 			go func() {
 
-				ses := newSession(NewPacketStream(conn), self, self)
+				self.applyConnOption(conn)
+
+				ses := newSession(NewPacketStream(conn), self)
 
 				// 添加到管理器
 				self.sessionMgr.Add(ses)
@@ -62,10 +64,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 				ses.run()
 
-				//log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
-
 				// 通知逻辑
-
 				callSystemEventByMeta(ses, cellnet.SessionEvent_Accepted, Meta_SessionAccepted, self.safeRecvHandler())
 			}()
 

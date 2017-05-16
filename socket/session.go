@@ -21,8 +21,6 @@ type SocketSession struct {
 	stream *PacketStream
 
 	sendList *eventList
-
-	q cellnet.EventQueue
 }
 
 func (self *SocketSession) ID() int64 {
@@ -134,7 +132,7 @@ exitsendloop:
 	self.endSync.Done()
 }
 
-func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
+func (self *SocketSession) recvThread() {
 
 	recv, _ := self.p.GetHandler()
 
@@ -175,18 +173,17 @@ func (self *SocketSession) run() {
 	}()
 
 	// 接收线程
-	go self.recvThread(self.q)
+	go self.recvThread()
 
 	// 发送线程
 	go self.sendThread()
 }
 
-func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
+func newSession(stream *PacketStream, p cellnet.Peer) *SocketSession {
 
 	self := &SocketSession{
 		stream:          stream,
 		p:               p,
-		q:               eq,
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),
 	}

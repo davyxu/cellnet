@@ -41,6 +41,9 @@ type Peer interface {
 	SetMaxPacketSize(size int)
 	MaxPacketSize() int
 
+	// 设置socket选项, 如果不修改,请设置-1
+	SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool)
+
 	// 派发器
 	EventDispatcher
 

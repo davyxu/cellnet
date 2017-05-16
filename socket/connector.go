@@ -52,9 +52,11 @@ func (self *socketConnector) connect(address string) {
 		self.tryConnTimes++
 
 		// 开始连接
-		cn, err := net.Dial("tcp", address)
+		conn, err := net.Dial("tcp", address)
 
-		ses := newSession(NewPacketStream(cn), self, self)
+		self.applyConnOption(conn)
+
+		ses := newSession(NewPacketStream(conn), self)
 		self.defaultSes = ses
 
 		// 连不上
@@ -87,7 +89,7 @@ func (self *socketConnector) connect(address string) {
 		self.tryConnTimes = 0
 
 		// 连上了, 记录连接
-		self.conn = cn
+		self.conn = conn
 
 		// 创建Session
 

@@ -2,21 +2,45 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
+	"net"
 	"sync"
 )
 
 // Peer间的共享数据
 type peerBase struct {
 	cellnet.EventQueue
-	name          string
-	address       string
-	maxPacketSize int
+	name            string
+	address         string
+	maxPacketSize   int
+	connReadBuffer  int
+	connWriteBuffer int
+	connNoDelay     bool
 
 	recvHandler  cellnet.EventHandler
 	sendHandler  cellnet.EventHandler
 	handlerGuard sync.RWMutex
 
 	*cellnet.DispatcherHandler
+}
+
+func (self *peerBase) applyConnOption(conn net.Conn) {
+	cc := conn.(*net.TCPConn)
+	if self.connReadBuffer >= 0 {
+		cc.SetReadBuffer(self.connReadBuffer)
+	}
+
+	if self.connWriteBuffer >= 0 {
+		cc.SetWriteBuffer(self.connWriteBuffer)
+	}
+
+	cc.SetNoDelay(self.connNoDelay)
+}
+
+func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool) {
+
+	self.connReadBuffer = readBufferSize
+	self.connWriteBuffer = writeBufferSize
+	self.connNoDelay = nodelay
 }
 
 func (self *peerBase) Queue() cellnet.EventQueue {
@@ -80,6 +104,8 @@ func newPeerBase(queue cellnet.EventQueue) *peerBase {
 	self := &peerBase{
 		EventQueue:        queue,
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
+		connWriteBuffer:   -1,
+		connReadBuffer:    -1,
 	}
 
 	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler, queue)
