@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-func callSystemEvent(ses cellnet.Session, e cellnet.EventType, msg interface{}, h cellnet.EventHandler) {
+func callSystemEvent(e cellnet.EventType, msg interface{}, h cellnet.EventHandler) {
 
 	ev := cellnet.NewSessionEvent(e, nil)
 

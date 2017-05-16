@@ -54,11 +54,6 @@ func (self *socketConnector) connect(address string) {
 		// 开始连接
 		conn, err := net.Dial("tcp", address)
 
-		self.applyConnOption(conn)
-
-		ses := newSession(NewPacketStream(conn), self)
-		self.defaultSes = ses
-
 		// 连不上
 		if err != nil {
 
@@ -73,7 +68,7 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				callSystemEvent(ses, cellnet.SessionEvent_ConnectFailed, &coredef.SessionConnectFailed{Reason: err.Error()}, self.safeRecvHandler())
+				callSystemEvent(cellnet.SessionEvent_ConnectFailed, &coredef.SessionConnectFailed{Reason: err.Error()}, self.safeRecvHandler())
 				break
 			}
 
@@ -84,6 +79,10 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
+		self.applyConnOption(conn)
+
+		ses := newSession(NewPacketStream(conn), self)
+		self.defaultSes = ses
 		ses.run()
 
 		self.tryConnTimes = 0
