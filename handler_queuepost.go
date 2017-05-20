@@ -1,25 +1,21 @@
 package cellnet
 
 type QueuePostHandler struct {
-	BaseEventHandler
-	q EventQueue
-}
-
-func (self *QueuePostHandler) Next() EventHandler {
-	return nil
+	q     EventQueue
+	hlist []EventHandler
 }
 
 func (self *QueuePostHandler) Call(ev *SessionEvent) {
 
 	self.q.Post(func() {
-
-		HandlerChainCall(self.next, ev)
+		HandlerChainCall(self.hlist, ev)
 	})
 
 }
 
-func NewQueuePostHandler(q EventQueue) EventHandler {
+func NewQueuePostHandler(q EventQueue, hlist []EventHandler) EventHandler {
 	return &QueuePostHandler{
-		q: q,
+		q:     q,
+		hlist: hlist,
 	}
 }

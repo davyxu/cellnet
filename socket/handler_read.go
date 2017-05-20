@@ -5,11 +5,10 @@ import (
 	"github.com/davyxu/cellnet/proto/pb/coredef"
 )
 
-type ReadPacketHandler struct {
-	cellnet.BaseEventHandler
+type readPacketHandler struct {
 }
 
-func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
+func (self *readPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 	switch ev.Type {
 	case cellnet.SessionEvent_Recv:
@@ -34,8 +33,8 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 }
 
-func NewReadPacketHandler() cellnet.EventHandler {
+var defaultReadPacketHandler = new(readPacketHandler)
 
-	return &ReadPacketHandler{}
-
+func ReadPacketHandler() cellnet.EventHandler {
+	return defaultReadPacketHandler
 }

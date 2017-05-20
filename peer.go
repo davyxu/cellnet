@@ -6,13 +6,13 @@ type Session interface {
 	Send(interface{})
 
 	// 直接发送封包
-	RawSend(EventHandler, *SessionEvent)
+	RawSend([]EventHandler, *SessionEvent)
 
 	// 投递封包
 	Post(interface{})
 
 	// 直接投递封包
-	RawPost(EventHandler, *SessionEvent)
+	RawPost([]EventHandler, *SessionEvent)
 
 	// 断开
 	Close()
@@ -28,6 +28,7 @@ type Peer interface {
 
 	// 开启/关闭
 	Start(address string) Peer
+
 	Stop()
 
 	// 名字
@@ -39,6 +40,7 @@ type Peer interface {
 
 	// Session最大包大小, 超过这个数字, 接收视为错误, 断开连接
 	SetMaxPacketSize(size int)
+
 	MaxPacketSize() int
 
 	// 设置socket选项, 如果不修改,请设置-1
@@ -51,8 +53,9 @@ type Peer interface {
 	SessionManager
 
 	//  Handler
-	SetHandler(recv, send EventHandler)
-	GetHandler() (recv, send EventHandler)
+	SetHandler(recv, send []EventHandler)
+
+	GetHandler() (recv, send []EventHandler)
 
 	Queue() EventQueue
 }

@@ -6,9 +6,7 @@ import (
 )
 
 type UnboxHandler struct {
-	cellnet.BaseEventHandler
-
-	feedbackHandler cellnet.EventHandler
+	feedbackHandler []cellnet.EventHandler
 }
 
 func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) {
@@ -25,7 +23,7 @@ func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) {
 
 }
 
-func NewUnboxHandler(feedbackHandler cellnet.EventHandler) cellnet.EventHandler {
+func NewUnboxHandler(feedbackHandler []cellnet.EventHandler) cellnet.EventHandler {
 	return &UnboxHandler{
 		feedbackHandler: feedbackHandler,
 	}

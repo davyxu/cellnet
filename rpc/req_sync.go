@@ -19,33 +19,22 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeoutSec 
 
 	ret := make(chan interface{})
 
-	rpcid, err := installSyncRecvHandler(p, ackMsgName, ret)
+	rpcid, err := buildRecvHandler(p, ackMsgName, NewRetChanHandler(ret))
 	if err != nil {
 		return nil, err
 	}
 
+	// 发送RPC请求
 	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, ses)
 	ev.TransmitTag = rpcid
 	ev.Msg = reqMsg
 	ses.RawSend(getSendHandler(), ev)
 
+	// 等待RPC回复
 	select {
 	case v := <-ret:
 		return v, nil
 	case <-time.After(time.Duration(timeoutSec) * time.Second):
 		return nil, ErrTimeout
 	}
-}
-
-// 安装同步的接收回调
-func installSyncRecvHandler(p cellnet.Peer, msgName string, retChan chan interface{}) (rpcID int32, err error) {
-
-	meta := cellnet.MessageMetaByName(msgName)
-	if meta == nil {
-		return -1, ErrReplayMessageNotFound
-	}
-
-	rpcID = installReqHandler(p, int(meta.ID), NewRetChanHandler(retChan))
-
-	return
 }

@@ -5,11 +5,10 @@ import (
 	"reflect"
 )
 
-type DecodePacketHandler struct {
-	BaseEventHandler
+type decodePacketHandler struct {
 }
 
-func (self *DecodePacketHandler) Call(ev *SessionEvent) {
+func (self *decodePacketHandler) Call(ev *SessionEvent) {
 
 	// 系统消息不做处理
 	if !ev.IsSystemEvent() {
@@ -22,6 +21,12 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 		}
 	}
 
+}
+
+var defaultDecodePacketHandler = new(decodePacketHandler)
+
+func DecodePacketHandler() EventHandler {
+	return defaultDecodePacketHandler
 }
 
 var ErrMessageNotFound = errors.New("message not found")
@@ -47,9 +52,4 @@ func DecodeMessage(msgid uint32, data []byte) (interface{}, error) {
 	}
 
 	return msg, nil
-}
-
-func NewDecodePacketHandler() EventHandler {
-
-	return &DecodePacketHandler{}
 }

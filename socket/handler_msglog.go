@@ -8,8 +8,7 @@ import (
 	"sync"
 )
 
-type MsgLogHandler struct {
-	cellnet.BaseEventHandler
+type msgLogHandler struct {
 }
 
 func dirString(ev *cellnet.SessionEvent) string {
@@ -36,7 +35,7 @@ func dirString(ev *cellnet.SessionEvent) string {
 	return fmt.Sprintf("unknown(%d)", ev.Type)
 }
 
-func (self *MsgLogHandler) Call(ev *cellnet.SessionEvent) {
+func (self *msgLogHandler) Call(ev *cellnet.SessionEvent) {
 
 	MsgLog(ev)
 }
@@ -72,10 +71,10 @@ func MsgLog(ev *cellnet.SessionEvent) {
 
 }
 
-func NewMsgLogHandler() cellnet.EventHandler {
+var defaultmsgLogHandler = new(msgLogHandler)
 
-	return &MsgLogHandler{}
-
+func MsgLogHandler() cellnet.EventHandler {
+	return defaultmsgLogHandler
 }
 
 var (

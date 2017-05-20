@@ -5,9 +5,9 @@ import "sync"
 type EventDispatcher interface {
 
 	// 注册事件回调
-	AddHandler(id int, h EventHandler) int
+	AddHandler(id int, h []EventHandler) int
 
-	GetHandlerByIndex(id, index int) EventHandler
+	GetHandlerByIndex(id, index int) []EventHandler
 
 	RemoveHandler(id, index int)
 
@@ -23,21 +23,19 @@ type multiHandlerKey struct {
 }
 
 type DispatcherHandler struct {
-	BaseEventHandler
-
-	handlerByKey      map[multiHandlerKey]EventHandler
+	handlerByKey      map[multiHandlerKey][]EventHandler
 	handlerByKeyGuard sync.RWMutex
 }
 
 // 将连续调用的handler视为一个连接体 id -> Handler1 -> Handler1.1 -> Handler2 -> Handler 2.1
 
 // 返回添加id对应的index, 删除需要两者
-func (self *DispatcherHandler) AddHandler(id int, h EventHandler) int {
+func (self *DispatcherHandler) AddHandler(id int, hlist []EventHandler) int {
 
 	self.handlerByKeyGuard.Lock()
 
 	key := self.findFreeIndex(id)
-	self.handlerByKey[key] = h
+	self.handlerByKey[key] = hlist
 
 	self.handlerByKeyGuard.Unlock()
 
@@ -68,11 +66,11 @@ func (self *DispatcherHandler) Call(ev *SessionEvent) {
 		key.index = index
 
 		self.handlerByKeyGuard.RLock()
-		h, ok := self.handlerByKey[key]
+		hlist, ok := self.handlerByKey[key]
 		self.handlerByKeyGuard.RUnlock()
 
 		if ok {
-			HandlerChainCall(h, ev)
+			HandlerChainCall(hlist, ev)
 		} else {
 			break
 		}
@@ -95,19 +93,19 @@ func (self *DispatcherHandler) Next() EventHandler {
 func (self *DispatcherHandler) Clear() {
 
 	self.handlerByKeyGuard.Lock()
-	self.handlerByKey = make(map[multiHandlerKey]EventHandler)
+	self.handlerByKey = make(map[multiHandlerKey][]EventHandler)
 	self.handlerByKeyGuard.Unlock()
 }
 
 // index 根据注册顺序, 从0~n
-func (self *DispatcherHandler) GetHandlerByIndex(id, index int) EventHandler {
+func (self *DispatcherHandler) GetHandlerByIndex(id, index int) []EventHandler {
 
 	self.handlerByKeyGuard.RLock()
-	h, ok := self.handlerByKey[multiHandlerKey{id, index}]
+	hlist, ok := self.handlerByKey[multiHandlerKey{id, index}]
 	self.handlerByKeyGuard.RUnlock()
 
 	if ok {
-		return h
+		return hlist
 	}
 
 	return nil

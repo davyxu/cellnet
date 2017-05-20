@@ -7,7 +7,6 @@ type RegisterMessageContext struct {
 }
 
 type CallbackHandler struct {
-	BaseEventHandler
 	userCallback func(*SessionEvent)
 }
 
@@ -33,7 +32,7 @@ func RegisterMessage(p Peer, msgName string, userCallback func(*SessionEvent)) *
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	p.AddHandler(int(meta.ID), LinkHandler(NewQueuePostHandler(p.Queue()), NewCallbackHandler(userCallback)))
+	p.AddHandler(int(meta.ID), HandlerLink(NewQueuePostHandler(p.Queue(), HandlerLink(NewCallbackHandler(userCallback)))))
 
 	return &RegisterMessageContext{MessageMeta: meta}
 }
@@ -48,12 +47,7 @@ func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *Register
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	poster := NewQueuePostHandler(p.Queue())
-	if len(handlers) > 0 {
-		poster.SetNext(LinkHandler(handlers...))
-	}
-
-	p.AddHandler(int(meta.ID), poster)
+	p.AddHandler(int(meta.ID), HandlerLink(NewQueuePostHandler(p.Queue(), handlers)))
 
 	return &RegisterMessageContext{MessageMeta: meta}
 }

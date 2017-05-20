@@ -32,8 +32,8 @@ type SessionEvent struct {
 	Tag         interface{} // 事件的连接, 一个处理流程后被Reset
 	TransmitTag interface{} // 接收过程可以传递到发送过程, 不会被清空
 
-	Ses         Session      // 会话
-	SendHandler EventHandler // 发送handler override
+	Ses         Session        // 会话
+	SendHandler []EventHandler // 发送handler override
 
 	EndRecvLoop bool // 停止消息接收循环
 }

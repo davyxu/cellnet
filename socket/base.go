@@ -16,8 +16,8 @@ type peerBase struct {
 	connWriteBuffer int
 	connNoDelay     bool
 
-	recvHandler  cellnet.EventHandler
-	sendHandler  cellnet.EventHandler
+	recvHandler  []cellnet.EventHandler
+	sendHandler  []cellnet.EventHandler
 	handlerGuard sync.RWMutex
 
 	*cellnet.DispatcherHandler
@@ -59,14 +59,14 @@ func (self *peerBase) Address() string {
 	return self.address
 }
 
-func (self *peerBase) SetHandler(recv, send cellnet.EventHandler) {
+func (self *peerBase) SetHandler(recv, send []cellnet.EventHandler) {
 	self.handlerGuard.Lock()
 	self.recvHandler = recv
 	self.sendHandler = send
 	self.handlerGuard.Unlock()
 }
 
-func (self *peerBase) GetHandler() (recv, send cellnet.EventHandler) {
+func (self *peerBase) GetHandler() (recv, send []cellnet.EventHandler) {
 	self.handlerGuard.RLock()
 	recv = self.recvHandler
 	send = self.sendHandler
@@ -75,7 +75,7 @@ func (self *peerBase) GetHandler() (recv, send cellnet.EventHandler) {
 	return
 }
 
-func (self *peerBase) safeRecvHandler() (ret cellnet.EventHandler) {
+func (self *peerBase) safeRecvHandler() (ret []cellnet.EventHandler) {
 	self.handlerGuard.RLock()
 	ret = self.recvHandler
 	self.handlerGuard.RUnlock()
@@ -108,7 +108,7 @@ func newPeerBase(queue cellnet.EventQueue) *peerBase {
 		connReadBuffer:    -1,
 	}
 
-	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler, queue)
+	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler)
 
 	self.sendHandler = BuildSendHandler(EnableMessageLog)
 
