@@ -50,9 +50,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			// 处理连接进入独立线程, 防止accept无法响应
 			go func() {
 
-				self.applyConnOption(conn)
-
-				ses := newSession(NewPacketStream(conn), self)
+				ses := newSession(self.genPacketStream(conn), self)
 
 				// 添加到管理器
 				self.sessionMgr.Add(ses)

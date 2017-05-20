@@ -2,20 +2,18 @@ package socket
 
 import "github.com/davyxu/cellnet"
 
-type writePacketHandler struct {
+type WritePacketHandler struct {
 }
 
-func (self *writePacketHandler) Call(ev *cellnet.SessionEvent) {
+func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) {
 
 	rawSes := ev.Ses.(*SocketSession)
 	rawSes.sendList.Add(ev)
 
 }
 
-var defaultWritePacketHandler = new(writePacketHandler)
+var defaultWritePacketHandler = new(WritePacketHandler)
 
-func WritePacketHandler() cellnet.EventHandler {
-
+func StaticWritePacketHandler() cellnet.EventHandler {
 	return defaultWritePacketHandler
-
 }

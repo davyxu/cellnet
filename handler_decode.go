@@ -5,10 +5,10 @@ import (
 	"reflect"
 )
 
-type decodePacketHandler struct {
+type DecodePacketHandler struct {
 }
 
-func (self *decodePacketHandler) Call(ev *SessionEvent) {
+func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 
 	// 系统消息不做处理
 	if !ev.IsSystemEvent() {
@@ -23,9 +23,9 @@ func (self *decodePacketHandler) Call(ev *SessionEvent) {
 
 }
 
-var defaultDecodePacketHandler = new(decodePacketHandler)
+var defaultDecodePacketHandler = new(DecodePacketHandler)
 
-func DecodePacketHandler() EventHandler {
+func StaticDecodePacketHandler() EventHandler {
 	return defaultDecodePacketHandler
 }
 

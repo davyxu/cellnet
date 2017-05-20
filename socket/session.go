@@ -18,7 +18,7 @@ type SocketSession struct {
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
 	// handler相关上下文
-	stream *PacketStream
+	stream cellnet.PacketStream
 
 	sendList *eventList
 }
@@ -179,17 +179,19 @@ func (self *SocketSession) run() {
 	go self.sendThread()
 }
 
-func newSession(stream *PacketStream, p cellnet.Peer) *SocketSession {
+func newSession(composer cellnet.PacketStream, p cellnet.Peer) *SocketSession {
 
 	self := &SocketSession{
-		stream:          stream,
+		stream:          composer,
 		p:               p,
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),
 	}
 
 	// 使用peer的统一设置
-	self.stream.maxPacketSize = p.MaxPacketSize()
+	if s, ok := self.stream.(*TLVStream); ok {
+		s.SetMaxPacketSize(p.MaxPacketSize())
+	}
 
 	return self
 }

@@ -14,10 +14,10 @@ var (
 func getSendHandler() []cellnet.EventHandler {
 
 	if sendHandler == nil {
-		sendHandler = cellnet.HandlerLink(cellnet.EncodePacketHandler(),
-			cellnet.HandlerOptional{socket.MsgLogHandler(), socket.EnableMessageLog},
+		sendHandler = cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
+			cellnet.HandlerOptional{socket.StaticMsgLogHandler(), socket.EnableMessageLog},
 			NewBoxHandler(),
-			socket.WritePacketHandler(),
+			socket.StaticWritePacketHandler(),
 		)
 	}
 
@@ -46,7 +46,7 @@ func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *celln
 	dispatcher = raw[len(raw)-1].(*cellnet.DispatcherHandler)
 
 	dispatcher.AddHandler(id, cellnet.HandlerLink(
-		cellnet.DecodePacketHandler(),
+		cellnet.StaticDecodePacketHandler(),
 		cellnet.NewQueuePostHandler(p.Queue(), cellnet.HandlerLink(cellnet.NewCallbackHandler(userCallback))),
 	))
 }

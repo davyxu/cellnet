@@ -14,7 +14,7 @@ const (
 	PackageHeaderSize = 8 // MsgID(uint32) + Ser(uint16) + Size(uint16)
 )
 
-type PacketStream struct {
+type TLVStream struct {
 	recvser      uint16
 	sendser      uint16
 	conn         net.Conn
@@ -35,8 +35,12 @@ var (
 	ErrPackageTooBig          = errors.New("ReadPacket: package too big")
 )
 
+func (self *TLVStream) SetMaxPacketSize(size int) {
+	self.maxPacketSize = size
+}
+
 // 从socket读取1个封包,并返回
-func (self *PacketStream) Read() (msgid uint32, data []byte, err error) {
+func (self *TLVStream) Read() (msgid uint32, data []byte, err error) {
 
 	if _, err = self.headReader.Seek(0, 0); err != nil {
 		return
@@ -96,7 +100,7 @@ func (self *PacketStream) Read() (msgid uint32, data []byte, err error) {
 }
 
 // 将一个封包发送到socket
-func (self *PacketStream) Write(msgid uint32, data []byte) (err error) {
+func (self *TLVStream) Write(msgid uint32, data []byte) (err error) {
 
 	// 防止将Send放在go内造成的多线程冲突问题
 	self.sendtagGuard.Lock()
@@ -136,7 +140,7 @@ func (self *PacketStream) Write(msgid uint32, data []byte) (err error) {
 }
 
 // 完整发送所有封包
-func (self *PacketStream) writeFull(p []byte) error {
+func (self *TLVStream) writeFull(p []byte) error {
 
 	sizeToWrite := len(p)
 
@@ -162,7 +166,7 @@ func (self *PacketStream) writeFull(p []byte) error {
 
 const sendTotalTryCount = 100
 
-func (self *PacketStream) Flush() error {
+func (self *TLVStream) Flush() error {
 
 	var err error
 	for tryTimes := 0; tryTimes < sendTotalTryCount; tryTimes++ {
@@ -179,19 +183,19 @@ func (self *PacketStream) Flush() error {
 }
 
 // 关闭
-func (self *PacketStream) Close() error {
+func (self *TLVStream) Close() error {
 	return self.conn.Close()
 }
 
 // 裸socket操作
-func (self *PacketStream) Raw() net.Conn {
+func (self *TLVStream) Raw() net.Conn {
 	return self.conn
 }
 
 // 封包流 relay模式: 在封包头有clientid信息
-func NewPacketStream(conn net.Conn) *PacketStream {
+func NewTLVStream(conn net.Conn) *TLVStream {
 
-	s := &PacketStream{
+	s := &TLVStream{
 		conn:             conn,
 		recvser:          1,
 		sendser:          1,

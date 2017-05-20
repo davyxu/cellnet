@@ -21,19 +21,25 @@ type peerBase struct {
 	handlerGuard sync.RWMutex
 
 	*cellnet.DispatcherHandler
+
+	streamGen func(net.Conn) cellnet.PacketStream
 }
 
 func (self *peerBase) applyConnOption(conn net.Conn) {
-	cc := conn.(*net.TCPConn)
-	if self.connReadBuffer >= 0 {
-		cc.SetReadBuffer(self.connReadBuffer)
+
+	if cc, ok := conn.(*net.TCPConn); ok {
+
+		if self.connReadBuffer >= 0 {
+			cc.SetReadBuffer(self.connReadBuffer)
+		}
+
+		if self.connWriteBuffer >= 0 {
+			cc.SetWriteBuffer(self.connWriteBuffer)
+		}
+
+		cc.SetNoDelay(self.connNoDelay)
 	}
 
-	if self.connWriteBuffer >= 0 {
-		cc.SetWriteBuffer(self.connWriteBuffer)
-	}
-
-	cc.SetNoDelay(self.connNoDelay)
 }
 
 func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool) {
@@ -41,6 +47,22 @@ func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodel
 	self.connReadBuffer = readBufferSize
 	self.connWriteBuffer = writeBufferSize
 	self.connNoDelay = nodelay
+}
+
+func (self *peerBase) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
+
+	self.streamGen = callback
+}
+
+func (self *peerBase) genPacketStream(conn net.Conn) cellnet.PacketStream {
+
+	self.applyConnOption(conn)
+
+	if self.streamGen == nil {
+		return NewTLVStream(conn)
+	}
+
+	return self.streamGen(conn)
 }
 
 func (self *peerBase) Queue() cellnet.EventQueue {

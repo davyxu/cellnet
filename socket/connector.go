@@ -79,9 +79,7 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
-		self.applyConnOption(conn)
-
-		ses := newSession(NewPacketStream(conn), self)
+		ses := newSession(self.genPacketStream(conn), self)
 		self.defaultSes = ses
 		ses.run()
 

@@ -2,10 +2,10 @@ package cellnet
 
 import "reflect"
 
-type encodePacketHandler struct {
+type EncodePacketHandler struct {
 }
 
-func (self *encodePacketHandler) Call(ev *SessionEvent) {
+func (self *EncodePacketHandler) Call(ev *SessionEvent) {
 
 	var err error
 	ev.Data, ev.MsgID, err = EncodeMessage(ev.Msg)
@@ -16,9 +16,9 @@ func (self *encodePacketHandler) Call(ev *SessionEvent) {
 
 }
 
-var defaultEncodePacketHandler EventHandler = new(encodePacketHandler)
+var defaultEncodePacketHandler EventHandler = new(EncodePacketHandler)
 
-func EncodePacketHandler() EventHandler {
+func StaticEncodePacketHandler() EventHandler {
 	return defaultEncodePacketHandler
 }
 
