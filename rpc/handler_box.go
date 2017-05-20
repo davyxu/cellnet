@@ -6,7 +6,6 @@ import (
 )
 
 type BoxHandler struct {
-	cellnet.BaseEventHandler
 }
 
 func (self *BoxHandler) Call(ev *cellnet.SessionEvent) {

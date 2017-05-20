@@ -7,8 +7,6 @@ import (
 )
 
 type ReflectCallHandler struct {
-	cellnet.BaseEventHandler
-
 	entry reflect.Value
 }
 

@@ -18,11 +18,9 @@ type SocketSession struct {
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
 	// handler相关上下文
-	stream *PacketStream
+	stream cellnet.PacketStream
 
 	sendList *eventList
-
-	q cellnet.EventQueue
 }
 
 func (self *SocketSession) ID() int64 {
@@ -46,7 +44,7 @@ func (self *SocketSession) Send(data interface{}) {
 
 }
 
-func (self *SocketSession) RawSend(sendHandler cellnet.EventHandler, ev *cellnet.SessionEvent) {
+func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
 
 	if sendHandler == nil {
 		_, sendHandler = self.p.GetHandler()
@@ -68,7 +66,7 @@ func (self *SocketSession) Post(data interface{}) {
 	self.p.Call(ev)
 }
 
-func (self *SocketSession) RawPost(recvHandler cellnet.EventHandler, ev *cellnet.SessionEvent) {
+func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
 	if recvHandler == nil {
 		recvHandler, _ = self.p.GetHandler()
 	}
@@ -106,7 +104,7 @@ func (self *SocketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
-			if err := self.stream.Write(ev); err != nil {
+			if err := self.stream.Write(ev.MsgID, ev.Data); err != nil {
 				willExit = true
 				break
 			}
@@ -134,7 +132,7 @@ exitsendloop:
 	self.endSync.Done()
 }
 
-func (self *SocketSession) recvThread(eq cellnet.EventQueue) {
+func (self *SocketSession) recvThread() {
 
 	recv, _ := self.p.GetHandler()
 
@@ -175,24 +173,25 @@ func (self *SocketSession) run() {
 	}()
 
 	// 接收线程
-	go self.recvThread(self.q)
+	go self.recvThread()
 
 	// 发送线程
 	go self.sendThread()
 }
 
-func newSession(stream *PacketStream, eq cellnet.EventQueue, p cellnet.Peer) *SocketSession {
+func newSession(composer cellnet.PacketStream, p cellnet.Peer) *SocketSession {
 
 	self := &SocketSession{
-		stream:          stream,
+		stream:          composer,
 		p:               p,
-		q:               eq,
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),
 	}
 
 	// 使用peer的统一设置
-	self.stream.maxPacketSize = p.MaxPacketSize()
+	if s, ok := self.stream.(*TLVStream); ok {
+		s.SetMaxPacketSize(p.MaxPacketSize())
+	}
 
 	return self
 }

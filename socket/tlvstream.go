@@ -8,15 +8,13 @@ import (
 	"io"
 	"net"
 	"sync"
-
-	"github.com/davyxu/cellnet"
 )
 
 const (
 	PackageHeaderSize = 8 // MsgID(uint32) + Ser(uint16) + Size(uint16)
 )
 
-type PacketStream struct {
+type TLVStream struct {
 	recvser      uint16
 	sendser      uint16
 	conn         net.Conn
@@ -32,61 +30,68 @@ type PacketStream struct {
 }
 
 var (
-	packageTagNotMatch     = errors.New("ReadPacket: package tag not match")
-	packageDataSizeInvalid = errors.New("ReadPacket: package crack, invalid size")
-	packageTooBig          = errors.New("ReadPacket: package too big")
+	ErrPackageTagNotMatch     = errors.New("ReadPacket: package tag not match")
+	ErrPackageDataSizeInvalid = errors.New("ReadPacket: package crack, invalid size")
+	ErrPackageTooBig          = errors.New("ReadPacket: package too big")
 )
 
+func (self *TLVStream) SetMaxPacketSize(size int) {
+	self.maxPacketSize = size
+}
+
 // 从socket读取1个封包,并返回
-func (self *PacketStream) Read(ev *cellnet.SessionEvent) (err error) {
+func (self *TLVStream) Read() (msgid uint32, data []byte, err error) {
 
 	if _, err = self.headReader.Seek(0, 0); err != nil {
-		return err
+		return
 	}
 
 	if _, err = io.ReadFull(self.conn, self.inputHeadBuffer); err != nil {
-		return err
+		return
 	}
 
 	// 读取ID
-	if err = binary.Read(self.headReader, binary.LittleEndian, &ev.MsgID); err != nil {
-		return err
+	if err = binary.Read(self.headReader, binary.LittleEndian, &msgid); err != nil {
+		return
 	}
 
 	// 读取序号
 	var ser uint16
 	if err = binary.Read(self.headReader, binary.LittleEndian, &ser); err != nil {
-		return err
+		return
 	}
 
 	// 读取整包大小
 	var fullsize uint16
 	if err = binary.Read(self.headReader, binary.LittleEndian, &fullsize); err != nil {
-		return err
+		return
 	}
 
 	// 封包太大
 	if self.maxPacketSize > 0 && int(fullsize) > self.maxPacketSize {
-		return packageTooBig
+		err = ErrPackageTooBig
+		return
 	}
 
 	// 序列号不匹配
 	if self.recvser != ser {
-		return packageTagNotMatch
+		err = ErrPackageTagNotMatch
+		return
 	}
 
 	dataSize := fullsize - PackageHeaderSize
 	if dataSize < 0 {
-		return packageDataSizeInvalid
+		err = ErrPackageDataSizeInvalid
+		return
 	}
 
 	// 读取数据
 	msgBytes := make([]byte, dataSize)
 	if _, err = io.ReadFull(self.conn, msgBytes); err != nil {
-		return err
+		return
 	}
 
-	ev.Data = msgBytes
+	data = msgBytes
 
 	// 增加序列号值
 	self.recvser++
@@ -95,7 +100,7 @@ func (self *PacketStream) Read(ev *cellnet.SessionEvent) (err error) {
 }
 
 // 将一个封包发送到socket
-func (self *PacketStream) Write(ev *cellnet.SessionEvent) (err error) {
+func (self *TLVStream) Write(msgid uint32, data []byte) (err error) {
 
 	// 防止将Send放在go内造成的多线程冲突问题
 	self.sendtagGuard.Lock()
@@ -104,7 +109,7 @@ func (self *PacketStream) Write(ev *cellnet.SessionEvent) (err error) {
 	self.outputHeadBuffer.Reset()
 
 	// 写ID
-	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, ev.MsgID); err != nil {
+	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, msgid); err != nil {
 		return err
 	}
 
@@ -114,7 +119,7 @@ func (self *PacketStream) Write(ev *cellnet.SessionEvent) (err error) {
 	}
 
 	// 写包大小
-	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint16(len(ev.Data)+PackageHeaderSize)); err != nil {
+	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint16(len(data)+PackageHeaderSize)); err != nil {
 		return err
 	}
 
@@ -124,7 +129,7 @@ func (self *PacketStream) Write(ev *cellnet.SessionEvent) (err error) {
 	}
 
 	// 发包内容
-	if err = self.writeFull(ev.Data); err != nil {
+	if err = self.writeFull(data); err != nil {
 		return err
 	}
 
@@ -135,7 +140,7 @@ func (self *PacketStream) Write(ev *cellnet.SessionEvent) (err error) {
 }
 
 // 完整发送所有封包
-func (self *PacketStream) writeFull(p []byte) error {
+func (self *TLVStream) writeFull(p []byte) error {
 
 	sizeToWrite := len(p)
 
@@ -161,7 +166,7 @@ func (self *PacketStream) writeFull(p []byte) error {
 
 const sendTotalTryCount = 100
 
-func (self *PacketStream) Flush() error {
+func (self *TLVStream) Flush() error {
 
 	var err error
 	for tryTimes := 0; tryTimes < sendTotalTryCount; tryTimes++ {
@@ -178,19 +183,19 @@ func (self *PacketStream) Flush() error {
 }
 
 // 关闭
-func (self *PacketStream) Close() error {
+func (self *TLVStream) Close() error {
 	return self.conn.Close()
 }
 
 // 裸socket操作
-func (self *PacketStream) Raw() net.Conn {
+func (self *TLVStream) Raw() net.Conn {
 	return self.conn
 }
 
 // 封包流 relay模式: 在封包头有clientid信息
-func NewPacketStream(conn net.Conn) *PacketStream {
+func NewTLVStream(conn net.Conn) *TLVStream {
 
-	s := &PacketStream{
+	s := &TLVStream{
 		conn:             conn,
 		recvser:          1,
 		sendser:          1,

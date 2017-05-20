@@ -6,7 +6,7 @@ import (
 
 func TestHandler(t *testing.T) {
 
-	//	list := LinkHandler(func(int, interface{}) error {
+	//	list := HandlerLink(func(int, interface{}) error {
 
 	//		t.Log("a")
 

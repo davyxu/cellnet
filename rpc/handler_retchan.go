@@ -3,7 +3,6 @@ package rpc
 import "github.com/davyxu/cellnet"
 
 type RetChanHandler struct {
-	cellnet.BaseEventHandler
 	ret chan interface{}
 }
 

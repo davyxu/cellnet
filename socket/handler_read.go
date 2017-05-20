@@ -6,9 +6,6 @@ import (
 )
 
 type ReadPacketHandler struct {
-	cellnet.BaseEventHandler
-
-	q cellnet.EventQueue
 }
 
 func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
@@ -18,24 +15,26 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 		rawSes := ev.Ses.(*SocketSession)
 
-		err := rawSes.stream.Read(ev)
+		msgid, data, err := rawSes.stream.Read()
 
 		if err != nil {
 
 			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &coredef.SessionClosed{Reason: err.Error()})
 
 			ev.EndRecvLoop = true
+		} else {
+
+			ev.MsgID = msgid
+			// 逻辑封包
+			ev.Data = data
 		}
 
-		// 逻辑封包
 	}
 
 }
 
-func NewReadPacketHandler(q cellnet.EventQueue) cellnet.EventHandler {
+var defaultReadPacketHandler = new(ReadPacketHandler)
 
-	return &ReadPacketHandler{
-		q: q,
-	}
-
+func StaticReadPacketHandler() cellnet.EventHandler {
+	return defaultReadPacketHandler
 }

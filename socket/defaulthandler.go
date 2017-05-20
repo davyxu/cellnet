@@ -3,27 +3,22 @@ package socket
 import "github.com/davyxu/cellnet"
 
 // socket.EncodePacketHandler -> socket.MsgLogHandler -> socket.WritePacketHandler
-func BuildSendHandler(useMsgLog bool) cellnet.EventHandler {
+func BuildSendHandler(useMsgLog bool) []cellnet.EventHandler {
 
-	if useMsgLog {
-
-		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewMsgLogHandler(), NewWritePacketHandler())
-	} else {
-
-		return cellnet.LinkHandler(cellnet.NewEncodePacketHandler(), NewWritePacketHandler())
-	}
+	return cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
+		cellnet.HandlerOptional{StaticMsgLogHandler(), useMsgLog},
+		StaticWritePacketHandler(),
+	)
 
 }
 
 // socket.ReadPacketHandler -> socket.MsgLogHandler -> socket.DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
-func BuildRecvHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler, q cellnet.EventQueue) cellnet.EventHandler {
+func BuildRecvHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler) []cellnet.EventHandler {
 
-	if useMsgLog {
-
-		return cellnet.LinkHandler(NewReadPacketHandler(q), NewMsgLogHandler(), cellnet.NewDecodePacketHandler(), dispatcher)
-
-	} else {
-		return cellnet.LinkHandler(NewReadPacketHandler(q), cellnet.NewDecodePacketHandler(), dispatcher)
-	}
+	return cellnet.HandlerLink(StaticReadPacketHandler(),
+		cellnet.HandlerOptional{StaticMsgLogHandler(), useMsgLog},
+		cellnet.StaticDecodePacketHandler(),
+		dispatcher,
+	)
 
 }

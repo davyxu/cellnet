@@ -42,7 +42,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			if err != nil {
 				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
 
-				callSystemEvent(nil, cellnet.SessionEvent_AcceptFailed, &coredef.SessionAcceptFailed{Reason: err.Error()}, self.safeRecvHandler())
+				callSystemEvent(cellnet.SessionEvent_AcceptFailed, &coredef.SessionAcceptFailed{Reason: err.Error()}, self.safeRecvHandler())
 
 				break
 			}
@@ -50,7 +50,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			// 处理连接进入独立线程, 防止accept无法响应
 			go func() {
 
-				ses := newSession(NewPacketStream(conn), self, self)
+				ses := newSession(self.genPacketStream(conn), self)
 
 				// 添加到管理器
 				self.sessionMgr.Add(ses)
@@ -62,10 +62,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 				ses.run()
 
-				//log.Infof("#accepted(%s) sid: %d", self.name, ses.ID())
-
 				// 通知逻辑
-
 				callSystemEventByMeta(ses, cellnet.SessionEvent_Accepted, Meta_SessionAccepted, self.safeRecvHandler())
 			}()
 

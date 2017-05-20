@@ -19,7 +19,12 @@ func (self *sprotoCodec) Name() string {
 
 func (self *sprotoCodec) Encode(msgObj interface{}) ([]byte, error) {
 
-	return sproto.Encode(msgObj)
+	data, err := sproto.Encode(msgObj)
+	if err != nil {
+		return nil, err
+	}
+
+	return sproto.Pack(data), nil
 }
 
 func (self *sprotoCodec) Decode(data []byte, msgObj interface{}) error {
@@ -29,9 +34,14 @@ func (self *sprotoCodec) Decode(data []byte, msgObj interface{}) error {
 		return nil
 	}
 
-	_, err := sproto.Decode(data, msgObj)
+	raw, err := sproto.Unpack(data)
+	if err != nil {
+		return err
+	}
 
-	return err
+	_, err2 := sproto.Decode(raw, msgObj)
+
+	return err2
 }
 
 func AutoRegisterMessageMeta(msgTypes []reflect.Type) {

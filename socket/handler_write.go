@@ -3,7 +3,6 @@ package socket
 import "github.com/davyxu/cellnet"
 
 type WritePacketHandler struct {
-	cellnet.BaseEventHandler
 }
 
 func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) {
@@ -13,8 +12,8 @@ func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) {
 
 }
 
-func NewWritePacketHandler() cellnet.EventHandler {
+var defaultWritePacketHandler = new(WritePacketHandler)
 
-	return &WritePacketHandler{}
-
+func StaticWritePacketHandler() cellnet.EventHandler {
+	return defaultWritePacketHandler
 }

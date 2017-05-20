@@ -2,21 +2,67 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
+	"net"
 	"sync"
 )
 
 // Peer间的共享数据
 type peerBase struct {
 	cellnet.EventQueue
-	name          string
-	address       string
-	maxPacketSize int
+	name            string
+	address         string
+	maxPacketSize   int
+	connReadBuffer  int
+	connWriteBuffer int
+	connNoDelay     bool
 
-	recvHandler  cellnet.EventHandler
-	sendHandler  cellnet.EventHandler
+	recvHandler  []cellnet.EventHandler
+	sendHandler  []cellnet.EventHandler
 	handlerGuard sync.RWMutex
 
 	*cellnet.DispatcherHandler
+
+	streamGen func(net.Conn) cellnet.PacketStream
+}
+
+func (self *peerBase) applyConnOption(conn net.Conn) {
+
+	if cc, ok := conn.(*net.TCPConn); ok {
+
+		if self.connReadBuffer >= 0 {
+			cc.SetReadBuffer(self.connReadBuffer)
+		}
+
+		if self.connWriteBuffer >= 0 {
+			cc.SetWriteBuffer(self.connWriteBuffer)
+		}
+
+		cc.SetNoDelay(self.connNoDelay)
+	}
+
+}
+
+func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool) {
+
+	self.connReadBuffer = readBufferSize
+	self.connWriteBuffer = writeBufferSize
+	self.connNoDelay = nodelay
+}
+
+func (self *peerBase) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
+
+	self.streamGen = callback
+}
+
+func (self *peerBase) genPacketStream(conn net.Conn) cellnet.PacketStream {
+
+	self.applyConnOption(conn)
+
+	if self.streamGen == nil {
+		return NewTLVStream(conn)
+	}
+
+	return self.streamGen(conn)
 }
 
 func (self *peerBase) Queue() cellnet.EventQueue {
@@ -35,14 +81,14 @@ func (self *peerBase) Address() string {
 	return self.address
 }
 
-func (self *peerBase) SetHandler(recv, send cellnet.EventHandler) {
+func (self *peerBase) SetHandler(recv, send []cellnet.EventHandler) {
 	self.handlerGuard.Lock()
 	self.recvHandler = recv
 	self.sendHandler = send
 	self.handlerGuard.Unlock()
 }
 
-func (self *peerBase) GetHandler() (recv, send cellnet.EventHandler) {
+func (self *peerBase) GetHandler() (recv, send []cellnet.EventHandler) {
 	self.handlerGuard.RLock()
 	recv = self.recvHandler
 	send = self.sendHandler
@@ -51,7 +97,7 @@ func (self *peerBase) GetHandler() (recv, send cellnet.EventHandler) {
 	return
 }
 
-func (self *peerBase) safeRecvHandler() (ret cellnet.EventHandler) {
+func (self *peerBase) safeRecvHandler() (ret []cellnet.EventHandler) {
 	self.handlerGuard.RLock()
 	ret = self.recvHandler
 	self.handlerGuard.RUnlock()
@@ -80,9 +126,11 @@ func newPeerBase(queue cellnet.EventQueue) *peerBase {
 	self := &peerBase{
 		EventQueue:        queue,
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
+		connWriteBuffer:   -1,
+		connReadBuffer:    -1,
 	}
 
-	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler, queue)
+	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler)
 
 	self.sendHandler = BuildSendHandler(EnableMessageLog)
 

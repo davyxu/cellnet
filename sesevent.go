@@ -2,7 +2,6 @@ package cellnet
 
 import (
 	"fmt"
-	"reflect"
 	"sync/atomic"
 )
 
@@ -33,8 +32,8 @@ type SessionEvent struct {
 	Tag         interface{} // 事件的连接, 一个处理流程后被Reset
 	TransmitTag interface{} // 接收过程可以传递到发送过程, 不会被清空
 
-	Ses         Session      // 会话
-	SendHandler EventHandler // 发送handler override
+	Ses         Session        // 会话
+	SendHandler []EventHandler // 发送handler override
 
 	EndRecvLoop bool // 停止消息接收循环
 }
@@ -146,26 +145,11 @@ func (self *SessionEvent) String() string {
 
 func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 
-	fullName := MessageFullName(reflect.TypeOf(msg))
-
-	meta := MessageMetaByName(fullName)
-	if meta != nil {
-		self.MsgID = meta.ID
-	} else {
-		log.Errorf("message meta not found: %s %v", fullName, msg)
-		return self
-	}
-
-	if meta.Codec == nil {
-		log.Errorf("message codec not found: %s", meta.Name)
-		return self
-	}
-
 	var err error
-	self.Data, err = meta.Codec.Encode(msg)
+	self.Data, self.MsgID, err = EncodeMessage(msg)
 
 	if err != nil {
-		log.Errorln(err)
+		log.Debugln(err, self.String())
 	}
 
 	return self

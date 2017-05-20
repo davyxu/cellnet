@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-func callSystemEvent(ses cellnet.Session, e cellnet.EventType, msg interface{}, h cellnet.EventHandler) {
+func callSystemEvent(e cellnet.EventType, msg interface{}, h []cellnet.EventHandler) {
 
 	ev := cellnet.NewSessionEvent(e, nil)
 
@@ -29,11 +29,11 @@ func castToSystemEvent(ev *cellnet.SessionEvent, e cellnet.EventType, msg interf
 
 }
 
-func callSystemEventByMeta(ses cellnet.Session, e cellnet.EventType, meta *cellnet.MessageMeta, h cellnet.EventHandler) {
+func callSystemEventByMeta(ses cellnet.Session, e cellnet.EventType, meta *cellnet.MessageMeta, hlist []cellnet.EventHandler) {
 
 	ev := cellnet.NewSessionEvent(e, ses)
 
 	ev.FromMeta(meta)
 
-	cellnet.HandlerChainCall(h, ev)
+	cellnet.HandlerChainCall(hlist, ev)
 }

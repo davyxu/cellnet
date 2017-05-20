@@ -6,7 +6,6 @@ import (
 )
 
 type DecodePacketHandler struct {
-	BaseEventHandler
 }
 
 func (self *DecodePacketHandler) Call(ev *SessionEvent) {
@@ -22,6 +21,12 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 		}
 	}
 
+}
+
+var defaultDecodePacketHandler = new(DecodePacketHandler)
+
+func StaticDecodePacketHandler() EventHandler {
+	return defaultDecodePacketHandler
 }
 
 var ErrMessageNotFound = errors.New("message not found")
@@ -47,9 +52,4 @@ func DecodeMessage(msgid uint32, data []byte) (interface{}, error) {
 	}
 
 	return msg, nil
-}
-
-func NewDecodePacketHandler() EventHandler {
-
-	return &DecodePacketHandler{}
 }
