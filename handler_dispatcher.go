@@ -3,15 +3,16 @@ package cellnet
 import "sync"
 
 type EventDispatcher interface {
+	EventHandler
 
 	// 注册事件回调
 	AddHandler(id int, h []EventHandler) int
 
+	// 根据AddHandler返回的int, 重新获得添加的Handler列表
 	GetHandlerByIndex(id, index int) []EventHandler
 
+	// 移除Handler
 	RemoveHandler(id, index int)
-
-	Call(*SessionEvent)
 
 	// 清除所有回调
 	Clear()
@@ -84,10 +85,6 @@ func (self *DispatcherHandler) RemoveHandler(id, index int) {
 	self.handlerByKeyGuard.Lock()
 	self.handlerByKey[multiHandlerKey{id, index}] = nil
 	self.handlerByKeyGuard.Unlock()
-}
-
-func (self *DispatcherHandler) Next() EventHandler {
-	return nil
 }
 
 func (self *DispatcherHandler) Clear() {

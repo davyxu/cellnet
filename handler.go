@@ -9,17 +9,7 @@ type EventHandler interface {
 	Call(*SessionEvent)
 }
 
-var EnableHandlerLog bool
-
-// 显示handler的名称
-func HandlerName(h EventHandler) string {
-	if h == nil {
-		return "nil"
-	}
-
-	return reflect.TypeOf(h).Elem().Name()
-}
-
+// 在传入HandlerLink中时, 可以根据Enable来决定是否使用Handler
 type HandlerOptional struct {
 	Handler EventHandler
 	Enable  bool
@@ -45,6 +35,17 @@ func HandlerLink(rawList ...interface{}) (ret []EventHandler) {
 	}
 
 	return
+}
+
+var EnableHandlerLog bool
+
+// 显示handler的名称
+func HandlerName(h EventHandler) string {
+	if h == nil {
+		return "nil"
+	}
+
+	return reflect.TypeOf(h).Elem().Name()
 }
 
 func HandlerChainListName(hlist []EventHandler) {
