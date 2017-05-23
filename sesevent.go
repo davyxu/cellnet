@@ -140,7 +140,7 @@ func (self *SessionEvent) MsgName() string {
 }
 
 func (self *SessionEvent) String() string {
-	return fmt.Sprintf("#%s(%s) MsgID: %d %s | %s Raw: (%d)%v", self.TypeString(), self.PeerName(), self.MsgID, self.MsgName(), self.MsgString(), self.MsgSize(), self.Data)
+	return fmt.Sprintf("#%s(%s) sid: %d MsgID: %d %s | %s Raw: (%d)%v", self.TypeString(), self.PeerName(), self.Ses.ID(), self.MsgID, self.MsgName(), self.MsgString(), self.MsgSize(), self.Data)
 }
 
 func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {

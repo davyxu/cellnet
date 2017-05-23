@@ -11,6 +11,7 @@ type peerBase struct {
 	cellnet.EventQueue
 	name            string
 	address         string
+	tag             interface{}
 	maxPacketSize   int
 	connReadBuffer  int
 	connWriteBuffer int
@@ -77,8 +78,20 @@ func (self *peerBase) nameOrAddress() string {
 	return self.address
 }
 
+func (self *peerBase) Tag() interface{} {
+	return self.tag
+}
+
+func (self *peerBase) SetTag(tag interface{}) {
+	self.tag = tag
+}
+
 func (self *peerBase) Address() string {
 	return self.address
+}
+
+func (self *peerBase) SetAddress(address string) {
+	self.address = address
 }
 
 func (self *peerBase) SetHandler(recv, send []cellnet.EventHandler) {
