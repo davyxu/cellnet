@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/davyxu/cellnet"
-	"reflect"
 	"sync"
 )
 
@@ -27,17 +26,7 @@ func StaticMsgLogHandler() cellnet.EventHandler {
 
 func MsgLog(ev *cellnet.SessionEvent) {
 
-	// send和post时
-	if ev.MsgID == 0 && ev.Msg != nil {
-		meta := cellnet.MessageMetaByName(cellnet.MessageFullName(reflect.TypeOf(ev.Msg)))
-		if meta != nil {
-			ev.MsgID = meta.ID
-		}
-	} else {
-		// 接收时
-
-		ev.Msg, _ = cellnet.DecodeMessage(ev.MsgID, ev.Data)
-	}
+	ev.AutoFill()
 
 	if IsBlockedMessageByID(ev.MsgID) {
 		return

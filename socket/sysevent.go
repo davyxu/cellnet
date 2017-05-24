@@ -19,7 +19,7 @@ func castToSystemEvent(ev *cellnet.SessionEvent, e cellnet.EventType, msg interf
 
 	ev.Type = e
 
-	meta := cellnet.MessageMetaByName(cellnet.MessageFullName(reflect.TypeOf(msg)))
+	meta := cellnet.MessageMetaByType(reflect.TypeOf(msg))
 	if meta != nil {
 		ev.MsgID = meta.ID
 	}

@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"bytes"
 	"fmt"
 	"path"
 	"reflect"
@@ -16,6 +17,7 @@ type MessageMeta struct {
 var (
 	metaByName = map[string]*MessageMeta{}
 	metaByID   = map[uint32]*MessageMeta{}
+	metaByType = map[reflect.Type]*MessageMeta{}
 )
 
 // 注册消息元信息(代码生成专用)
@@ -40,13 +42,32 @@ func RegisterMessageMeta(codecName string, name string, msgType reflect.Type, id
 		panic(fmt.Sprintf("duplicate message meta register by id: %d", meta.ID))
 	}
 
+	if _, ok := metaByType[msgType]; ok {
+		panic(fmt.Sprintf("duplicate message meta register by type: %d", meta.ID))
+	}
+
 	metaByName[name] = meta
 	metaByID[meta.ID] = meta
+	metaByType[msgType] = meta
 }
 
 // 根据名字查找消息元信息
 func MessageMetaByName(name string) *MessageMeta {
 	if v, ok := metaByName[name]; ok {
+		return v
+	}
+
+	return nil
+}
+
+// 根据类型查找消息元信息
+func MessageMetaByType(t reflect.Type) *MessageMeta {
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if v, ok := metaByType[t]; ok {
 		return v
 	}
 
@@ -64,7 +85,12 @@ func MessageFullName(rtype reflect.Type) string {
 		rtype = rtype.Elem()
 	}
 
-	return path.Base(rtype.PkgPath()) + "." + rtype.Name()
+	var b bytes.Buffer
+	b.WriteString(path.Base(rtype.PkgPath()))
+	b.WriteString(".")
+	b.WriteString(rtype.Name())
+
+	return b.String()
 
 }
 

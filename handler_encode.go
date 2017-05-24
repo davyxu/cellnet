@@ -24,9 +24,7 @@ func StaticEncodePacketHandler() EventHandler {
 
 func EncodeMessage(msg interface{}) (data []byte, msgid uint32, err error) {
 
-	fullName := MessageFullName(reflect.TypeOf(msg))
-
-	meta := MessageMetaByName(fullName)
+	meta := MessageMetaByType(reflect.TypeOf(msg))
 	if meta != nil {
 		msgid = meta.ID
 	} else {

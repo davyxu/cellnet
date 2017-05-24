@@ -2,10 +2,6 @@ package cellnet
 
 import "fmt"
 
-type RegisterMessageContext struct {
-	*MessageMeta
-}
-
 type CallbackHandler struct {
 	userCallback func(*SessionEvent)
 }
@@ -21,6 +17,10 @@ func NewCallbackHandler(userCallback func(*SessionEvent)) EventHandler {
 	return &CallbackHandler{
 		userCallback: userCallback,
 	}
+}
+
+type RegisterMessageContext struct {
+	*MessageMeta
 }
 
 // 注册消息处理回调

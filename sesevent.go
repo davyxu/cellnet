@@ -2,6 +2,7 @@ package cellnet
 
 import (
 	"fmt"
+	"reflect"
 	"sync/atomic"
 )
 
@@ -162,6 +163,22 @@ func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
 	}
 
 	return self
+}
+
+// 根据消息内容, 自动填充其他部分, 以方便输出日志
+func (self *SessionEvent) AutoFill() {
+
+	// send和post时
+	if self.MsgID == 0 && self.Msg != nil {
+		meta := MessageMetaByType(reflect.TypeOf(self.Msg))
+		if meta != nil {
+			self.MsgID = meta.ID
+		}
+	} else {
+		// 接收时
+
+		self.Msg, _ = DecodeMessage(self.MsgID, self.Data)
+	}
 }
 
 func NewSessionEvent(t EventType, s Session) *SessionEvent {
