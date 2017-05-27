@@ -48,7 +48,7 @@ func (self *SocketSession) Send(data interface{}) {
 func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
 
 	if sendHandler == nil {
-		_, sendHandler = self.p.GetHandler()
+		_, sendHandler = self.p.HandlerList()
 	}
 
 	ev.Ses = self
@@ -69,7 +69,7 @@ func (self *SocketSession) Post(data interface{}) {
 
 func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
 	if recvHandler == nil {
-		recvHandler, _ = self.p.GetHandler()
+		recvHandler, _ = self.p.HandlerList()
 	}
 
 	ev.Ses = self
@@ -142,7 +142,7 @@ exitsendloop:
 
 func (self *SocketSession) recvThread() {
 
-	recv, _ := self.p.GetHandler()
+	recv, _ := self.p.HandlerList()
 
 	for {
 
@@ -150,7 +150,7 @@ func (self *SocketSession) recvThread() {
 
 		cellnet.HandlerChainCall(recv, ev)
 
-		if ev.EndRecvLoop {
+		if ev.Err != nil {
 			break
 		}
 

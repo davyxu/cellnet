@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
 )
 
 type socketConnector struct {
@@ -68,7 +67,7 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				callSystemEvent(cellnet.SessionEvent_ConnectFailed, &coredef.SessionConnectFailed{Reason: int32(errToReason(err))}, self.safeRecvHandler())
+				systemError(nil, cellnet.SessionEvent_ConnectFailed, err, self.safeRecvHandler())
 				break
 			}
 
@@ -98,7 +97,7 @@ func (self *socketConnector) connect(address string) {
 			self.closeSignal <- true
 		}
 
-		callSystemEventByMeta(ses, cellnet.SessionEvent_Connected, Meta_SessionConnected, self.safeRecvHandler())
+		systemEvent(ses, cellnet.SessionEvent_Connected, self.safeRecvHandler())
 
 		if <-self.closeSignal {
 

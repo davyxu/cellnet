@@ -63,10 +63,10 @@ type Peer interface {
 	// 连接管理
 	SessionManager
 
-	//  Handler
-	SetHandler(recv, send []EventHandler)
+	//  HandlerList
+	SetHandlerList(recv, send []EventHandler)
 
-	GetHandler() (recv, send []EventHandler)
+	HandlerList() (recv, send []EventHandler)
 
 	Queue() EventQueue
 }

@@ -36,7 +36,7 @@ type SessionEvent struct {
 	Ses         Session        // 会话
 	SendHandler []EventHandler // 发送handler override
 
-	EndRecvLoop bool // 停止消息接收循环
+	Err error // 出现错误, 将结束ChainCall
 }
 
 func (self *SessionEvent) IsSystemEvent() bool {

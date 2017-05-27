@@ -4,7 +4,6 @@ import (
 	"net"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
 )
 
 type socketAcceptor struct {
@@ -42,7 +41,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			if err != nil {
 				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
 
-				callSystemEvent(cellnet.SessionEvent_AcceptFailed, &coredef.SessionAcceptFailed{Reason: int32(errToReason(err))}, self.safeRecvHandler())
+				systemError(nil, cellnet.SessionEvent_AcceptFailed, err, self.safeRecvHandler())
 
 				break
 			}
@@ -63,7 +62,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				ses.run()
 
 				// 通知逻辑
-				callSystemEventByMeta(ses, cellnet.SessionEvent_Accepted, Meta_SessionAccepted, self.safeRecvHandler())
+				systemEvent(ses, cellnet.SessionEvent_Accepted, self.safeRecvHandler())
 			}()
 
 		}

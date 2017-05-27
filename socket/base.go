@@ -106,14 +106,14 @@ func (self *peerBase) SetAddress(address string) {
 	self.address = address
 }
 
-func (self *peerBase) SetHandler(recv, send []cellnet.EventHandler) {
+func (self *peerBase) SetHandlerList(recv, send []cellnet.EventHandler) {
 	self.handlerGuard.Lock()
 	self.recvHandler = recv
 	self.sendHandler = send
 	self.handlerGuard.Unlock()
 }
 
-func (self *peerBase) GetHandler() (recv, send []cellnet.EventHandler) {
+func (self *peerBase) HandlerList() (recv, send []cellnet.EventHandler) {
 	self.handlerGuard.RLock()
 	recv = self.recvHandler
 	send = self.sendHandler

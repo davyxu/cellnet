@@ -2,7 +2,6 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
 	"time"
 )
 
@@ -27,9 +26,12 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 		if err != nil {
 
-			castToSystemEvent(ev, cellnet.SessionEvent_Closed, &coredef.SessionClosed{Reason: int32(errToReason(err))})
+			recv, _ := rawSes.FromPeer().HandlerList()
 
-			ev.EndRecvLoop = true
+			systemError(ev.Ses, cellnet.SessionEvent_Closed, err, recv)
+
+			ev.Err = err
+
 		} else {
 
 			ev.MsgID = msgid
