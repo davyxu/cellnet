@@ -21,19 +21,19 @@ message SessionConnected
 // 接受错误
 message SessionAcceptFailed
 {
-	string Reason = 1;
+	int32 Reason = 1;
 }
 
 // 连接错误
 message SessionConnectFailed
 {
-	string Reason = 1;
+	int32 Reason = 1;
 }
 
 // 连接断开
 message SessionClosed
 {
-	string Reason = 1;
+	int32 Reason = 1;
 }
 
 

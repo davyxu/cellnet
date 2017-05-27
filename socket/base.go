@@ -4,18 +4,21 @@ import (
 	"github.com/davyxu/cellnet"
 	"net"
 	"sync"
+	"time"
 )
 
 // Peer间的共享数据
 type peerBase struct {
 	cellnet.EventQueue
-	name            string
-	address         string
-	tag             interface{}
-	maxPacketSize   int
-	connReadBuffer  int
-	connWriteBuffer int
-	connNoDelay     bool
+	name             string
+	address          string
+	tag              interface{}
+	maxPacketSize    int
+	connReadBuffer   int
+	connWriteBuffer  int
+	connNoDelay      bool
+	connReadTimeout  time.Duration
+	connWriteTimeout time.Duration
 
 	recvHandler  []cellnet.EventHandler
 	sendHandler  []cellnet.EventHandler
@@ -41,6 +44,15 @@ func (self *peerBase) applyConnOption(conn net.Conn) {
 		cc.SetNoDelay(self.connNoDelay)
 	}
 
+}
+
+func (self *peerBase) SetSocketDeadline(read, write time.Duration) {
+	self.connReadTimeout = read
+	self.connWriteTimeout = write
+}
+
+func (self *peerBase) SocketDeadline() (read, write time.Duration) {
+	return self.connReadTimeout, self.connWriteTimeout
 }
 
 func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool) {

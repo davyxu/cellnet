@@ -26,7 +26,7 @@ func StaticMsgLogHandler() cellnet.EventHandler {
 
 func MsgLog(ev *cellnet.SessionEvent) {
 
-	ev.AutoFill()
+	ev.Parse()
 
 	if IsBlockedMessageByID(ev.MsgID) {
 		return

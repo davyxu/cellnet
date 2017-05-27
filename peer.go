@@ -1,5 +1,7 @@
 package cellnet
 
+import "time"
+
 type Session interface {
 
 	// 发包
@@ -50,6 +52,10 @@ type Peer interface {
 
 	// 设置socket选项, 如果不修改,请设置-1
 	SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool)
+
+	// 设置socket超时间隔, 0表示不作用
+	SetSocketDeadline(read, write time.Duration)
+	SocketDeadline() (read, write time.Duration)
 
 	// 派发器
 	EventDispatcher

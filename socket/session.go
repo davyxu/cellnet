@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/davyxu/cellnet"
+	"time"
 )
 
 type SocketSession struct {
@@ -100,6 +101,13 @@ func (self *SocketSession) sendThread() {
 		}
 
 		self.sendList.EndPick()
+
+		// 写超时
+		_, write := self.FromPeer().SocketDeadline()
+
+		if write != 0 {
+			self.stream.Raw().SetWriteDeadline(time.Now().Add(write))
+		}
 
 		// 写队列
 		for _, ev := range writeList {

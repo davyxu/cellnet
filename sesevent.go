@@ -166,7 +166,7 @@ func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
 }
 
 // 根据消息内容, 自动填充其他部分, 以方便输出日志
-func (self *SessionEvent) AutoFill() {
+func (self *SessionEvent) Parse() {
 
 	// send和post时
 	if self.MsgID == 0 && self.Msg != nil {
