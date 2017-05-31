@@ -10,10 +10,7 @@ func (self *EncodePacketHandler) Call(ev *SessionEvent) {
 	var err error
 	ev.Data, ev.MsgID, err = EncodeMessage(ev.Msg)
 
-	if err != nil {
-		log.Debugln(err, ev.String())
-	}
-
+	ev.SetResult(errToResult(err))
 }
 
 var defaultEncodePacketHandler EventHandler = new(EncodePacketHandler)

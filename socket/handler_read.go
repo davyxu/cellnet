@@ -28,9 +28,9 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 			recv, _ := rawSes.FromPeer().HandlerList()
 
-			systemError(ev.Ses, cellnet.SessionEvent_Closed, err, recv)
+			ev.SetResult(errToResult(err))
 
-			ev.Err = err
+			systemError(ev.Ses, cellnet.SessionEvent_Closed, ev.Result(), recv)
 
 		} else {
 

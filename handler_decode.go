@@ -16,9 +16,7 @@ func (self *DecodePacketHandler) Call(ev *SessionEvent) {
 		var err error
 		ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
 
-		if err != nil {
-			log.Errorln(err, ev.MsgID)
-		}
+		ev.SetResult(errToResult(err))
 	}
 
 }
@@ -52,4 +50,13 @@ func DecodeMessage(msgid uint32, data []byte) (interface{}, error) {
 	}
 
 	return msg, nil
+}
+
+func errToResult(err error) Result {
+
+	if err == nil {
+		return Result_OK
+	}
+
+	return Result_CodecError
 }

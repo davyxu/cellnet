@@ -36,7 +36,15 @@ type SessionEvent struct {
 	Ses         Session        // 会话
 	SendHandler []EventHandler // 发送handler override
 
-	Err error // 出现错误, 将结束ChainCall
+	r Result // 出现错误, 将结束ChainCall
+}
+
+func (self *SessionEvent) Result() Result {
+	return self.r
+}
+
+func (self *SessionEvent) SetResult(r Result) {
+	self.r = r
 }
 
 func (self *SessionEvent) IsSystemEvent() bool {

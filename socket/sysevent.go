@@ -29,18 +29,20 @@ func systemEvent(ses cellnet.Session, e cellnet.EventType, hlist []cellnet.Event
 	cellnet.HandlerChainCall(hlist, ev)
 }
 
-func systemError(ses cellnet.Session, e cellnet.EventType, err error, hlist []cellnet.EventHandler) {
+func systemError(ses cellnet.Session, e cellnet.EventType, r cellnet.Result, hlist []cellnet.EventHandler) {
 
 	ev := cellnet.NewSessionEvent(e, ses)
+
+	reason := int32(r)
 
 	// 直接放在这里, decoder里遇到系统事件不会进行decode操作
 	switch e {
 	case cellnet.SessionEvent_Closed:
-		ev.Msg = &coredef.SessionClosed{Reason: int32(errToReason(err))}
+		ev.Msg = &coredef.SessionClosed{Reason: reason}
 	case cellnet.SessionEvent_AcceptFailed:
-		ev.Msg = &coredef.SessionAcceptFailed{Reason: int32(errToReason(err))}
+		ev.Msg = &coredef.SessionAcceptFailed{Reason: reason}
 	case cellnet.SessionEvent_ConnectFailed:
-		ev.Msg = &coredef.SessionConnectFailed{Reason: int32(errToReason(err))}
+		ev.Msg = &coredef.SessionConnectFailed{Reason: reason}
 	default:
 		panic("unknown system error")
 	}

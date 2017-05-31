@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/davyxu/cellnet"
 	"io"
 	"net"
 	"sync"
@@ -206,4 +207,25 @@ func NewTLVStream(conn net.Conn) *TLVStream {
 	s.headReader = bytes.NewReader(s.inputHeadBuffer)
 
 	return s
+}
+
+func errToResult(err error) cellnet.Result {
+
+	if err == nil {
+		return cellnet.Result_OK
+	}
+
+	switch err {
+	case ErrPackageTagNotMatch, ErrPackageDataSizeInvalid, ErrPackageTooBig:
+		return cellnet.Result_PackageCrack
+	}
+
+	switch n := err.(type) {
+	case net.Error:
+		if n.Timeout() {
+			return cellnet.Result_SocketTimeout
+		}
+	}
+
+	return cellnet.Result_SocketError
 }

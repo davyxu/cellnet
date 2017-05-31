@@ -67,7 +67,7 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				systemError(nil, cellnet.SessionEvent_ConnectFailed, err, self.safeRecvHandler())
+				systemError(nil, cellnet.SessionEvent_ConnectFailed, errToResult(err), self.safeRecvHandler())
 				break
 			}
 

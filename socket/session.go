@@ -150,7 +150,7 @@ func (self *SocketSession) recvThread() {
 
 		cellnet.HandlerChainCall(recv, ev)
 
-		if ev.Err != nil {
+		if ev.Result() != cellnet.Result_OK {
 			break
 		}
 

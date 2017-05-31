@@ -70,7 +70,7 @@ func HandlerChainCall(hlist []EventHandler, ev *SessionEvent) {
 
 		h.Call(ev)
 
-		if ev.Err != nil {
+		if ev.Result() != Result_OK {
 			break
 		}
 	}
