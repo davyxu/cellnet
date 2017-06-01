@@ -5,7 +5,7 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/example"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
+	"github.com/davyxu/cellnet/proto/binary/coredef"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"

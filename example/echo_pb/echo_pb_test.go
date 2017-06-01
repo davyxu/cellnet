@@ -1,12 +1,13 @@
-package sproto_echo
+package echo_pb
 
 import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/example"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
-	"github.com/davyxu/cellnet/proto/sproto/gamedef"
+	"github.com/davyxu/cellnet/proto/binary/coredef"           // 底层系统事件
+	jsongamedef "github.com/davyxu/cellnet/proto/json/gamedef" // json逻辑协议
+	"github.com/davyxu/cellnet/proto/pb/gamedef"               // pb逻辑协议
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/golog"
 )
@@ -19,16 +20,28 @@ func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7401")
-	evd.SetName("server")
+	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
 
+	// 混合协议支持, 接收pb编码的消息
 	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
 
 		ev.Send(&gamedef.TestEchoACK{
-			Content: msg.Content,
+			Content: msg.String(),
+		})
+
+	})
+
+	// 混合协议支持, 接收json编码的消息
+	cellnet.RegisterMessage(evd, "gamedef.TestEchoJsonACK", func(ev *cellnet.SessionEvent) {
+		msg := ev.Msg.(*jsongamedef.TestEchoJsonACK)
+
+		log.Debugln("server recv json:", msg.Content)
+
+		ev.Send(&gamedef.TestEchoACK{
+			Content: msg.String(),
 		})
 
 	})
@@ -41,8 +54,7 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	dh := socket.NewConnector(queue).Start("127.0.0.1:7401")
-	dh.SetName("client")
+	dh := socket.NewConnector(queue).Start("127.0.0.1:7301")
 
 	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -56,8 +68,14 @@ func client() {
 
 		log.Debugln("client connected")
 
+		// 发送消息, 底层自动选择pb编码
 		ev.Send(&gamedef.TestEchoACK{
 			Content: "hello",
+		})
+
+		// 发送消息, 底层自动选择json编码
+		ev.Send(&jsongamedef.TestEchoJsonACK{
+			Content: "hello json",
 		})
 
 	})
@@ -66,7 +84,7 @@ func client() {
 
 		msg := ev.Msg.(*coredef.SessionConnectFailed)
 
-		log.Debugln(msg.Reason)
+		log.Debugln(msg.Result)
 
 	})
 
@@ -76,7 +94,7 @@ func client() {
 
 }
 
-func TestSprotoEcho(t *testing.T) {
+func TestEcho(t *testing.T) {
 
 	signal = test.NewSignalTester(t)
 

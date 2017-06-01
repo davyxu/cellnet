@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
+	"github.com/davyxu/cellnet/proto/binary/coredef"
 )
 
 type RPCMatchHandler struct {

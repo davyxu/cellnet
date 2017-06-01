@@ -12,7 +12,7 @@ func BuildSendHandler(useMsgLog bool) []cellnet.EventHandler {
 
 }
 
-// socket.ReadPacketHandler -> socket.MsgLogHandler -> socket.DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
+// socket.ReadPacketHandler -> socket.MsgLogHandler ->  socket.DecodePacketHandler -> cellnet.DispatcherHandler
 func BuildRecvHandler(useMsgLog bool, dispatcher *cellnet.DispatcherHandler) []cellnet.EventHandler {
 
 	return cellnet.HandlerLink(StaticReadPacketHandler(),

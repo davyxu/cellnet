@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/pb/coredef"
+	"github.com/davyxu/cellnet/proto/binary/coredef"
 )
 
 var (
@@ -33,16 +33,14 @@ func systemError(ses cellnet.Session, e cellnet.EventType, r cellnet.Result, hli
 
 	ev := cellnet.NewSessionEvent(e, ses)
 
-	reason := int32(r)
-
 	// 直接放在这里, decoder里遇到系统事件不会进行decode操作
 	switch e {
 	case cellnet.SessionEvent_Closed:
-		ev.Msg = &coredef.SessionClosed{Reason: reason}
+		ev.Msg = &coredef.SessionClosed{Result: r}
 	case cellnet.SessionEvent_AcceptFailed:
-		ev.Msg = &coredef.SessionAcceptFailed{Reason: reason}
+		ev.Msg = &coredef.SessionAcceptFailed{Result: r}
 	case cellnet.SessionEvent_ConnectFailed:
-		ev.Msg = &coredef.SessionConnectFailed{Reason: reason}
+		ev.Msg = &coredef.SessionConnectFailed{Result: r}
 	default:
 		panic("unknown system error")
 	}
