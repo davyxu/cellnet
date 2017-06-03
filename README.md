@@ -145,13 +145,15 @@ rpc\			异步远程过程调用封装
 socket\			套接字,连接管理等封装
 
 example\			测试用例/例子
+
+    classicrecv\ 传统的固定消息处理函数例子
    
 	close\		发送消息后保证消息送达后再断开连接
 	
-   	echo_pb\	基于protobuf协议的pingpong测试，
+   	echo_pb\	基于protobuf和json混合协议的pingpong测试，
 
    	echo_sproto\	基于sproto协议的pingpong测试，
-	
+
 	rpc\		异步远程过程调用
 	
 	timer\		异步计时器

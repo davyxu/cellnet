@@ -1,6 +1,8 @@
 package cellnet
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type CallbackHandler struct {
 	userCallback func(*SessionEvent)
@@ -33,6 +35,10 @@ func RegisterMessage(p Peer, msgName string, userCallback func(*SessionEvent)) *
 // 注册消息处理的一系列Handler
 // DispatcherHandler -> socket.DecodePacketHandler -> ...
 func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *RegisterMessageContext {
+
+	if p == nil {
+		return nil
+	}
 
 	meta := MessageMetaByName(msgName)
 
