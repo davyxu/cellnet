@@ -29,7 +29,7 @@ func onServerMessage(ev *cellnet.SessionEvent) {
 	switch msg := ev.Msg.(type) {
 	case *gamedef.TestEchoACK:
 
-		log.Debugln("server recv:", msg.Content)
+		log.Debugln("classic server recv:", msg.Content)
 
 		ev.Send(&gamedef.TestEchoACK{
 			Content: msg.String(),
@@ -45,10 +45,18 @@ func server() {
 	peer := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
 	_, send := peer.HandlerList()
 
-	// 重新构建接收流程, 让消息重定向到自己的消息处理Handler
-	recvList := socket.BuildRecvHandler(socket.EnableMessageLog, new(RecvMessageHandler))
+	// 在原有流程中, 插入固定消息回调
+	recvList := socket.BuildRecvHandler(socket.EnableMessageLog, new(RecvMessageHandler), peer)
 
 	peer.SetHandlerList(recvList, send)
+
+	cellnet.RegisterMessage(peer, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+		msg := ev.Msg.(*gamedef.TestEchoACK)
+
+		log.Debugln("server recv:", msg.Content)
+
+		signal.Done(1)
+	})
 
 	queue.StartLoop()
 
