@@ -62,6 +62,9 @@ func (self *DispatcherHandler) Call(ev *SessionEvent) {
 
 	key := multiHandlerKey{int(ev.MsgID), 0}
 
+	// 拷贝一份, 放置派发时, 内部被修改
+	copyed := ev.Clone()
+
 	for index := 0; ; index++ {
 
 		key.index = index
@@ -71,7 +74,7 @@ func (self *DispatcherHandler) Call(ev *SessionEvent) {
 		self.handlerByKeyGuard.RUnlock()
 
 		if ok {
-			HandlerChainCall(hlist, ev)
+			HandlerChainCall(hlist, copyed)
 		} else {
 			break
 		}

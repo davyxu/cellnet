@@ -39,6 +39,23 @@ type SessionEvent struct {
 	r Result // 出现错误, 将结束ChainCall
 }
 
+func (self *SessionEvent) Clone() *SessionEvent {
+	c := &SessionEvent{
+		UID:         self.UID,
+		Type:        self.Type,
+		MsgID:       self.MsgID,
+		Msg:         self.Msg,
+		Tag:         self.Tag,
+		TransmitTag: self.TransmitTag,
+		Ses:         self.Ses,
+		SendHandler: self.SendHandler,
+	}
+
+	copy(c.Data, self.Data)
+
+	return c
+}
+
 func (self *SessionEvent) Result() Result {
 	return self.r
 }
