@@ -11,8 +11,8 @@ type EventHandler interface {
 
 // 在传入HandlerLink中时, 可以根据Enable来决定是否使用Handler
 type HandlerOptional struct {
-	Handler EventHandler
 	Enable  bool
+	Handler EventHandler
 }
 
 // 链接一连串handler, 返回第一个
@@ -60,13 +60,18 @@ func HandlerChainListName(hlist []EventHandler) {
 
 }
 
+func HandlerLog(h EventHandler, ev *SessionEvent) {
+
+	if EnableHandlerLog {
+		log.Debugf("%d %s [%s] <%s> SesID: %d MsgID: %d(%s) {%s} Raw: (%d)%v Tag: %v TransmitTag: %v", ev.UID, ev.TypeString(), ev.PeerName(), HandlerName(h), ev.SessionID(), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data, ev.Tag, ev.TransmitTag)
+	}
+}
+
 func HandlerChainCall(hlist []EventHandler, ev *SessionEvent) {
 
 	for _, h := range hlist {
 
-		if EnableHandlerLog {
-			log.Debugf("%d %s [%s] <%s> SesID: %d MsgID: %d(%s) {%s} Raw: (%d)%v Tag: %v TransmitTag: %v", ev.UID, ev.TypeString(), ev.PeerName(), HandlerName(h), ev.SessionID(), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data, ev.Tag, ev.TransmitTag)
-		}
+		HandlerLog(h, ev)
 
 		h.Call(ev)
 

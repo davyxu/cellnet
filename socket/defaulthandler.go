@@ -6,7 +6,7 @@ import "github.com/davyxu/cellnet"
 func BuildSendHandler(useMsgLog bool) []cellnet.EventHandler {
 
 	return cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
-		cellnet.HandlerOptional{StaticMsgLogHandler(), useMsgLog},
+		cellnet.HandlerOptional{useMsgLog, StaticMsgLogHandler()},
 		StaticWritePacketHandler(),
 	)
 
@@ -16,7 +16,7 @@ func BuildSendHandler(useMsgLog bool) []cellnet.EventHandler {
 func BuildRecvHandler(useMsgLog bool, recvHandler ...cellnet.EventHandler) []cellnet.EventHandler {
 
 	return cellnet.HandlerLink(StaticReadPacketHandler(),
-		cellnet.HandlerOptional{StaticMsgLogHandler(), useMsgLog},
+		cellnet.HandlerOptional{useMsgLog, StaticMsgLogHandler()},
 		cellnet.StaticDecodePacketHandler(),
 		recvHandler,
 	)

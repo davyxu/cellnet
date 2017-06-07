@@ -13,7 +13,7 @@ func (self *QueuePostHandler) Call(ev *SessionEvent) {
 
 }
 
-func NewQueuePostHandler(q EventQueue, hlist []EventHandler) EventHandler {
+func NewQueuePostHandler(q EventQueue, hlist ...EventHandler) EventHandler {
 	return &QueuePostHandler{
 		q:     q,
 		hlist: hlist,

@@ -62,10 +62,10 @@ func (self *DispatcherHandler) Call(ev *SessionEvent) {
 
 	key := multiHandlerKey{int(ev.MsgID), 0}
 
-	// 拷贝一份, 放置派发时, 内部被修改
-	copyed := ev.Clone()
-
 	for index := 0; ; index++ {
+
+		// 拷贝一份, 放置派发时, 内部被修改
+		copyed := ev.Clone()
 
 		key.index = index
 

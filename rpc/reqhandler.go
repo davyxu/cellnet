@@ -15,22 +15,22 @@ func buildRecvHandler(p cellnet.Peer, msgName string, tailHandler cellnet.EventH
 
 	var rpcDispatcher *RPCMatchHandler
 
-	raw := p.GetHandlerByIndex(int(metaWrapper.ID), 0)
+	raw := p.GetHandlerByIndex(int(MetaCall.ID), 0)
 	if raw == nil {
 		// rpc服务端收到消息时, 用定制的handler返回消息, 而不是peer默认的
 		raw = cellnet.HandlerLink(NewUnboxHandler(getSendHandler()), NewRPCMatchHandler())
 
-		p.AddHandler(int(metaWrapper.ID), raw)
+		p.AddHandler(int(MetaCall.ID), raw)
 	}
 
 	rpcDispatcher = raw[len(raw)-1].(*RPCMatchHandler)
 
 	rpcID = int32(rpcDispatcher.AddHandler(id, cellnet.HandlerLink(
 		cellnet.StaticDecodePacketHandler(),
-		cellnet.NewQueuePostHandler(p.Queue(), cellnet.HandlerLink(tailHandler, cellnet.NewCallbackHandler(func(ev *cellnet.SessionEvent) {
+		cellnet.NewQueuePostHandler(p.Queue(), tailHandler, cellnet.NewCallbackHandler(func(ev *cellnet.SessionEvent) {
 
 			rpcDispatcher.RemoveHandler(id, int(rpcID))
-		}))),
+		})),
 	)))
 
 	return rpcID, nil

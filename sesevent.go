@@ -49,6 +49,7 @@ func (self *SessionEvent) Clone() *SessionEvent {
 		TransmitTag: self.TransmitTag,
 		Ses:         self.Ses,
 		SendHandler: self.SendHandler,
+		Data:        make([]byte, len(self.Data)),
 	}
 
 	copy(c.Data, self.Data)
