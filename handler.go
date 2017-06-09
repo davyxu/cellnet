@@ -63,7 +63,20 @@ func HandlerChainListName(hlist []EventHandler) {
 func HandlerLog(h EventHandler, ev *SessionEvent) {
 
 	if EnableHandlerLog {
-		log.Debugf("%d %s [%s] <%s> SesID: %d MsgID: %d(%s) {%s} Raw: (%d)%v Tag: %v TransmitTag: %v", ev.UID, ev.TypeString(), ev.PeerName(), HandlerName(h), ev.SessionID(), ev.MsgID, ev.MsgName(), ev.MsgString(), ev.MsgSize(), ev.Data, ev.Tag, ev.TransmitTag)
+		log.Debugf("%d %s [%s] <%s> SesID: %d MsgID: %d(%s) {%s} Tag: %v TransmitTag: %v Raw: (%d)%v",
+			ev.UID,
+			ev.TypeString(),
+			ev.PeerName(),
+			HandlerName(h),
+			ev.SessionID(),
+			ev.MsgID,
+			ev.MsgName(),
+			ev.MsgString(),
+			ev.Tag,
+			ev.TransmitTag,
+			ev.MsgSize(),
+			ev.Data,
+		)
 	}
 }
 
