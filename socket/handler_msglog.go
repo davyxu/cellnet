@@ -34,7 +34,7 @@ func MsgLog(ev *cellnet.SessionEvent) {
 
 	// 需要在收到消息, 不经过decoder时, 就要打印出来, 所以手动解开消息, 有少许耗费
 
-	log.Debugf("#%s(%s) sid: %d %s size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgSize(), ev.MsgString())
+	log.Debugf("#%s(%s) sid: %d %s(%d) size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(),ev.MsgID, ev.MsgSize(), ev.MsgString())
 
 }
 
