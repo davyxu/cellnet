@@ -17,14 +17,14 @@ var signal *test.SignalTester
 type RecvMessageHandler struct {
 }
 
-func (self *RecvMessageHandler) Call(ev *cellnet.SessionEvent) {
+func (self *RecvMessageHandler) Call(ev *cellnet.Event) {
 
 	onServerMessage(ev)
 
 }
 
 // 接收peer的所有消息, 使用这种传统的结构可以方便做服务器热更新
-func onServerMessage(ev *cellnet.SessionEvent) {
+func onServerMessage(ev *cellnet.Event) {
 
 	switch msg := ev.Msg.(type) {
 	case *gamedef.TestEchoACK:
@@ -50,7 +50,7 @@ func server() {
 
 	peer.SetHandlerList(recvList, send)
 
-	cellnet.RegisterMessage(peer, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(peer, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -69,7 +69,7 @@ func client() {
 
 	dh := socket.NewConnector(queue).Start("127.0.0.1:7301")
 
-	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.Content)
@@ -77,7 +77,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		log.Debugln("client connected")
 

@@ -9,7 +9,7 @@ type RPCMatchHandler struct {
 	*cellnet.DispatcherHandler
 }
 
-func (self *RPCMatchHandler) Call(ev *cellnet.SessionEvent) {
+func (self *RPCMatchHandler) Call(ev *cellnet.Event) {
 
 	msg := ev.Msg.(*coredef.RemoteCallACK)
 

@@ -22,7 +22,7 @@ func server() {
 	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7401")
 	evd.SetName("server")
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -44,7 +44,7 @@ func client() {
 	dh := socket.NewConnector(queue).Start("127.0.0.1:7401")
 	dh.SetName("client")
 
-	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.Content)
@@ -52,7 +52,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		log.Debugln("client connected")
 
@@ -62,7 +62,7 @@ func client() {
 
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(dh, "coredef.SessionConnectFailed", func(ev *cellnet.Event) {
 
 		msg := ev.Msg.(*coredef.SessionConnectFailed)
 

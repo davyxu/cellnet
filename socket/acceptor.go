@@ -41,7 +41,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 			if err != nil {
 				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
 
-				systemError(nil, cellnet.SessionEvent_AcceptFailed, errToResult(err), self.safeRecvHandler())
+				systemError(nil, cellnet.Event_AcceptFailed, errToResult(err), self.safeRecvHandler())
 
 				break
 			}
@@ -62,7 +62,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				ses.run()
 
 				// 通知逻辑
-				systemEvent(ses, cellnet.SessionEvent_Accepted, self.safeRecvHandler())
+				systemEvent(ses, cellnet.Event_Accepted, self.safeRecvHandler())
 			}()
 
 		}

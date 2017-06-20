@@ -35,6 +35,10 @@ type evQueue struct {
 // 派发到队列
 func (self *evQueue) Post(callback func()) {
 
+	if callback == nil {
+		return
+	}
+
 	self.queue <- callback
 }
 

@@ -9,19 +9,19 @@ import (
 type EventType int
 
 const (
-	SessionEvent_Unknown EventType = iota
-	SessionEvent_Connected
-	SessionEvent_ConnectFailed
-	SessionEvent_Accepted
-	SessionEvent_AcceptFailed
-	SessionEvent_Closed
-	SessionEvent_Recv
-	SessionEvent_Send
-	SessionEvent_Post
+	Event_Unknown EventType = iota
+	Event_Connected
+	Event_ConnectFailed
+	Event_Accepted
+	Event_AcceptFailed
+	Event_Closed
+	Event_Recv
+	Event_Send
+	Event_Post
 )
 
 // 会话事件
-type SessionEvent struct {
+type Event struct {
 	UID int64
 
 	Type EventType // 事件类型
@@ -39,8 +39,8 @@ type SessionEvent struct {
 	r Result // 出现错误, 将结束ChainCall
 }
 
-func (self *SessionEvent) Clone() *SessionEvent {
-	c := &SessionEvent{
+func (self *Event) Clone() *Event {
+	c := &Event{
 		UID:         self.UID,
 		Type:        self.Type,
 		MsgID:       self.MsgID,
@@ -57,21 +57,21 @@ func (self *SessionEvent) Clone() *SessionEvent {
 	return c
 }
 
-func (self *SessionEvent) Result() Result {
+func (self *Event) Result() Result {
 	return self.r
 }
 
-func (self *SessionEvent) SetResult(r Result) {
+func (self *Event) SetResult(r Result) {
 	self.r = r
 }
 
-func (self *SessionEvent) IsSystemEvent() bool {
+func (self *Event) IsSystemEvent() bool {
 	switch self.Type {
-	case SessionEvent_Connected,
-		SessionEvent_ConnectFailed,
-		SessionEvent_Accepted,
-		SessionEvent_AcceptFailed,
-		SessionEvent_Closed:
+	case Event_Connected,
+		Event_ConnectFailed,
+		Event_Accepted,
+		Event_AcceptFailed,
+		Event_Closed:
 		return true
 	}
 
@@ -79,13 +79,13 @@ func (self *SessionEvent) IsSystemEvent() bool {
 }
 
 // 兼容普通消息发送和rpc消息返回, 推荐
-func (self *SessionEvent) Send(data interface{}) {
+func (self *Event) Send(data interface{}) {
 
 	if self.Ses == nil {
 		return
 	}
 
-	ev := NewSessionEvent(SessionEvent_Send, self.Ses)
+	ev := NewEvent(Event_Send, self.Ses)
 	ev.Msg = data
 	ev.TransmitTag = self.TransmitTag
 
@@ -93,7 +93,7 @@ func (self *SessionEvent) Send(data interface{}) {
 
 }
 
-func (self *SessionEvent) PeerName() string {
+func (self *Event) PeerName() string {
 	if self.Ses == nil {
 		return ""
 	}
@@ -106,26 +106,26 @@ func (self *SessionEvent) PeerName() string {
 	return self.Ses.FromPeer().Address()
 }
 
-func (self *SessionEvent) TypeString() string {
+func (self *Event) TypeString() string {
 	switch self.Type {
-	case SessionEvent_Recv:
-		return "SessionEvent_Recv"
-	case SessionEvent_Send:
-		return "SessionEvent_Send"
-	case SessionEvent_Connected:
-		return "SessionEvent_Connected"
-	case SessionEvent_ConnectFailed:
-		return "SessionEvent_ConnectFailed"
-	case SessionEvent_Accepted:
-		return "SessionEvent_Accepted"
-	case SessionEvent_Closed:
-		return "SessionEvent_Closed"
+	case Event_Recv:
+		return "Event_Recv"
+	case Event_Send:
+		return "Event_Send"
+	case Event_Connected:
+		return "Event_Connected"
+	case Event_ConnectFailed:
+		return "Event_ConnectFailed"
+	case Event_Accepted:
+		return "Event_Accepted"
+	case Event_Closed:
+		return "Event_Closed"
 	}
 
 	return fmt.Sprintf("unknown(%d)", self.Type)
 }
 
-func (self *SessionEvent) SessionID() int64 {
+func (self *Event) SessionID() int64 {
 	if self.Ses == nil {
 		return 0
 	}
@@ -133,7 +133,7 @@ func (self *SessionEvent) SessionID() int64 {
 	return self.Ses.ID()
 }
 
-func (self *SessionEvent) MsgSize() int {
+func (self *Event) MsgSize() int {
 	if self.Data == nil {
 		return 0
 	}
@@ -141,7 +141,7 @@ func (self *SessionEvent) MsgSize() int {
 	return len(self.Data)
 }
 
-func (self *SessionEvent) MsgString() string {
+func (self *Event) MsgString() string {
 
 	if self.Msg == nil {
 		return ""
@@ -156,7 +156,7 @@ func (self *SessionEvent) MsgString() string {
 	return ""
 }
 
-func (self *SessionEvent) MsgName() string {
+func (self *Event) MsgName() string {
 
 	meta := MessageMetaByID(self.MsgID)
 	if meta == nil {
@@ -166,11 +166,11 @@ func (self *SessionEvent) MsgName() string {
 	return meta.Name
 }
 
-func (self *SessionEvent) String() string {
+func (self *Event) String() string {
 	return fmt.Sprintf("#%s(%s) sid: %d MsgID: %d %s | %s Raw: (%d)%v", self.TypeString(), self.PeerName(), self.Ses.ID(), self.MsgID, self.MsgName(), self.MsgString(), self.MsgSize(), self.Data)
 }
 
-func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
+func (self *Event) FromMessage(msg interface{}) *Event {
 
 	var err error
 	self.Data, self.MsgID, err = EncodeMessage(msg)
@@ -182,7 +182,7 @@ func (self *SessionEvent) FromMessage(msg interface{}) *SessionEvent {
 	return self
 }
 
-func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
+func (self *Event) FromMeta(meta *MessageMeta) *Event {
 
 	if meta != nil {
 		self.MsgID = meta.ID
@@ -192,7 +192,7 @@ func (self *SessionEvent) FromMeta(meta *MessageMeta) *SessionEvent {
 }
 
 // 根据消息内容, 自动填充其他部分, 以方便输出日志
-func (self *SessionEvent) Parse() {
+func (self *Event) Parse() {
 
 	// send和post时
 	if self.MsgID == 0 && self.Msg != nil {
@@ -207,8 +207,8 @@ func (self *SessionEvent) Parse() {
 	}
 }
 
-func NewSessionEvent(t EventType, s Session) *SessionEvent {
-	self := &SessionEvent{
+func NewEvent(t EventType, s Session) *Event {
+	self := &Event{
 		Type: t,
 		Ses:  s,
 	}

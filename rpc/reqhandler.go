@@ -27,7 +27,7 @@ func buildRecvHandler(p cellnet.Peer, msgName string, tailHandler cellnet.EventH
 
 	rpcID = int32(rpcDispatcher.AddHandler(id, cellnet.HandlerLink(
 		cellnet.StaticDecodePacketHandler(),
-		cellnet.NewQueuePostHandler(p.Queue(), tailHandler, cellnet.NewCallbackHandler(func(ev *cellnet.SessionEvent) {
+		cellnet.NewQueuePostHandler(p.Queue(), tailHandler, cellnet.NewCallbackHandler(func(ev *cellnet.Event) {
 
 			rpcDispatcher.RemoveHandler(id, int(rpcID))
 		})),

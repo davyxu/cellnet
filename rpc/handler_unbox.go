@@ -9,7 +9,7 @@ type UnboxHandler struct {
 	feedbackHandler []cellnet.EventHandler
 }
 
-func (self *UnboxHandler) Call(ev *cellnet.SessionEvent) {
+func (self *UnboxHandler) Call(ev *cellnet.Event) {
 
 	wrapper := ev.Msg.(*coredef.RemoteCallACK)
 

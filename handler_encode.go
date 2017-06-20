@@ -5,7 +5,7 @@ import "reflect"
 type EncodePacketHandler struct {
 }
 
-func (self *EncodePacketHandler) Call(ev *SessionEvent) {
+func (self *EncodePacketHandler) Call(ev *Event) {
 
 	var err error
 	ev.Data, ev.MsgID, err = EncodeMessage(ev.Msg)

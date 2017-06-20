@@ -5,16 +5,16 @@ import (
 )
 
 type CallbackHandler struct {
-	userCallback func(*SessionEvent)
+	userCallback func(*Event)
 }
 
-func (self *CallbackHandler) Call(ev *SessionEvent) {
+func (self *CallbackHandler) Call(ev *Event) {
 
 	self.userCallback(ev)
 
 }
 
-func NewCallbackHandler(userCallback func(*SessionEvent)) EventHandler {
+func NewCallbackHandler(userCallback func(*Event)) EventHandler {
 
 	return &CallbackHandler{
 		userCallback: userCallback,
@@ -27,7 +27,7 @@ type RegisterMessageContext struct {
 
 // 注册消息处理回调
 // DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
-func RegisterMessage(p Peer, msgName string, userCallback func(*SessionEvent)) *RegisterMessageContext {
+func RegisterMessage(p Peer, msgName string, userCallback func(*Event)) *RegisterMessageContext {
 
 	return RegisterHandler(p, msgName, NewCallbackHandler(userCallback))
 }

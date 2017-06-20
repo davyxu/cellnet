@@ -4,7 +4,7 @@ type BranchHandler struct {
 	hlist []EventHandler
 }
 
-func (self *BranchHandler) Call(ev *SessionEvent) {
+func (self *BranchHandler) Call(ev *Event) {
 
 	for _, h := range self.hlist {
 

@@ -5,7 +5,7 @@ import (
 )
 
 // ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
-func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCallback func(ev *cellnet.SessionEvent)) error {
+func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCallback func(ev *cellnet.Event)) error {
 
 	ses, p, err := getPeerSession(sesOrPeer)
 
@@ -20,7 +20,7 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCall
 	}
 
 	// 发送RPC请求
-	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, ses)
+	ev := cellnet.NewEvent(cellnet.Event_Send, ses)
 	ev.TransmitTag = rpcid
 	ev.Msg = reqMsg
 	ses.RawSend(getSendHandler(), ev)

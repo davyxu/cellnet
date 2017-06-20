@@ -14,13 +14,13 @@ var (
 
 func systemEvent(ses cellnet.Session, e cellnet.EventType, hlist []cellnet.EventHandler) {
 
-	ev := cellnet.NewSessionEvent(e, ses)
+	ev := cellnet.NewEvent(e, ses)
 
 	var meta *cellnet.MessageMeta
 	switch e {
-	case cellnet.SessionEvent_Accepted:
+	case cellnet.Event_Accepted:
 		meta = Meta_SessionAccepted
-	case cellnet.SessionEvent_Connected:
+	case cellnet.Event_Connected:
 		meta = Meta_SessionConnected
 	}
 
@@ -31,15 +31,15 @@ func systemEvent(ses cellnet.Session, e cellnet.EventType, hlist []cellnet.Event
 
 func systemError(ses cellnet.Session, e cellnet.EventType, r cellnet.Result, hlist []cellnet.EventHandler) {
 
-	ev := cellnet.NewSessionEvent(e, ses)
+	ev := cellnet.NewEvent(e, ses)
 
 	// 直接放在这里, decoder里遇到系统事件不会进行decode操作
 	switch e {
-	case cellnet.SessionEvent_Closed:
+	case cellnet.Event_Closed:
 		ev.Msg = &coredef.SessionClosed{Result: r}
-	case cellnet.SessionEvent_AcceptFailed:
+	case cellnet.Event_AcceptFailed:
 		ev.Msg = &coredef.SessionAcceptFailed{Result: r}
-	case cellnet.SessionEvent_ConnectFailed:
+	case cellnet.Event_ConnectFailed:
 		ev.Msg = &coredef.SessionConnectFailed{Result: r}
 	default:
 		panic("unknown system error")

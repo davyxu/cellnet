@@ -36,7 +36,7 @@ func server() {
 
 	evd := socket.NewAcceptor(queue).Start(benchmarkAddress)
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 
 		if qpsm.Acc() > benchmarkSeconds {
 			signal.Done(1)
@@ -57,13 +57,13 @@ func client() {
 
 	evd := socket.NewConnector(queue).Start(benchmarkAddress)
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 
 		ev.Send(&gamedef.TestEchoACK{})
 
 	})
 
-	cellnet.RegisterMessage(evd, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(evd, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		ev.Send(&gamedef.TestEchoACK{})
 

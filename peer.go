@@ -8,13 +8,13 @@ type Session interface {
 	Send(interface{})
 
 	// 直接发送封包
-	RawSend([]EventHandler, *SessionEvent)
+	RawSend([]EventHandler, *Event)
 
 	// 投递封包
 	Post(interface{})
 
 	// 直接投递封包
-	RawPost([]EventHandler, *SessionEvent)
+	RawPost([]EventHandler, *Event)
 
 	// 断开
 	Close()

@@ -6,7 +6,7 @@ type MatchMsgIDHandler struct {
 	hlist []EventHandler
 }
 
-func (self *MatchMsgIDHandler) Call(ev *SessionEvent) {
+func (self *MatchMsgIDHandler) Call(ev *Event) {
 
 	if ev.MsgID == self.msgid {
 		HandlerChainCall(self.hlist, ev)

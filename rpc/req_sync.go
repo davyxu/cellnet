@@ -25,7 +25,7 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeoutSec 
 	}
 
 	// 发送RPC请求
-	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, ses)
+	ev := cellnet.NewEvent(cellnet.Event_Send, ses)
 	ev.TransmitTag = rpcid
 	ev.Msg = reqMsg
 	ses.RawSend(getSendHandler(), ev)

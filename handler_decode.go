@@ -8,7 +8,7 @@ import (
 type DecodePacketHandler struct {
 }
 
-func (self *DecodePacketHandler) Call(ev *SessionEvent) {
+func (self *DecodePacketHandler) Call(ev *Event) {
 
 	// 系统消息不做处理
 	if !ev.IsSystemEvent() {

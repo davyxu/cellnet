@@ -7,12 +7,12 @@ import (
 )
 
 type eventList struct {
-	list      []*cellnet.SessionEvent
+	list      []*cellnet.Event
 	listGuard sync.Mutex
 	listCond  *sync.Cond
 }
 
-func (self *eventList) Add(ev *cellnet.SessionEvent) {
+func (self *eventList) Add(ev *cellnet.Event) {
 	self.listGuard.Lock()
 	self.list = append(self.list, ev)
 	self.listGuard.Unlock()
@@ -24,7 +24,7 @@ func (self *eventList) Reset() {
 	self.list = self.list[0:0]
 }
 
-func (self *eventList) BeginPick() []*cellnet.SessionEvent {
+func (self *eventList) BeginPick() []*cellnet.Event {
 
 	self.listGuard.Lock()
 

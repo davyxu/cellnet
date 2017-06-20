@@ -38,14 +38,14 @@ func (self *SocketSession) Close() {
 
 func (self *SocketSession) Send(data interface{}) {
 
-	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Send, self)
+	ev := cellnet.NewEvent(cellnet.Event_Send, self)
 	ev.Msg = data
 
 	self.RawSend(ev.SendHandler, ev)
 
 }
 
-func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
+func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.Event) {
 
 	if sendHandler == nil {
 		_, sendHandler = self.p.HandlerList()
@@ -58,7 +58,7 @@ func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *celln
 
 func (self *SocketSession) Post(data interface{}) {
 
-	ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Post, self)
+	ev := cellnet.NewEvent(cellnet.Event_Post, self)
 
 	ev.Msg = data
 
@@ -67,7 +67,7 @@ func (self *SocketSession) Post(data interface{}) {
 	self.p.Call(ev)
 }
 
-func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.SessionEvent) {
+func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.Event) {
 	if recvHandler == nil {
 		recvHandler, _ = self.p.HandlerList()
 	}
@@ -80,7 +80,7 @@ func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *celln
 // 发送线程
 func (self *SocketSession) sendThread() {
 
-	var writeList []*cellnet.SessionEvent
+	var writeList []*cellnet.Event
 
 	for {
 
@@ -146,7 +146,7 @@ func (self *SocketSession) recvThread() {
 
 	for {
 
-		ev := cellnet.NewSessionEvent(cellnet.SessionEvent_Recv, self)
+		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
 
 		cellnet.HandlerChainCall(recv, ev)
 

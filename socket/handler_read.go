@@ -8,10 +8,10 @@ import (
 type ReadPacketHandler struct {
 }
 
-func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
+func (self *ReadPacketHandler) Call(ev *cellnet.Event) {
 
 	switch ev.Type {
-	case cellnet.SessionEvent_Recv:
+	case cellnet.Event_Recv:
 
 		rawSes := ev.Ses.(*SocketSession)
 
@@ -30,7 +30,7 @@ func (self *ReadPacketHandler) Call(ev *cellnet.SessionEvent) {
 
 			ev.SetResult(errToResult(err))
 
-			systemError(ev.Ses, cellnet.SessionEvent_Closed, ev.Result(), recv)
+			systemError(ev.Ses, cellnet.Event_Closed, ev.Result(), recv)
 
 		} else {
 

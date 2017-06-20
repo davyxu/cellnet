@@ -27,7 +27,7 @@ func getSendHandler() []cellnet.EventHandler {
 
 // 服务器端响应RPC消息
 // Read-> Decode-> Dispatcher -> Unbox -> Dispatcher(RPC) -> Decode-> QueuePost-> Callback
-func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *cellnet.SessionEvent)) {
+func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *cellnet.Event)) {
 
 	meta := cellnet.MessageMetaByName(msgName)
 

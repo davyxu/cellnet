@@ -6,7 +6,7 @@ type RetChanHandler struct {
 	ret chan interface{}
 }
 
-func (self *RetChanHandler) Call(ev *cellnet.SessionEvent) {
+func (self *RetChanHandler) Call(ev *cellnet.Event) {
 
 	self.ret <- ev.Msg
 }

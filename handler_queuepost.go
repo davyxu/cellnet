@@ -5,7 +5,7 @@ type QueuePostHandler struct {
 	hlist []EventHandler
 }
 
-func (self *QueuePostHandler) Call(ev *SessionEvent) {
+func (self *QueuePostHandler) Call(ev *Event) {
 
 	self.q.Post(func() {
 		HandlerChainCall(self.hlist, ev)

@@ -8,7 +8,7 @@ import (
 type BoxHandler struct {
 }
 
-func (self *BoxHandler) Call(ev *cellnet.SessionEvent) {
+func (self *BoxHandler) Call(ev *cellnet.Event) {
 
 	// 来自encode之后的消息
 	ev.FromMessage(&coredef.RemoteCallACK{

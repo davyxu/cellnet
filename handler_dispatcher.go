@@ -58,7 +58,7 @@ func (self *DispatcherHandler) findFreeIndex(id int) multiHandlerKey {
 
 }
 
-func (self *DispatcherHandler) Call(ev *SessionEvent) {
+func (self *DispatcherHandler) Call(ev *Event) {
 
 	key := multiHandlerKey{int(ev.MsgID), 0}
 

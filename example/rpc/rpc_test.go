@@ -24,7 +24,7 @@ func server() {
 	p.SetName("server")
 	p.Start("127.0.0.1:9201")
 
-	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -48,7 +48,7 @@ func asyncClient() {
 	p.SetName("client.async")
 	p.Start("127.0.0.1:9201")
 
-	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		for i := 0; i < 2; i++ {
 
@@ -56,7 +56,7 @@ func asyncClient() {
 
 			rpc.Call(p, &gamedef.TestEchoACK{
 				Content: "async",
-			}, "gamedef.TestEchoACK", func(rpcev *cellnet.SessionEvent) {
+			}, "gamedef.TestEchoACK", func(rpcev *cellnet.Event) {
 				msg := rpcev.Msg.(*gamedef.TestEchoACK)
 
 				log.Debugln(copy, "client async recv:", msg.Content)
@@ -82,7 +82,7 @@ func syncClient() {
 	p.SetName("client.sync")
 	p.Start("127.0.0.1:9201")
 
-	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		for i := 0; i < 2; i++ {
 

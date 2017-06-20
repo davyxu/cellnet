@@ -5,7 +5,7 @@ import "github.com/davyxu/cellnet"
 type WritePacketHandler struct {
 }
 
-func (self *WritePacketHandler) Call(ev *cellnet.SessionEvent) {
+func (self *WritePacketHandler) Call(ev *cellnet.Event) {
 
 	rawSes := ev.Ses.(*SocketSession)
 	rawSes.sendList.Add(ev)

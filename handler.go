@@ -6,7 +6,7 @@ import (
 )
 
 type EventHandler interface {
-	Call(*SessionEvent)
+	Call(*Event)
 }
 
 // 在传入HandlerLink中时, 可以根据Enable来决定是否使用Handler
@@ -60,7 +60,7 @@ func HandlerChainListName(hlist []EventHandler) {
 
 }
 
-func HandlerLog(h EventHandler, ev *SessionEvent) {
+func HandlerLog(h EventHandler, ev *Event) {
 
 	if EnableHandlerLog {
 		log.Debugf("%d %s [%s] <%s> SesID: %d MsgID: %d(%s) {%s} Tag: %v TransmitTag: %v Raw: (%d)%v",
@@ -80,7 +80,7 @@ func HandlerLog(h EventHandler, ev *SessionEvent) {
 	}
 }
 
-func HandlerChainCall(hlist []EventHandler, ev *SessionEvent) {
+func HandlerChainCall(hlist []EventHandler, ev *Event) {
 
 	for _, h := range hlist {
 
