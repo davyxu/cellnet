@@ -7,7 +7,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type sessionMgr struct {
+type SessionManager struct {
 	sesMap map[int64]cellnet.Session
 
 	sesIDAcc    int64
@@ -16,7 +16,7 @@ type sessionMgr struct {
 
 const totalTryCount = 100
 
-func (self *sessionMgr) Add(ses cellnet.Session) {
+func (self *SessionManager) Add(ses cellnet.Session) {
 
 	self.sesMapGuard.Lock()
 	defer self.sesMapGuard.Unlock()
@@ -49,14 +49,14 @@ func (self *sessionMgr) Add(ses cellnet.Session) {
 
 }
 
-func (self *sessionMgr) Remove(ses cellnet.Session) {
+func (self *SessionManager) Remove(ses cellnet.Session) {
 	self.sesMapGuard.Lock()
 	delete(self.sesMap, ses.ID())
 	self.sesMapGuard.Unlock()
 }
 
 // 获得一个连接
-func (self *sessionMgr) GetSession(id int64) cellnet.Session {
+func (self *SessionManager) GetSession(id int64) cellnet.Session {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 
@@ -68,7 +68,7 @@ func (self *sessionMgr) GetSession(id int64) cellnet.Session {
 	return nil
 }
 
-func (self *sessionMgr) VisitSession(callback func(cellnet.Session) bool) {
+func (self *SessionManager) VisitSession(callback func(cellnet.Session) bool) {
 	self.sesMapGuard.RLock()
 	defer self.sesMapGuard.RUnlock()
 
@@ -80,15 +80,17 @@ func (self *sessionMgr) VisitSession(callback func(cellnet.Session) bool) {
 
 }
 
-func (self *sessionMgr) SessionCount() int {
+func (self *SessionManager) SessionCount() int {
 	self.sesMapGuard.Lock()
 	defer self.sesMapGuard.Unlock()
 
 	return len(self.sesMap)
 }
 
-func newSessionManager() *sessionMgr {
-	return &sessionMgr{
+func NewSessionManager() *SessionManager {
+	return &SessionManager{
 		sesMap: make(map[int64]cellnet.Session),
 	}
 }
+
+var ClientSessionManager = NewSessionManager()

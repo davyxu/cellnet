@@ -8,7 +8,7 @@ import (
 
 type socketAcceptor struct {
 	*peerBase
-	*sessionMgr
+	*SessionManager
 
 	listener net.Listener
 
@@ -52,11 +52,11 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 				ses := newSession(self.genPacketStream(conn), self)
 
 				// 添加到管理器
-				self.sessionMgr.Add(ses)
+				self.SessionManager.Add(ses)
 
 				// 断开后从管理器移除
 				ses.OnClose = func() {
-					self.sessionMgr.Remove(ses)
+					self.SessionManager.Remove(ses)
 				}
 
 				ses.run()
@@ -86,8 +86,8 @@ func (self *socketAcceptor) Stop() {
 func NewAcceptor(evq cellnet.EventQueue) cellnet.Peer {
 
 	self := &socketAcceptor{
-		sessionMgr: newSessionManager(),
-		peerBase:   newPeerBase(evq),
+		SessionManager: NewSessionManager(),
+		peerBase:       newPeerBase(evq),
 	}
 
 	return self

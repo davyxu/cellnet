@@ -9,7 +9,7 @@ import (
 
 type socketConnector struct {
 	*peerBase
-	*sessionMgr
+	*SessionManager
 
 	conn net.Conn
 
@@ -89,11 +89,11 @@ func (self *socketConnector) connect(address string) {
 
 		// 创建Session
 
-		self.sessionMgr.Add(ses)
+		self.SessionManager.Add(ses)
 
 		// 内部断开回调
 		ses.OnClose = func() {
-			self.sessionMgr.Remove(ses)
+			self.SessionManager.Remove(ses)
 			self.closeSignal <- true
 		}
 
@@ -134,11 +134,16 @@ func (self *socketConnector) DefaultSession() cellnet.Session {
 	return self.defaultSes
 }
 
-func NewConnector(evq cellnet.EventQueue) cellnet.Peer {
+func NewConnector(q cellnet.EventQueue) cellnet.Peer {
+
+	return NewConnectorBySessionManager(q, ClientSessionManager)
+}
+
+func NewConnectorBySessionManager(q cellnet.EventQueue, sm *SessionManager) cellnet.Peer {
 	self := &socketConnector{
-		sessionMgr:  newSessionManager(),
-		peerBase:    newPeerBase(evq),
-		closeSignal: make(chan bool),
+		SessionManager: sm,
+		peerBase:       newPeerBase(q),
+		closeSignal:    make(chan bool),
 	}
 
 	return self
