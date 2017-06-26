@@ -1,12 +1,15 @@
 package cellnet
 
+import "sync"
+
 type BranchHandler struct {
-	hlist []EventHandler
+	hlist      []EventHandler
+	hlistGuard sync.RWMutex
 }
 
 func (self *BranchHandler) Call(ev *Event) {
 
-	for _, h := range self.hlist {
+	for _, h := range self.List() {
 
 		cloned := ev.Clone()
 
@@ -20,6 +23,19 @@ func (self *BranchHandler) Call(ev *Event) {
 		}
 	}
 
+}
+
+func (self *BranchHandler) List() []EventHandler {
+	self.hlistGuard.RLock()
+	defer self.hlistGuard.RUnlock()
+
+	return self.hlist
+}
+
+func (self *BranchHandler) Add(h EventHandler) {
+	self.hlistGuard.Lock()
+	self.hlist = append(self.hlist, h)
+	self.hlistGuard.Unlock()
 }
 
 func NewBranchHandler(hlist ...EventHandler) EventHandler {
