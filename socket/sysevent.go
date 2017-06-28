@@ -1,8 +1,6 @@
 package socket
 
 import (
-	"reflect"
-
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proto/binary/coredef"
 )
@@ -45,12 +43,14 @@ func systemError(ses cellnet.Session, e cellnet.EventType, r cellnet.Result, hli
 		panic("unknown system error")
 	}
 
-	ev.Type = e
+	var encodeErr error
+	ev.Data, ev.MsgID, encodeErr = cellnet.EncodeMessage(ev.Msg)
 
-	meta := cellnet.MessageMetaByType(reflect.TypeOf(ev.Msg))
-	if meta != nil {
-		ev.MsgID = meta.ID
+	if encodeErr != nil {
+		panic("system error encode error: " + encodeErr.Error())
 	}
+
+	ev.Type = e
 
 	cellnet.HandlerChainCall(hlist, ev)
 }

@@ -194,16 +194,15 @@ func (self *Event) FromMeta(meta *MessageMeta) *Event {
 // 根据消息内容, 自动填充其他部分, 以方便输出日志
 func (self *Event) Parse() {
 
-	// send和post时
-	if self.MsgID == 0 && self.Msg != nil {
+	if self.Msg == nil && self.Data != nil && self.MsgID != 0 {
+
+		self.Msg, _ = DecodeMessage(self.MsgID, self.Data)
+
+	} else if self.MsgID == 0 && self.Msg != nil {
 		meta := MessageMetaByType(reflect.TypeOf(self.Msg))
 		if meta != nil {
 			self.MsgID = meta.ID
 		}
-	} else {
-		// 接收时
-
-		self.Msg, _ = DecodeMessage(self.MsgID, self.Data)
 	}
 }
 

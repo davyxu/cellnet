@@ -1,6 +1,6 @@
 package cellnet
 
-type Result int
+type Result int32
 
 const (
 	Result_OK            Result = iota

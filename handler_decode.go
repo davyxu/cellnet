@@ -16,7 +16,13 @@ func (self *DecodePacketHandler) Call(ev *Event) {
 		var err error
 		ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
 
-		ev.SetResult(errToResult(err))
+		r := errToResult(err)
+		if r != Result_OK {
+			ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
+
+			ev.SetResult(r)
+		}
+
 	}
 
 }

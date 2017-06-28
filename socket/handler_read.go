@@ -26,11 +26,9 @@ func (self *ReadPacketHandler) Call(ev *cellnet.Event) {
 
 		if err != nil {
 
-			recv, _ := rawSes.FromPeer().HandlerList()
-
 			ev.SetResult(errToResult(err))
 
-			systemError(ev.Ses, cellnet.Event_Closed, ev.Result(), recv)
+			// 外部会根据Result断开连接并抛出错误
 
 		} else {
 

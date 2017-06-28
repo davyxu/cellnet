@@ -3,8 +3,9 @@ package socket
 import (
 	"sync"
 
-	"github.com/davyxu/cellnet"
 	"time"
+
+	"github.com/davyxu/cellnet"
 )
 
 type SocketSession struct {
@@ -142,15 +143,18 @@ exitsendloop:
 
 func (self *SocketSession) recvThread() {
 
-	recv, _ := self.p.HandlerList()
+	// 暂时不支持运行期修改HandlerList
+	recvList, _ := self.p.HandlerList()
 
 	for {
 
 		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
 
-		cellnet.HandlerChainCall(recv, ev)
+		cellnet.HandlerChainCall(recvList, ev)
 
 		if ev.Result() != cellnet.Result_OK {
+
+			systemError(ev.Ses, cellnet.Event_Closed, ev.Result(), recvList)
 			break
 		}
 
