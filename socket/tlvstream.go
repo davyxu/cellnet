@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	PackageHeaderSize = 8 // MsgID(uint32) + Ser(uint16) + Size(uint16)
+	PackageHeaderSize = 10 // MsgID(uint32) + Ser(uint16) + Size(uint32)
 )
 
 type TLVStream struct {
@@ -63,7 +63,7 @@ func (self *TLVStream) Read() (msgid uint32, data []byte, err error) {
 	}
 
 	// 读取整包大小
-	var fullsize uint16
+	var fullsize uint32
 	if err = binary.Read(self.headReader, binary.LittleEndian, &fullsize); err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func (self *TLVStream) Write(msgid uint32, data []byte) (err error) {
 	}
 
 	// 写包大小
-	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint16(len(data)+PackageHeaderSize)); err != nil {
+	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint32(len(data)+PackageHeaderSize)); err != nil {
 		return err
 	}
 
