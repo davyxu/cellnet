@@ -63,7 +63,7 @@ func (self *SocketSession) Post(data interface{}) {
 
 	ev.Msg = data
 
-	MsgLog(ev)
+	cellnet.MsgLog(ev)
 
 	self.p.Call(ev)
 }

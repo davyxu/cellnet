@@ -4,16 +4,16 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/binary/coredef"
 	"github.com/davyxu/cellnet/proto/sproto/gamedef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var signal *util.SignalTester
 
 func server() {
 
@@ -78,7 +78,7 @@ func client() {
 
 func TestSprotoEcho(t *testing.T) {
 
-	signal = test.NewSignalTester(t)
+	signal = util.NewSignalTester(t)
 
 	server()
 

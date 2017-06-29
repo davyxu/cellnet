@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/timer"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
@@ -14,7 +14,7 @@ var log *golog.Logger = golog.New("test")
 
 func TestAfterTimer(t *testing.T) {
 
-	signal := test.NewSignalTester(t)
+	signal := util.NewSignalTester(t)
 
 	queue := cellnet.NewEventQueue()
 
@@ -39,7 +39,7 @@ func TestAfterTimer(t *testing.T) {
 
 func TestTickerTimer(t *testing.T) {
 
-	signal := test.NewSignalTester(t)
+	signal := util.NewSignalTester(t)
 	signal.SetTimeout(60 * time.Second)
 
 	queue := cellnet.NewEventQueue()
@@ -64,7 +64,7 @@ func TestTickerTimer(t *testing.T) {
 
 func TestDelay(t *testing.T) {
 
-	signal := test.NewSignalTester(t)
+	signal := util.NewSignalTester(t)
 
 	queue := cellnet.NewEventQueue()
 

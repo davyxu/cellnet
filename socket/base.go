@@ -155,9 +155,9 @@ func newPeerBase(queue cellnet.EventQueue) *peerBase {
 		connReadBuffer:    -1,
 	}
 
-	self.recvHandler = BuildRecvHandler(EnableMessageLog, self.DispatcherHandler)
+	self.recvHandler = BuildRecvHandler(cellnet.EnableMessageLog, self.DispatcherHandler)
 
-	self.sendHandler = BuildSendHandler(EnableMessageLog)
+	self.sendHandler = BuildSendHandler(cellnet.EnableMessageLog)
 
 	return self
 }

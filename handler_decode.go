@@ -33,7 +33,6 @@ func StaticDecodePacketHandler() EventHandler {
 	return defaultDecodePacketHandler
 }
 
-var ErrMessageNotFound = errors.New("message not found")
 var ErrCodecNotFound = errors.New("codec not found")
 
 func DecodeMessage(msgid uint32, data []byte) (interface{}, error) {

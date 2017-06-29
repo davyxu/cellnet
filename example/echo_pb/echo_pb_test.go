@@ -4,17 +4,17 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/binary/coredef"           // 底层系统事件
 	jsongamedef "github.com/davyxu/cellnet/proto/json/gamedef" // json逻辑协议
 	"github.com/davyxu/cellnet/proto/pb/gamedef"               // pb逻辑协议
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var signal *util.SignalTester
 
 func server() {
 
@@ -96,7 +96,7 @@ func client() {
 
 func TestEcho(t *testing.T) {
 
-	signal = test.NewSignalTester(t)
+	signal = util.NewSignalTester(t)
 
 	server()
 

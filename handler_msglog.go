@@ -1,31 +1,30 @@
-package socket
+package cellnet
 
 import (
 	"fmt"
 
 	"errors"
-	"github.com/davyxu/cellnet"
 	"sync"
 )
 
 type MsgLogHandler struct {
 }
 
-func (self *MsgLogHandler) Call(ev *cellnet.Event) {
+func (self *MsgLogHandler) Call(ev *Event) {
 
 	MsgLog(ev)
 }
 
 var defaultmsgLogHandler = new(MsgLogHandler)
 
-func StaticMsgLogHandler() cellnet.EventHandler {
+func StaticMsgLogHandler() EventHandler {
 	return defaultmsgLogHandler
 }
 
 // Msg
 // Data, MsgID
 
-func MsgLog(ev *cellnet.Event) {
+func MsgLog(ev *Event) {
 
 	ev.Parse()
 
@@ -39,24 +38,24 @@ func MsgLog(ev *cellnet.Event) {
 
 }
 
-func dirString(ev *cellnet.Event) string {
+func dirString(ev *Event) string {
 
 	switch ev.Type {
-	case cellnet.Event_Recv:
+	case Event_Recv:
 		return "recv"
-	case cellnet.Event_Post:
+	case Event_Post:
 		return "post"
-	case cellnet.Event_Send:
+	case Event_Send:
 		return "send"
-	case cellnet.Event_Connected:
+	case Event_Connected:
 		return "connected"
-	case cellnet.Event_ConnectFailed:
+	case Event_ConnectFailed:
 		return "connectfailed"
-	case cellnet.Event_Accepted:
+	case Event_Accepted:
 		return "accepted"
-	case cellnet.Event_AcceptFailed:
+	case Event_AcceptFailed:
 		return "acceptefailed"
-	case cellnet.Event_Closed:
+	case Event_Closed:
 		return "closed"
 	}
 
@@ -68,7 +67,7 @@ var (
 	// 是否启用消息日志
 	EnableMessageLog bool = true
 
-	msgMetaByID      = map[uint32]*cellnet.MessageMeta{}
+	msgMetaByID      = map[uint32]*MessageMeta{}
 	msgMetaByIDGuard sync.RWMutex
 )
 
@@ -88,7 +87,7 @@ var (
 )
 
 func BlockMessageLog(msgName string) error {
-	meta := cellnet.MessageMetaByName(msgName)
+	meta := MessageMetaByName(msgName)
 
 	if meta == nil {
 		return ErrMessageNotFound

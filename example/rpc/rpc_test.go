@@ -4,17 +4,17 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var asyncSignal *test.SignalTester
-var syncSignal *test.SignalTester
+var asyncSignal *util.SignalTester
+var syncSignal *util.SignalTester
 
 func server() {
 
@@ -118,8 +118,8 @@ func syncClient() {
 
 func TestRPC(t *testing.T) {
 
-	asyncSignal = test.NewSignalTester(t)
-	syncSignal = test.NewSignalTester(t)
+	asyncSignal = util.NewSignalTester(t)
+	syncSignal = util.NewSignalTester(t)
 
 	server()
 

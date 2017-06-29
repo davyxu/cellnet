@@ -4,16 +4,16 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/binary/coredef"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var signal *util.SignalTester
 
 func runServer() {
 	queue := cellnet.NewEventQueue()
@@ -132,7 +132,7 @@ func testRecvDisconnected() {
 
 func TestClose(t *testing.T) {
 
-	signal = test.NewSignalTester(t)
+	signal = util.NewSignalTester(t)
 
 	runServer()
 

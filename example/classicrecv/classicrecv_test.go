@@ -4,15 +4,15 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/example"
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var signal *util.SignalTester
 
 type RecvMessageHandler struct {
 }
@@ -46,7 +46,7 @@ func server() {
 	_, send := peer.HandlerList()
 
 	// 在原有流程中, 插入固定消息回调
-	recvList := socket.BuildRecvHandler(socket.EnableMessageLog, new(RecvMessageHandler), peer)
+	recvList := socket.BuildRecvHandler(cellnet.EnableMessageLog, new(RecvMessageHandler), peer)
 
 	peer.SetHandlerList(recvList, send)
 
@@ -96,7 +96,7 @@ func client() {
 
 func TestEcho(t *testing.T) {
 
-	signal = test.NewSignalTester(t)
+	signal = util.NewSignalTester(t)
 
 	server()
 

@@ -15,7 +15,7 @@ func getSendHandler() []cellnet.EventHandler {
 
 	if sendHandler == nil {
 		sendHandler = cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
-			cellnet.HandlerOptional{socket.EnableMessageLog, socket.StaticMsgLogHandler()},
+			cellnet.HandlerOptional{cellnet.EnableMessageLog, cellnet.StaticMsgLogHandler()},
 			NewBoxHandler(),
 			socket.StaticWritePacketHandler(),
 		)
