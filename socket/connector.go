@@ -93,6 +93,7 @@ func (self *socketConnector) connect(address string) {
 
 		// 内部断开回调
 		ses.OnClose = func() {
+			log.Infof("#disconnect(%s) %s", self.name, self.address)
 			self.SessionManager.Remove(ses)
 			self.closeSignal <- true
 		}

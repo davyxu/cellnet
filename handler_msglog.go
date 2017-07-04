@@ -26,6 +26,10 @@ func StaticMsgLogHandler() EventHandler {
 
 func MsgLog(ev *Event) {
 
+	if !log.IsDebugEnabled() {
+		return
+	}
+
 	ev.Parse()
 
 	if IsBlockedMessageByID(ev.MsgID) {
@@ -63,10 +67,6 @@ func dirString(ev *Event) string {
 }
 
 var (
-
-	// 是否启用消息日志
-	EnableMessageLog bool = true
-
 	msgMetaByID      = map[uint32]*MessageMeta{}
 	msgMetaByIDGuard sync.RWMutex
 )

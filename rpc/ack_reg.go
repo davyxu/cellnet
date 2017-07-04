@@ -15,7 +15,7 @@ func getSendHandler() []cellnet.EventHandler {
 
 	if sendHandler == nil {
 		sendHandler = cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
-			cellnet.HandlerOptional{cellnet.EnableMessageLog, cellnet.StaticMsgLogHandler()},
+			cellnet.StaticMsgLogHandler(),
 			NewBoxHandler(),
 			socket.StaticWritePacketHandler(),
 		)
@@ -28,6 +28,10 @@ func getSendHandler() []cellnet.EventHandler {
 // 服务器端响应RPC消息
 // Read-> Decode-> Dispatcher -> Unbox -> Dispatcher(RPC) -> Decode-> QueuePost-> Callback
 func RegisterMessage(p cellnet.Peer, msgName string, userCallback func(ev *cellnet.Event)) {
+
+	if p == nil {
+		return
+	}
 
 	meta := cellnet.MessageMetaByName(msgName)
 

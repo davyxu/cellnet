@@ -61,7 +61,7 @@ func (self *evQueue) protectedCall(callback func()) {
 		defer func() {
 
 			if err := recover(); err != nil {
-				//log.Fatalln(err)
+
 				debug.PrintStack()
 			}
 
