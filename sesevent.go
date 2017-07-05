@@ -118,6 +118,8 @@ func (self *Event) TypeString() string {
 		return "Event_ConnectFailed"
 	case Event_Accepted:
 		return "Event_Accepted"
+	case Event_AcceptFailed:
+		return "Event_AcceptFailed"
 	case Event_Closed:
 		return "Event_Closed"
 	}

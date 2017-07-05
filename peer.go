@@ -90,4 +90,7 @@ type SessionManager interface {
 
 	// 连接数量
 	SessionCount() int
+
+	// 关闭所有连接
+	CloseAllSession()
 }

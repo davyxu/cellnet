@@ -80,6 +80,16 @@ func (self *SessionManager) VisitSession(callback func(cellnet.Session) bool) {
 
 }
 
+func (self *SessionManager) CloseAllSession() {
+
+	self.VisitSession(func(ses cellnet.Session) bool {
+
+		ses.Close()
+
+		return true
+	})
+}
+
 func (self *SessionManager) SessionCount() int {
 	self.sesMapGuard.Lock()
 	defer self.sesMapGuard.Unlock()

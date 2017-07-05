@@ -15,13 +15,11 @@ type socketConnector struct {
 
 	autoReconnectSec int // 重连间隔时间, 0为不重连
 
+	tryConnTimes int // 尝试连接次数
+
 	closeSignal chan bool
 
-	working bool // 重入锁
-
 	defaultSes cellnet.Session
-
-	tryConnTimes int // 尝试连接次数
 }
 
 // 自动重连间隔=0不重连
@@ -31,7 +29,9 @@ func (self *socketConnector) SetAutoReconnectSec(sec int) {
 
 func (self *socketConnector) Start(address string) cellnet.Peer {
 
-	if self.working {
+	self.waitStopFinished()
+
+	if self.IsRunning() {
 		return self
 	}
 
@@ -43,7 +43,8 @@ func (self *socketConnector) Start(address string) cellnet.Peer {
 const reportConnectFailedLimitTimes = 3
 
 func (self *socketConnector) connect(address string) {
-	self.working = true
+
+	self.SetRunning(true)
 	self.address = address
 
 	for {
@@ -93,7 +94,6 @@ func (self *socketConnector) connect(address string) {
 
 		// 内部断开回调
 		ses.OnClose = func() {
-			log.Infof("#disconnect(%s) %s", self.name, self.address)
 			self.SessionManager.Remove(ses)
 			self.closeSignal <- true
 		}
@@ -104,8 +104,8 @@ func (self *socketConnector) connect(address string) {
 
 			self.conn = nil
 
-			// 没重连就退出
-			if self.autoReconnectSec == 0 {
+			// 没重连就退出/主动退出
+			if self.isStopping() || self.autoReconnectSec == 0 {
 				break
 			}
 
@@ -119,16 +119,28 @@ func (self *socketConnector) connect(address string) {
 
 	}
 
-	self.working = false
+	self.SetRunning(false)
+
+	self.endStopping()
 }
 
 func (self *socketConnector) Stop() {
 
-	if self.conn != nil {
-
-		self.conn.Close()
+	if !self.IsRunning() {
+		return
 	}
 
+	if self.isStopping() {
+		return
+	}
+
+	self.startStopping()
+
+	// socket断开, 后续触发一系列事件通知
+	self.CloseAllSession()
+
+	// 等待线程结束
+	self.waitStopFinished()
 }
 
 func (self *socketConnector) DefaultSession() cellnet.Session {

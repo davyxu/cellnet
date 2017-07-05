@@ -10,9 +10,13 @@ import (
 // Peer间的共享数据
 type peerBase struct {
 	cellnet.EventQueue
-	name             string
-	address          string
-	tag              interface{}
+
+	// 基本信息
+	name    string
+	address string
+	tag     interface{}
+
+	// socket参数
 	maxPacketSize    int
 	connReadBuffer   int
 	connWriteBuffer  int
@@ -20,13 +24,62 @@ type peerBase struct {
 	connReadTimeout  time.Duration
 	connWriteTimeout time.Duration
 
+	// 接收, 发送处理器
 	recvHandler  []cellnet.EventHandler
 	sendHandler  []cellnet.EventHandler
 	handlerGuard sync.RWMutex
 
+	// 运行状态
+	running      bool
+	runningGuard sync.RWMutex
+
+	// 停止过程同步
+	stopping chan bool
+
+	// 自带派发器
 	*cellnet.DispatcherHandler
 
+	// 自定义流
 	streamGen func(net.Conn) cellnet.PacketStream
+}
+
+func (self *peerBase) waitStopFinished() {
+	// 如果正在停止时, 等待停止完成
+	if self.stopping != nil {
+		<-self.stopping
+		self.stopping = nil
+	}
+}
+
+func (self *peerBase) isStopping() bool {
+	return self.stopping != nil
+}
+
+func (self *peerBase) startStopping() {
+	self.stopping = make(chan bool)
+}
+
+func (self *peerBase) endStopping() {
+	select {
+	case self.stopping <- true:
+
+	default:
+		self.stopping = nil
+	}
+}
+
+func (self *peerBase) IsRunning() bool {
+
+	self.runningGuard.RLock()
+	defer self.runningGuard.RUnlock()
+
+	return self.running
+}
+
+func (self *peerBase) SetRunning(v bool) {
+	self.runningGuard.Lock()
+	self.running = v
+	self.runningGuard.Unlock()
 }
 
 func (self *peerBase) applyConnOption(conn net.Conn) {

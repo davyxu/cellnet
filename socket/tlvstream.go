@@ -193,7 +193,6 @@ func (self *TLVStream) Raw() net.Conn {
 	return self.conn
 }
 
-// 封包流 relay模式: 在封包头有clientid信息
 func NewTLVStream(conn net.Conn) *TLVStream {
 
 	s := &TLVStream{

@@ -11,11 +11,15 @@ type socketAcceptor struct {
 	*SessionManager
 
 	listener net.Listener
-
-	running bool
 }
 
 func (self *socketAcceptor) Start(address string) cellnet.Peer {
+
+	self.waitStopFinished()
+
+	if self.IsRunning() {
+		return self
+	}
 
 	self.address = address
 
@@ -29,58 +33,83 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 		return self
 	}
 
-	self.running = true
-
 	log.Infof("#listen(%s) %s", self.name, self.address)
 
 	// 接受线程
-	go func() {
-		for self.running {
-			conn, err := ln.Accept()
-
-			if err != nil {
-				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
-
-				systemError(nil, cellnet.Event_AcceptFailed, errToResult(err), self.safeRecvHandler())
-
-				break
-			}
-
-			// 处理连接进入独立线程, 防止accept无法响应
-			go func() {
-
-				ses := newSession(self.genPacketStream(conn), self)
-
-				// 添加到管理器
-				self.SessionManager.Add(ses)
-
-				// 断开后从管理器移除
-				ses.OnClose = func() {
-					self.SessionManager.Remove(ses)
-				}
-
-				ses.run()
-
-				// 通知逻辑
-				systemEvent(ses, cellnet.Event_Accepted, self.safeRecvHandler())
-			}()
-
-		}
-
-	}()
+	go self.accept()
 
 	return self
 }
 
+func (self *socketAcceptor) accept() {
+
+	self.SetRunning(true)
+
+	for {
+		conn, err := self.listener.Accept()
+
+		if self.isStopping() {
+			break
+		}
+
+		if err != nil {
+
+			// 调试状态时, 才打出accept的具体错误
+			if log.IsDebugEnabled() {
+				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
+			}
+
+			systemError(nil, cellnet.Event_AcceptFailed, errToResult(err), self.safeRecvHandler())
+
+			break
+		}
+
+		// 处理连接进入独立线程, 防止accept无法响应
+		go func() {
+
+			ses := newSession(self.genPacketStream(conn), self)
+
+			// 添加到管理器
+			self.SessionManager.Add(ses)
+
+			// 断开后从管理器移除
+			ses.OnClose = func() {
+				log.Debugf("session removed:  %p", ses)
+				self.SessionManager.Remove(ses)
+			}
+
+			ses.run()
+
+			// 通知逻辑
+			systemEvent(ses, cellnet.Event_Accepted, self.safeRecvHandler())
+		}()
+
+	}
+
+	self.SetRunning(false)
+
+	self.endStopping()
+}
+
 func (self *socketAcceptor) Stop() {
 
-	if !self.running {
+	if !self.IsRunning() {
 		return
 	}
 
-	self.running = false
+	if self.isStopping() {
+		return
+	}
+
+	self.startStopping()
 
 	self.listener.Close()
+
+	// 断开所有连接
+	self.CloseAllSession()
+
+	// 等待线程结束
+	self.waitStopFinished()
 }
 
 func NewAcceptor(evq cellnet.EventQueue) cellnet.Peer {

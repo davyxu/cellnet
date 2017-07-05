@@ -1,6 +1,10 @@
 package cellnet
 
-import "sync"
+import (
+	"bytes"
+	"fmt"
+	"sync"
+)
 
 type EventDispatcher interface {
 	EventHandler
@@ -23,9 +27,33 @@ type multiHandlerKey struct {
 	index int
 }
 
+func (self *multiHandlerKey) String() string {
+	return fmt.Sprintf("id: %d index: %d", self.id, self.index)
+}
+
 type DispatcherHandler struct {
 	handlerByKey      map[multiHandlerKey][]EventHandler
 	handlerByKeyGuard sync.RWMutex
+}
+
+func (self *DispatcherHandler) String() string {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(fmt.Sprintf("\nDispatcher: %p\n", self))
+
+	for key, hlist := range self.handlerByKey {
+
+		buffer.WriteString(key.String())
+
+		for _, h := range hlist {
+			buffer.WriteString(fmt.Sprintf(" %v(%p) ", HandlerName(h), h))
+		}
+
+		buffer.WriteString("\n")
+
+	}
+
+	return buffer.String()
 }
 
 // 将连续调用的handler视为一个连接体 id -> Handler1 -> Handler1.1 -> Handler2 -> Handler 2.1
@@ -74,6 +102,7 @@ func (self *DispatcherHandler) Call(ev *Event) {
 		self.handlerByKeyGuard.RUnlock()
 
 		if ok {
+
 			HandlerChainCall(hlist, copyed)
 		} else {
 			break
