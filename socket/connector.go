@@ -1,17 +1,14 @@
 package socket
 
 import (
+	"github.com/davyxu/cellnet"
 	"net"
 	"time"
-
-	"github.com/davyxu/cellnet"
 )
 
 type socketConnector struct {
 	*peerBase
 	*SessionManager
-
-	conn net.Conn
 
 	autoReconnectSec int // 重连间隔时间, 0为不重连
 
@@ -85,9 +82,6 @@ func (self *socketConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		// 连上了, 记录连接
-		self.conn = conn
-
 		// 创建Session
 
 		self.SessionManager.Add(ses)
@@ -102,7 +96,7 @@ func (self *socketConnector) connect(address string) {
 
 		if <-self.closeSignal {
 
-			self.conn = nil
+			self.defaultSes = nil
 
 			// 没重连就退出/主动退出
 			if self.isStopping() || self.autoReconnectSec == 0 {
@@ -136,8 +130,9 @@ func (self *socketConnector) Stop() {
 
 	self.startStopping()
 
-	// socket断开, 后续触发一系列事件通知
-	self.CloseAllSession()
+	if self.defaultSes != nil {
+		self.defaultSes.Close()
+	}
 
 	// 等待线程结束
 	self.waitStopFinished()
@@ -149,7 +144,7 @@ func (self *socketConnector) DefaultSession() cellnet.Session {
 
 func NewConnector(q cellnet.EventQueue) cellnet.Peer {
 
-	return NewConnectorBySessionManager(q, ClientSessionManager)
+	return NewConnectorBySessionManager(q, NewSessionManager())
 }
 
 func NewConnectorBySessionManager(q cellnet.EventQueue, sm *SessionManager) cellnet.Peer {

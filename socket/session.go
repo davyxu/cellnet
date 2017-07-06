@@ -1,11 +1,9 @@
 package socket
 
 import (
-	"sync"
-
-	"time"
-
 	"github.com/davyxu/cellnet"
+	"sync"
+	"time"
 )
 
 type SocketSession struct {
@@ -23,6 +21,10 @@ type SocketSession struct {
 	stream cellnet.PacketStream
 
 	sendList *eventList
+}
+
+func (self *SocketSession) Stream() cellnet.PacketStream {
+	return self.stream
 }
 
 func (self *SocketSession) ID() int64 {
@@ -191,10 +193,10 @@ func (self *SocketSession) run() {
 	go self.sendThread()
 }
 
-func newSession(composer cellnet.PacketStream, p cellnet.Peer) *SocketSession {
+func newSession(stream cellnet.PacketStream, p cellnet.Peer) *SocketSession {
 
 	self := &SocketSession{
-		stream:          composer,
+		stream:          stream,
 		p:               p,
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),

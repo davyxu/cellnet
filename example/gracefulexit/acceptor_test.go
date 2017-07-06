@@ -1,17 +1,13 @@
 package gracefulexit
 
 import (
-	"testing"
-
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/socket"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 	"sync"
+	"testing"
 	"time"
 )
-
-var signalAcceptor *util.SignalTester
 
 var log *golog.Logger = golog.New("test")
 

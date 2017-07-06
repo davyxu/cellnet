@@ -102,5 +102,3 @@ func NewSessionManager() *SessionManager {
 		sesMap: make(map[int64]cellnet.Session),
 	}
 }
-
-var ClientSessionManager = NewSessionManager()

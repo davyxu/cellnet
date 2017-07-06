@@ -74,7 +74,6 @@ func (self *socketAcceptor) accept() {
 
 			// 断开后从管理器移除
 			ses.OnClose = func() {
-				log.Debugf("session removed:  %p", ses)
 				self.SessionManager.Remove(ses)
 			}
 
