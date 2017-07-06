@@ -1,4 +1,4 @@
-package pbcodec
+package binary
 
 import (
 	"github.com/davyxu/cellnet"
