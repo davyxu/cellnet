@@ -1,4 +1,7 @@
 # cellnet
+
+[![Build Status](https://api.travis-ci.org/davyxu/cellnet.svg?branch=v3)](https://travis-ci.org/davyxu/cellnet)
+
 简单,方便,高效的跨平台服务器网络库
 
 
