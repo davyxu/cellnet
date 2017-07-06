@@ -1,9 +1,8 @@
 set CURRDIR=%cd%
-cd ../../../../..
+cd ../../../..
 set GOPATH=%cd%
 
 go test github.com/davyxu/cellnet/example/classicrecv ^
-github.com/davyxu/cellnet/example/classicrecv ^
 github.com/davyxu/cellnet/example/sendclose ^
 github.com/davyxu/cellnet/example/echo_pb ^
 github.com/davyxu/cellnet/example/echo_sproto ^

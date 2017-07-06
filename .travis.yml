@@ -1,7 +1,13 @@
 language: go
 
 install:
-  - go get -u -v github.com/davyxu/cellnet
+  - go get -v github.com/davyxu/cellnet
 
 go:
   - 1.8
+
+script:
+  - go test -v github.com/davyxu/cellnet/example/echo_pb
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
