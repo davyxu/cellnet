@@ -1,7 +1,10 @@
 language: go
 
 install:
-  - go get -v github.com/davyxu/cellnet
+  - go get -v github.com/davyxu/golog
+  - go get -v github.com/davyxu/goobjfmt
+  - go get -v github.com/davyxu/gosproto
+  - go get -v github.com/golang/protobuf/proto
 
 go:
   - 1.8
