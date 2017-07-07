@@ -10,7 +10,7 @@ go:
   - 1.8
 
 script:
-  - go test -v github.com/davyxu/cellnet/example/echo_pb
+  - go test -v github.com/davyxu/cellnet/example/echo_pb github.com/davyxu/cellnet/example/echo_sproto github.com/davyxu/cellnet/example/classicrecv github.com/davyxu/cellnet/example/sendclose github.com/davyxu/cellnet/example/gracefulexit
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
