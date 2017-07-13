@@ -16,7 +16,7 @@ func (self *ReadPacketHandler) Call(ev *cellnet.Event) {
 		rawSes := ev.Ses.(*SocketSession)
 
 		// 读超时
-		read, _ := rawSes.FromPeer().SocketDeadline()
+		read, _ := rawSes.FromPeer().(SocketOptions).SocketDeadline()
 
 		if read != 0 {
 			rawSes.stream.Raw().SetReadDeadline(time.Now().Add(read))

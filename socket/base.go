@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"net"
 	"sync"
-	"time"
 )
 
 // Peer间的共享数据
@@ -15,14 +14,6 @@ type peerBase struct {
 	name    string
 	address string
 	tag     interface{}
-
-	// socket参数
-	maxPacketSize    int
-	connReadBuffer   int
-	connWriteBuffer  int
-	connNoDelay      bool
-	connReadTimeout  time.Duration
-	connWriteTimeout time.Duration
 
 	// 接收, 发送处理器
 	recvHandler  []cellnet.EventHandler
@@ -38,6 +29,12 @@ type peerBase struct {
 
 	// 自带派发器
 	*cellnet.DispatcherHandler
+
+	// 会话管理器
+	*SessionManager
+
+	// socket配置
+	*socketOptions
 
 	// 自定义流
 	streamGen func(net.Conn) cellnet.PacketStream
@@ -82,39 +79,6 @@ func (self *peerBase) SetRunning(v bool) {
 	self.runningGuard.Unlock()
 }
 
-func (self *peerBase) applyConnOption(conn net.Conn) {
-
-	if cc, ok := conn.(*net.TCPConn); ok {
-
-		if self.connReadBuffer >= 0 {
-			cc.SetReadBuffer(self.connReadBuffer)
-		}
-
-		if self.connWriteBuffer >= 0 {
-			cc.SetWriteBuffer(self.connWriteBuffer)
-		}
-
-		cc.SetNoDelay(self.connNoDelay)
-	}
-
-}
-
-func (self *peerBase) SetSocketDeadline(read, write time.Duration) {
-	self.connReadTimeout = read
-	self.connWriteTimeout = write
-}
-
-func (self *peerBase) SocketDeadline() (read, write time.Duration) {
-	return self.connReadTimeout, self.connWriteTimeout
-}
-
-func (self *peerBase) SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool) {
-
-	self.connReadBuffer = readBufferSize
-	self.connWriteBuffer = writeBufferSize
-	self.connNoDelay = nodelay
-}
-
 func (self *peerBase) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
 
 	self.streamGen = callback
@@ -122,7 +86,7 @@ func (self *peerBase) SetPacketStreamGenerator(callback func(net.Conn) cellnet.P
 
 func (self *peerBase) genPacketStream(conn net.Conn) cellnet.PacketStream {
 
-	self.applyConnOption(conn)
+	self.socketOptions.apply(conn)
 
 	if self.streamGen == nil {
 		return NewTLVStream(conn)
@@ -191,21 +155,13 @@ func (self *peerBase) Name() string {
 	return self.name
 }
 
-func (self *peerBase) SetMaxPacketSize(size int) {
-	self.maxPacketSize = size
-}
-
-func (self *peerBase) MaxPacketSize() int {
-	return self.maxPacketSize
-}
-
-func newPeerBase(queue cellnet.EventQueue) *peerBase {
+func newPeerBase(queue cellnet.EventQueue, sm *SessionManager) *peerBase {
 
 	self := &peerBase{
 		EventQueue:        queue,
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
-		connWriteBuffer:   -1,
-		connReadBuffer:    -1,
+		SessionManager:    sm,
+		socketOptions:     newSocketOptions(),
 	}
 
 	self.recvHandler = BuildRecvHandler(self.DispatcherHandler)

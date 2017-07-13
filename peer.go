@@ -1,7 +1,6 @@
 package cellnet
 
-import "time"
-
+// 会话
 type Session interface {
 
 	// 发包
@@ -45,18 +44,6 @@ type Peer interface {
 	SetTag(interface{})
 	Tag() interface{}
 
-	// Session最大包大小, 超过这个数字, 接收视为错误, 断开连接
-	SetMaxPacketSize(size int)
-
-	MaxPacketSize() int
-
-	// 设置socket选项, 如果不修改,请设置-1
-	SetSocketOption(readBufferSize, writeBufferSize int, nodelay bool)
-
-	// 设置socket超时间隔, 0表示不作用
-	SetSocketDeadline(read, write time.Duration)
-	SocketDeadline() (read, write time.Duration)
-
 	// 派发器
 	EventDispatcher
 
@@ -71,6 +58,7 @@ type Peer interface {
 	Queue() EventQueue
 }
 
+// 连接器, 可由Peer转换
 type Connector interface {
 
 	// 连接后的Session
@@ -80,6 +68,7 @@ type Connector interface {
 	SetAutoReconnectSec(sec int)
 }
 
+// 会话管理器
 type SessionManager interface {
 
 	// 获取一个连接

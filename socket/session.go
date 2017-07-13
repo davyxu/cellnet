@@ -106,7 +106,7 @@ func (self *SocketSession) sendThread() {
 		self.sendList.EndPick()
 
 		// 写超时
-		_, write := self.FromPeer().SocketDeadline()
+		_, write := self.FromPeer().(SocketOptions).SocketDeadline()
 
 		if write != 0 {
 			self.stream.Raw().SetWriteDeadline(time.Now().Add(write))
@@ -204,7 +204,8 @@ func newSession(stream cellnet.PacketStream, p cellnet.Peer) *SocketSession {
 
 	// 使用peer的统一设置
 	if s, ok := self.stream.(*TLVStream); ok {
-		s.SetMaxPacketSize(p.MaxPacketSize())
+
+		s.SetMaxPacketSize(p.(SocketOptions).MaxPacketSize())
 	}
 
 	return self

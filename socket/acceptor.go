@@ -8,7 +8,6 @@ import (
 
 type socketAcceptor struct {
 	*peerBase
-	*SessionManager
 
 	listener net.Listener
 }
@@ -111,11 +110,10 @@ func (self *socketAcceptor) Stop() {
 	self.waitStopFinished()
 }
 
-func NewAcceptor(evq cellnet.EventQueue) cellnet.Peer {
+func NewAcceptor(q cellnet.EventQueue) cellnet.Peer {
 
 	self := &socketAcceptor{
-		SessionManager: NewSessionManager(),
-		peerBase:       newPeerBase(evq),
+		peerBase: newPeerBase(q, NewSessionManager()),
 	}
 
 	return self

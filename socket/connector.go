@@ -8,7 +8,6 @@ import (
 
 type socketConnector struct {
 	*peerBase
-	*SessionManager
 
 	autoReconnectSec int // 重连间隔时间, 0为不重连
 
@@ -149,9 +148,8 @@ func NewConnector(q cellnet.EventQueue) cellnet.Peer {
 
 func NewConnectorBySessionManager(q cellnet.EventQueue, sm *SessionManager) cellnet.Peer {
 	self := &socketConnector{
-		SessionManager: sm,
-		peerBase:       newPeerBase(q),
-		closeSignal:    make(chan bool),
+		peerBase:    newPeerBase(q, sm),
+		closeSignal: make(chan bool),
 	}
 
 	return self
