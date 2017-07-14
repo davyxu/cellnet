@@ -7,7 +7,7 @@ type WritePacketHandler struct {
 
 func (self *WritePacketHandler) Call(ev *cellnet.Event) {
 
-	rawSes := ev.Ses.(*SocketSession)
+	rawSes := ev.Ses.(*socketSession)
 	rawSes.sendList.Add(ev)
 
 }

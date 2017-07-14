@@ -13,7 +13,7 @@ func (self *ReadPacketHandler) Call(ev *cellnet.Event) {
 	switch ev.Type {
 	case cellnet.Event_Recv:
 
-		rawSes := ev.Ses.(*SocketSession)
+		rawSes := ev.Ses.(*socketSession)
 
 		// 读超时
 		read, _ := rawSes.FromPeer().(SocketOptions).SocketDeadline()

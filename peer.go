@@ -25,6 +25,7 @@ type Session interface {
 	FromPeer() Peer
 }
 
+// 端, Connector或Acceptor
 type Peer interface {
 
 	// 开启/关闭
@@ -32,54 +33,14 @@ type Peer interface {
 
 	Stop()
 
-	// 名字
-	SetName(string)
-	Name() string
-
-	// 地址
-	SetAddress(string)
-	Address() string
-
-	// Tag
-	SetTag(interface{})
-	Tag() interface{}
+	// 扩展用的功能
+	BasePeer
 
 	// 派发器
 	EventDispatcher
 
 	// 连接管理
-	SessionManager
-
-	//  HandlerList
-	SetHandlerList(recv, send []EventHandler)
-
-	HandlerList() (recv, send []EventHandler)
+	SessionAccessor
 
 	Queue() EventQueue
-}
-
-// 连接器, 可由Peer转换
-type Connector interface {
-
-	// 连接后的Session
-	DefaultSession() Session
-
-	// 自动重连间隔, 0表示不重连, 默认不重连
-	SetAutoReconnectSec(sec int)
-}
-
-// 会话管理器
-type SessionManager interface {
-
-	// 获取一个连接
-	GetSession(int64) Session
-
-	// 遍历连接
-	VisitSession(func(Session) bool)
-
-	// 连接数量
-	SessionCount() int
-
-	// 关闭所有连接
-	CloseAllSession()
 }

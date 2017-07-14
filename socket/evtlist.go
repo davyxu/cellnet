@@ -24,7 +24,7 @@ func (self *eventList) Reset() {
 	self.list = self.list[0:0]
 }
 
-func (self *eventList) BeginPick() []*cellnet.Event {
+func (self *eventList) Pick() (ret []*cellnet.Event, exit bool) {
 
 	self.listGuard.Lock()
 
@@ -36,13 +36,22 @@ func (self *eventList) BeginPick() []*cellnet.Event {
 
 	self.listGuard.Lock()
 
-	return self.list
-}
+	// 复制出队列
 
-func (self *eventList) EndPick() {
+	for _, ev := range self.list {
+
+		if ev == nil {
+			exit = true
+			break
+		} else {
+			ret = append(ret, ev)
+		}
+	}
 
 	self.Reset()
 	self.listGuard.Unlock()
+
+	return
 }
 
 func NewPacketList() *eventList {

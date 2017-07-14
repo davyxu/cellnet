@@ -2,11 +2,12 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/extend"
 	"sync"
 	"time"
 )
 
-type SocketSession struct {
+type socketSession struct {
 	OnClose func() // 关闭函数回调
 
 	id int64
@@ -23,23 +24,27 @@ type SocketSession struct {
 	sendList *eventList
 }
 
-func (self *SocketSession) Stream() cellnet.PacketStream {
+func (self *socketSession) Stream() cellnet.PacketStream {
 	return self.stream
 }
 
-func (self *SocketSession) ID() int64 {
+func (self *socketSession) ID() int64 {
 	return self.id
 }
 
-func (self *SocketSession) FromPeer() cellnet.Peer {
+func (self *socketSession) SetID(id int64) {
+	self.id = id
+}
+
+func (self *socketSession) FromPeer() cellnet.Peer {
 	return self.p
 }
 
-func (self *SocketSession) Close() {
+func (self *socketSession) Close() {
 	self.sendList.Add(nil)
 }
 
-func (self *SocketSession) Send(data interface{}) {
+func (self *socketSession) Send(data interface{}) {
 
 	ev := cellnet.NewEvent(cellnet.Event_Send, self)
 	ev.Msg = data
@@ -48,7 +53,7 @@ func (self *SocketSession) Send(data interface{}) {
 
 }
 
-func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.Event) {
+func (self *socketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.Event) {
 
 	if sendHandler == nil {
 		_, sendHandler = self.p.HandlerList()
@@ -59,7 +64,7 @@ func (self *SocketSession) RawSend(sendHandler []cellnet.EventHandler, ev *celln
 	cellnet.HandlerChainCall(sendHandler, ev)
 }
 
-func (self *SocketSession) Post(data interface{}) {
+func (self *socketSession) Post(data interface{}) {
 
 	ev := cellnet.NewEvent(cellnet.Event_Post, self)
 
@@ -70,7 +75,7 @@ func (self *SocketSession) Post(data interface{}) {
 	self.p.Call(ev)
 }
 
-func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.Event) {
+func (self *socketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.Event) {
 	if recvHandler == nil {
 		recvHandler, _ = self.p.HandlerList()
 	}
@@ -81,29 +86,9 @@ func (self *SocketSession) RawPost(recvHandler []cellnet.EventHandler, ev *celln
 }
 
 // 发送线程
-func (self *SocketSession) sendThread() {
-
-	var writeList []*cellnet.Event
+func (self *socketSession) sendThread() {
 
 	for {
-
-		willExit := false
-		writeList = writeList[0:0]
-
-		// 复制出队列
-		packetList := self.sendList.BeginPick()
-
-		for _, ev := range packetList {
-
-			if ev == nil {
-				willExit = true
-				break
-			} else {
-				writeList = append(writeList, ev)
-			}
-		}
-
-		self.sendList.EndPick()
 
 		// 写超时
 		_, write := self.FromPeer().(SocketOptions).SocketDeadline()
@@ -111,6 +96,8 @@ func (self *SocketSession) sendThread() {
 		if write != 0 {
 			self.stream.Raw().SetWriteDeadline(time.Now().Add(write))
 		}
+
+		writeList, willExit := self.sendList.Pick()
 
 		// 写队列
 		for _, ev := range writeList {
@@ -143,7 +130,7 @@ exitsendloop:
 	self.endSync.Done()
 }
 
-func (self *SocketSession) recvThread() {
+func (self *socketSession) recvThread() {
 
 	// 暂时不支持运行期修改HandlerList
 	recvList, _ := self.p.HandlerList()
@@ -155,8 +142,7 @@ func (self *SocketSession) recvThread() {
 		cellnet.HandlerChainCall(recvList, ev)
 
 		if ev.Result() != cellnet.Result_OK {
-
-			systemError(ev.Ses, cellnet.Event_Closed, ev.Result(), recvList)
+			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, recvList, ev.Result())
 			break
 		}
 
@@ -170,7 +156,7 @@ func (self *SocketSession) recvThread() {
 	self.endSync.Done()
 }
 
-func (self *SocketSession) run() {
+func (self *socketSession) run() {
 	// 布置接收和发送2个任务
 	// bug fix感谢viwii提供的线索
 	self.endSync.Add(2)
@@ -193,9 +179,9 @@ func (self *SocketSession) run() {
 	go self.sendThread()
 }
 
-func newSession(stream cellnet.PacketStream, p cellnet.Peer) *SocketSession {
+func newSession(stream cellnet.PacketStream, p cellnet.Peer) *socketSession {
 
-	self := &SocketSession{
+	self := &socketSession{
 		stream:          stream,
 		p:               p,
 		needNotifyWrite: true,

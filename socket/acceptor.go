@@ -4,10 +4,11 @@ import (
 	"net"
 
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/extend"
 )
 
 type socketAcceptor struct {
-	*peerBase
+	*socketPeer
 
 	listener net.Listener
 }
@@ -20,7 +21,7 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 		return self
 	}
 
-	self.address = address
+	self.SetAddress(address)
 
 	ln, err := net.Listen("tcp", address)
 
@@ -28,11 +29,11 @@ func (self *socketAcceptor) Start(address string) cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#listen failed(%s) %v", self.nameOrAddress(), err.Error())
+		log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
 		return self
 	}
 
-	log.Infof("#listen(%s) %s", self.name, self.address)
+	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
 	// 接受线程
 	go self.accept()
@@ -55,10 +56,10 @@ func (self *socketAcceptor) accept() {
 
 			// 调试状态时, 才打出accept的具体错误
 			if log.IsDebugEnabled() {
-				log.Errorf("#accept failed(%s) %v", self.nameOrAddress(), err.Error())
+				log.Errorf("#accept failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
-			systemError(nil, cellnet.Event_AcceptFailed, errToResult(err), self.safeRecvHandler())
+			extend.PostSystemEvent(nil, cellnet.Event_AcceptFailed, self.SafeRecvHandler(), errToResult(err))
 
 			break
 		}
@@ -69,17 +70,17 @@ func (self *socketAcceptor) accept() {
 			ses := newSession(self.genPacketStream(conn), self)
 
 			// 添加到管理器
-			self.SessionManager.Add(ses)
+			self.Add(ses)
 
 			// 断开后从管理器移除
 			ses.OnClose = func() {
-				self.SessionManager.Remove(ses)
+				self.Remove(ses)
 			}
 
 			ses.run()
 
 			// 通知逻辑
-			systemEvent(ses, cellnet.Event_Accepted, self.safeRecvHandler())
+			extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.SafeRecvHandler(), cellnet.Result_OK)
 		}()
 
 	}
@@ -113,7 +114,7 @@ func (self *socketAcceptor) Stop() {
 func NewAcceptor(q cellnet.EventQueue) cellnet.Peer {
 
 	self := &socketAcceptor{
-		peerBase: newPeerBase(q, NewSessionManager()),
+		socketPeer: newSocketPeer(q, cellnet.NewSessionManager()),
 	}
 
 	return self

@@ -9,7 +9,7 @@ import (
 type EventType int
 
 const (
-	Event_Unknown EventType = iota
+	Event_None EventType = iota
 	Event_Connected
 	Event_ConnectFailed
 	Event_Accepted

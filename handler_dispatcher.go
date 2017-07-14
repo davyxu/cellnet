@@ -19,7 +19,7 @@ type EventDispatcher interface {
 	RemoveHandler(id, index int)
 
 	// 清除所有回调
-	Clear()
+	ClearHandler()
 }
 
 type multiHandlerKey struct {
@@ -119,7 +119,7 @@ func (self *DispatcherHandler) RemoveHandler(id, index int) {
 	self.handlerByKeyGuard.Unlock()
 }
 
-func (self *DispatcherHandler) Clear() {
+func (self *DispatcherHandler) ClearHandler() {
 
 	self.handlerByKeyGuard.Lock()
 	self.handlerByKey = make(map[multiHandlerKey][]EventHandler)
@@ -143,7 +143,7 @@ func (self *DispatcherHandler) GetHandlerByIndex(id, index int) []EventHandler {
 func NewDispatcherHandler() *DispatcherHandler {
 	self := &DispatcherHandler{}
 
-	self.Clear()
+	self.ClearHandler()
 
 	return self
 }

@@ -5,11 +5,11 @@ import (
 )
 
 func TestStrHash(t *testing.T) {
-	if v := StringHashNoCase("gamedef.EnterGameREQ"); v != 0x47c9ce66 {
-		t.Errorf("expect 0x47c9ce66, got %x", v)
+	if v := StringHash("gamedef.EnterGameREQ"); v != 0x28c2f4fb {
+		t.Errorf("expect 0x28c2f4fb, got %x", v)
 	}
 
-	if v := StringHashNoCase("gamedef.EnterGameACK"); v != 0x2c933204 {
-		t.Errorf("expect 0x2c933204, got %x", v)
+	if v := StringHash("gamedef.EnterGameACK"); v != 0x43980899 {
+		t.Errorf("expect 0x43980899, got %x", v)
 	}
 }

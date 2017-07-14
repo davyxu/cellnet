@@ -4,10 +4,21 @@ import (
 	"github.com/davyxu/cellnet"
 	"net"
 	"time"
+	"github.com/davyxu/cellnet/extend"
 )
 
+// 连接器, 可由Peer转换
+type Connector interface {
+
+	// 连接后的Session
+	DefaultSession() cellnet.Session
+
+	// 自动重连间隔, 0表示不重连, 默认不重连
+	SetAutoReconnectSec(sec int)
+}
+
 type socketConnector struct {
-	*peerBase
+	*socketPeer
 
 	autoReconnectSec int // 重连间隔时间, 0为不重连
 
@@ -41,7 +52,7 @@ const reportConnectFailedLimitTimes = 3
 func (self *socketConnector) connect(address string) {
 
 	self.SetRunning(true)
-	self.address = address
+	self.SetAddress(address)
 
 	for {
 
@@ -54,17 +65,17 @@ func (self *socketConnector) connect(address string) {
 		if err != nil {
 
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
-				log.Errorf("#connect failed(%s) %v", self.nameOrAddress(), err.Error())
+				log.Errorf("#connect failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
 			if self.tryConnTimes == reportConnectFailedLimitTimes {
-				log.Errorf("(%s) continue reconnecting, but mute log", self.nameOrAddress())
+				log.Errorf("(%s) continue reconnecting, but mute log", self.NameOrAddress())
 			}
 
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				systemError(nil, cellnet.Event_ConnectFailed, errToResult(err), self.safeRecvHandler())
+				extend.PostSystemEvent(nil, cellnet.Event_ConnectFailed, self.SafeRecvHandler(), errToResult(err))
 				break
 			}
 
@@ -83,15 +94,15 @@ func (self *socketConnector) connect(address string) {
 
 		// 创建Session
 
-		self.SessionManager.Add(ses)
+		self.Add(ses)
 
 		// 内部断开回调
 		ses.OnClose = func() {
-			self.SessionManager.Remove(ses)
+			self.Remove(ses)
 			self.closeSignal <- true
 		}
 
-		systemEvent(ses, cellnet.Event_Connected, self.safeRecvHandler())
+		extend.PostSystemEvent(ses, cellnet.Event_Connected, self.SafeRecvHandler(), cellnet.Result_OK)
 
 		if <-self.closeSignal {
 
@@ -143,12 +154,12 @@ func (self *socketConnector) DefaultSession() cellnet.Session {
 
 func NewConnector(q cellnet.EventQueue) cellnet.Peer {
 
-	return NewConnectorBySessionManager(q, NewSessionManager())
+	return NewConnectorBySessionManager(q, cellnet.NewSessionManager())
 }
 
-func NewConnectorBySessionManager(q cellnet.EventQueue, sm *SessionManager) cellnet.Peer {
+func NewConnectorBySessionManager(q cellnet.EventQueue, sm cellnet.SessionManager) cellnet.Peer {
 	self := &socketConnector{
-		peerBase:    newPeerBase(q, sm),
+		socketPeer:  newSocketPeer(q, sm),
 		closeSignal: make(chan bool),
 	}
 

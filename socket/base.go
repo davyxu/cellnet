@@ -3,44 +3,30 @@ package socket
 import (
 	"github.com/davyxu/cellnet"
 	"net"
-	"sync"
 )
 
 // Peer间的共享数据
-type peerBase struct {
+type socketPeer struct {
 	cellnet.EventQueue
+	// 会话管理器
+	cellnet.SessionManager
 
-	// 基本信息
-	name    string
-	address string
-	tag     interface{}
-
-	// 接收, 发送处理器
-	recvHandler  []cellnet.EventHandler
-	sendHandler  []cellnet.EventHandler
-	handlerGuard sync.RWMutex
-
-	// 运行状态
-	running      bool
-	runningGuard sync.RWMutex
-
-	// 停止过程同步
-	stopping chan bool
+	// 共享配置
+	*cellnet.BasePeerImplement
 
 	// 自带派发器
 	*cellnet.DispatcherHandler
 
-	// 会话管理器
-	*SessionManager
-
 	// socket配置
 	*socketOptions
 
+	// 停止过程同步
+	stopping chan bool
 	// 自定义流
 	streamGen func(net.Conn) cellnet.PacketStream
 }
 
-func (self *peerBase) waitStopFinished() {
+func (self *socketPeer) waitStopFinished() {
 	// 如果正在停止时, 等待停止完成
 	if self.stopping != nil {
 		<-self.stopping
@@ -48,15 +34,15 @@ func (self *peerBase) waitStopFinished() {
 	}
 }
 
-func (self *peerBase) isStopping() bool {
+func (self *socketPeer) isStopping() bool {
 	return self.stopping != nil
 }
 
-func (self *peerBase) startStopping() {
+func (self *socketPeer) startStopping() {
 	self.stopping = make(chan bool)
 }
 
-func (self *peerBase) endStopping() {
+func (self *socketPeer) endStopping() {
 	select {
 	case self.stopping <- true:
 
@@ -64,27 +50,12 @@ func (self *peerBase) endStopping() {
 		self.stopping = nil
 	}
 }
-
-func (self *peerBase) IsRunning() bool {
-
-	self.runningGuard.RLock()
-	defer self.runningGuard.RUnlock()
-
-	return self.running
-}
-
-func (self *peerBase) SetRunning(v bool) {
-	self.runningGuard.Lock()
-	self.running = v
-	self.runningGuard.Unlock()
-}
-
-func (self *peerBase) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
+func (self *socketPeer) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
 
 	self.streamGen = callback
 }
 
-func (self *peerBase) genPacketStream(conn net.Conn) cellnet.PacketStream {
+func (self *socketPeer) genPacketStream(conn net.Conn) cellnet.PacketStream {
 
 	self.socketOptions.apply(conn)
 
@@ -95,78 +66,21 @@ func (self *peerBase) genPacketStream(conn net.Conn) cellnet.PacketStream {
 	return self.streamGen(conn)
 }
 
-func (self *peerBase) Queue() cellnet.EventQueue {
+func (self *socketPeer) Queue() cellnet.EventQueue {
 	return self.EventQueue
 }
 
-func (self *peerBase) nameOrAddress() string {
-	if self.name != "" {
-		return self.name
-	}
+func newSocketPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *socketPeer {
 
-	return self.address
-}
-
-func (self *peerBase) Tag() interface{} {
-	return self.tag
-}
-
-func (self *peerBase) SetTag(tag interface{}) {
-	self.tag = tag
-}
-
-func (self *peerBase) Address() string {
-	return self.address
-}
-
-func (self *peerBase) SetAddress(address string) {
-	self.address = address
-}
-
-func (self *peerBase) SetHandlerList(recv, send []cellnet.EventHandler) {
-	self.handlerGuard.Lock()
-	self.recvHandler = recv
-	self.sendHandler = send
-	self.handlerGuard.Unlock()
-}
-
-func (self *peerBase) HandlerList() (recv, send []cellnet.EventHandler) {
-	self.handlerGuard.RLock()
-	recv = self.recvHandler
-	send = self.sendHandler
-	self.handlerGuard.RUnlock()
-
-	return
-}
-
-func (self *peerBase) safeRecvHandler() (ret []cellnet.EventHandler) {
-	self.handlerGuard.RLock()
-	ret = self.recvHandler
-	self.handlerGuard.RUnlock()
-
-	return
-}
-
-func (self *peerBase) SetName(name string) {
-	self.name = name
-}
-
-func (self *peerBase) Name() string {
-	return self.name
-}
-
-func newPeerBase(queue cellnet.EventQueue, sm *SessionManager) *peerBase {
-
-	self := &peerBase{
+	self := &socketPeer{
 		EventQueue:        queue,
 		DispatcherHandler: cellnet.NewDispatcherHandler(),
 		SessionManager:    sm,
 		socketOptions:     newSocketOptions(),
+		BasePeerImplement: cellnet.NewBasePeer(),
 	}
 
-	self.recvHandler = BuildRecvHandler(self.DispatcherHandler)
-
-	self.sendHandler = BuildSendHandler()
+	self.BasePeerImplement.SetHandlerList(BuildRecvHandler(self.DispatcherHandler), BuildSendHandler())
 
 	return self
 }

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script type="text/javascript">
+    
+    window.onload = function () {
+
+        console.log("hello")
+
+        var ws = new WebSocket("ws://127.0.0.1:8801/echo");
+
+        ws.onopen = function(evt) {
+            console.log("Connection open ...");
+            ws.send('gamedef.TestEchoJsonACK\n{"Content":"hello world" }');
+        };
+
+        ws.onmessage = function(evt) {
+            console.log( "Received Message: " + evt.data);
+            //ws.close();
+        };
+
+        ws.onclose = function(evt) {
+            console.log("Connection closed.");
+        };
+    }
+
+</script>
+</body>
+</html>
