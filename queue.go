@@ -20,10 +20,6 @@ type EventQueue interface {
 	DelayPost(dur time.Duration, callback func())
 }
 
-type queueData struct {
-	data interface{}
-}
-
 type evQueue struct {
 	queue chan func()
 
