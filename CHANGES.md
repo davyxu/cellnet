@@ -3,24 +3,24 @@
 
 - 全面使用Handler处理封包接收,发送, 解析, 日志, RPC等结构
 
-- 支持自由定义封包处理管线
-
-- 新增编码器扩展, 支持不同消息使用不同的编码解码器. 底层默认使用pb做传输(系统事件, rpc)
+- 新增编码器扩展, 支持混合编码器
 
 - 新增socket的各种属性设置, 超时处理等
 
 - 新的计时器api
+
+- 新增WebSocket支持
 
 - 底层采用性能更高的纯二进制协议进行错误及rpc消息传输
 
 
 ## 变化及修改
 
-- 去除Protobuf协议依赖, 更换为二进制协议
+- 去除Protobuf协议依赖(依然支持Protobuf)
 
 - 大幅降低底层内存分配, GC降低后, benchmark提升1w QPS
 
-- 现在使用cellnet.RegisterMessage注册消息, 回调参数统一为*SessionEvent
+- 现在使用cellnet.RegisterMessage注册消息, 回调参数统一为*Event
 
 - 去除RPC包装, 解包封包的重复代码. 封包变小
 
