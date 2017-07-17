@@ -17,17 +17,26 @@
 
 ## 数据协议
 
-* 封包类型采用Type-Length-Value的私有tcp封包, 自带序列号防御简单的封包复制
+* 编码支持:
+    - Google Protobuf (https://github.com/google/protobuf)
+    - sproto (https://github.com/cloudwu/sproto)
+    - json
+    - 二进制协议(https://github.com/davyxu/goobjfmt)
 
-* 可自定义封包处理流程, 方便更换自己的封包格式
+* 支持混合编码收发
 
-* 内建Protobuf, sproto, json, 二进制协议支持
+* 传输协议支持:
 
-* 支持混合协议收发
+   - tcp(基于Type-Length-Value私有协议)
 
-## 基于handler处理链, 自定义收发流程
+   - WebSocket
 
-* handler支持日志调试流程
+
+## 基于handler无状态处理链
+
+* 自定义, 组装收发流程
+
+* 支持专有日志调试
 
 ## RPC
 
@@ -48,7 +57,9 @@
 
 * github.com/davyxu/gosproto
 
+# websocket可选支持
 
+* github.com/gorilla/websocket
 
 # 获取+编译
 
@@ -81,9 +92,9 @@ func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
+	p := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -102,15 +113,15 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	dh := socket.NewConnector(queue).Start("127.0.0.1:7301")
+	p := socket.NewConnector(queue).Start("127.0.0.1:7301")
 
-	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.Content)
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		log.Debugln("client connected")
 
@@ -120,7 +131,7 @@ func client() {
 
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
 
 		msg := ev.Msg.(*coredef.SessionConnectFailed)
 
@@ -156,9 +167,11 @@ example\			测试用例/例子
 
     classicrecv\    传统的固定消息处理函数例子
 	
-   	echo_pb\	    基于protobuf和json混合协议的pingpong测试，
+   	echo_pb\	    基于protobuf和json混合编码的pingpong测试，
 
-   	echo_sproto\	基于sproto协议的pingpong测试，
+   	echo_sproto\	基于sproto编码的pingpong测试，
+
+   	echo_websocket\	基于websocket协议，
 
    	gracefulexit\	平滑退出
 
@@ -177,14 +190,23 @@ util\			工具库
 
 # FAQ
 
+* 这个代码的入口在哪里? 怎么编译为exe?
+
+    本代码是一个网络库, 需要根据需求, 整合逻辑
+
+    只需要将sample里echo系代码复制到你的main中编译即可运行
+
 * 支持WebSocket么?
 
-    不支持, WebSocket属于独立协议, 而且需要http服务器配合, 逻辑较为复杂, 在cellnet基础上独立开发意义不大
-    再者, 使用cellnet接口对第三方WebSocket库进行再封装实际意义也不大. 如果有需求可自行封装
+    支持!
 
-* 混合协议有何用途?
+    本网络库的Websocket基于第三方整合, 包格式基于文本: 包名\n+json内容
 
-    在与多种语言写成的服务器进行通信时, 可以使用不同的协议,
+    tcp私有协议到Websocket的转换, 只需要更换包名即可
+
+* 混合编码有何用途?
+
+    在与多种语言写成的服务器进行通信时, 可以使用不同的编码,
     最终在逻辑层都是统一的结构能让逻辑编写更加方便, 无需关注底层处理细节
 
 * 内建支持的二进制协议能与其他语言写成的网络库互通么?
