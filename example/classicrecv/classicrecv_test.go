@@ -47,7 +47,7 @@ func server() {
 	_, send := peer.HandlerList()
 
 	// 在原有流程中, 插入固定消息回调
-	recvList := socket.BuildRecvHandler(new(RecvMessageHandler), peer)
+	recvList := socket.BuildRecvHandler(cellnet.NewBranchHandler(new(RecvMessageHandler), peer))
 
 	peer.SetHandlerList(recvList, send)
 

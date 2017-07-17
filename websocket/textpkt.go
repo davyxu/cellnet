@@ -2,7 +2,7 @@ package websocket
 
 import "bytes"
 
-// 格式
+// 格式:  消息名\n+json文本
 
 func parsePacket(pkt []byte) (msgName string, data []byte) {
 

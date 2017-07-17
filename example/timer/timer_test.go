@@ -37,27 +37,30 @@ func TestAfterTimer(t *testing.T) {
 	signal.WaitAndExpect("2 sec after not done", 2)
 }
 
-func TestTickerTimer(t *testing.T) {
+func TestLoopTimer(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 	signal.SetTimeout(60 * time.Second)
 
 	queue := cellnet.NewEventQueue()
 
+	// 启动消息循环
 	queue.StartLoop()
 
 	var count int
-	timer.Tick(queue, time.Millisecond*100, func(stopper timer.TickStopper) {
+
+	// 启动计时循环
+	timer.NewLoop(queue, time.Millisecond*100, func(ctx *timer.Loop) {
+
 		log.Debugln("tick 100 ms", count)
 
 		count++
 
 		if count >= 10 {
 			signal.Done(1)
-			stopper.Stop()
+			ctx.Stop()
 		}
-
-	})
+	}, nil).Start()
 
 	signal.WaitAndExpect("100ms * 10 times ticker not done", 1)
 }
