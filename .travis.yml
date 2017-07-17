@@ -5,12 +5,20 @@ install:
   - go get -v github.com/davyxu/goobjfmt
   - go get -v github.com/davyxu/gosproto
   - go get -v github.com/golang/protobuf/proto
+  - go get -v github.com/gorilla/websocket
 
 go:
   - 1.8
 
 script:
-  - go test -v github.com/davyxu/cellnet/example/echo_pb github.com/davyxu/cellnet/example/echo_sproto github.com/davyxu/cellnet/example/classicrecv github.com/davyxu/cellnet/example/sendclose github.com/davyxu/cellnet/example/gracefulexit
+  - go test -v github.com/davyxu/cellnet/example/classicrecv
+  - go test -v github.com/davyxu/cellnet/example/sendclose
+  - go test -v github.com/davyxu/cellnet/example/echo_pb
+  - go test -v github.com/davyxu/cellnet/example/echo_sproto
+  - go test -v github.com/davyxu/cellnet/example/echo_websocket
+  - go test -v github.com/davyxu/cellnet/example/gracefulexit
+  - go test -v github.com/davyxu/cellnet/example/rpc
+  - go test -v github.com/davyxu/cellnet/example/timer
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

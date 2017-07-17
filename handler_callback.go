@@ -43,7 +43,7 @@ func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *Register
 	meta := MessageMetaByName(msgName)
 
 	if meta == nil {
-		panic(fmt.Sprintf("message register failed, %s", msgName))
+		panic(fmt.Sprintf("message register failed, name not found: %s", msgName))
 	}
 
 	if p.Queue() != nil {

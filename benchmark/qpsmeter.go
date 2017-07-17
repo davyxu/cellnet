@@ -58,17 +58,17 @@ func (self *QPSMeter) Average() int {
 	return self.total / self.count
 }
 
-func NewQPSMeter(evq cellnet.EventQueue, callback func(int)) *QPSMeter {
+func NewQPSMeter(q cellnet.EventQueue, callback func(int)) *QPSMeter {
 
 	self := &QPSMeter{}
 
-	timer.Tick(evq, time.Second, func() {
+	timer.NewLoop(q, time.Second, func(ctx *timer.Loop) {
 
 		qps := self.Turn()
 
 		callback(qps)
 
-	})
+	}, nil).Start()
 
 	return self
 }

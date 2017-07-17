@@ -10,15 +10,7 @@ import (
 )
 
 type wsAcceptor struct {
-	cellnet.EventQueue
-	// 会话管理器
-	cellnet.SessionManager
-
-	// 共享配置
-	*cellnet.BasePeerImplement
-
-	// 自带派发器
-	*cellnet.DispatcherHandler
+	*wsPeer
 }
 
 var upgrader = websocket.Upgrader{
@@ -26,10 +18,6 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 } // use default options
-
-func (self *wsAcceptor) Queue() cellnet.EventQueue {
-	return self.EventQueue
-}
 
 func (self *wsAcceptor) Start(address string) cellnet.Peer {
 
@@ -85,6 +73,8 @@ func (self *wsAcceptor) Start(address string) cellnet.Peer {
 			log.Errorln(err)
 		}
 
+		self.SetRunning(false)
+
 	}()
 
 	return self
@@ -94,18 +84,14 @@ func (self *wsAcceptor) Stop() {
 	if !self.IsRunning() {
 		return
 	}
+
 }
 
 func NewAcceptor(q cellnet.EventQueue) cellnet.Peer {
 
 	self := &wsAcceptor{
-		EventQueue:        q,
-		DispatcherHandler: cellnet.NewDispatcherHandler(),
-		SessionManager:    cellnet.NewSessionManager(),
-		BasePeerImplement: cellnet.NewBasePeer(),
+		wsPeer: newPeer(q, cellnet.NewSessionManager()),
 	}
-
-	self.BasePeerImplement.SetHandlerList(BuildRecvHandler(self.DispatcherHandler), BuildSendHandler())
 
 	return self
 }

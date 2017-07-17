@@ -30,6 +30,7 @@ func (self *wsSession) FromPeer() cellnet.Peer {
 
 func (self *wsSession) Close() {
 
+	self.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 }
 
 func (self *wsSession) Send(data interface{}) {
