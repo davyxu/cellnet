@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/codec/pb" // 启用pb编码
+	_ "github.com/davyxu/cellnet/codec/pb"                     // 启用pb编码
 	"github.com/davyxu/cellnet/proto/binary/coredef"           // 底层系统事件
 	jsongamedef "github.com/davyxu/cellnet/proto/json/gamedef" // json逻辑协议
 	"github.com/davyxu/cellnet/proto/pb/gamedef"               // pb逻辑协议
@@ -21,10 +21,10 @@ func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
+	p := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
 
 	// 混合协议支持, 接收pb编码的消息
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -36,7 +36,7 @@ func server() {
 	})
 
 	// 混合协议支持, 接收json编码的消息
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoJsonACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoJsonACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*jsongamedef.TestEchoJsonACK)
 
 		log.Debugln("server recv json:", msg.Content)

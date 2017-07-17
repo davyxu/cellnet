@@ -6,15 +6,16 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/benchmark"
-	"github.com/davyxu/cellnet/example"
+	_ "github.com/davyxu/cellnet/codec/pb" // 启用pb编码
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 )
 
 var log *golog.Logger = golog.New("test")
 
-var signal *test.SignalTester
+var signal *util.SignalTester
 
 // 测试地址
 const benchmarkAddress = "127.0.0.1:7201"
@@ -76,9 +77,9 @@ func client() {
 func TestIO(t *testing.T) {
 
 	// 屏蔽socket层的调试日志
-	golog.SetLevelByString("socket", "error")
+	golog.SetLevelByString("cellnet", "error")
 
-	signal = test.NewSignalTester(t)
+	signal = util.NewSignalTester(t)
 
 	// 超时时间为测试时间延迟一会
 	signal.SetTimeout((benchmarkSeconds + 5) * time.Second)

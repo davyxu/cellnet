@@ -2,16 +2,6 @@ package socket
 
 import "github.com/davyxu/cellnet"
 
-// socket.EncodePacketHandler -> socket.MsgLogHandler -> socket.WritePacketHandler
-func BuildSendHandler() []cellnet.EventHandler {
-
-	return cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
-		cellnet.StaticMsgLogHandler(),
-		StaticWritePacketHandler(),
-	)
-
-}
-
 // socket.ReadPacketHandler -> socket.MsgLogHandler ->  socket.DecodePacketHandler -> cellnet.DispatcherHandler
 func BuildRecvHandler(recvHandler ...cellnet.EventHandler) []cellnet.EventHandler {
 
@@ -19,6 +9,16 @@ func BuildRecvHandler(recvHandler ...cellnet.EventHandler) []cellnet.EventHandle
 		cellnet.StaticMsgLogHandler(),
 		cellnet.StaticDecodePacketHandler(),
 		recvHandler,
+	)
+
+}
+
+// socket.EncodePacketHandler -> socket.MsgLogHandler -> socket.WritePacketHandler
+func BuildSendHandler() []cellnet.EventHandler {
+
+	return cellnet.HandlerLink(cellnet.StaticEncodePacketHandler(),
+		cellnet.StaticMsgLogHandler(),
+		StaticWritePacketHandler(),
 	)
 
 }
