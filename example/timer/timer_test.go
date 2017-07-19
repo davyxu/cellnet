@@ -64,22 +64,3 @@ func TestLoopTimer(t *testing.T) {
 
 	signal.WaitAndExpect("100ms * 10 times ticker not done", 1)
 }
-
-func TestDelay(t *testing.T) {
-
-	signal := util.NewSignalTester(t)
-
-	queue := cellnet.NewEventQueue()
-
-	queue.StartLoop()
-
-	log.Debugln("delay 1 sec begin")
-
-	queue.DelayPost(time.Second, func() {
-
-		log.Debugln("delay done")
-		signal.Done(1)
-	})
-
-	signal.WaitAndExpect("delay not work", 1)
-}

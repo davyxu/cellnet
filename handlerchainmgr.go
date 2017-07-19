@@ -6,12 +6,21 @@ import (
 )
 
 type HandlerChainManager interface {
-	SetChainSend(chain *HandlerChain)
-	ChainSend() *HandlerChain
 
+	// 添加一条接收处理链
 	AddChainRecv(recv *HandlerChain) int64
+
+	// 移除接收处理链, 根据添加时的id
 	RemoveChainRecv(id int64)
+
+	// 获取当前的处理链(乱序)
 	ChainListRecv() HandlerChainList
+
+	// 设置发送处理链
+	SetChainSend(chain *HandlerChain)
+
+	// 获取当前发送处理链
+	ChainSend() *HandlerChain
 }
 
 // Peer间的共享数据
@@ -83,8 +92,6 @@ func (self *HandlerChainManagerImplement) ChainListRecv() HandlerChainList {
 func (self *HandlerChainManagerImplement) ChainString() string {
 
 	var buff bytes.Buffer
-
-	//	buff.WriteString(fmt.Sprintf("\nPeer: %s Address: %s\n", self.Name(), self.Address()))
 
 	buff.WriteString("ChainRecv:\n")
 	buff.WriteString(self.ChainListRecv().String())

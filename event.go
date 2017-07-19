@@ -37,6 +37,8 @@ type Event struct {
 	ChainSend *HandlerChain // 发送handler override
 
 	r Result // 出现错误, 将结束ChainCall
+
+	chainid int64 // 所在链, 调试用
 }
 
 func (self *Event) Clone() *Event {

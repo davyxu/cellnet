@@ -83,11 +83,16 @@ func RegisterRawHandler(p Peer, msgName string, handlers ...EventHandler) *Regis
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	p.AddChainRecv(NewHandlerChain(
+	chain := NewHandlerChain(
 		NewMatchMsgIDHandler(meta.ID),
 		StaticDecodePacketHandler(),
-		NewQueuePostHandler(p.Queue(), handlers...),
-	))
+	)
+
+	for _, c := range handlers {
+		chain.Add(c)
+	}
+
+	p.AddChainRecv(chain)
 
 	return &RegisterMessageContext{MessageMeta: meta}
 }

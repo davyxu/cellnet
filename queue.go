@@ -2,10 +2,10 @@ package cellnet
 
 import (
 	"runtime/debug"
-	"time"
 )
 
 type EventQueue interface {
+
 	StartLoop()
 
 	StopLoop(result int)
@@ -15,9 +15,6 @@ type EventQueue interface {
 
 	// 投递事件, 通过队列到达消费者端
 	Post(callback func())
-
-	// 延时投递
-	DelayPost(dur time.Duration, callback func())
 }
 
 type evQueue struct {
@@ -36,15 +33,6 @@ func (self *evQueue) Post(callback func()) {
 	}
 
 	self.queue <- callback
-}
-
-func (self *evQueue) DelayPost(dur time.Duration, callback func()) {
-
-	time.AfterFunc(dur, func() {
-
-		self.Post(callback)
-	})
-
 }
 
 func (self *evQueue) protectedCall(callback func()) {

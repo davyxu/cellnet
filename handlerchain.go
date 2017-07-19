@@ -1,8 +1,12 @@
 package cellnet
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 type HandlerChain struct {
+	id   int64
 	list []EventHandler
 }
 
@@ -14,7 +18,7 @@ func (self *HandlerChain) String() string {
 
 	var buff bytes.Buffer
 
-	buff.WriteString("	")
+	buff.WriteString(fmt.Sprintf("	 chain: %d ", self.id))
 
 	for index, h := range self.list {
 
@@ -29,6 +33,8 @@ func (self *HandlerChain) String() string {
 }
 
 func (self *HandlerChain) Call(ev *Event) {
+
+	ev.chainid = self.id
 
 	for _, h := range self.list {
 
@@ -48,8 +54,16 @@ func (self *HandlerChain) Call(ev *Event) {
 
 }
 
+var chainidgen int64 = 500
+
+func genChainID() int64 {
+	chainidgen++
+	return chainidgen
+}
+
 func NewHandlerChain(h ...EventHandler) *HandlerChain {
 	return &HandlerChain{
+		id:   genChainID(),
 		list: h,
 	}
 }
