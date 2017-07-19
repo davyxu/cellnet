@@ -47,9 +47,24 @@ func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *Register
 	}
 
 	if p.Queue() != nil {
-		p.AddHandler(int(meta.ID), HandlerLink(NewQueuePostHandler(p.Queue(), handlers...)))
+
+		p.AddChainRecv(NewHandlerChain(
+			NewMatchMsgIDHandler(meta.ID),
+			StaticDecodePacketHandler(),
+			NewQueuePostHandler(p.Queue(), handlers...),
+		))
 	} else {
-		p.AddHandler(int(meta.ID), HandlerLink(handlers))
+
+		chain := NewHandlerChain(
+			NewMatchMsgIDHandler(meta.ID),
+			StaticDecodePacketHandler(),
+		)
+
+		for _, c := range handlers {
+			chain.Add(c)
+		}
+
+		p.AddChainRecv(chain)
 	}
 
 	return &RegisterMessageContext{MessageMeta: meta}
@@ -68,7 +83,11 @@ func RegisterRawHandler(p Peer, msgName string, handlers ...EventHandler) *Regis
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	p.AddHandler(int(meta.ID), HandlerLink(handlers))
+	p.AddChainRecv(NewHandlerChain(
+		NewMatchMsgIDHandler(meta.ID),
+		StaticDecodePacketHandler(),
+		NewQueuePostHandler(p.Queue(), handlers...),
+	))
 
 	return &RegisterMessageContext{MessageMeta: meta}
 }

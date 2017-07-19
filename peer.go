@@ -7,13 +7,7 @@ type Session interface {
 	Send(interface{})
 
 	// 直接发送封包
-	RawSend([]EventHandler, *Event)
-
-	// 投递封包
-	Post(interface{})
-
-	// 直接投递封包
-	RawPost([]EventHandler, *Event)
+	RawSend(*Event)
 
 	// 断开
 	Close()
@@ -33,14 +27,14 @@ type Peer interface {
 
 	Stop()
 
-	// 扩展用的功能
-	BasePeer
-
-	// 派发器
-	EventDispatcher
-
-	// 连接管理
-	SessionAccessor
-
 	Queue() EventQueue
+
+	// 基础信息
+	PeerProfile
+
+	// 定制处理链
+	HandlerChainManager
+
+	// 会话管理
+	SessionAccessor
 }

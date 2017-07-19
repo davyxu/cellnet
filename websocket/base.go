@@ -7,14 +7,12 @@ import (
 // Peer间的共享数据
 type wsPeer struct {
 	cellnet.EventQueue
-	// 会话管理器
+
 	cellnet.SessionManager
 
-	// 共享配置
-	*cellnet.BasePeerImplement
+	*cellnet.PeerProfileImplement
 
-	// 自带派发器
-	*cellnet.DispatcherHandler
+	*cellnet.HandlerChainManagerImplement
 }
 
 func (self *wsPeer) Queue() cellnet.EventQueue {
@@ -24,13 +22,17 @@ func (self *wsPeer) Queue() cellnet.EventQueue {
 func newPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *wsPeer {
 
 	self := &wsPeer{
-		EventQueue:        queue,
-		DispatcherHandler: cellnet.NewDispatcherHandler(),
-		SessionManager:    sm,
-		BasePeerImplement: cellnet.NewBasePeer(),
+		EventQueue:                   queue,
+		SessionManager:               sm,
+		PeerProfileImplement:         cellnet.NewPeerProfile(),
+		HandlerChainManagerImplement: cellnet.NewHandlerChainManager(),
 	}
 
-	self.BasePeerImplement.SetHandlerList(BuildRecvHandler(self.DispatcherHandler), BuildSendHandler())
+	self.SetChainSend(
+		cellnet.NewHandlerChain(
+			cellnet.StaticEncodePacketHandler(),
+		),
+	)
 
 	return self
 }

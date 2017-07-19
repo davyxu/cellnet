@@ -22,6 +22,7 @@ func server() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
+	p.SetName("server")
 
 	// 混合协议支持, 接收pb编码的消息
 	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
@@ -56,6 +57,7 @@ func client() {
 	queue := cellnet.NewEventQueue()
 
 	p := socket.NewConnector(queue).Start("127.0.0.1:7301")
+	p.SetName("client")
 
 	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
@@ -96,6 +98,8 @@ func client() {
 }
 
 func TestEcho(t *testing.T) {
+
+	//	cellnet.EnableHandlerLog = true
 
 	signal = util.NewSignalTester(t)
 

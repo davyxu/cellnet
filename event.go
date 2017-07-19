@@ -33,8 +33,8 @@ type Event struct {
 	Tag         interface{} // 事件的连接, 一个处理流程后被Reset
 	TransmitTag interface{} // 接收过程可以传递到发送过程, 不会被清空
 
-	Ses         Session        // 会话
-	SendHandler []EventHandler // 发送handler override
+	Ses       Session       // 会话
+	ChainSend *HandlerChain // 发送handler override
 
 	r Result // 出现错误, 将结束ChainCall
 }
@@ -48,7 +48,7 @@ func (self *Event) Clone() *Event {
 		Tag:         self.Tag,
 		TransmitTag: self.TransmitTag,
 		Ses:         self.Ses,
-		SendHandler: self.SendHandler,
+		ChainSend:   self.ChainSend,
 		Data:        make([]byte, len(self.Data)),
 	}
 
@@ -89,7 +89,15 @@ func (self *Event) Send(data interface{}) {
 	ev.Msg = data
 	ev.TransmitTag = self.TransmitTag
 
-	self.Ses.RawSend(self.SendHandler, ev)
+	if self.ChainSend != nil {
+		// 由接收方提供的发送链继续传递
+		ev.ChainSend = self.ChainSend
+	} else {
+		// 默认没有, 使用peer的发送链
+		ev.ChainSend = self.Ses.FromPeer().ChainSend()
+	}
+
+	self.Ses.RawSend(ev)
 
 }
 

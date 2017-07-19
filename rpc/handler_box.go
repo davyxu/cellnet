@@ -14,8 +14,11 @@ func (self *BoxHandler) Call(ev *cellnet.Event) {
 	ev.FromMessage(&coredef.RemoteCallACK{
 		MsgID:  ev.MsgID,
 		Data:   ev.Data,
-		CallID: ev.TransmitTag.(int32),
+		CallID: ev.TransmitTag.(int64),
 	})
+
+	// 让msglog重新从data中解析出msg来
+	ev.Msg = nil
 
 }
 

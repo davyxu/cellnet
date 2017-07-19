@@ -59,7 +59,7 @@ func (self *socketAcceptor) accept() {
 				log.Errorf("#accept failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
-			extend.PostSystemEvent(nil, cellnet.Event_AcceptFailed, self.SafeRecvHandler(), errToResult(err))
+			extend.PostSystemEvent(nil, cellnet.Event_AcceptFailed, self.ChainListRecv(), errToResult(err))
 
 			break
 		}
@@ -80,7 +80,7 @@ func (self *socketAcceptor) accept() {
 			ses.run()
 
 			// 通知逻辑
-			extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.SafeRecvHandler(), cellnet.Result_OK)
+			extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.ChainListRecv(), cellnet.Result_OK)
 		}()
 
 	}

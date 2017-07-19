@@ -5,10 +5,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/davyxu/cellnet"
 	"io"
 	"net"
 	"sync"
+
+	"github.com/davyxu/cellnet"
 )
 
 const (

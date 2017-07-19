@@ -49,40 +49,81 @@ func (self *socketSession) Send(data interface{}) {
 	ev := cellnet.NewEvent(cellnet.Event_Send, self)
 	ev.Msg = data
 
-	self.RawSend(ev.SendHandler, ev)
+	if ev.ChainSend == nil {
+		ev.ChainSend = self.p.ChainSend()
+	}
+
+	self.RawSend(ev)
 
 }
 
-func (self *socketSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.Event) {
+func (self *socketSession) RawSend(ev *cellnet.Event) {
 
-	if sendHandler == nil {
-		_, sendHandler = self.p.HandlerList()
+	if ev.Type != cellnet.Event_Send {
+		panic("invalid event type, require Event_Send")
 	}
 
 	ev.Ses = self
 
-	cellnet.HandlerChainCall(sendHandler, ev)
-}
+	if ev.ChainSend != nil {
+		ev.ChainSend.Call(ev)
+	}
 
-func (self *socketSession) Post(data interface{}) {
-
-	ev := cellnet.NewEvent(cellnet.Event_Post, self)
-
-	ev.Msg = data
-
+	// 发送日志
 	cellnet.MsgLog(ev)
 
-	self.p.Call(ev)
+	self.sendList.Add(ev)
 }
 
-func (self *socketSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.Event) {
-	if recvHandler == nil {
-		recvHandler, _ = self.p.HandlerList()
+func (self *socketSession) ReadPacket() (msgid uint32, data []byte, err error) {
+
+	read, _ := self.FromPeer().(SocketOptions).SocketDeadline()
+
+	if read != 0 {
+		self.stream.Raw().SetReadDeadline(time.Now().Add(read))
 	}
 
-	ev.Ses = self
+	return self.stream.Read()
+}
 
-	cellnet.HandlerChainCall(recvHandler, ev)
+func (self *socketSession) recvThread() {
+
+	for {
+
+		msgid, data, err := self.ReadPacket()
+
+		chainList := self.p.ChainListRecv()
+
+		if err != nil {
+
+			extend.PostSystemEvent(self, cellnet.Event_Closed, chainList, errToResult(err))
+			break
+
+		}
+
+		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
+
+		ev.MsgID = msgid
+		ev.Data = data
+
+		// 接收日志
+		cellnet.MsgLog(ev)
+
+		chainList.Call(ev)
+
+		if ev.Result() != cellnet.Result_OK {
+			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, chainList, ev.Result())
+			break
+		}
+
+	}
+
+	if self.needNotifyWrite {
+		self.Close()
+	}
+
+	// 通知接收线程ok
+	self.endSync.Done()
 }
 
 // 发送线程
@@ -127,32 +168,6 @@ exitsendloop:
 	self.stream.Close()
 
 	// 通知发送线程ok
-	self.endSync.Done()
-}
-
-func (self *socketSession) recvThread() {
-
-	// 暂时不支持运行期修改HandlerList
-	recvList, _ := self.p.HandlerList()
-
-	for {
-
-		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
-
-		cellnet.HandlerChainCall(recvList, ev)
-
-		if ev.Result() != cellnet.Result_OK {
-			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, recvList, ev.Result())
-			break
-		}
-
-	}
-
-	if self.needNotifyWrite {
-		self.Close()
-	}
-
-	// 通知接收线程ok
 	self.endSync.Done()
 }
 

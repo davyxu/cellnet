@@ -28,7 +28,8 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeoutSec 
 	ev := cellnet.NewEvent(cellnet.Event_Send, ses)
 	ev.TransmitTag = rpcid
 	ev.Msg = reqMsg
-	ses.RawSend(getSendHandler(), ev)
+	ev.ChainSend = ChainSend()
+	ses.RawSend(ev)
 
 	// 等待RPC回复
 	select {

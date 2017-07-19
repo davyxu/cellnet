@@ -61,7 +61,7 @@ func (self *wsAcceptor) Start(address string) cellnet.Peer {
 		ses.run()
 
 		// 通知逻辑
-		extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.SafeRecvHandler(), cellnet.Result_OK)
+		extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.ChainListRecv(), cellnet.Result_OK)
 
 	})
 

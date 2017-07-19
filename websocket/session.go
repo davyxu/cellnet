@@ -38,55 +38,102 @@ func (self *wsSession) Send(data interface{}) {
 	ev := cellnet.NewEvent(cellnet.Event_Send, self)
 	ev.Msg = data
 
-	self.RawSend(ev.SendHandler, ev)
+	if ev.ChainSend != nil {
+		ev.ChainSend = self.p.ChainSend()
+	}
+
+	self.RawSend(ev)
 
 }
 
-func (self *wsSession) Post(data interface{}) {
+func (self *wsSession) RawSend(ev *cellnet.Event) {
 
-	ev := cellnet.NewEvent(cellnet.Event_Post, self)
+	ev.Ses = self
 
-	ev.Msg = data
+	if ev.ChainSend != nil {
+		ev.ChainSend.Call(ev)
+	}
 
+	// 发送日志
 	cellnet.MsgLog(ev)
 
-	self.p.Call(ev)
+	go func() {
+
+		meta := cellnet.MessageMetaByID(ev.MsgID)
+
+		if meta == nil {
+			ev.SetResult(cellnet.Result_CodecError)
+			return
+		}
+
+		raw := composePacket(meta.Name, ev.Data)
+
+		self.conn.WriteMessage(websocket.TextMessage, raw)
+
+	}()
 }
 
-func (self *wsSession) RawPost(recvHandler []cellnet.EventHandler, ev *cellnet.Event) {
-	if recvHandler == nil {
-		recvHandler, _ = self.p.HandlerList()
+func (self *wsSession) ReadPacket() (msgid uint32, data []byte, result cellnet.Result) {
+
+	// 读超时
+	t, raw, err := self.conn.ReadMessage()
+
+	if err != nil {
+		return 0, nil, errToResult(err)
 	}
 
-	ev.Ses = self
+	switch t {
+	case websocket.TextMessage:
 
-	cellnet.HandlerChainCall(recvHandler, ev)
-}
+		msgName, userdata := parsePacket(raw)
 
-func (self *wsSession) RawSend(sendHandler []cellnet.EventHandler, ev *cellnet.Event) {
+		data = userdata
 
-	if sendHandler == nil {
-		_, sendHandler = self.p.HandlerList()
+		if msgName != "" {
+
+			meta := cellnet.MessageMetaByName(msgName)
+
+			if meta == nil || meta.Codec == nil {
+				return 0, nil, cellnet.Result_CodecError
+			}
+
+			msgid = meta.ID
+
+		}
+
+	case websocket.CloseMessage:
+		return 0, nil, cellnet.Result_RequestClose
 	}
 
-	ev.Ses = self
-
-	cellnet.HandlerChainCall(sendHandler, ev)
+	return msgid, data, cellnet.Result_OK
 }
 
 func (self *wsSession) recvThread() {
 
-	recvList, _ := self.p.HandlerList()
-
 	for {
 
-		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
+		msgid, data, result := self.ReadPacket()
 
-		cellnet.HandlerChainCall(recvList, ev)
+		chainList := self.p.ChainListRecv()
+
+		if result != cellnet.Result_OK {
+
+			extend.PostSystemEvent(self, cellnet.Event_Closed, chainList, result)
+			break
+
+		}
+
+		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
+		ev.MsgID = msgid
+		ev.Data = data
+
+		// 接收日志
+		cellnet.MsgLog(ev)
+
+		chainList.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
-
-			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, recvList, ev.Result())
+			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, chainList, ev.Result())
 			break
 		}
 	}

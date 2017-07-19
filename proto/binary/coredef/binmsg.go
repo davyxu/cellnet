@@ -38,7 +38,7 @@ func (m *SessionClosed) String() string { return goobjfmt.CompactTextString(m) }
 type RemoteCallACK struct {
 	MsgID  uint32
 	Data   []byte
-	CallID int32
+	CallID int64
 }
 
 func (m *RemoteCallACK) String() string { return goobjfmt.CompactTextString(m) }

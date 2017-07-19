@@ -9,4 +9,5 @@ const (
 	Result_PackageCrack         // 封包破损
 	Result_CodecError
 	Result_RequestClose // 请求关闭
+	Result_NextChain
 )

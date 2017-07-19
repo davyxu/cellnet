@@ -10,7 +10,7 @@ var (
 	metaSessionAccepted  = cellnet.MessageMetaByName("coredef.SessionAccepted")
 )
 
-func PostSystemEvent(ses cellnet.Session, t cellnet.EventType, hlist []cellnet.EventHandler, r cellnet.Result) {
+func PostSystemEvent(ses cellnet.Session, t cellnet.EventType, chain cellnet.HandlerChainList, r cellnet.Result) {
 
 	ev := cellnet.NewEvent(t, ses)
 
@@ -33,7 +33,7 @@ func PostSystemEvent(ses cellnet.Session, t cellnet.EventType, hlist []cellnet.E
 		panic("unknown system error")
 	}
 
-	//ev.Type = t
+	cellnet.MsgLog(ev)
 
-	cellnet.HandlerChainCall(hlist, ev)
+	chain.Call(ev)
 }

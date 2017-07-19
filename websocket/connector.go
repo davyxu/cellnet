@@ -48,6 +48,15 @@ func (self *wsConnector) Start(address string) cellnet.Peer {
 	return self
 }
 
+func errToResult(err error) cellnet.Result {
+
+	if err == nil {
+		return cellnet.Result_OK
+	}
+
+	return cellnet.Result_SocketError
+}
+
 func (self *wsConnector) connect() {
 
 	self.SetRunning(true)
@@ -56,7 +65,7 @@ func (self *wsConnector) connect() {
 
 	c, _, err := websocket.DefaultDialer.Dial(self.Address(), nil)
 	if err != nil {
-		extend.PostSystemEvent(nil, cellnet.Event_ConnectFailed, self.SafeRecvHandler(), errToResult(err))
+		extend.PostSystemEvent(nil, cellnet.Event_ConnectFailed, self.ChainListRecv(), errToResult(err))
 		return
 	}
 
@@ -74,7 +83,7 @@ func (self *wsConnector) connect() {
 	ses.run()
 
 	// 通知逻辑
-	extend.PostSystemEvent(ses, cellnet.Event_Connected, self.SafeRecvHandler(), cellnet.Result_OK)
+	extend.PostSystemEvent(ses, cellnet.Event_Connected, self.ChainListRecv(), cellnet.Result_OK)
 
 	if <-self.closeSignal {
 

@@ -6,7 +6,7 @@ import (
 )
 
 type UnboxHandler struct {
-	feedbackHandler []cellnet.EventHandler
+	feedbackChain *cellnet.HandlerChain
 }
 
 func (self *UnboxHandler) Call(ev *cellnet.Event) {
@@ -19,13 +19,13 @@ func (self *UnboxHandler) Call(ev *cellnet.Event) {
 	// 服务器接收后, 发送时, 需要使用CallID
 	ev.TransmitTag = wrapper.CallID
 
-	ev.SendHandler = self.feedbackHandler
+	ev.ChainSend = self.feedbackChain
 
 }
 
-func NewUnboxHandler(feedbackHandler []cellnet.EventHandler) cellnet.EventHandler {
+func NewUnboxHandler(chain *cellnet.HandlerChain) cellnet.EventHandler {
 	return &UnboxHandler{
-		feedbackHandler: feedbackHandler,
+		feedbackChain: chain,
 	}
 
 }

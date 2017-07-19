@@ -2,9 +2,9 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/extend"
 	"net"
 	"time"
-	"github.com/davyxu/cellnet/extend"
 )
 
 // 连接器, 可由Peer转换
@@ -75,7 +75,7 @@ func (self *socketConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				extend.PostSystemEvent(nil, cellnet.Event_ConnectFailed, self.SafeRecvHandler(), errToResult(err))
+				extend.PostSystemEvent(nil, cellnet.Event_ConnectFailed, self.ChainListRecv(), errToResult(err))
 				break
 			}
 
@@ -102,7 +102,7 @@ func (self *socketConnector) connect(address string) {
 			self.closeSignal <- true
 		}
 
-		extend.PostSystemEvent(ses, cellnet.Event_Connected, self.SafeRecvHandler(), cellnet.Result_OK)
+		extend.PostSystemEvent(ses, cellnet.Event_Connected, self.ChainListRecv(), cellnet.Result_OK)
 
 		if <-self.closeSignal {
 

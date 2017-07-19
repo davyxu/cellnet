@@ -12,10 +12,10 @@ type socketPeer struct {
 	cellnet.SessionManager
 
 	// 共享配置
-	*cellnet.BasePeerImplement
+	*cellnet.PeerProfileImplement
 
-	// 自带派发器
-	*cellnet.DispatcherHandler
+	// 处理链管理
+	*cellnet.HandlerChainManagerImplement
 
 	// socket配置
 	*socketOptions
@@ -73,14 +73,18 @@ func (self *socketPeer) Queue() cellnet.EventQueue {
 func newSocketPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *socketPeer {
 
 	self := &socketPeer{
-		EventQueue:        queue,
-		DispatcherHandler: cellnet.NewDispatcherHandler(),
-		SessionManager:    sm,
-		socketOptions:     newSocketOptions(),
-		BasePeerImplement: cellnet.NewBasePeer(),
+		EventQueue:                   queue,
+		SessionManager:               sm,
+		socketOptions:                newSocketOptions(),
+		PeerProfileImplement:         cellnet.NewPeerProfile(),
+		HandlerChainManagerImplement: cellnet.NewHandlerChainManager(),
 	}
 
-	self.BasePeerImplement.SetHandlerList(BuildRecvHandler(self.DispatcherHandler), BuildSendHandler())
+	self.SetChainSend(
+		cellnet.NewHandlerChain(
+			cellnet.StaticEncodePacketHandler(),
+		),
+	)
 
 	return self
 }

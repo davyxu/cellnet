@@ -14,6 +14,7 @@ func (self *QueuePostHandler) Call(ev *Event) {
 }
 
 func NewQueuePostHandler(q EventQueue, hlist ...EventHandler) EventHandler {
+
 	return &QueuePostHandler{
 		q:     q,
 		hlist: hlist,

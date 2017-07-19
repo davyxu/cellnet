@@ -23,7 +23,8 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCall
 	ev := cellnet.NewEvent(cellnet.Event_Send, ses)
 	ev.TransmitTag = rpcid
 	ev.Msg = reqMsg
-	ses.RawSend(getSendHandler(), ev)
+	ev.ChainSend = ChainSend()
+	ses.RawSend(ev)
 
 	return nil
 }

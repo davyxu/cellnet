@@ -44,12 +44,12 @@ func server() {
 	queue := cellnet.NewEventQueue()
 
 	peer := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
-	_, send := peer.HandlerList()
 
-	// 在原有流程中, 插入固定消息回调
-	recvList := socket.BuildRecvHandler(cellnet.NewBranchHandler(new(RecvMessageHandler), peer))
-
-	peer.SetHandlerList(recvList, send)
+	// 添加一条新的处理链
+	peer.AddChainRecv(cellnet.NewHandlerChain(
+		cellnet.StaticDecodePacketHandler(),
+		cellnet.NewQueuePostHandler(peer.Queue(), new(RecvMessageHandler)),
+	))
 
 	cellnet.RegisterMessage(peer, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
