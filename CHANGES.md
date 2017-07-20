@@ -16,9 +16,9 @@
 
 ## 变化及修改
 
-- 去除Protobuf协议依赖(依然支持Protobuf)
+- 底层去除Protobuf协议依赖(依然支持Protobuf)
 
-- 大幅降低底层内存分配, GC降低后, benchmark提升1w QPS
+- 大幅降低底层内存分配, GC降低后, benchmark IOPS提升
 
 - 现在使用cellnet.RegisterMessage注册消息, 回调参数统一为*Event
 

@@ -17,18 +17,15 @@ func PostSystemEvent(ses cellnet.Session, t cellnet.EventType, chain cellnet.Han
 	// 直接放在这里, decoder里遇到系统事件不会进行decode操作
 	switch t {
 	case cellnet.Event_Closed:
-		ev.Msg = &coredef.SessionClosed{Result: r}
-		ev.FromMessage(ev.Msg)
+		ev.FromMessage(&coredef.SessionClosed{Result: r})
 	case cellnet.Event_AcceptFailed:
-		ev.Msg = &coredef.SessionAcceptFailed{Result: r}
-		ev.FromMessage(ev.Msg)
+		ev.FromMessage(&coredef.SessionAcceptFailed{Result: r})
 	case cellnet.Event_ConnectFailed:
-		ev.Msg = &coredef.SessionConnectFailed{Result: r}
-		ev.FromMessage(ev.Msg)
+		ev.FromMessage(&coredef.SessionConnectFailed{Result: r})
 	case cellnet.Event_Accepted:
-		ev.FromMeta(metaSessionAccepted)
+		ev.MsgID = metaSessionAccepted.ID
 	case cellnet.Event_Connected:
-		ev.FromMeta(metaSessionConnected)
+		ev.MsgID = metaSessionConnected.ID
 	default:
 		panic("unknown system error")
 	}

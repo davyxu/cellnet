@@ -1,8 +1,6 @@
 package cellnet
 
 import (
-	"fmt"
-
 	"errors"
 	"sync"
 )
@@ -38,32 +36,8 @@ func MsgLog(ev *Event) {
 
 	// 需要在收到消息, 不经过decoder时, 就要打印出来, 所以手动解开消息, 有少许耗费
 
-	log.Debugf("#%s(%s) sid: %d %s(%d) size: %d | %s", dirString(ev), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgID, ev.MsgSize(), ev.MsgString())
+	log.Debugf("#%s(%s) sid: %d %s(%d) size: %d | %s", ev.Type.String(), ev.PeerName(), ev.SessionID(), ev.MsgName(), ev.MsgID, ev.MsgSize(), ev.MsgString())
 
-}
-
-func dirString(ev *Event) string {
-
-	switch ev.Type {
-	case Event_Recv:
-		return "recv"
-	case Event_Post:
-		return "post"
-	case Event_Send:
-		return "send"
-	case Event_Connected:
-		return "connected"
-	case Event_ConnectFailed:
-		return "connectfailed"
-	case Event_Accepted:
-		return "accepted"
-	case Event_AcceptFailed:
-		return "acceptefailed"
-	case Event_Closed:
-		return "closed"
-	}
-
-	return fmt.Sprintf("unknown(%d)", ev.Type)
 }
 
 var (

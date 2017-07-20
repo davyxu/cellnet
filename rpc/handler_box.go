@@ -17,9 +17,6 @@ func (self *BoxHandler) Call(ev *cellnet.Event) {
 		CallID: ev.TransmitTag.(int64),
 	})
 
-	// 让msglog重新从data中解析出msg来
-	ev.Msg = nil
-
 }
 
 func NewBoxHandler() cellnet.EventHandler {
