@@ -10,19 +10,14 @@ type DecodePacketHandler struct {
 
 func (self *DecodePacketHandler) Call(ev *Event) {
 
-	// 系统消息不做处理
-	if !ev.IsSystemEvent() {
+	var err error
+	ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
 
-		var err error
+	r := errToResult(err)
+	if r != Result_OK {
 		ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
 
-		r := errToResult(err)
-		if r != Result_OK {
-			ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
-
-			ev.SetResult(r)
-		}
-
+		ev.SetResult(r)
 	}
 
 }

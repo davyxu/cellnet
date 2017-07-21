@@ -3,6 +3,7 @@ package cellnet
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 )
 
 type HandlerChain struct {
@@ -10,8 +11,32 @@ type HandlerChain struct {
 	list []EventHandler
 }
 
+// 添加1个
 func (self *HandlerChain) Add(h EventHandler) {
 	self.list = append(self.list, h)
+}
+
+// 添加多个
+func (self *HandlerChain) AddBatch(h ...EventHandler) {
+	self.list = append(self.list, h...)
+}
+
+// 启动匹配类型
+func (self *HandlerChain) AddAny(objlist ...interface{}) {
+
+	for _, obj := range objlist {
+
+		switch v := obj.(type) {
+		case EventHandler:
+			self.Add(v)
+		case []EventHandler:
+			self.list = append(self.list, v...)
+		default:
+			panic("unknown hander chain input type: " + reflect.ValueOf(v).String())
+		}
+
+	}
+
 }
 
 func (self *HandlerChain) String() string {
@@ -61,11 +86,14 @@ func genChainID() int64 {
 	return chainidgen
 }
 
-func NewHandlerChain(h ...EventHandler) *HandlerChain {
-	return &HandlerChain{
-		id:   genChainID(),
-		list: h,
+func NewHandlerChain(objlist ...interface{}) *HandlerChain {
+	self := &HandlerChain{
+		id: genChainID(),
 	}
+
+	self.AddAny(objlist...)
+
+	return self
 }
 
 type HandlerChainList []*HandlerChain

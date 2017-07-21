@@ -26,14 +26,12 @@ type RegisterMessageContext struct {
 }
 
 // 注册消息处理回调
-// DispatcherHandler -> socket.DecodePacketHandler -> socket.CallbackHandler
 func RegisterMessage(p Peer, msgName string, userCallback func(*Event)) *RegisterMessageContext {
 
 	return RegisterHandler(p, msgName, NewCallbackHandler(userCallback))
 }
 
 // 注册消息处理的一系列Handler, 当有队列时, 投放到队列
-// DispatcherHandler -> socket.DecodePacketHandler -> ...
 func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *RegisterMessageContext {
 
 	if p == nil {
@@ -55,16 +53,11 @@ func RegisterHandler(p Peer, msgName string, handlers ...EventHandler) *Register
 		))
 	} else {
 
-		chain := NewHandlerChain(
+		p.AddChainRecv(NewHandlerChain(
 			NewMatchMsgIDHandler(meta.ID),
 			StaticDecodePacketHandler(),
-		)
-
-		for _, c := range handlers {
-			chain.Add(c)
-		}
-
-		p.AddChainRecv(chain)
+			handlers,
+		))
 	}
 
 	return &RegisterMessageContext{MessageMeta: meta}
@@ -83,16 +76,11 @@ func RegisterRawHandler(p Peer, msgName string, handlers ...EventHandler) *Regis
 		panic(fmt.Sprintf("message register failed, %s", msgName))
 	}
 
-	chain := NewHandlerChain(
+	p.AddChainRecv(NewHandlerChain(
 		NewMatchMsgIDHandler(meta.ID),
 		StaticDecodePacketHandler(),
-	)
-
-	for _, c := range handlers {
-		chain.Add(c)
-	}
-
-	p.AddChainRecv(chain)
+		handlers,
+	))
 
 	return &RegisterMessageContext{MessageMeta: meta}
 }
