@@ -4,16 +4,7 @@
 
 简单,方便,高效的跨平台服务器网络库
 
-
 # 特性
-
-## 队列及IO
-  
-* 支持多个队列, 实现单线程/多线程收发处理消息
-
-* 多线程处理io
-
-* 发送时自动合并封包(性能效果决定于实际请求和发送比例)
 
 ## 数据协议
 
@@ -32,11 +23,18 @@
    - WebSocket
 
 
-## 基于handler无状态处理链
+## 基于handler处理链
 
 * 自定义, 组装收发流程
 
 * 支持专有日志调试
+
+## 队列及IO
+  
+* 支持多个队列, 实现单线程/多线程收发处理消息
+
+* 发送时自动合并封包(性能效果决定于实际请求和发送比例)
+
 
 ## RPC
 
@@ -66,6 +64,13 @@
 ```
 	go get -u -v github.com/davyxu/cellnet
 ```
+
+例子主要采用了protobuf做编码，因此需要安装protobuf支持
+
+```
+	go get -v github.com/golang/protobuf
+```
+
 
 # 性能测试
 
@@ -194,15 +199,13 @@ util\			工具库
 
     本代码是一个网络库, 需要根据需求, 整合逻辑
 
-    只需要将sample里echo系代码复制到你的main中编译即可运行
-
 * 支持WebSocket么?
 
     支持!
 
     本网络库的Websocket基于第三方整合, 包格式基于文本: 包名\n+json内容
 
-    tcp私有协议到Websocket的转换, 只需要更换包名即可
+    参见example/echo_websocket
 
 * 混合编码有何用途?
 
@@ -266,7 +269,9 @@ util\			工具库
 
 
 # 版本历史
-2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/master/CHANGES.md)
+2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
+
+2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v2/CHANGES.md)
 
 2015.8	v1版本
 

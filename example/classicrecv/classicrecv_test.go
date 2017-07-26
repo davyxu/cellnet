@@ -43,15 +43,16 @@ func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	peer := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
+	p := socket.NewAcceptor(queue).Start("127.0.0.1:7701")
+	p.SetName("server")
 
 	// 添加一条新的处理链
-	peer.AddChainRecv(cellnet.NewHandlerChain(
+	p.AddChainRecv(cellnet.NewHandlerChain(
 		cellnet.StaticDecodePacketHandler(),
-		cellnet.NewQueuePostHandler(peer.Queue(), new(RecvMessageHandler)),
+		cellnet.NewQueuePostHandler(p.Queue(), new(RecvMessageHandler)),
 	))
 
-	cellnet.RegisterMessage(peer, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -68,9 +69,10 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	dh := socket.NewConnector(queue).Start("127.0.0.1:7301")
+	p := socket.NewConnector(queue).Start("127.0.0.1:7701")
+	p.SetName("client")
 
-	cellnet.RegisterMessage(dh, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("client recv:", msg.Content)
@@ -78,7 +80,7 @@ func client() {
 		signal.Done(1)
 	})
 
-	cellnet.RegisterMessage(dh, "coredef.SessionConnected", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		log.Debugln("client connected")
 

@@ -16,7 +16,7 @@ const clientConnectionCount = 3
 func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(queue).Start("127.0.0.1:7301")
+	p := socket.NewAcceptor(queue).Start("127.0.0.1:7701")
 	p.SetName("server")
 
 	var allAccepted sync.WaitGroup
@@ -57,7 +57,7 @@ func runMultiConnection() {
 
 	for i := 0; i < clientConnectionCount; i++ {
 
-		p := socket.NewConnector(nil).Start("127.0.0.1:7301")
+		p := socket.NewConnector(nil).Start("127.0.0.1:7701")
 		p.SetName("client.MultiConn")
 	}
 
