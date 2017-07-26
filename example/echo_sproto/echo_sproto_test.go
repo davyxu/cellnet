@@ -1,4 +1,4 @@
-package echo_sproto
+package echosproto
 
 import (
 	"testing"

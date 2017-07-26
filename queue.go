@@ -5,7 +5,6 @@ import (
 )
 
 type EventQueue interface {
-
 	StartLoop()
 
 	StopLoop(result int)

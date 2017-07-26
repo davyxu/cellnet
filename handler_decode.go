@@ -15,7 +15,7 @@ func (self *DecodePacketHandler) Call(ev *Event) {
 
 	r := errToResult(err)
 	if r != Result_OK {
-		ev.Msg, err = DecodeMessage(ev.MsgID, ev.Data)
+		ev.Msg, _ = DecodeMessage(ev.MsgID, ev.Data)
 
 		ev.SetResult(r)
 	}

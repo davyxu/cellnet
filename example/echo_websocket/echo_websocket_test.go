@@ -1,4 +1,4 @@
-package echo_websocket
+package echowebsocket
 
 import (
 	"github.com/davyxu/cellnet"

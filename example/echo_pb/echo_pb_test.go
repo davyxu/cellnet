@@ -1,4 +1,4 @@
-package echo_pb
+package echopb
 
 import (
 	"testing"

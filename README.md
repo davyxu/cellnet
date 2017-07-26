@@ -1,6 +1,6 @@
 # cellnet
 
-[![Build Status](https://api.travis-ci.org/davyxu/cellnet.svg?branch=v3)](https://travis-ci.org/davyxu/cellnet)
+[![Build Status](https://api.travis-ci.org/davyxu/cellnet.svg?branch=v3)](https://travis-ci.org/davyxu/cellnet)  [![Go Report Card](https://goreportcard.com/badge/github.com/davyxu/cellnet)](https://goreportcard.com/report/github.com/davyxu/cellnet)
 
 简单,方便,高效的跨平台服务器网络库
 
