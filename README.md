@@ -1,8 +1,5 @@
 # cellnet
-
-[![Build Status]()](https://travis-ci.org/davyxu/cellnet)  [![Go Report Card](https://goreportcard.com/badge/github.com/davyxu/cellnet)](https://goreportcard.com/report/github.com/davyxu/cellnet)
-
-[![GoDoc][1]][2] [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12]
+ [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12] [![GoDoc][1]][2]
 
 [1]: https://godoc.org/github.com/davyxu/cellnet?status.svg
 [2]: https://godoc.org/github.com/davyxu/cellnet
