@@ -10,7 +10,14 @@
 [11]: https://img.shields.io/badge/license-MIT-blue.svg
 [12]: LICENSE
 
-简单,方便,高效的跨平台服务器网络库
+cellnet是一个高性能，简单，方便的开源服务器网络库
+
+自由切换编码，业务代码无需调整。
+
+TCP和html5的应用都可以直接使用cellnet迅速搭建服务器框架。
+
+如果你熟悉Java的Netty或Mina网络库，Handler机制将给予你强大定制功能。
+
 
 # 特性
 
