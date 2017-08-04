@@ -57,7 +57,7 @@ func (self *socketPeer) SetPacketStreamGenerator(callback func(net.Conn) cellnet
 
 func (self *socketPeer) genPacketStream(conn net.Conn) cellnet.PacketStream {
 
-	self.socketOptions.apply(conn)
+	self.socketOptions.Apply(conn)
 
 	if self.streamGen == nil {
 		return NewTLVStream(conn)

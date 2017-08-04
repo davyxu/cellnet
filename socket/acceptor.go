@@ -67,7 +67,7 @@ func (self *socketAcceptor) accept() {
 		// 处理连接进入独立线程, 防止accept无法响应
 		go func() {
 
-			ses := newSession(self.genPacketStream(conn), self)
+			ses := newSession(conn, self)
 
 			// 添加到管理器
 			self.Add(ses)

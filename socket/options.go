@@ -54,7 +54,7 @@ func (self *socketOptions) SetSocketOption(readBufferSize, writeBufferSize int, 
 	self.connNoDelay = nodelay
 }
 
-func (self *socketOptions) apply(conn net.Conn) {
+func (self *socketOptions) Apply(conn net.Conn) {
 
 	if cc, ok := conn.(*net.TCPConn); ok {
 

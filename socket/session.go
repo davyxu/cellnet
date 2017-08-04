@@ -3,6 +3,8 @@ package socket
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/extend"
+	"io"
+	"net"
 	"sync"
 	"time"
 )
@@ -18,14 +20,13 @@ type socketSession struct {
 
 	needNotifyWrite bool // 是否需要通知写线程关闭
 
-	// handler相关上下文
-	stream cellnet.PacketStream
-
 	sendList *eventList
-}
 
-func (self *socketSession) Stream() cellnet.PacketStream {
-	return self.stream
+	recvChain *cellnet.HandlerChain
+
+	sendChain *cellnet.HandlerChain
+
+	conn net.Conn
 }
 
 func (self *socketSession) ID() int64 {
@@ -38,6 +39,11 @@ func (self *socketSession) SetID(id int64) {
 
 func (self *socketSession) FromPeer() cellnet.Peer {
 	return self.p
+}
+
+func (self *socketSession) DataSource() io.ReadWriter {
+
+	return self.conn
 }
 
 func (self *socketSession) Close() {
@@ -75,47 +81,40 @@ func (self *socketSession) RawSend(ev *cellnet.Event) {
 	self.sendList.Add(ev)
 }
 
-func (self *socketSession) ReadPacket() (msgid uint32, data []byte, err error) {
-
-	read, _ := self.FromPeer().(SocketOptions).SocketDeadline()
-
-	if read != 0 {
-		self.stream.Raw().SetReadDeadline(time.Now().Add(read))
-	}
-
-	return self.stream.Read()
-}
-
 func (self *socketSession) recvThread() {
 
 	for {
 
-		msgid, data, err := self.ReadPacket()
-
-		chainList := self.p.ChainListRecv()
-
-		if err != nil {
-
-			extend.PostSystemEvent(self, cellnet.Event_Closed, chainList, errToResult(err))
-			break
-
-		}
-
 		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
 
-		ev.MsgID = msgid
-		ev.Data = data
+		read, _ := self.FromPeer().(SocketOptions).SocketDeadline()
+
+		if read != 0 {
+			self.conn.SetReadDeadline(time.Now().Add(read))
+		}
+
+		self.recvChain.Call(ev)
 
 		// 接收日志
 		cellnet.MsgLog(ev)
 
+		chainList := self.p.ChainListRecv()
+
+		if ev.Result() != cellnet.Result_OK {
+			goto onClose
+		}
+
 		chainList.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
-			extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, chainList, ev.Result())
-			break
+			goto onClose
 		}
 
+		continue
+
+	onClose:
+		extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, chainList, ev.Result())
+		break
 	}
 
 	if self.needNotifyWrite {
@@ -124,6 +123,7 @@ func (self *socketSession) recvThread() {
 
 	// 通知接收线程ok
 	self.endSync.Done()
+
 }
 
 // 发送线程
@@ -135,7 +135,7 @@ func (self *socketSession) sendThread() {
 		_, write := self.FromPeer().(SocketOptions).SocketDeadline()
 
 		if write != 0 {
-			self.stream.Raw().SetWriteDeadline(time.Now().Add(write))
+			self.conn.SetWriteDeadline(time.Now().Add(write))
 		}
 
 		writeList, willExit := self.sendList.Pick()
@@ -143,16 +143,17 @@ func (self *socketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
-			if err := self.stream.Write(ev.MsgID, ev.Data); err != nil {
+			self.sendChain.Call(ev)
+
+			if ev.Result() != cellnet.Result_OK {
 				willExit = true
-				break
 			}
 
 		}
 
-		if err := self.stream.Flush(); err != nil {
-			willExit = true
-		}
+		//if err := self.conn.Flush(); err != nil {
+		//	willExit = true
+		//}
 
 		if willExit {
 			goto exitsendloop
@@ -165,7 +166,7 @@ exitsendloop:
 	self.needNotifyWrite = false
 
 	// 关闭socket,触发读错误, 结束读循环
-	self.stream.Close()
+	self.conn.Close()
 
 	// 通知发送线程ok
 	self.endSync.Done()
@@ -194,20 +195,28 @@ func (self *socketSession) run() {
 	go self.sendThread()
 }
 
-func newSession(stream cellnet.PacketStream, p cellnet.Peer) *socketSession {
+func newSession(conn net.Conn, p cellnet.Peer) *socketSession {
+
+	p.(interface {
+		Apply(conn net.Conn)
+	}).Apply(conn)
 
 	self := &socketSession{
-		stream:          stream,
+		conn:            conn,
 		p:               p,
 		needNotifyWrite: true,
 		sendList:        NewPacketList(),
 	}
 
-	// 使用peer的统一设置
-	if s, ok := self.stream.(*TLVStream); ok {
+	self.recvChain = cellnet.NewHandlerChain(
+		cellnet.NewFixedLengthFrameReader(10),
+		NewPrivatePacketReader(),
+	)
 
-		s.SetMaxPacketSize(p.(SocketOptions).MaxPacketSize())
-	}
+	self.sendChain = cellnet.NewHandlerChain(
+		NewPrivatePacketWriter(),
+		cellnet.NewFixedLengthFrameWriter(),
+	)
 
 	return self
 }
