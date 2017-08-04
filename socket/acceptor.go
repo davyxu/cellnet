@@ -65,29 +65,31 @@ func (self *socketAcceptor) accept() {
 		}
 
 		// 处理连接进入独立线程, 防止accept无法响应
-		go func() {
-
-			ses := newSession(conn, self)
-
-			// 添加到管理器
-			self.Add(ses)
-
-			// 断开后从管理器移除
-			ses.OnClose = func() {
-				self.Remove(ses)
-			}
-
-			ses.run()
-
-			// 通知逻辑
-			extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.ChainListRecv(), cellnet.Result_OK)
-		}()
+		go self.onAccepted(conn)
 
 	}
 
 	self.SetRunning(false)
 
 	self.endStopping()
+}
+
+func (self *socketAcceptor) onAccepted(conn net.Conn) {
+
+	ses := newSession(conn, self)
+
+	// 添加到管理器
+	self.Add(ses)
+
+	// 断开后从管理器移除
+	ses.OnClose = func() {
+		self.Remove(ses)
+	}
+
+	ses.run()
+
+	// 通知逻辑
+	extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.ChainListRecv(), cellnet.Result_OK)
 }
 
 func (self *socketAcceptor) Stop() {

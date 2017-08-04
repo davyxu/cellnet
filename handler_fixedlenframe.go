@@ -18,7 +18,6 @@ func (self *FixedLengthFrameReader) Call(ev *Event) {
 	_, err := io.ReadFull(reader, self.headerBuffer)
 
 	if err != nil {
-		log.Debugln("ReadFull")
 		ev.SetResult(Result_PackageCrack)
 		return
 	}

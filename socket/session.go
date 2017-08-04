@@ -93,16 +93,16 @@ func (self *socketSession) recvThread() {
 			self.conn.SetReadDeadline(time.Now().Add(read))
 		}
 
-		self.recvChain.Call(ev)
-
-		// 接收日志
-		cellnet.MsgLog(ev)
-
 		chainList := self.p.ChainListRecv()
+
+		self.recvChain.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
 			goto onClose
 		}
+
+		// 接收日志
+		cellnet.MsgLog(ev)
 
 		chainList.Call(ev)
 
