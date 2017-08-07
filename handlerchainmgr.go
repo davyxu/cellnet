@@ -35,13 +35,15 @@ type HandlerChainManagerImplement struct {
 	sendChainGuard sync.RWMutex
 }
 
-func (self *HandlerChainManagerImplement) AddChainRecv(recv *HandlerChain) (id int64) {
+func (self *HandlerChainManagerImplement) AddChainRecv(recv *HandlerChain) (autoID int64) {
 
 	self.recvChainGuard.Lock()
 
 	self.chainIDAcc++
-	id = self.chainIDAcc
-	self.recvChainByID[id] = recv
+	// autoID这里是流水生成，每次添加要变化
+	// HandlerChain.id是固定id，用于调试用
+	autoID = self.chainIDAcc
+	self.recvChainByID[autoID] = recv
 	self.recvChainListDirty = true
 
 	self.recvChainGuard.Unlock()
@@ -78,9 +80,12 @@ func (self *HandlerChainManagerImplement) ChainListRecv() HandlerChainList {
 
 	if self.recvChainListDirty {
 
-		self.recvChainList = self.recvChainList[0:0]
+		self.recvChainList = make(HandlerChainList, len(self.recvChainByID))
+		index := 0
 		for _, chain := range self.recvChainByID {
-			self.recvChainList = append(self.recvChainList, chain)
+
+			self.recvChainList[index] = chain
+			index++
 		}
 
 		self.recvChainListDirty = false

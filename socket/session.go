@@ -93,8 +93,6 @@ func (self *socketSession) recvThread() {
 			self.conn.SetReadDeadline(time.Now().Add(read))
 		}
 
-		chainList := self.p.ChainListRecv()
-
 		self.recvChain.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
@@ -104,7 +102,7 @@ func (self *socketSession) recvThread() {
 		// 接收日志
 		cellnet.MsgLog(ev)
 
-		chainList.Call(ev)
+		self.p.ChainListRecv().Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
 			goto onClose
@@ -113,7 +111,7 @@ func (self *socketSession) recvThread() {
 		continue
 
 	onClose:
-		extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, chainList, ev.Result())
+		extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, self.p.ChainListRecv(), ev.Result())
 		break
 	}
 
