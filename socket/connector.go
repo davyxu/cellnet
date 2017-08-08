@@ -152,6 +152,10 @@ func (self *socketConnector) DefaultSession() cellnet.Session {
 	return self.defaultSes
 }
 
+func (self *socketConnector) RPCSession() cellnet.Session {
+	return self.defaultSes
+}
+
 func NewConnector(q cellnet.EventQueue) cellnet.Peer {
 
 	return NewConnectorBySessionManager(q, cellnet.NewSessionManager())

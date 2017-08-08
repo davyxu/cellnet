@@ -22,8 +22,6 @@ type socketPeer struct {
 
 	// 停止过程同步
 	stopping chan bool
-	// 自定义流
-	streamGen func(net.Conn) cellnet.PacketStream
 }
 
 func (self *socketPeer) waitStopFinished() {
@@ -50,21 +48,6 @@ func (self *socketPeer) endStopping() {
 		self.stopping = nil
 	}
 }
-func (self *socketPeer) SetPacketStreamGenerator(callback func(net.Conn) cellnet.PacketStream) {
-
-	self.streamGen = callback
-}
-
-func (self *socketPeer) genPacketStream(conn net.Conn) cellnet.PacketStream {
-
-	self.socketOptions.Apply(conn)
-
-	if self.streamGen == nil {
-		return NewTLVStream(conn)
-	}
-
-	return self.streamGen(conn)
-}
 
 func (self *socketPeer) Queue() cellnet.EventQueue {
 	return self.EventQueue
@@ -87,4 +70,20 @@ func newSocketPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *socketP
 	)
 
 	return self
+}
+
+func errToResult(err error) cellnet.Result {
+
+	if err == nil {
+		return cellnet.Result_OK
+	}
+
+	switch n := err.(type) {
+	case net.Error:
+		if n.Timeout() {
+			return cellnet.Result_SocketTimeout
+		}
+	}
+
+	return cellnet.Result_SocketError
 }

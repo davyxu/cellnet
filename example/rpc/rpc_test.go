@@ -54,7 +54,7 @@ func asyncClient() {
 
 			copy := i + 1
 
-			rpc.Call(p, &gamedef.TestEchoACK{
+			err := rpc.Call(p, &gamedef.TestEchoACK{
 				Content: "async",
 			}, "gamedef.TestEchoACK", func(rpcev *cellnet.Event) {
 				msg := rpcev.Msg.(*gamedef.TestEchoACK)
@@ -63,6 +63,11 @@ func asyncClient() {
 
 				asyncSignal.Done(copy)
 			})
+
+			if err != nil {
+				asyncSignal.T.Log(err)
+				asyncSignal.T.FailNow()
+			}
 
 		}
 
@@ -96,6 +101,7 @@ func syncClient() {
 
 				if err != nil {
 					syncSignal.Log(err)
+					syncSignal.FailNow()
 					return
 				}
 
@@ -116,14 +122,21 @@ func syncClient() {
 
 }
 
-func TestRPC(t *testing.T) {
+func TestAsyncRPC(t *testing.T) {
 
 	asyncSignal = util.NewSignalTester(t)
-	syncSignal = util.NewSignalTester(t)
 
 	server()
 
 	asyncClient()
+
+}
+
+func TestSyncRPC(t *testing.T) {
+
+	syncSignal = util.NewSignalTester(t)
+
+	server()
 
 	syncClient()
 
