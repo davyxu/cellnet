@@ -9,7 +9,7 @@ import (
 var ErrTimeout = errors.New("time out")
 
 // 发出请求, 接收到服务器返回后才返回, ud: peer/session,   reqMsg:请求用的消息, ackMsgName: 返回消息类型名, 返回消息为返回值
-func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeoutSec int) (interface{}, error) {
+func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeout time.Duration) (interface{}, error) {
 
 	ses, p, err := getPeerSession(ud)
 
@@ -35,7 +35,7 @@ func CallSync(ud interface{}, reqMsg interface{}, ackMsgName string, timeoutSec 
 	select {
 	case v := <-ret:
 		return v, nil
-	case <-time.After(time.Duration(timeoutSec) * time.Second):
+	case <-time.After(timeout):
 		return nil, ErrTimeout
 	}
 }

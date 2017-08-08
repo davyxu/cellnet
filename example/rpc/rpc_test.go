@@ -9,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 	"testing"
+	"time"
 )
 
 var log *golog.Logger = golog.New("test")
@@ -56,7 +57,7 @@ func asyncClient() {
 
 			err := rpc.Call(p, &gamedef.TestEchoACK{
 				Content: "async",
-			}, "gamedef.TestEchoACK", func(rpcev *cellnet.Event) {
+			}, "gamedef.TestEchoACK", time.Second, func(rpcev *cellnet.Event) {
 				msg := rpcev.Msg.(*gamedef.TestEchoACK)
 
 				log.Debugln(copy, "client async recv:", msg.Content)
@@ -97,7 +98,7 @@ func syncClient() {
 
 				result, err := rpc.CallSync(p, &gamedef.TestEchoACK{
 					Content: "sync",
-				}, "gamedef.TestEchoACK", 5)
+				}, "gamedef.TestEchoACK", 5*time.Second)
 
 				if err != nil {
 					syncSignal.Log(err)

@@ -2,10 +2,11 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"time"
 )
 
 // ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
-func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCallback func(ev *cellnet.Event)) error {
+func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, timeout time.Duration, userCallback func(ev *cellnet.Event)) error {
 
 	ses, p, err := getPeerSession(sesOrPeer)
 
@@ -18,6 +19,10 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, ackMsgName string, userCall
 	if err != nil {
 		return err
 	}
+
+	time.AfterFunc(timeout, func() {
+		p.RemoveChainRecv(rpcid)
+	})
 
 	// 发送RPC请求
 	ev := cellnet.NewEvent(cellnet.Event_Send, ses)

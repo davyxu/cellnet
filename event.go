@@ -99,19 +99,6 @@ func (self *Event) SetResult(r Result) {
 	self.r = r
 }
 
-func (self *Event) IsSystemEvent() bool {
-	switch self.Type {
-	case Event_Connected,
-		Event_ConnectFailed,
-		Event_Accepted,
-		Event_AcceptFailed,
-		Event_Closed:
-		return true
-	}
-
-	return false
-}
-
 // 兼容普通消息发送和rpc消息返回, 推荐
 func (self *Event) Send(data interface{}) {
 

@@ -20,6 +20,10 @@ type RPCSessionGetter interface {
 // 从peer获取rpc使用的session
 func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
 
+	if ud == nil {
+		return nil, nil, ErrInvalidPeerSession
+	}
+
 	switch i := ud.(type) {
 	case RPCSessionGetter:
 		return i.RPCSession(), i.RPCSession().FromPeer(), nil
