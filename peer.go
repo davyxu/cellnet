@@ -17,6 +17,10 @@ type Session interface {
 
 	// 归属端
 	FromPeer() Peer
+
+	SetTag(tag interface{})
+
+	Tag() interface{}
 }
 
 // 端, Connector或Acceptor

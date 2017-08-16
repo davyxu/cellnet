@@ -27,6 +27,15 @@ type socketSession struct {
 	sendChain *cellnet.HandlerChain
 
 	conn net.Conn
+
+	tag interface{}
+}
+
+func (self *socketSession) Tag() interface{} {
+	return self.tag
+}
+func (self *socketSession) SetTag(tag interface{}) {
+	self.tag = tag
 }
 
 func (self *socketSession) ID() int64 {
