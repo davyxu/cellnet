@@ -71,13 +71,16 @@ func newSocketPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *socketP
 	)
 
 	// 设置默认读写链
-	self.SetReadWriteChain(cellnet.NewHandlerChain(
-		cellnet.NewFixedLengthFrameReader(10),
-		NewPrivatePacketReader(),
-	), cellnet.NewHandlerChain(
-		NewPrivatePacketWriter(),
-		cellnet.NewFixedLengthFrameWriter(),
-	))
+	self.SetReadWriteChain(func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(
+			cellnet.NewFixedLengthFrameReader(10),
+			NewPrivatePacketReader(),
+		)
+	}, func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(NewPrivatePacketWriter(),
+			cellnet.NewFixedLengthFrameWriter(),
+		)
+	})
 
 	return self
 }

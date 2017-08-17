@@ -23,11 +23,11 @@ type HandlerChainManager interface {
 	ChainSend() *HandlerChain
 
 	// 读写链
-	ChainWrite() *HandlerChain
-	ChainRead() *HandlerChain
+	CreateChainWrite() *HandlerChain
+	CreateChainRead() *HandlerChain
 
 	// 设置读写练
-	SetReadWriteChain(read, write *HandlerChain)
+	SetReadWriteChain(read, write func() *HandlerChain)
 }
 
 // Peer间的共享数据
@@ -41,9 +41,9 @@ type HandlerChainManagerImplement struct {
 	sendChain      *HandlerChain
 	sendChainGuard sync.RWMutex
 
-	readChain    *HandlerChain
-	writeChain   *HandlerChain
-	rwChainGuard sync.RWMutex
+	readChainCreator  func() *HandlerChain
+	writeChainCreator func() *HandlerChain
+	rwChainGuard      sync.RWMutex
 }
 
 func (self *HandlerChainManagerImplement) AddChainRecv(recv *HandlerChain) (autoID int64) {
@@ -79,24 +79,24 @@ func (self *HandlerChainManagerImplement) SetChainSend(chain *HandlerChain) {
 	self.sendChainGuard.Unlock()
 }
 
-func (self *HandlerChainManagerImplement) ChainWrite() *HandlerChain {
+func (self *HandlerChainManagerImplement) CreateChainWrite() *HandlerChain {
 	self.rwChainGuard.Lock()
 	defer self.rwChainGuard.Unlock()
-	return self.writeChain
+	return self.writeChainCreator()
 }
 
-func (self *HandlerChainManagerImplement) ChainRead() *HandlerChain {
+func (self *HandlerChainManagerImplement) CreateChainRead() *HandlerChain {
 	self.rwChainGuard.Lock()
 	defer self.rwChainGuard.Unlock()
-	return self.readChain
+	return self.readChainCreator()
 }
 
-func (self *HandlerChainManagerImplement) SetReadWriteChain(read, write *HandlerChain) {
+func (self *HandlerChainManagerImplement) SetReadWriteChain(read, write func() *HandlerChain) {
 
 	self.rwChainGuard.Lock()
 
-	self.readChain = read
-	self.writeChain = write
+	self.readChainCreator = read
+	self.writeChainCreator = write
 
 	self.rwChainGuard.Unlock()
 }

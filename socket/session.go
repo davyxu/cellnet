@@ -25,6 +25,10 @@ type socketSession struct {
 	conn net.Conn
 
 	tag interface{}
+
+	readChain *cellnet.HandlerChain
+
+	writeChain *cellnet.HandlerChain
 }
 
 func (self *socketSession) Tag() interface{} {
@@ -98,7 +102,7 @@ func (self *socketSession) recvThread() {
 			self.conn.SetReadDeadline(time.Now().Add(read))
 		}
 
-		self.FromPeer().ChainRead().Call(ev)
+		self.readChain.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
 			goto onClose
@@ -146,7 +150,7 @@ func (self *socketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
-			self.FromPeer().ChainWrite().Call(ev)
+			self.writeChain.Call(ev)
 
 			if ev.Result() != cellnet.Result_OK {
 				willExit = true
@@ -211,6 +215,9 @@ func newSession(conn net.Conn, p cellnet.Peer) *socketSession {
 		sendList:        NewPacketList(),
 	}
 
+	self.readChain = p.CreateChainRead()
+
+	self.writeChain = p.CreateChainWrite()
 
 	return self
 }

@@ -286,13 +286,16 @@ util\			工具库
 * 怎样定制私有tcp封包?
     使用cellnet.Peer下组合接口的HandlerChainManager.SetReadWriteChain进行设置, 写法如
     ```
-	self.SetReadWriteChain(cellnet.NewHandlerChain(
-		cellnet.NewFixedLengthFrameReader(10),
-		socket.NewPrivatePacketReader(),
-	), cellnet.NewHandlerChain(
-		socket.NewPrivatePacketWriter(),
-		cellnet.NewFixedLengthFrameWriter(),
-	))
+	self.SetReadWriteChain(func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(
+			cellnet.NewFixedLengthFrameReader(10),
+			NewPrivatePacketReader(),
+		)
+	}, func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(NewPrivatePacketWriter(),
+			cellnet.NewFixedLengthFrameWriter(),
+		)
+	})
 
     ```
 
