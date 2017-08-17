@@ -179,6 +179,8 @@ proto\			    cellnet内部的proto
 
 protoc-gen-msg\     protobuf的protoc插件, 消息id生成, 使用pb编码时使用
 
+objprotogen\        binary格式的消息绑定工具, 使用binary编码时使用
+
 rpc\			    异步远程过程调用封装
 
 socket\			    套接字,连接管理等封装

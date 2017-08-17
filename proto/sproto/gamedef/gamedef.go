@@ -6,8 +6,8 @@ package gamedef
 import (
 	"reflect"
 
-	"github.com/davyxu/cellnet/codec/sproto"
 	"github.com/davyxu/goobjfmt"
+	"github.com/davyxu/cellnet/codec/sproto"
 )
 
 type TestEchoACK struct {
@@ -20,6 +20,8 @@ var SProtoStructs = []reflect.Type{
 
 	reflect.TypeOf((*TestEchoACK)(nil)).Elem(), // 1899977859
 }
+
+var SProtoEnumValue = map[string]map[int32]string{}
 
 func init() {
 	sprotocodec.AutoRegisterMessageMeta(SProtoStructs)
