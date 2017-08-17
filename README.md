@@ -288,9 +288,9 @@ util\			工具库
     ```
 	self.SetReadWriteChain(cellnet.NewHandlerChain(
 		cellnet.NewFixedLengthFrameReader(10),
-		NewPrivatePacketReader(),
+		socket.NewPrivatePacketReader(),
 	), cellnet.NewHandlerChain(
-		NewPrivatePacketWriter(),
+		socket.NewPrivatePacketWriter(),
 		cellnet.NewFixedLengthFrameWriter(),
 	))
 
@@ -300,7 +300,7 @@ util\			工具库
 
     读链->接收链->逻辑处理->发送链->写链
 
-
+![Handler全图](doc/handler.png)
 
 # 版本历史
 2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
