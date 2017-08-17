@@ -283,6 +283,23 @@ util\			工具库
 
     cellnet专注于服务器底层.你可以根据自己需要编写网关及db支持
 
+* 怎样定制私有tcp封包?
+    使用cellnet.Peer下组合接口的HandlerChainManager.SetReadWriteChain进行设置, 写法如
+    ```
+	self.SetReadWriteChain(cellnet.NewHandlerChain(
+		cellnet.NewFixedLengthFrameReader(10),
+		NewPrivatePacketReader(),
+	), cellnet.NewHandlerChain(
+		NewPrivatePacketWriter(),
+		cellnet.NewFixedLengthFrameWriter(),
+	))
+
+    ```
+
+    HandlerChainManager拥有读写链和收发链, 处理流程如下:
+
+    读链->接收链->逻辑处理->发送链->写链
+
 
 
 # 版本历史

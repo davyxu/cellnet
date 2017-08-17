@@ -16,13 +16,15 @@ var log *golog.Logger = golog.New("test")
 
 var signal *util.SignalTester
 
+var accpetor cellnet.Peer
+
 func runServer() {
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(queue).Start("127.0.0.1:7201")
-	p.SetName("server")
+	accpetor = socket.NewAcceptor(queue).Start("127.0.0.1:7202")
+	accpetor.SetName("server")
 
-	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(accpetor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv ", msg.Content)
@@ -39,7 +41,6 @@ func runServer() {
 	})
 
 	queue.StartLoop()
-
 }
 
 // 客户端连接上后, 主动断开连接, 确保连接正常关闭
@@ -47,7 +48,7 @@ func testConnActiveClose() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	p := socket.NewConnector(queue).Start("127.0.0.1:7202")
 	p.SetName("client.connActiveClose")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
@@ -95,7 +96,7 @@ func testRecvDisconnected() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewConnector(queue).Start("127.0.0.1:7201")
+	p := socket.NewConnector(queue).Start("127.0.0.1:7202")
 	p.SetName("client.recvDisconnected")
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
@@ -131,12 +132,24 @@ func testRecvDisconnected() {
 
 }
 
-func TestClose(t *testing.T) {
+func TestConnActiveClose(t *testing.T) {
 
 	signal = util.NewSignalTester(t)
 
 	runServer()
 
 	testConnActiveClose()
+
+	accpetor.Stop()
+}
+
+func TestRecvDisconnected(t *testing.T) {
+
+	signal = util.NewSignalTester(t)
+
+	runServer()
+
 	testRecvDisconnected()
+
+	accpetor.Stop()
 }

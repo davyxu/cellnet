@@ -17,15 +17,17 @@ var log *golog.Logger = golog.New("test")
 var asyncSignal *util.SignalTester
 var syncSignal *util.SignalTester
 
+var accpetor cellnet.Peer
+
 func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(queue)
-	p.SetName("server")
-	p.Start("127.0.0.1:9201")
+	accpetor = socket.NewAcceptor(queue)
+	accpetor.SetName("server")
+	accpetor.Start("127.0.0.1:9201")
 
-	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	rpc.RegisterMessage(accpetor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -131,6 +133,8 @@ func TestAsyncRPC(t *testing.T) {
 
 	asyncClient()
 
+	accpetor.Stop()
+
 }
 
 func TestSyncRPC(t *testing.T) {
@@ -141,4 +145,5 @@ func TestSyncRPC(t *testing.T) {
 
 	syncClient()
 
+	accpetor.Stop()
 }
