@@ -12,7 +12,7 @@
 
 cellnet是一个高性能，简单，方便的开源服务器网络库
 
-自由切换编码，业务代码无需调整。
+自由混合编码，业务代码无需调整。
 
 TCP和html5的应用都可以直接使用cellnet迅速搭建服务器框架。
 
@@ -25,9 +25,15 @@ TCP和html5的应用都可以直接使用cellnet迅速搭建服务器框架。
 
 * 编码支持:
     - Google Protobuf (https://github.com/google/protobuf)
-    - sproto (https://github.com/cloudwu/sproto)
+
+    - 云风的sproto (https://github.com/cloudwu/sproto)
+
+        能方便lua的处理, 本身结构比protobuf解析更简单
     - json
+
     - 二进制协议(https://github.com/davyxu/goobjfmt)
+
+       内存流直接序列化, 服务器间传输效率更高
 
 * 支持混合编码收发
 
@@ -317,9 +323,9 @@ util\			工具库
 
 viwii(viwii@sina.cn), 提供一个可能造成死锁的bug
 
-IronsDu(duzhongwei@qq.com), 大幅度性能优化
+IronsDu(https://github.com/IronsDu), 大幅度性能优化
 
-Chris Lonng(chris@lonng.org), 提供一个最大封包约束造成服务器间连接断开的bug
+Chris Lonng(https://github.com/lonnng), 提供一个最大封包约束造成服务器间连接断开的bug
 
 # 备注
 
