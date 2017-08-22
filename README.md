@@ -299,6 +299,8 @@ util\			工具库
     包体大小 | uint32 | 包体大小
     包体 | []byte | 包体内容, 长度为包体大小指定, 变长
 
+    封包解析请参考:
+    https://github.com/davyxu/cellnet/blob/master/socket/handler_privatepkt.go
 
 * 怎样定制私有tcp封包?
     使用cellnet.Peer下组合接口的HandlerChainManager.SetReadWriteChain进行设置, 写法如
@@ -319,6 +321,13 @@ util\			工具库
     HandlerChainManager拥有读写链和收发链, 处理流程如下:
 
     读链->接收链->逻辑处理->发送链->写链
+
+
+* 哪里有cellnet的完整例子?
+
+    CellOrigin是基于cellnet开发的一套Unity3D客户端服务器框架
+    https://github.com/davyxu/cellorigin
+
 
 ![Handler全图](doc/handler.png)
 
