@@ -29,7 +29,7 @@ func (self *PrivatePacketReader) Call(ev *cellnet.Event) {
 		return
 	}
 
-	// 读取整包大小
+	// 读取Payload大小
 	var bodySize uint32
 	if err := binary.Read(headReader, binary.LittleEndian, &bodySize); err != nil {
 		ev.SetResult(cellnet.Result_PackageCrack)

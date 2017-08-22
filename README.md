@@ -289,6 +289,17 @@ util\			工具库
 
     cellnet专注于服务器底层.你可以根据自己需要编写网关及db支持
 
+* cellnet的私有tcp封包格式是怎样的?
+
+
+    功能 | 类型 | 备注
+    ---|---|---
+    序号 | uint16 | 初始为1, 接收一次自增1
+    消息ID | uint32 | 包.消息名 的hash值(util.StringHash)
+    包体大小 | uint32 | 包体大小
+    包体 | []byte | 包体内容, 长度为包体大小指定, 变长
+
+
 * 怎样定制私有tcp封包?
     使用cellnet.Peer下组合接口的HandlerChainManager.SetReadWriteChain进行设置, 写法如
     ```
