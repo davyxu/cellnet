@@ -1,7 +1,7 @@
 set CURR_DIR=%cd%
 
 : Build generator
-cd ..\..\..\..\..\..
+cd ..\..\..\..\..\..\..
 set GOPATH=%cd%
 go build -o %CURR_DIR%\protoc-gen-msg.exe github.com/davyxu/cellnet/protoc-gen-msg
 go build -o %CURR_DIR%\protoc-gen-go.exe github.com/golang/protobuf/protoc-gen-go

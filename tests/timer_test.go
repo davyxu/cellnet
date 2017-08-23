@@ -1,4 +1,4 @@
-package timer
+package tests
 
 import (
 	"testing"
@@ -7,10 +7,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
 )
-
-var log *golog.Logger = golog.New("test")
 
 func TestAfterTimer(t *testing.T) {
 

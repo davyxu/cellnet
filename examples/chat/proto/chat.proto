@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package chatproto;
+
+
+
+message ChatREQ
+{
+    string Content = 1;
+}
+
+message ChatACK
+{
+    string Content = 1;
+    int64 Id = 2;
+}

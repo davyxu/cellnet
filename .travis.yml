@@ -11,14 +11,7 @@ go:
   - 1.8
 
 script:
-  - go test -v github.com/davyxu/cellnet/example/classicrecv
-  - go test -v github.com/davyxu/cellnet/example/sendclose
-  - go test -v github.com/davyxu/cellnet/example/echo_pb
-  - go test -v github.com/davyxu/cellnet/example/echo_sproto
-  - go test -v github.com/davyxu/cellnet/example/echo_websocket
-  - go test -v github.com/davyxu/cellnet/example/gracefulexit
-  - go test -v github.com/davyxu/cellnet/example/rpc
-  - go test -v github.com/davyxu/cellnet/example/timer
+  - go test -v github.com/davyxu/cellnet/tests
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

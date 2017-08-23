@@ -1,19 +1,16 @@
-package echowebsocket
+package tests
 
 import (
 	"github.com/davyxu/cellnet"
 	jsongamedef "github.com/davyxu/cellnet/proto/json/gamedef" // json逻辑协议
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/cellnet/websocket"
-	"github.com/davyxu/golog"
 	"testing"
 )
 
-var log *golog.Logger = golog.New("test")
+var wsSignal *util.SignalTester
 
-var signal *util.SignalTester
-
-func server() {
+func wsServer() {
 
 	queue := cellnet.NewEventQueue()
 
@@ -39,7 +36,7 @@ func server() {
 	queue.StartLoop()
 }
 
-func client() {
+func wsClient() {
 
 	queue := cellnet.NewEventQueue()
 
@@ -55,7 +52,7 @@ func client() {
 			Content: "hello",
 		})
 
-		signal.Done(1)
+		wsSignal.Done(1)
 
 	})
 
@@ -64,21 +61,21 @@ func client() {
 
 		log.Debugln("client recv:", msg.Content)
 
-		signal.Done(2)
+		wsSignal.Done(2)
 	})
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect("not recv data", 1, 2)
+	wsSignal.WaitAndExpect("not recv data", 1, 2)
 
 }
 
 func TestWebsocketEcho(t *testing.T) {
 
-	signal = util.NewSignalTester(t)
+	wsSignal = util.NewSignalTester(t)
 
-	server()
+	wsServer()
 
-	client()
+	wsClient()
 
 }

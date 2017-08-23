@@ -1,4 +1,4 @@
-package rpc
+package tests
 
 import (
 	"github.com/davyxu/cellnet"
@@ -7,27 +7,24 @@ import (
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
 	"testing"
 	"time"
 )
 
-var log *golog.Logger = golog.New("test")
-
 var asyncSignal *util.SignalTester
 var syncSignal *util.SignalTester
 
-var accpetor cellnet.Peer
+var rpcAcceptor cellnet.Peer
 
 func server() {
 
 	queue := cellnet.NewEventQueue()
 
-	accpetor = socket.NewAcceptor(queue)
-	accpetor.SetName("server")
-	accpetor.Start("127.0.0.1:9201")
+	rpcAcceptor = socket.NewAcceptor(queue)
+	rpcAcceptor.SetName("server")
+	rpcAcceptor.Start("127.0.0.1:9201")
 
-	rpc.RegisterMessage(accpetor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	rpc.RegisterMessage(rpcAcceptor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
@@ -133,7 +130,7 @@ func TestAsyncRPC(t *testing.T) {
 
 	asyncClient()
 
-	accpetor.Stop()
+	rpcAcceptor.Stop()
 
 }
 
@@ -145,5 +142,5 @@ func TestSyncRPC(t *testing.T) {
 
 	syncClient()
 
-	accpetor.Stop()
+	rpcAcceptor.Stop()
 }

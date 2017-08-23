@@ -1,4 +1,4 @@
-package classicrecv
+package tests
 
 import (
 	"testing"
@@ -8,12 +8,9 @@ import (
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
 )
 
-var log *golog.Logger = golog.New("test")
-
-var signal *util.SignalTester
+var classicalRecvSignal *util.SignalTester
 
 type RecvMessageHandler struct {
 }
@@ -39,25 +36,27 @@ func onServerMessage(ev *cellnet.Event) {
 
 }
 
-func server() {
+var classicalAcceptor cellnet.Peer
+
+func classicalServer() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(queue).Start("127.0.0.1:7701")
-	p.SetName("server")
+	classicalAcceptor = socket.NewAcceptor(queue).Start("127.0.0.1:7701")
+	classicalAcceptor.SetName("server")
 
 	// 添加一条新的处理链
-	p.AddChainRecv(cellnet.NewHandlerChain(
+	classicalAcceptor.AddChainRecv(cellnet.NewHandlerChain(
 		cellnet.StaticDecodePacketHandler(),
-		cellnet.NewQueuePostHandler(p.Queue(), new(RecvMessageHandler)),
+		cellnet.NewQueuePostHandler(queue, new(RecvMessageHandler)),
 	))
 
-	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(classicalAcceptor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
 
-		signal.Done(1)
+		classicalRecvSignal.Done(1)
 	})
 
 	queue.StartLoop()
@@ -65,7 +64,7 @@ func server() {
 }
 
 // 客户端为了逻辑编写方便, 依然使用dispatcher配合闭包消息处理函数方式
-func client() {
+func classicalClient() {
 
 	queue := cellnet.NewEventQueue()
 
@@ -77,7 +76,7 @@ func client() {
 
 		log.Debugln("client recv:", msg.Content)
 
-		signal.Done(1)
+		classicalRecvSignal.Done(1)
 	})
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
@@ -93,16 +92,17 @@ func client() {
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect("not recv data", 1)
+	classicalRecvSignal.WaitAndExpect("not recv data", 1)
 
 }
 
-func TestEcho(t *testing.T) {
+func TestClassicalRecv(t *testing.T) {
 
-	signal = util.NewSignalTester(t)
+	classicalRecvSignal = util.NewSignalTester(t)
 
-	server()
+	classicalServer()
 
-	client()
+	classicalClient()
 
+	classicalAcceptor.Stop()
 }

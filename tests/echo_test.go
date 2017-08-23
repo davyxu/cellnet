@@ -1,4 +1,4 @@
-package echopb
+package tests
 
 import (
 	"testing"
@@ -10,22 +10,21 @@ import (
 	"github.com/davyxu/cellnet/proto/pb/gamedef"               // pb逻辑协议
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
 )
 
-var log *golog.Logger = golog.New("test")
+var echoSignal *util.SignalTester
 
-var signal *util.SignalTester
+var echoAcceptor cellnet.Peer
 
-func server() {
+func echoServer() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := socket.NewAcceptor(queue).Start("127.0.0.1:7701")
-	p.SetName("server")
+	echoAcceptor = socket.NewAcceptor(queue).Start("127.0.0.1:7701")
+	echoAcceptor.SetName("server")
 
 	// 混合协议支持, 接收pb编码的消息
-	cellnet.RegisterMessage(p, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(echoAcceptor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.Content)
@@ -37,7 +36,7 @@ func server() {
 	})
 
 	// 混合协议支持, 接收json编码的消息
-	cellnet.RegisterMessage(p, "gamedef.TestEchoJsonACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(echoAcceptor, "gamedef.TestEchoJsonACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*jsongamedef.TestEchoJsonACK)
 
 		log.Debugln("server recv json:", msg.Content)
@@ -52,7 +51,7 @@ func server() {
 
 }
 
-func client() {
+func echoClient() {
 
 	queue := cellnet.NewEventQueue()
 
@@ -64,7 +63,7 @@ func client() {
 
 		log.Debugln("client recv:", msg.Content)
 
-		signal.Done(1)
+		echoSignal.Done(1)
 	})
 
 	cellnet.RegisterMessage(p, "coredef.SessionConnected", func(ev *cellnet.Event) {
@@ -93,16 +92,18 @@ func client() {
 
 	queue.StartLoop()
 
-	signal.WaitAndExpect("not recv data", 1)
+	echoSignal.WaitAndExpect("not recv data", 1)
 
 }
 
 func TestEcho(t *testing.T) {
 
-	signal = util.NewSignalTester(t)
+	echoSignal = util.NewSignalTester(t)
 
-	server()
+	echoServer()
 
-	client()
+	echoClient()
+
+	echoAcceptor.Stop()
 
 }

@@ -1,4 +1,4 @@
-package sendclose
+package tests
 
 import (
 	"testing"
@@ -9,22 +9,19 @@ import (
 	"github.com/davyxu/cellnet/proto/pb/gamedef"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
 )
-
-var log *golog.Logger = golog.New("test")
 
 var signal *util.SignalTester
 
-var accpetor cellnet.Peer
+var sendCloseAcceptor cellnet.Peer
 
 func runServer() {
 	queue := cellnet.NewEventQueue()
 
-	accpetor = socket.NewAcceptor(queue).Start("127.0.0.1:7202")
-	accpetor.SetName("server")
+	sendCloseAcceptor = socket.NewAcceptor(queue).Start("127.0.0.1:7202")
+	sendCloseAcceptor.SetName("server")
 
-	cellnet.RegisterMessage(accpetor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(sendCloseAcceptor, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv ", msg.Content)
@@ -140,7 +137,7 @@ func TestConnActiveClose(t *testing.T) {
 
 	testConnActiveClose()
 
-	accpetor.Stop()
+	sendCloseAcceptor.Stop()
 }
 
 func TestRecvDisconnected(t *testing.T) {
@@ -151,5 +148,5 @@ func TestRecvDisconnected(t *testing.T) {
 
 	testRecvDisconnected()
 
-	accpetor.Stop()
+	sendCloseAcceptor.Stop()
 }
