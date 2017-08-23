@@ -181,9 +181,9 @@ func client() {
 # 目录功能
 
 ```
-benchmark		    性能测试用例
+benchmark           性能测试用例
 
-proto			    cellnet内部的proto
+proto               cellnet内部的proto
 
     binary          内部系统消息,rpc消息
 
@@ -195,21 +195,21 @@ protoc-gen-msg      protobuf的protoc插件, 消息id生成, 使用pb编码时�
 
 objprotogen         binary格式的消息绑定工具, 使用binary编码时使用
 
-rpc 			    异步远程过程调用封装
+rpc                 异步远程过程调用封装
 
-socket			    套接字,连接管理等封装
+socket              套接字,连接管理等封装
 
-example 			例子
+example             例子
 
-    chat       	    聊天服务器例子
+    chat            聊天服务器例子
 
-   	echo_websocket	websocket服务器例子
+    echo_websocket  websocket服务器例子
 
 tests               测试用例
 
-timer			    计时器接口
+timer               计时器接口
 
-util			    工具库
+util                工具库
 
 ```
 
@@ -287,7 +287,9 @@ sid1 say: hello
 
 我们使用的消息, 在底层就是通过queue.Post() 传入我们给定的回调进行处理的
 
-P.S.  队列对于使用cellnet的服务器程序不是必须的.不使用队列时, 所有消息的处理将是并发在多线程下
+### 提示
+
+队列对于使用cellnet的服务器程序不是必须的.不使用队列时, 所有消息的处理将是并发在多线程下
 
 
 ## 侦听和接受连接
@@ -395,6 +397,16 @@ Session可以通过以下途径获得:
     msg := ev.Msg.(*MsgPackage.YourMsgType)
 ```
 
+## 接收系统事件
+
+如需接收Session连接断开事件, 使用如下代码
+```golang
+cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {		
+
+})
+
+```
+
 
 ## 会话发送消息
 
@@ -406,6 +418,9 @@ Session可以通过以下途径获得:
 			Content: str,
 		})
 ```
+
+
+
 
 ### 提示
 
@@ -424,6 +439,9 @@ Session可以通过以下途径获得:
 - 不要缓存Event
 
 Event是消息处理的上下文, 不建议缓存Event
+
+
+
 
 
 # FAQ
