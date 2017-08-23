@@ -80,13 +80,6 @@ func (self *socketSession) RawSend(ev *cellnet.Event) {
 
 	ev.Ses = self
 
-	if ev.ChainSend != nil {
-		ev.ChainSend.Call(ev)
-	}
-
-	// 发送日志
-	cellnet.MsgLog(ev)
-
 	self.sendList.Add(ev)
 }
 
@@ -150,6 +143,19 @@ func (self *socketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
+			// 发送链处理: encode等操作
+			if ev.ChainSend != nil {
+				ev.ChainSend.Call(ev)
+			}
+
+			if ev.Result() != cellnet.Result_OK {
+				willExit = true
+			}
+
+			// 发送日志
+			cellnet.MsgLog(ev)
+
+			// 写链处理
 			self.writeChain.Call(ev)
 
 			if ev.Result() != cellnet.Result_OK {

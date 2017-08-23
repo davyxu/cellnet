@@ -575,6 +575,8 @@ IronsDu(https://github.com/IronsDu), 大幅度性能优化
 
 Chris Lonng(https://github.com/lonnng), 提供一个最大封包约束造成服务器间连接断开的bug
 
+chuan.li(https://github.com/blade-226), 提供一个没有在io线程编码的bug
+
 # 备注
 
 感觉不错请star, 谢谢!
