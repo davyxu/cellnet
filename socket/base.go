@@ -63,11 +63,24 @@ func newSocketPeer(queue cellnet.EventQueue, sm cellnet.SessionManager) *socketP
 		HandlerChainManagerImplement: cellnet.NewHandlerChainManager(),
 	}
 
+	// 设置默认发送链
 	self.SetChainSend(
 		cellnet.NewHandlerChain(
 			cellnet.StaticEncodePacketHandler(),
 		),
 	)
+
+	// 设置默认读写链
+	self.SetReadWriteChain(func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(
+			cellnet.NewFixedLengthFrameReader(10),
+			NewPrivatePacketReader(),
+		)
+	}, func() *cellnet.HandlerChain {
+		return cellnet.NewHandlerChain(NewPrivatePacketWriter(),
+			cellnet.NewFixedLengthFrameWriter(),
+		)
+	})
 
 	return self
 }

@@ -7,6 +7,7 @@ package gamedef
 import (
 	"github.com/davyxu/cellnet"
 	"reflect"
+	_ "github.com/davyxu/cellnet/codec/pb"
 )
 
 func init() {

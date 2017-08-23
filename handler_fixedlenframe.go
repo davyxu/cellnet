@@ -18,7 +18,7 @@ func (self *FixedLengthFrameReader) Call(ev *Event) {
 	_, err := io.ReadFull(reader, self.headerBuffer)
 
 	if err != nil {
-		ev.SetResult(Result_PackageCrack)
+		ev.SetResult(Result_SocketError)
 		return
 	}
 

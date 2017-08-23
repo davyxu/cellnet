@@ -14,6 +14,15 @@ type wsSession struct {
 	p cellnet.Peer
 
 	conn *websocket.Conn
+
+	tag interface{}
+}
+
+func (self *wsSession) Tag() interface{} {
+	return self.tag
+}
+func (self *wsSession) SetTag(tag interface{}) {
+	self.tag = tag
 }
 
 func (self *wsSession) ID() int64 {

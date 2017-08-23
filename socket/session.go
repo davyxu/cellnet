@@ -22,11 +22,20 @@ type socketSession struct {
 
 	sendList *eventList
 
-	recvChain *cellnet.HandlerChain
-
-	sendChain *cellnet.HandlerChain
-
 	conn net.Conn
+
+	tag interface{}
+
+	readChain *cellnet.HandlerChain
+
+	writeChain *cellnet.HandlerChain
+}
+
+func (self *socketSession) Tag() interface{} {
+	return self.tag
+}
+func (self *socketSession) SetTag(tag interface{}) {
+	self.tag = tag
 }
 
 func (self *socketSession) ID() int64 {
@@ -93,7 +102,7 @@ func (self *socketSession) recvThread() {
 			self.conn.SetReadDeadline(time.Now().Add(read))
 		}
 
-		self.recvChain.Call(ev)
+		self.readChain.Call(ev)
 
 		if ev.Result() != cellnet.Result_OK {
 			goto onClose
@@ -141,7 +150,7 @@ func (self *socketSession) sendThread() {
 		// 写队列
 		for _, ev := range writeList {
 
-			self.sendChain.Call(ev)
+			self.writeChain.Call(ev)
 
 			if ev.Result() != cellnet.Result_OK {
 				willExit = true
@@ -206,15 +215,9 @@ func newSession(conn net.Conn, p cellnet.Peer) *socketSession {
 		sendList:        NewPacketList(),
 	}
 
-	self.recvChain = cellnet.NewHandlerChain(
-		cellnet.NewFixedLengthFrameReader(10),
-		NewPrivatePacketReader(),
-	)
+	self.readChain = p.CreateChainRead()
 
-	self.sendChain = cellnet.NewHandlerChain(
-		NewPrivatePacketWriter(),
-		cellnet.NewFixedLengthFrameWriter(),
-	)
+	self.writeChain = p.CreateChainWrite()
 
 	return self
 }

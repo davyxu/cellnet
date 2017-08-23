@@ -40,6 +40,13 @@ func (m *TestEchoACK) String() string            { return proto.CompactTextStrin
 func (*TestEchoACK) ProtoMessage()               {}
 func (*TestEchoACK) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+func (m *TestEchoACK) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*TestEchoACK)(nil), "gamedef.TestEchoACK")
 }
