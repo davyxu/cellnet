@@ -165,7 +165,7 @@ func client() {
 
 	})
 
-	cellnet.RegisterMessage(p, "coredef.SessionConnectFailed", func(ev *cellnet.SessionEvent) {
+	cellnet.RegisterMessage(p, "coredef.SessionConnectFailed", func(ev *cellnet.Event) {
 
 		msg := ev.Msg.(*coredef.SessionConnectFailed)
 
