@@ -7,13 +7,13 @@ package {{.PackageName}}
 {{if gt (.Structs|len) 0}}
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/goobjfmt"
 	"reflect"
+	"fmt"
 )
 {{end}}
 
 {{range .Structs}}
-func (self *{{.Name}}) String() string { return goobjfmt.CompactTextString(self) } {{end}}
+func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end}}
 
 func init() {
 	{{range .Structs}}

@@ -4,16 +4,16 @@ package coredef
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/goobjfmt"
 	"reflect"
+	"fmt"
 )
 
-func (self *SessionAccepted) String() string      { return goobjfmt.CompactTextString(self) }
-func (self *SessionConnected) String() string     { return goobjfmt.CompactTextString(self) }
-func (self *SessionAcceptFailed) String() string  { return goobjfmt.CompactTextString(self) }
-func (self *SessionConnectFailed) String() string { return goobjfmt.CompactTextString(self) }
-func (self *SessionClosed) String() string        { return goobjfmt.CompactTextString(self) }
-func (self *RemoteCallACK) String() string        { return goobjfmt.CompactTextString(self) }
+func (self *SessionAccepted) String() string      { return fmt.Sprintf("%+v", *self) }
+func (self *SessionConnected) String() string     { return fmt.Sprintf("%+v", *self) }
+func (self *SessionAcceptFailed) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *SessionConnectFailed) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *SessionClosed) String() string        { return fmt.Sprintf("%+v", *self) }
+func (self *RemoteCallACK) String() string        { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 
