@@ -315,11 +315,11 @@ sid1 say: hello
 
 ```golang
 cellnet.RegisterMessage(peer, "coredef.SessionAccepted", func(ev *cellnet.Event) {		
-
+    // 其他会话连接时
 })
 
 cellnet.RegisterMessage(peer, "coredef.SessionAcceptFailed", func(ev *cellnet.Event) {		
-
+    // 其他会话连接失败时
 })
 ```
 
@@ -345,7 +345,7 @@ cellnet.RegisterMessage(peer, "coredef.SessionAcceptFailed", func(ev *cellnet.Ev
 连接器也可以接收系统事件, 如:
 ```golang
 cellnet.RegisterMessage(peer, "coredef.SessionConnectFailed", func(ev *cellnet.Event) {		
-
+    // 会话连接失败
 })
 
 ```
@@ -402,7 +402,7 @@ Session可以通过以下途径获得:
 如需接收Session连接断开事件, 使用如下代码
 ```golang
 cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {		
-
+    // 会话断开时
 })
 
 ```

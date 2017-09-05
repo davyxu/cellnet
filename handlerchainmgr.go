@@ -26,7 +26,7 @@ type HandlerChainManager interface {
 	CreateChainWrite() *HandlerChain
 	CreateChainRead() *HandlerChain
 
-	// 设置读写练
+	// 设置读写链
 	SetReadWriteChain(read, write func() *HandlerChain)
 }
 
