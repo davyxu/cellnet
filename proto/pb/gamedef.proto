@@ -10,4 +10,5 @@ package gamedef;
 message TestEchoACK
 {
 	string Content = 1;
+	bytes Bytes = 2;
 }

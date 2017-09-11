@@ -13,6 +13,9 @@ type HandlerChainManager interface {
 	// 移除接收处理链, 根据添加时的id
 	RemoveChainRecv(id int64)
 
+	// 接收处理链是否存在
+	ChainRecvExists(id int64) bool
+
 	// 获取当前的处理链(乱序)
 	ChainListRecv() HandlerChainList
 
@@ -44,6 +47,16 @@ type HandlerChainManagerImplement struct {
 	readChainCreator  func() *HandlerChain
 	writeChainCreator func() *HandlerChain
 	rwChainGuard      sync.RWMutex
+}
+
+func (self *HandlerChainManagerImplement) ChainRecvExists(id int64) bool {
+	self.recvChainGuard.Lock()
+
+	_, ok := self.recvChainByID[id]
+
+	self.recvChainGuard.Unlock()
+
+	return ok
 }
 
 func (self *HandlerChainManagerImplement) AddChainRecv(recv *HandlerChain) (autoID int64) {

@@ -50,6 +50,7 @@ const (
 	Result_CodecError
 	Result_RequestClose // 请求关闭
 	Result_NextChain
+	Result_RPCTimeout
 )
 
 // 会话事件

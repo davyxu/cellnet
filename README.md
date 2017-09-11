@@ -577,6 +577,8 @@ Chris Lonng(https://github.com/lonnng), 提供一个最大封包约束造成服�
 
 chuan.li(https://github.com/blade-226), 提供一个没有在io线程编码的bug
 
+M4tou(https://github.com/mutousay), 协助解决RPC异步超时回调处理
+
 # 备注
 
 感觉不错请star, 谢谢!
