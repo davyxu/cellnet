@@ -223,6 +223,6 @@ func NewEvent(t EventType, s Session) *Event {
 var evuid int64
 
 func genSesEvUID() int64 {
-	atomic.AddInt64(&evuid, 1)
-	return evuid
+
+	return atomic.AddInt64(&evuid, 1)
 }

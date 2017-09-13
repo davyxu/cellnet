@@ -579,6 +579,8 @@ chuan.li(https://github.com/blade-226), 提供一个没有在io线程编码的bu
 
 M4tou(https://github.com/mutousay), 协助解决RPC异步超时回调处理
 
+bruce.hu(https://github.com/hxdhero), 测试出一个竞态冲突的bug
+
 # 备注
 
 感觉不错请star, 谢谢!
