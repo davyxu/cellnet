@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sync/atomic"
 )
 
 type HandlerChain struct {
@@ -82,8 +83,8 @@ func (self *HandlerChain) Call(ev *Event) {
 var chainidgen int64 = 500
 
 func genChainID() int64 {
-	chainidgen++
-	return chainidgen
+
+	return atomic.AddInt64(&chainidgen, 1)
 }
 
 func NewHandlerChain(objlist ...interface{}) *HandlerChain {
