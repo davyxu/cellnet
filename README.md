@@ -368,7 +368,7 @@ cellnet.RegisterMessage(peer, "coredef.SessionConnectFailed", func(ev *cellnet.E
 ## 获得Session
 Session可以通过以下途径获得:
 
-- 通过cellnet.RegisterMessagez注册回调后, 通过回调参数*cellnet.Event中的Ses获得
+- 通过cellnet.RegisterMessage注册回调后, 通过回调参数*cellnet.Event中的Ses获得
 
 - 如果Peer是Connector, 可以通过如下代码获得连接器上默认连接
 
