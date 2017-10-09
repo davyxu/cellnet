@@ -187,9 +187,9 @@ proto               cellnet内部的proto
 
     binary          内部系统消息,rpc消息
 
-    pb              protobuf消息
+    pb              protobuf消息(內部測試用)
 
-    sproto          sproto的消息
+    sproto          sproto的消息(內部測試用)
 
 protoc-gen-msg      protobuf的protoc插件, 消息id生成, 使用pb编码时使用
 
