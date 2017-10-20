@@ -16,6 +16,8 @@ type wsSession struct {
 	conn *websocket.Conn
 
 	tag interface{}
+
+	sendChan chan *cellnet.Event
 }
 
 func (self *wsSession) Tag() interface{} {
@@ -66,20 +68,27 @@ func (self *wsSession) RawSend(ev *cellnet.Event) {
 	// 发送日志
 	cellnet.MsgLog(ev)
 
-	go func() {
+	// 放入发送队列
+	self.sendChan <- ev
+
+}
+
+func (self *wsSession) sendThread() {
+
+	for ev := range self.sendChan {
 
 		meta := cellnet.MessageMetaByID(ev.MsgID)
 
 		if meta == nil {
 			ev.SetResult(cellnet.Result_CodecError)
-			return
+			continue
 		}
 
+		// 组websocket包
 		raw := composePacket(meta.Name, ev.Data)
 
 		self.conn.WriteMessage(websocket.TextMessage, raw)
-
-	}()
+	}
 }
 
 func (self *wsSession) ReadPacket() (msgid uint32, data []byte, result cellnet.Result) {
@@ -151,13 +160,16 @@ func (self *wsSession) recvThread() {
 func (self *wsSession) run() {
 
 	go self.recvThread()
+
+	go self.sendThread()
 }
 
 func newSession(c *websocket.Conn, p cellnet.Peer) *wsSession {
 
 	self := &wsSession{
-		p:    p,
-		conn: c,
+		p:        p,
+		conn:     c,
+		sendChan: make(chan *cellnet.Event, 10),
 	}
 
 	return self

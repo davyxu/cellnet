@@ -569,17 +569,22 @@ Event是消息处理的上下文, 不建议缓存Event
 
 # 贡献者
 
-viwii(viwii@sina.cn), 提供一个可能造成死锁的bug
+按贡献时间排序，越靠前表示越新的贡献
 
-IronsDu(https://github.com/IronsDu), 大幅度性能优化
+superikw(https://github.com/superikw),测试出一个websocket接口并发发送问题
 
-Chris Lonng(https://github.com/lonnng), 提供一个最大封包约束造成服务器间连接断开的bug
-
-chuan.li(https://github.com/blade-226), 提供一个没有在io线程编码的bug
+bruce.hu(https://github.com/hxdhero), 测试出一个竞态冲突的bug
 
 M4tou(https://github.com/mutousay), 协助解决RPC异步超时回调处理
 
-bruce.hu(https://github.com/hxdhero), 测试出一个竞态冲突的bug
+chuan.li(https://github.com/blade-226), 提供一个没有在io线程编码的bug
+
+Chris Lonng(https://github.com/lonnng), 提供一个最大封包约束造成服务器间连接断开的bug
+
+IronsDu(https://github.com/IronsDu), 大幅度性能优化
+
+viwii(viwii@sina.cn), 提供一个可能造成死锁的bug
+
 
 # 备注
 
