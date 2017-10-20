@@ -571,7 +571,7 @@ Event是消息处理的上下文, 不建议缓存Event
 
 按贡献时间排序，越靠前表示越新的贡献
 
-superikw(https://github.com/superikw),测试出一个websocket接口并发发送问题
+superikw(https://github.com/superikw), 测试出一个websocket接口并发发送问题
 
 bruce.hu(https://github.com/hxdhero), 测试出一个竞态冲突的bug
 
