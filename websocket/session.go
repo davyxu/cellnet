@@ -49,7 +49,7 @@ func (self *wsSession) Send(data interface{}) {
 	ev := cellnet.NewEvent(cellnet.Event_Send, self)
 	ev.Msg = data
 
-	if ev.ChainSend != nil {
+	if ev.ChainSend == nil {
 		ev.ChainSend = self.p.ChainSend()
 	}
 
