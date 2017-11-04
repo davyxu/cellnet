@@ -71,6 +71,9 @@ func (self *wsConnector) connect() {
 
 	ses := newSession(c, self)
 
+	// 设置默认连接
+	self.defaultSes = ses
+
 	// 添加到管理器
 	self.Add(ses)
 
