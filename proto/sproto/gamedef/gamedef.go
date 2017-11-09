@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/davyxu/cellnet/codec/sproto"
+	"fmt"
 )
 
 type TestEchoACK struct {
