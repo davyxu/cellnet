@@ -7,7 +7,7 @@ import (
 	"github.com/davyxu/golog"
 )
 
-var log *golog.Logger = golog.New("main")
+var log = golog.New("main")
 
 // 运行服务器, 在浏览器(Chrome)中打开index.html, F12打开调试窗口->Console标签 查看命令行输出
 func main() {
@@ -31,6 +31,9 @@ func main() {
 		log.Debugln(msg.Content)
 
 		ev.Send(&jsongamedef.TestEchoJsonACK{Content: "roger"})
+
+		ev.Ses.Close()
+
 	})
 
 	queue.StartLoop()

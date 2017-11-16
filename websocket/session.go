@@ -40,8 +40,7 @@ func (self *wsSession) FromPeer() cellnet.Peer {
 }
 
 func (self *wsSession) Close() {
-
-	self.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	self.sendChan <- nil
 }
 
 func (self *wsSession) Send(data interface{}) {
@@ -76,6 +75,11 @@ func (self *wsSession) RawSend(ev *cellnet.Event) {
 func (self *wsSession) sendThread() {
 
 	for ev := range self.sendChan {
+
+		if ev == nil {
+			self.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			break
+		}
 
 		meta := cellnet.MessageMetaByID(ev.MsgID)
 
