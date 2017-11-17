@@ -108,8 +108,13 @@ func (self *HandlerChainManagerImplement) SetReadWriteChain(read, write func() *
 
 	self.rwChainGuard.Lock()
 
-	self.readChainCreator = read
-	self.writeChainCreator = write
+	if read != nil {
+		self.readChainCreator = read
+	}
+
+	if write != nil {
+		self.writeChainCreator = write
+	}
 
 	self.rwChainGuard.Unlock()
 }

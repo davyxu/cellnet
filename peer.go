@@ -23,6 +23,9 @@ type Session interface {
 
 	// 取出与session关联的用户数据
 	Tag() interface{}
+
+	// 取原始连接net.Conn
+	RawConn() interface{}
 }
 
 // 端, Connector或Acceptor

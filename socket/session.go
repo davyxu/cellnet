@@ -31,6 +31,10 @@ type socketSession struct {
 	writeChain *cellnet.HandlerChain
 }
 
+func (self *socketSession) RawConn() interface{} {
+	return self.conn
+}
+
 func (self *socketSession) Tag() interface{} {
 	return self.tag
 }
