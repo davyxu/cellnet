@@ -20,6 +20,10 @@ type wsSession struct {
 	sendChan chan *cellnet.Event
 }
 
+func (self *wsSession) RawConn() interface{} {
+	return self.conn
+}
+
 func (self *wsSession) Tag() interface{} {
 	return self.tag
 }

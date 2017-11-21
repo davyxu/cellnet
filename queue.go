@@ -14,6 +14,9 @@ type EventQueue interface {
 
 	// 投递事件, 通过队列到达消费者端
 	Post(callback func())
+
+	// 是否捕获异常
+	EnableCapturePanic(v bool)
 }
 
 type evQueue struct {
@@ -22,6 +25,10 @@ type evQueue struct {
 	exitSignal chan int
 
 	capturePanic bool
+}
+
+func (self *evQueue) EnableCapturePanic(v bool) {
+	self.capturePanic = v
 }
 
 // 派发到队列
