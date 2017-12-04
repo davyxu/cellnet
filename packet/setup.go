@@ -10,26 +10,24 @@ type MsgEvent struct {
 	Msg interface{}
 }
 
-func invokeMsgFunc(ses cellnet.Session, f SessionMessageFunc, msg interface{}) {
+func invokeMsgFunc(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) {
 	q := ses.Peer().Queue()
 
 	// Peer有队列时，在队列线程调用用户处理函数
 	if q != nil {
 		q.Post(func() {
 
-			f(ses, msg)
+			f(msg)
 		})
 
 	} else {
 
 		// 在I/O线程调用用户处理函数
-		f(ses, msg)
+		f(msg)
 	}
 }
 
-type SessionMessageFunc func(ses cellnet.Session, raw interface{})
-
-func NewMessageCallback(f SessionMessageFunc) cellnet.EventFunc {
+func NewMessageCallback(f cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw interface{}) interface{} {
 

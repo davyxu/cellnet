@@ -6,7 +6,7 @@ import (
 )
 
 // 接收Length-Type-Value格式的封包流程
-func onRecvLTVPacket(ses cellnet.Session, f SessionMessageFunc) error {
+func onRecvLTVPacket(ses cellnet.Session, f cellnet.EventFunc) error {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)
