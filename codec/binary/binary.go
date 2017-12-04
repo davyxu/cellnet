@@ -25,5 +25,5 @@ func (self *binaryCodec) Decode(data []byte, msgObj interface{}) error {
 
 func init() {
 
-	cellnet.RegisterCodec("binary", new(binaryCodec))
+	cellnet.RegisterCodec(new(binaryCodec))
 }

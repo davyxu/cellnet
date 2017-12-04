@@ -1,19 +1,18 @@
 package benchmark
 
 import (
-	"testing"
-	"time"
-
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/benchmark"
-	_ "github.com/davyxu/cellnet/codec/pb" // 启用pb编码
-	"github.com/davyxu/cellnet/proto/pb/gamedef"
+	"github.com/davyxu/cellnet/packet"
 	"github.com/davyxu/cellnet/socket"
+	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
+	"testing"
+	"time"
 )
 
-var log *golog.Logger = golog.New("test")
+var log = golog.New("test")
 
 var signal *util.SignalTester
 
@@ -35,18 +34,27 @@ func server() {
 
 	})
 
-	evd := socket.NewAcceptor(queue).Start(benchmarkAddress)
+	var config cellnet.PeerConfig
+	config.TypeName = "tcp.Acceptor"
+	config.Queue = queue
+	config.Address = benchmarkAddress
+	config.Name = "server"
+	config.Event = packet.NewMessageCallback(func(ses cellnet.Session, raw interface{}) {
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+		switch raw.(type) {
+		case packet.MsgEvent:
 
-		if qpsm.Acc() > benchmarkSeconds {
-			signal.Done(1)
-			log.Infof("Average QPS: %d", qpsm.Average())
+			if qpsm.Acc() > benchmarkSeconds {
+				signal.Done(1)
+				log.Infof("Average QPS: %d", qpsm.Average())
+			}
+
+			ses.Send(&proto.TestEchoACK{})
 		}
 
-		ev.Send(&gamedef.TestEchoACK{})
-
 	})
+
+	cellnet.NewPeer(config).Start()
 
 	queue.StartLoop()
 
@@ -56,19 +64,24 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	evd := socket.NewConnector(queue).Start(benchmarkAddress)
+	var config cellnet.PeerConfig
+	config.TypeName = "tcp.Connector"
+	config.Queue = queue
+	config.Address = benchmarkAddress
+	config.Name = "client"
+	config.Event = packet.NewMessageCallback(func(ses cellnet.Session, raw interface{}) {
 
-	cellnet.RegisterMessage(evd, "gamedef.TestEchoACK", func(ev *cellnet.Event) {
+		switch raw.(type) {
+		case socket.ConnectedEvent:
+			ses.Send(&proto.TestEchoACK{})
+		case packet.MsgEvent:
 
-		ev.Send(&gamedef.TestEchoACK{})
+			ses.Send(&proto.TestEchoACK{})
+		}
 
 	})
 
-	cellnet.RegisterMessage(evd, "coredef.SessionConnected", func(ev *cellnet.Event) {
-
-		ev.Send(&gamedef.TestEchoACK{})
-
-	})
+	cellnet.NewPeer(config).Start()
 
 	queue.StartLoop()
 

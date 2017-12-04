@@ -1,49 +1,53 @@
 package cellnet
 
-// 会话
-type Session interface {
+// 事件函数的定义
+type EventFunc func(interface{}) interface{}
 
-	// 发包
-	Send(interface{})
-
-	// 直接发送封包
-	RawSend(*Event)
-
-	// 断开
-	Close()
-
-	// 标示ID
-	ID() int64
-
-	// 归属端
-	FromPeer() Peer
-
-	// 将一个用户数据保存在session
-	SetTag(tag interface{})
-
-	// 取出与session关联的用户数据
-	Tag() interface{}
-
-	// 取原始连接net.Conn
-	RawConn() interface{}
-}
-
-// 端, Connector或Acceptor
+// 发起和接受连接的通讯端
 type Peer interface {
 
-	// 开启/关闭
-	Start(address string) Peer
+	// 开启端，传入地址
+	Start() Peer
 
+	// 停止通讯端
 	Stop()
 
+	// 获取队列
 	Queue() EventQueue
 
-	// 基础信息
-	PeerProfile
+	// 通讯端名称
+	Name() string
 
-	// 定制处理链
-	HandlerChainManager
-
-	// 会话管理
 	SessionAccessor
+}
+
+type PeerConfig struct {
+	TypeName string
+	Name     string
+	Address  string
+	Queue    EventQueue
+	Event    EventFunc
+}
+
+type PeerCreateFunc func(PeerConfig) Peer
+
+var creatorByTypeName = map[string]PeerCreateFunc{}
+
+func RegisterPeerCreator(typeName string, f PeerCreateFunc) {
+
+	if _, ok := creatorByTypeName[typeName]; ok {
+		panic("Duplicate peer type")
+	}
+
+	creatorByTypeName[typeName] = f
+}
+
+func NewPeer(config PeerConfig) Peer {
+
+	f := creatorByTypeName[config.TypeName]
+	if f == nil {
+		panic("Peer name not found: " + config.TypeName)
+	}
+
+	return f(config)
 }

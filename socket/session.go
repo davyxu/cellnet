@@ -2,44 +2,33 @@ package socket
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/extend"
+	"github.com/davyxu/cellnet/internal"
 	"io"
 	"net"
 	"sync"
-	"time"
 )
 
+// Socket会话
 type socketSession struct {
-	OnClose func() // 关闭函数回调
+
+	// Socket原始连接
+	conn net.Conn
+
+	// 退出同步器
+	exitSync sync.WaitGroup
+
+	// 归属的通讯端
+	peer *socketPeer
 
 	id int64
 
-	p cellnet.Peer
-
-	endSync sync.WaitGroup
-
-	needNotifyWrite bool // 是否需要通知写线程关闭
-
-	sendList *eventList
-
-	conn net.Conn
-
-	tag interface{}
-
-	readChain *cellnet.HandlerChain
-
-	writeChain *cellnet.HandlerChain
+	// 发送队列
+	sendChan chan interface{}
 }
 
-func (self *socketSession) RawConn() interface{} {
+// 取原始连接
+func (self *socketSession) Raw() interface{} {
 	return self.conn
-}
-
-func (self *socketSession) Tag() interface{} {
-	return self.tag
-}
-func (self *socketSession) SetTag(tag interface{}) {
-	self.tag = tag
 }
 
 func (self *socketSession) ID() int64 {
@@ -50,184 +39,125 @@ func (self *socketSession) SetID(id int64) {
 	self.id = id
 }
 
-func (self *socketSession) FromPeer() cellnet.Peer {
-	return self.p
-}
-
-func (self *socketSession) DataSource() io.ReadWriter {
-
-	return self.conn
-}
-
 func (self *socketSession) Close() {
-	self.sendList.Add(nil)
+	self.sendChan <- nil
 }
 
-func (self *socketSession) Send(data interface{}) {
-
-	ev := cellnet.NewEvent(cellnet.Event_Send, self)
-	ev.Msg = data
-
-	if ev.ChainSend == nil {
-		ev.ChainSend = self.p.ChainSend()
-	}
-
-	self.RawSend(ev)
-
+// 取会话归属的通讯端
+func (self *socketSession) Peer() cellnet.Peer {
+	return self.peer.peerInterface
 }
 
-func (self *socketSession) RawSend(ev *cellnet.Event) {
-
-	if ev.Type != cellnet.Event_Send {
-		panic("invalid event type, require Event_Send")
-	}
-
-	ev.Ses = self
-
-	self.sendList.Add(ev)
+// 发送封包
+func (self *socketSession) Send(msg interface{}) {
+	self.sendChan <- msg
 }
 
-func (self *socketSession) recvThread() {
+// 接收循环
+func (self *socketSession) recvLoop() {
 
 	for {
 
-		ev := cellnet.NewEvent(cellnet.Event_Recv, self)
+		// 发送接收消息，要求读取数据
+		err := self.peer.fireEvent(RecvEvent{self})
 
-		read, _ := self.FromPeer().(SocketOptions).SocketDeadline()
+		// 连接断开
+		if err == io.EOF {
+			self.peer.fireEvent(SessionClosedEvent{self, err.(error)})
+			break
 
-		if read != 0 {
-			self.conn.SetReadDeadline(time.Now().Add(read))
+			// 如果由sendLoop的close造成的socket错误，conn会被置空，不会派发接收错误
+		} else if err != nil && self.conn != nil {
+			self.peer.fireEvent(RecvErrorEvent{self, err.(error)})
+			break
 		}
-
-		self.readChain.Call(ev)
-
-		if ev.Result() != cellnet.Result_OK {
-			goto onClose
-		}
-
-		// 接收日志
-		cellnet.MsgLog(ev)
-
-		self.p.ChainListRecv().Call(ev)
-
-		if ev.Result() != cellnet.Result_OK {
-			goto onClose
-		}
-
-		continue
-
-	onClose:
-		extend.PostSystemEvent(ev.Ses, cellnet.Event_Closed, self.p.ChainListRecv(), ev.Result())
-		break
 	}
 
-	if self.needNotifyWrite {
-		self.Close()
-	}
-
-	// 通知接收线程ok
-	self.endSync.Done()
-
+	self.cleanup()
 }
 
-// 发送线程
-func (self *socketSession) sendThread() {
+// 发送循环
+func (self *socketSession) sendLoop() {
 
-	for {
+	// 遍历要发送的数据
+	for msg := range self.sendChan {
 
-		// 写超时
-		_, write := self.FromPeer().(SocketOptions).SocketDeadline()
-
-		if write != 0 {
-			self.conn.SetWriteDeadline(time.Now().Add(write))
+		// nil表示需要退出会话通讯
+		if msg == nil {
+			break
 		}
 
-		writeList, willExit := self.sendList.Pick()
+		// 要求发送数据
+		err := self.peer.fireEvent(SendEvent{self, msg})
 
-		// 写队列
-		for _, ev := range writeList {
-
-			// 发送链处理: encode等操作
-			if ev.ChainSend != nil {
-				ev.ChainSend.Call(ev)
-			}
-
-			if ev.Result() != cellnet.Result_OK {
-				willExit = true
-			}
-
-			// 发送日志
-			cellnet.MsgLog(ev)
-
-			// 写链处理
-			self.writeChain.Call(ev)
-
-			if ev.Result() != cellnet.Result_OK {
-				willExit = true
-			}
-
+		// 发送错误时派发事件
+		if err != nil {
+			self.peer.fireEvent(SendErrorEvent{self, err.(error), msg})
+			break
 		}
 
-		//if err := self.conn.Flush(); err != nil {
-		//	willExit = true
-		//}
-
-		if willExit {
-			goto exitsendloop
-		}
 	}
 
-exitsendloop:
-
-	// 不需要读线程再次通知写线程
-	self.needNotifyWrite = false
-
-	// 关闭socket,触发读错误, 结束读循环
-	self.conn.Close()
-
-	// 通知发送线程ok
-	self.endSync.Done()
+	self.cleanup()
 }
 
-func (self *socketSession) run() {
-	// 布置接收和发送2个任务
-	// bug fix感谢viwii提供的线索
-	self.endSync.Add(2)
+// 清理资源
+func (self *socketSession) cleanup() {
+
+	// 关闭连接
+	if self.conn != nil {
+		self.conn.Close()
+		self.conn = nil
+	}
+
+	// 关闭发送队列
+	if self.sendChan != nil {
+		close(self.sendChan)
+		self.sendChan = nil
+	}
+
+	// 通知完成
+	self.exitSync.Done()
+}
+
+// 启动会话的各种资源
+func (self *socketSession) start() {
+
+	// 将会话添加到管理器
+	self.Peer().(internal.SessionManager).Add(self)
+
+	// 会话开始工作
+	self.peer.fireEvent(SessionStartEvent{self})
+
+	// 需要接收和发送线程同时完成时才算真正的完成
+	self.exitSync.Add(2)
 
 	go func() {
 
 		// 等待2个任务结束
-		self.endSync.Wait()
+		self.exitSync.Wait()
 
 		// 在这里断开session与逻辑的所有关系
-		if self.OnClose != nil {
-			self.OnClose()
-		}
+		self.peer.fireEvent(SessionExitEvent{self})
+
+		// 将会话从管理器移除
+		self.Peer().(internal.SessionManager).Remove(self)
 	}()
 
-	// 接收线程
-	go self.recvThread()
+	// 启动并发接收goroutine
+	go self.recvLoop()
 
-	// 发送线程
-	go self.sendThread()
+	// 启动并发发送goroutine
+	go self.sendLoop()
 }
 
-func newSession(conn net.Conn, p cellnet.Peer) *socketSession {
+// 默认10个长度的发送队列
+const SendQueueLen = 100
 
-	p.(interface {
-		Apply(conn net.Conn)
-	}).Apply(conn)
-
-	self := &socketSession{
-		conn:            conn,
-		p:               p,
-		needNotifyWrite: true,
-		sendList:        NewPacketList(),
+func newSession(conn net.Conn, peer *socketPeer) *socketSession {
+	return &socketSession{
+		conn:     conn,
+		peer:     peer,
+		sendChan: make(chan interface{}, SendQueueLen),
 	}
-
-	self.readChain = p.CreateChainRead()
-
-	self.writeChain = p.CreateChainWrite()
-
-	return self
 }

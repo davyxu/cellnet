@@ -19,7 +19,7 @@ type EventQueue interface {
 	EnableCapturePanic(v bool)
 }
 
-type evQueue struct {
+type eventQueue struct {
 	queue chan func()
 
 	exitSignal chan int
@@ -27,27 +27,29 @@ type evQueue struct {
 	capturePanic bool
 }
 
-func (self *evQueue) EnableCapturePanic(v bool) {
-	self.capturePanic = v
+// 启动崩溃捕获
+func (q *eventQueue) EnableCapturePanic(v bool) {
+	q.capturePanic = v
 }
 
-// 派发到队列
-func (self *evQueue) Post(callback func()) {
+// 派发事件处理回调到队列中
+func (q *eventQueue) Post(callback func()) {
 
 	if callback == nil {
 		return
 	}
 
-	self.queue <- callback
+	q.queue <- callback
 }
 
-func (self *evQueue) protectedCall(callback func()) {
+// 保护调用用户函数
+func (q *eventQueue) protectedCall(callback func()) {
 
 	if callback == nil {
 		return
 	}
 
-	if self.capturePanic {
+	if q.capturePanic {
 		defer func() {
 
 			if err := recover(); err != nil {
@@ -61,32 +63,37 @@ func (self *evQueue) protectedCall(callback func()) {
 	callback()
 }
 
-func (self *evQueue) StartLoop() {
+// 开启事件循环
+func (q *eventQueue) StartLoop() {
 
 	go func() {
-		for callback := range self.queue {
-			self.protectedCall(callback)
+		for callback := range q.queue {
+			q.protectedCall(callback)
 		}
 	}()
 }
 
-func (self *evQueue) StopLoop(result int) {
-	self.exitSignal <- result
+// 停止事件循环
+func (q *eventQueue) StopLoop(result int) {
+	q.exitSignal <- result
 }
 
-func (self *evQueue) Wait() int {
-	return <-self.exitSignal
+// 等待退出消息
+func (q *eventQueue) Wait() int {
+	return <-q.exitSignal
 }
 
 const DefaultQueueSize = 100
 
+// 创建默认长度的队列
 func NewEventQueue() EventQueue {
 
 	return NewEventQueueByLen(DefaultQueueSize)
 }
 
+// 创建指定长度的队列
 func NewEventQueueByLen(l int) EventQueue {
-	self := &evQueue{
+	self := &eventQueue{
 		queue:      make(chan func(), l),
 		exitSignal: make(chan int),
 	}
