@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/packet"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/tests/proto"
@@ -16,70 +17,73 @@ var echoSignal *util.SignalTester
 
 var echoAcceptor cellnet.Peer
 
+func onServerEvent(raw cellnet.EventParam) cellnet.EventResult {
+	switch ev := raw.(type) {
+	case socket.AcceptedEvent:
+		fmt.Println("server accepted")
+	case packet.RecvMsgEvent:
+
+		msg := ev.Msg.(*proto.TestEchoACK)
+
+		fmt.Printf("server recv %+v\n", msg)
+
+		ev.Ses.Send(&proto.TestEchoACK{
+			Msg:   msg.Msg,
+			Value: msg.Value,
+		})
+	case socket.SessionClosedEvent:
+		fmt.Println("server error: ", ev.Error)
+	}
+
+	return nil
+}
+
 func server() {
 	queue := cellnet.NewEventQueue()
 
 	echoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		TypeName: "tcp.Acceptor",
-		Queue:    queue,
-		Address:  testAddress,
-		Name:     "server",
-		Event: packet.NewMessageCallback(func(raw interface{}) interface{} {
-			switch ev := raw.(type) {
-			case socket.AcceptedEvent:
-				fmt.Println("server accepted")
-			case packet.MsgEvent:
-
-				msg := ev.Msg.(*proto.TestEchoACK)
-
-				fmt.Printf("server recv %+v\n", msg)
-
-				ev.Ses.Send(&proto.TestEchoACK{
-					Msg:   msg.Msg,
-					Value: msg.Value,
-				})
-			case socket.SessionClosedEvent:
-				fmt.Println("server error: ", ev.Error)
-			}
-
-			return nil
-		}),
+		PeerTypeName: "tcp.Acceptor",
+		Queue:        queue,
+		PeerAddress:  testAddress,
+		PeerName:     "server",
+		Event:        packet.ProcTLVPacket(msglog.ProcMsgLog(onServerEvent)),
 	}).Start()
 
 	queue.StartLoop()
+}
+
+func onClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+	switch ev := raw.(type) {
+	case socket.ConnectedEvent:
+		fmt.Println("client connected")
+		ev.Ses.Send(&proto.TestEchoACK{
+			Msg:   "hello",
+			Value: 1234,
+		})
+	case packet.RecvMsgEvent:
+
+		msg := ev.Msg.(*proto.TestEchoACK)
+
+		fmt.Printf("client recv %+v\n", msg)
+
+		echoSignal.Done(1)
+
+	case socket.SessionClosedEvent:
+		fmt.Println("client error: ", ev.Error)
+	}
+
+	return nil
 }
 
 func client() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.NewPeer(cellnet.PeerConfig{
-		TypeName: "tcp.Connector",
-		Queue:    queue,
-		Address:  testAddress,
-		Name:     "client",
-		Event: packet.NewMessageCallback(func(raw interface{}) interface{} {
-
-			switch ev := raw.(type) {
-			case socket.ConnectedEvent:
-				fmt.Println("client connected")
-				ev.Ses.Send(&proto.TestEchoACK{
-					Msg:   "hello",
-					Value: 1234,
-				})
-			case packet.MsgEvent:
-
-				msg := ev.Msg.(*proto.TestEchoACK)
-
-				fmt.Printf("client recv %+v\n", msg)
-
-				echoSignal.Done(1)
-
-			case socket.SessionClosedEvent:
-				fmt.Println("client error: ", ev.Error)
-			}
-
-			return nil
-		}),
+		PeerTypeName: "tcp.Connector",
+		Queue:        queue,
+		PeerAddress:  testAddress,
+		PeerName:     "client",
+		Event:        packet.ProcTLVPacket(msglog.ProcMsgLog(onClientEvent)),
 	}).Start()
 
 	queue.StartLoop()

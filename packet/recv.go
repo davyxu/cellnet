@@ -29,14 +29,17 @@ func onRecvLTVPacket(ses cellnet.Session, f cellnet.EventFunc) error {
 		return err
 	}
 
+	msgData := pktReader.RemainBytes()
+
 	// 将字节数组和消息ID用户解出消息
-	msg, err := cellnet.DecodeMessage(uint32(msgid), pktReader.RemainBytes())
+	msg, err := cellnet.DecodeMessage(uint32(msgid), msgData)
 	if err != nil {
+		// TODO 接收错误时，返回消息
 		return err
 	}
 
 	// 调用用户回调
-	invokeMsgFunc(ses, f, MsgEvent{ses, msg})
+	invokeMsgFunc(ses, f, RecvMsgEvent{ses, msg, int(msgid), msgData})
 
 	return nil
 }

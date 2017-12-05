@@ -39,10 +39,10 @@ func server() {
 	config.Queue = queue
 	config.Address = benchmarkAddress
 	config.Name = "server"
-	config.Event = packet.NewMessageCallback(func(ses cellnet.Session, raw interface{}) {
+	config.Event = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
 
 		switch raw.(type) {
-		case packet.MsgEvent:
+		case packet.RecvMsgEvent:
 
 			if qpsm.Acc() > benchmarkSeconds {
 				signal.Done(1)
@@ -69,12 +69,12 @@ func client() {
 	config.Queue = queue
 	config.Address = benchmarkAddress
 	config.Name = "client"
-	config.Event = packet.NewMessageCallback(func(ses cellnet.Session, raw interface{}) {
+	config.Event = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
 
 		switch raw.(type) {
 		case socket.ConnectedEvent:
 			ses.Send(&proto.TestEchoACK{})
-		case packet.MsgEvent:
+		case packet.RecvMsgEvent:
 
 			ses.Send(&proto.TestEchoACK{})
 		}

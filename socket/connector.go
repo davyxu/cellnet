@@ -15,7 +15,7 @@ type socketConnector struct {
 
 func (self *socketConnector) Start() cellnet.Peer {
 
-	go self.connect(self.Address)
+	go self.connect(self.PeerAddress)
 
 	return self
 }
@@ -43,7 +43,7 @@ func (self *socketConnector) connect(address string) {
 		return
 	}
 
-	log.Infof("#connected(%s) %s", self.Name(), self.Address)
+	log.Infof("#connected(%s) %s", self.Name(), self.Address())
 
 	ses.start()
 

@@ -5,13 +5,8 @@ import (
 	"github.com/davyxu/cellnet/socket"
 )
 
-type MsgEvent struct {
-	Ses cellnet.Session
-	Msg interface{}
-}
-
 func invokeMsgFunc(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) {
-	q := ses.Peer().Queue()
+	q := ses.Peer().EventQueue()
 
 	// Peer有队列时，在队列线程调用用户处理函数
 	if q != nil {
@@ -27,15 +22,15 @@ func invokeMsgFunc(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) {
 	}
 }
 
-func NewMessageCallback(f cellnet.EventFunc) cellnet.EventFunc {
+func ProcTLVPacket(f cellnet.EventFunc) cellnet.EventFunc {
 
-	return func(raw interface{}) interface{} {
+	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
 		case socket.RecvEvent: // 接收数据事件
 			return onRecvLTVPacket(ev.Ses, f)
 		case socket.SendEvent: // 发送数据事件
-			return onSendLTVPacket(ev.Ses, ev.Msg)
+			return onSendLTVPacket(ev.Ses, f, ev.Msg)
 		case socket.ConnectErrorEvent: // 连接错误事件
 			invokeMsgFunc(ev.Ses, f, raw)
 		case socket.SessionStartEvent: // 会话开始事件（连接上/接受连接）

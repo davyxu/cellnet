@@ -1,7 +1,10 @@
 package cellnet
 
+type EventParam interface{}
+type EventResult interface{}
+
 // 事件函数的定义
-type EventFunc func(interface{}) interface{}
+type EventFunc func(EventParam) EventResult
 
 // 发起和接受连接的通讯端
 type Peer interface {
@@ -12,21 +15,55 @@ type Peer interface {
 	// 停止通讯端
 	Stop()
 
+	SetEventFunc(EventFunc)
+
+	EventFunc() EventFunc
+
 	// 获取队列
-	Queue() EventQueue
+	EventQueue() EventQueue
 
 	// 通讯端名称
 	Name() string
+
+	Address() string
+
+	TypeName() string
 
 	SessionAccessor
 }
 
 type PeerConfig struct {
-	TypeName string
-	Name     string
-	Address  string
-	Queue    EventQueue
-	Event    EventFunc
+	PeerTypeName string
+	PeerName     string
+	PeerAddress  string
+	Queue        EventQueue
+	Event        EventFunc
+}
+
+// 获取通讯端的名称
+func (self *PeerConfig) Name() string {
+	return self.PeerName
+}
+
+func (self *PeerConfig) TypeName() string {
+	return self.PeerTypeName
+}
+
+func (self *PeerConfig) Address() string {
+	return self.PeerAddress
+}
+
+// 获取队列
+func (self *PeerConfig) EventQueue() EventQueue {
+	return self.Queue
+}
+
+func (self *PeerConfig) EventFunc() EventFunc {
+	return self.Event
+}
+
+func (self *PeerConfig) SetEventFunc(eventFunc EventFunc) {
+	self.Event = eventFunc
 }
 
 type PeerCreateFunc func(PeerConfig) Peer
@@ -44,9 +81,9 @@ func RegisterPeerCreator(typeName string, f PeerCreateFunc) {
 
 func NewPeer(config PeerConfig) Peer {
 
-	f := creatorByTypeName[config.TypeName]
+	f := creatorByTypeName[config.PeerTypeName]
 	if f == nil {
-		panic("Peer name not found: " + config.TypeName)
+		panic("Peer name not found: " + config.PeerTypeName)
 	}
 
 	return f(config)

@@ -6,7 +6,7 @@ import (
 )
 
 // 发送Length-Type-Value格式的封包流程
-func onSendLTVPacket(ses cellnet.Session, msg interface{}) error {
+func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) error {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)
@@ -15,6 +15,9 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) error {
 	if !ok || conn == nil {
 		return nil
 	}
+
+	// 调用用户回调
+	invokeMsgFunc(ses, f, SendMsgEvent{ses, msg})
 
 	// 将用户数据转换为字节数组和消息ID
 	data, msgid, err := cellnet.EncodeMessage(msg)

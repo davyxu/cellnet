@@ -23,7 +23,7 @@ type socketAcceptor struct {
 // 异步开始侦听
 func (self *socketAcceptor) Start() cellnet.Peer {
 
-	go self.listen(self.Address)
+	go self.listen(self.PeerAddress)
 
 	return self
 }
@@ -46,7 +46,7 @@ func (self *socketAcceptor) listen(address string) {
 		return
 	}
 
-	log.Infof("#listen(%s) %s", self.Name(), self.Address)
+	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
 	// 侦听循环
 	for {
