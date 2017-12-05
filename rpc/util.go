@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 var (
@@ -19,19 +18,19 @@ type RPCSessionGetter interface {
 }
 
 // 从peer获取rpc使用的session
-func getPeerSession(ud interface{}) (cellnet.Session, cellnet.Peer, error) {
+func getPeerSession(ud interface{}) (cellnet.Session, error) {
 
 	if ud == nil {
-		return nil, nil, ErrInvalidPeerSession
+		return nil, ErrInvalidPeerSession
 	}
 
 	switch i := ud.(type) {
 	case RPCSessionGetter:
-		return i.RPCSession(), i.RPCSession().Peer(), nil
+		return i.RPCSession(), nil
 	case cellnet.Session:
-		return i, i.Peer(), nil
+		return i, nil
 	default:
-		return nil, nil, ErrInvalidPeerSession
+		return nil, ErrInvalidPeerSession
 	}
 }
 
@@ -41,9 +40,8 @@ var (
 )
 
 type request struct {
-	id      int64
-	onRecv  func(interface{})
-	timeout time.Duration
+	id     int64
+	onRecv func(interface{})
 }
 
 var ErrTimeout = errors.New("time out")
@@ -52,11 +50,20 @@ func (self *request) RecvFeedback(msg interface{}) {
 	self.onRecv(msg)
 }
 
-func createRequest(timeout time.Duration) *request {
+func (self *request) Send(ses cellnet.Session, msg interface{}) {
+	data, msgid, _ := cellnet.EncodeMessage(msg)
+
+	ses.Send(&RemoteCallREQ{
+		MsgID:  msgid,
+		Data:   data,
+		CallID: self.id,
+	})
+}
+
+func createRequest(onRecv func(interface{})) *request {
 
 	self := &request{
-
-		timeout: timeout,
+		onRecv: onRecv,
 	}
 
 	self.id = atomic.AddInt64(&rpcIDSeq, 1)
