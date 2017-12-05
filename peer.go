@@ -33,11 +33,11 @@ type Peer interface {
 }
 
 type PeerConfig struct {
-	PeerTypeName string
-	PeerName     string
-	PeerAddress  string
-	Queue        EventQueue
-	Event        EventFunc
+	PeerType    string
+	PeerName    string
+	PeerAddress string
+	Queue       EventQueue
+	Event       EventFunc
 }
 
 // 获取通讯端的名称
@@ -46,7 +46,7 @@ func (self *PeerConfig) Name() string {
 }
 
 func (self *PeerConfig) TypeName() string {
-	return self.PeerTypeName
+	return self.PeerType
 }
 
 func (self *PeerConfig) Address() string {
@@ -81,9 +81,9 @@ func RegisterPeerCreator(typeName string, f PeerCreateFunc) {
 
 func NewPeer(config PeerConfig) Peer {
 
-	f := creatorByTypeName[config.PeerTypeName]
+	f := creatorByTypeName[config.PeerType]
 	if f == nil {
-		panic("Peer name not found: " + config.PeerTypeName)
+		panic("Peer name not found: " + config.PeerType)
 	}
 
 	return f(config)

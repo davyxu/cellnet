@@ -15,9 +15,5 @@ type TestEchoACK struct {
 func (self *TestEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
-	cellnet.RegisterMessageMeta("binary", // 消息的编码格式
-		"test.TestEchoACK",                         // 消息名
-		reflect.TypeOf((*TestEchoACK)(nil)).Elem(), // 消息的反射类型
-		1, // 消息ID
-	)
+	cellnet.RegisterMessageMeta("binary", "test.TestEchoACK", reflect.TypeOf((*TestEchoACK)(nil)).Elem(), 1)
 }

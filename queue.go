@@ -100,3 +100,20 @@ func NewEventQueueByLen(l int) EventQueue {
 
 	return self
 }
+
+func CallEventFuncAutoQueue(ses Session, f EventFunc, msg interface{}) {
+	q := ses.Peer().EventQueue()
+
+	// Peer有队列时，在队列线程调用用户处理函数
+	if q != nil {
+		q.Post(func() {
+
+			f(msg)
+		})
+
+	} else {
+
+		// 在I/O线程调用用户处理函数
+		f(msg)
+	}
+}

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 export CURRDIR=`pwd`
 cd ../../../../..
 export GOPATH=`pwd`

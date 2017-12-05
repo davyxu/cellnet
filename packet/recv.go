@@ -38,8 +38,10 @@ func onRecvLTVPacket(ses cellnet.Session, f cellnet.EventFunc) error {
 		return err
 	}
 
+	log.Debugln("packet recv", ses.Peer().Name(), msgData)
+
 	// 调用用户回调
-	invokeMsgFunc(ses, f, RecvMsgEvent{ses, msg, int(msgid), msgData})
+	cellnet.CallEventFuncAutoQueue(ses, f, RecvMsgEvent{ses, msg, int(msgid), msgData})
 
 	return nil
 }

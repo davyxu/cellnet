@@ -43,8 +43,6 @@ func (self *socketConnector) connect(address string) {
 		return
 	}
 
-	log.Infof("#connected(%s) %s", self.Name(), self.Address())
-
 	ses.start()
 
 }

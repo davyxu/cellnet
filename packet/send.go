@@ -17,7 +17,7 @@ func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) 
 	}
 
 	// 调用用户回调
-	invokeMsgFunc(ses, f, SendMsgEvent{ses, msg})
+	cellnet.CallEventFuncAutoQueue(ses, f, SendMsgEvent{ses, msg})
 
 	// 将用户数据转换为字节数组和消息ID
 	data, msgid, err := cellnet.EncodeMessage(msg)
@@ -38,6 +38,8 @@ func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) 
 	if err := pktWriter.WriteValue(data); err != nil {
 		return err
 	}
+
+	log.Debugln("packet send", ses.Peer().Name())
 
 	// 发送长度定界的变长封包
 	return SendVariableLengthPacket(conn, pktWriter)

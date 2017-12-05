@@ -11,13 +11,13 @@ import (
 	"testing"
 )
 
-const testAddress = "127.0.0.1:7701"
+const echoAddress = "127.0.0.1:7701"
 
 var echoSignal *util.SignalTester
 
 var echoAcceptor cellnet.Peer
 
-func onServerEvent(raw cellnet.EventParam) cellnet.EventResult {
+func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
 	case socket.AcceptedEvent:
 		fmt.Println("server accepted")
@@ -38,21 +38,21 @@ func onServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func server() {
+func EchoServer() {
 	queue := cellnet.NewEventQueue()
 
 	echoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerTypeName: "tcp.Acceptor",
-		Queue:        queue,
-		PeerAddress:  testAddress,
-		PeerName:     "server",
-		Event:        packet.ProcTLVPacket(msglog.ProcMsgLog(onServerEvent)),
+		PeerType:    "tcp.Acceptor",
+		Queue:       queue,
+		PeerAddress: echoAddress,
+		PeerName:    "server",
+		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(OnEchoServerEvent)),
 	}).Start()
 
 	queue.StartLoop()
 }
 
-func onClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
 	case socket.ConnectedEvent:
 		fmt.Println("client connected")
@@ -75,15 +75,15 @@ func onClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func client() {
+func EchoClient() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerTypeName: "tcp.Connector",
-		Queue:        queue,
-		PeerAddress:  testAddress,
-		PeerName:     "client",
-		Event:        packet.ProcTLVPacket(msglog.ProcMsgLog(onClientEvent)),
+		PeerType:    "tcp.Connector",
+		Queue:       queue,
+		PeerAddress: echoAddress,
+		PeerName:    "client",
+		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(OnEchoClientEvent)),
 	}).Start()
 
 	queue.StartLoop()
@@ -95,9 +95,9 @@ func TestEcho(t *testing.T) {
 
 	echoSignal = util.NewSignalTester(t)
 
-	server()
+	EchoServer()
 
-	client()
+	EchoClient()
 
 	echoAcceptor.Stop()
 }
