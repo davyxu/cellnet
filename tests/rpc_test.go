@@ -2,10 +2,7 @@ package tests
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/packet"
 	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
@@ -44,7 +41,7 @@ func StartRPCServer() {
 		Queue:       queue,
 		PeerAddress: syncRPCAddress,
 		PeerName:    "server",
-		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(rpc.ProcRPC(OnRPCServerEvent))),
+		Event:       OnRPCServerEvent,
 	}).Start()
 
 	queue.StartLoop()
@@ -52,7 +49,7 @@ func StartRPCServer() {
 
 func OnSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
-	case socket.ConnectedEvent:
+	case cellnet.ConnectedEvent:
 
 		for i := 0; i < 2; i++ {
 
@@ -85,7 +82,7 @@ func OnSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 func OnASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
-	case socket.ConnectedEvent:
+	case cellnet.ConnectedEvent:
 
 		for i := 0; i < 2; i++ {
 
@@ -122,7 +119,7 @@ func StartRPCClient(eventFunc cellnet.EventFunc) {
 		Queue:       queue,
 		PeerAddress: syncRPCAddress,
 		PeerName:    "client",
-		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(rpc.ProcRPC(eventFunc))),
+		Event:       eventFunc,
 	}).Start()
 
 	queue.StartLoop()

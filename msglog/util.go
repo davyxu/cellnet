@@ -15,6 +15,16 @@ func MessageName(msg interface{}) string {
 	return meta.Name
 }
 
+func MessageID(msg interface{}) int {
+
+	meta := cellnet.MessageMetaByType(reflect.TypeOf(msg).Elem())
+	if meta == nil {
+		return 0
+	}
+
+	return int(meta.ID)
+}
+
 func MessageToString(msg interface{}) string {
 
 	if msg == nil {

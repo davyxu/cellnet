@@ -1,12 +1,13 @@
-package packet
+package tcppkt
 
 import (
 	"github.com/davyxu/cellnet"
+	"io"
 	"net"
 )
 
 // 发送Length-Type-Value格式的封包流程
-func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) error {
+func onSendLTVPacket(ses cellnet.Session, userFunc cellnet.EventFunc, msg interface{}) error {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)
@@ -15,9 +16,6 @@ func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) 
 	if !ok || conn == nil {
 		return nil
 	}
-
-	// 调用用户回调
-	cellnet.CallEventFuncAutoQueue(ses, f, SendMsgEvent{ses, msg})
 
 	// 将用户数据转换为字节数组和消息ID
 	data, msgid, err := cellnet.EncodeMessage(msg)
@@ -39,8 +37,32 @@ func onSendLTVPacket(ses cellnet.Session, f cellnet.EventFunc, msg interface{}) 
 		return err
 	}
 
-	log.Debugln("packet send", ses.Peer().Name())
-
 	// 发送长度定界的变长封包
 	return SendVariableLengthPacket(conn, pktWriter)
+}
+
+func SendLTVPacket(outputStream io.Writer, msg interface{}) error {
+
+	// 将用户数据转换为字节数组和消息ID
+	data, msgid, err := cellnet.EncodeMessage(msg)
+
+	if err != nil {
+		return err
+	}
+
+	// 创建封包写入器
+	var pktWriter PacketWriter
+
+	// 写入消息ID
+	if err := pktWriter.WriteValue(uint16(msgid)); err != nil {
+		return err
+	}
+
+	// 写入序列化好的消息数据
+	if err := pktWriter.WriteValue(data); err != nil {
+		return err
+	}
+
+	// 发送长度定界的变长封包
+	return SendVariableLengthPacket(outputStream, pktWriter)
 }

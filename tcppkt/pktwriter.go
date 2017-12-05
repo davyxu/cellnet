@@ -1,4 +1,4 @@
-package packet
+package tcppkt
 
 import (
 	"bytes"

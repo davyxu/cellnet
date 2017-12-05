@@ -3,9 +3,8 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/packet"
-	"github.com/davyxu/cellnet/socket"
+	_ "github.com/davyxu/cellnet/tcppeer"
+	"github.com/davyxu/cellnet/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
@@ -19,9 +18,9 @@ var echoAcceptor cellnet.Peer
 
 func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
-	case socket.AcceptedEvent:
+	case cellnet.AcceptedEvent:
 		fmt.Println("server accepted")
-	case packet.RecvMsgEvent:
+	case tcppkt.RecvMsgEvent:
 
 		msg := ev.Msg.(*proto.TestEchoACK)
 
@@ -31,7 +30,7 @@ func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 			Msg:   msg.Msg,
 			Value: msg.Value,
 		})
-	case socket.SessionClosedEvent:
+	case cellnet.SessionClosedEvent:
 		fmt.Println("server error: ", ev.Error)
 	}
 
@@ -46,7 +45,7 @@ func EchoServer() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "server",
-		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(OnEchoServerEvent)),
+		Event:       OnEchoServerEvent,
 	}).Start()
 
 	queue.StartLoop()
@@ -54,13 +53,13 @@ func EchoServer() {
 
 func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	switch ev := raw.(type) {
-	case socket.ConnectedEvent:
+	case cellnet.ConnectedEvent:
 		fmt.Println("client connected")
 		ev.Ses.Send(&proto.TestEchoACK{
 			Msg:   "hello",
 			Value: 1234,
 		})
-	case packet.RecvMsgEvent:
+	case tcppkt.RecvMsgEvent:
 
 		msg := ev.Msg.(*proto.TestEchoACK)
 
@@ -68,7 +67,7 @@ func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 		echoSignal.Done(1)
 
-	case socket.SessionClosedEvent:
+	case cellnet.SessionClosedEvent:
 		fmt.Println("client error: ", ev.Error)
 	}
 
@@ -83,7 +82,7 @@ func EchoClient() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "client",
-		Event:       packet.ProcTLVPacket(msglog.ProcMsgLog(OnEchoClientEvent)),
+		Event:       OnEchoClientEvent,
 	}).Start()
 
 	queue.StartLoop()

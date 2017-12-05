@@ -1,14 +1,16 @@
-package socket
+package tcppeer
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/internal"
+	"github.com/davyxu/cellnet/msglog"
+	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/cellnet/tcppkt"
 	"net"
 )
 
 type socketConnector struct {
-	socketPeer
-	internal.SessionManager
+	internal.PeerShare
 
 	ses cellnet.Session
 }
@@ -34,28 +36,28 @@ func (self *socketConnector) connect(address string) {
 	// 尝试用Socket连接地址
 	conn, err := net.Dial("tcp", address)
 
-	ses := newSession(conn, &self.socketPeer)
+	ses := internal.NewSession(conn, &self.PeerShare)
 	self.ses = ses
 
 	// 发生错误时退出
 	if err != nil {
-		self.fireEvent(ConnectErrorEvent{ses, err})
+		self.FireEvent(cellnet.ConnectErrorEvent{ses, err})
 		return
 	}
 
-	ses.start()
+	ses.(interface {
+		Start()
+	}).Start()
 
 }
 
 func init() {
 
 	cellnet.RegisterPeerCreator("tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
-		p := &socketConnector{
-			SessionManager: internal.NewSessionManager(),
-		}
+		p := &socketConnector{}
+		config.Event = tcppkt.ProcTLVPacket(msglog.ProcMsgLog(rpc.ProcRPC(config.Event)))
 
-		p.PeerConfig = config
-		p.peerInterface = p
+		p.Init(p, config)
 
 		return p
 	})

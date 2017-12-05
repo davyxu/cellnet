@@ -1,17 +1,19 @@
-package socket
+package tcppeer
 
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/internal"
+	"github.com/davyxu/cellnet/msglog"
+	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/cellnet/tcppkt"
 	"net"
 	"sync"
 )
 
 // 接受器
 type socketAcceptor struct {
-	socketPeer
-	internal.SessionManager
+	internal.PeerShare
 
 	// 保存侦听器
 	l net.Listener
@@ -65,9 +67,11 @@ func (self *socketAcceptor) listen(address string) {
 
 func (self *socketAcceptor) onNewSession(conn net.Conn) {
 
-	ses := newSession(conn, &self.socketPeer)
+	ses := internal.NewSession(conn, &self.PeerShare)
 
-	ses.start()
+	ses.(interface {
+		Start()
+	}).Start()
 
 }
 
@@ -80,12 +84,11 @@ func (self *socketAcceptor) Stop() {
 func init() {
 
 	cellnet.RegisterPeerCreator("tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
-		p := &socketAcceptor{
-			SessionManager: internal.NewSessionManager(),
-		}
+		p := &socketAcceptor{}
 
-		p.PeerConfig = config
-		p.peerInterface = p
+		config.Event = tcppkt.ProcTLVPacket(msglog.ProcMsgLog(rpc.ProcRPC(config.Event)))
+
+		p.Init(p, config)
 
 		return p
 	})

@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/socket"
 )
 
 type RecvMsgEvent struct {
@@ -18,7 +17,7 @@ func (self *RecvMsgEvent) Reply(msg interface{}) {
 	evFunc := self.ses.Peer().EventFunc()
 	if evFunc != nil {
 
-		evFunc(socket.SendEvent{self.ses, &RemoteCallACK{
+		evFunc(cellnet.SendEvent{self.ses, &RemoteCallACK{
 			MsgID:  msgid,
 			Data:   data,
 			CallID: self.callid,

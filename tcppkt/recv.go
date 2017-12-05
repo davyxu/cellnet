@@ -1,12 +1,13 @@
-package packet
+package tcppkt
 
 import (
 	"github.com/davyxu/cellnet"
+	"io"
 	"net"
 )
 
 // 接收Length-Type-Value格式的封包流程
-func onRecvLTVPacket(ses cellnet.Session, f cellnet.EventFunc) error {
+func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) error {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)
@@ -38,10 +39,30 @@ func onRecvLTVPacket(ses cellnet.Session, f cellnet.EventFunc) error {
 		return err
 	}
 
-	log.Debugln("packet recv", ses.Peer().Name(), msgData)
-
 	// 调用用户回调
-	cellnet.CallEventFuncAutoQueue(ses, f, RecvMsgEvent{ses, msg, int(msgid), msgData})
+	eventFunc(RecvMsgEvent{ses, msg})
 
 	return nil
+}
+
+func RecvLTVPacket(inputStream io.Reader) (msg interface{}, msgid uint16, err error) {
+
+	// 接收长度定界的变长封包，返回封包读取器
+	pktReader, err := RecvVariableLengthPacket(inputStream)
+
+	if err != nil {
+		return
+	}
+
+	// 读取消息ID
+	if err = pktReader.ReadValue(&msgid); err != nil {
+		return
+	}
+
+	msgData := pktReader.RemainBytes()
+
+	// 将字节数组和消息ID用户解出消息
+	msg, err = cellnet.DecodeMessage(uint32(msgid), msgData)
+
+	return
 }

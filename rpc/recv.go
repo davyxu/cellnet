@@ -2,14 +2,14 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/packet"
+	"github.com/davyxu/cellnet/tcppkt"
 )
 
 func ProcRPC(f cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
-		recvEv, ok := raw.(packet.RecvMsgEvent)
+		recvEv, ok := raw.(tcppkt.RecvMsgEvent)
 
 		if ok {
 			switch rpcMsg := recvEv.Msg.(type) {
