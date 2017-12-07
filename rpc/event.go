@@ -10,6 +10,10 @@ type RecvMsgEvent struct {
 	callid int64
 }
 
+func (self *RecvMsgEvent) Queue() cellnet.EventQueue {
+	return self.ses.Peer().EventQueue()
+}
+
 func (self *RecvMsgEvent) Reply(msg interface{}) {
 
 	data, msgid, _ := cellnet.EncodeMessage(msg)

@@ -70,6 +70,7 @@ func (self *socketConnector) Stop() {
 
 	// 等待线程结束
 	self.WaitStopFinished()
+
 }
 
 const reportConnectFailedLimitTimes = 3
@@ -138,6 +139,7 @@ func (self *socketConnector) connect(address string) {
 
 		// 继续连接
 		continue
+
 	}
 
 	self.SetRunning(false)
@@ -145,17 +147,32 @@ func (self *socketConnector) connect(address string) {
 	self.EndStopping()
 }
 
+func initEvent(config *cellnet.PeerConfig) {
+	var final cellnet.EventFunc
+
+	// 有队列，添加队列处理
+	if config.Queue != nil {
+		final = tcppkt.ProcQueue(config.Event)
+	} else {
+		// 否则直接处理
+		final = config.Event
+	}
+
+	config.Event = tcppkt.ProcTLVPacket(
+		msglog.ProcMsgLog( // 消息日志
+			rpc.ProcRPC( // RPC
+				tcppkt.ProcSysMsg(final), // 系统事件转消息
+			),
+		),
+	)
+}
+
 func init() {
 
 	cellnet.RegisterPeerCreator("ltv.tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
 		p := &socketConnector{}
-		config.Event = tcppkt.ProcTLVPacket(
-			msglog.ProcMsgLog(
-				rpc.ProcRPC(
-					tcppkt.ProcSysMsg(config.Event),
-				),
-			),
-		)
+
+		initEvent(&config)
 
 		p.Init(p, config)
 

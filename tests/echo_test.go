@@ -3,8 +3,8 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/sys"
 	_ "github.com/davyxu/cellnet/tcppeer"
+	"github.com/davyxu/cellnet/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
@@ -16,12 +16,12 @@ var echoSignal *util.SignalTester
 
 var echoAcceptor cellnet.Peer
 
-func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
+func onEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch msg := ev.Msg.(type) {
-		case *sysmsg.SessionAccepted:
+		case *tcppkt.SessionAccepted:
 			fmt.Println("server accepted")
 		case *proto.TestEchoACK:
 
@@ -32,7 +32,7 @@ func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 				Value: msg.Value,
 			})
 
-		case *sysmsg.SessionClosed:
+		case *tcppkt.SessionClosed:
 			fmt.Println("server error: ")
 		}
 	}
@@ -40,7 +40,7 @@ func OnEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func EchoServer() {
+func StartEchoServer() {
 	queue := cellnet.NewEventQueue()
 
 	echoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
@@ -48,18 +48,18 @@ func EchoServer() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "server",
-		Event:       OnEchoServerEvent,
+		Event:       onEchoServerEvent,
 	}).Start()
 
 	queue.StartLoop()
 }
 
-func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func onEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch msg := ev.Msg.(type) {
-		case *sysmsg.SessionConnected:
+		case *tcppkt.SessionConnected:
 			fmt.Println("client connected")
 			ev.Ses.Send(&proto.TestEchoACK{
 				Msg:   "hello",
@@ -71,7 +71,7 @@ func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 			echoSignal.Done(1)
 
-		case *sysmsg.SessionClosed:
+		case *tcppkt.SessionClosed:
 			fmt.Println("client error: ")
 		}
 	}
@@ -79,7 +79,7 @@ func OnEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func EchoClient() {
+func StartEchoClient() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.NewPeer(cellnet.PeerConfig{
@@ -87,7 +87,7 @@ func EchoClient() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "client",
-		Event:       OnEchoClientEvent,
+		Event:       onEchoClientEvent,
 	}).Start()
 
 	queue.StartLoop()
@@ -99,9 +99,9 @@ func TestEcho(t *testing.T) {
 
 	echoSignal = util.NewSignalTester(t)
 
-	EchoServer()
+	StartEchoServer()
 
-	EchoClient()
+	StartEchoClient()
 
 	echoAcceptor.Stop()
 }

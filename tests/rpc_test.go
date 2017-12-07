@@ -3,7 +3,7 @@ package tests
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/sys"
+	"github.com/davyxu/cellnet/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
@@ -17,7 +17,7 @@ var asyncRPCSignal *util.SignalTester
 
 var rpcAcceptor cellnet.Peer
 
-func OnRPCServerEvent(raw cellnet.EventParam) cellnet.EventResult {
+func onRPCServerEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(rpc.RecvMsgEvent)
 	if ok {
@@ -44,18 +44,18 @@ func StartRPCServer() {
 		Queue:       queue,
 		PeerAddress: syncRPCAddress,
 		PeerName:    "server",
-		Event:       OnRPCServerEvent,
+		Event:       onRPCServerEvent,
 	}).Start()
 
 	queue.StartLoop()
 }
 
-func OnSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
-		case *sysmsg.SessionConnected:
+		case *tcppkt.SessionConnected:
 			for i := 0; i < 2; i++ {
 
 				// 同步阻塞请求必须并发启动，否则客户端无法接收数据
@@ -85,12 +85,12 @@ func OnSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func OnASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
-		case *sysmsg.SessionConnected:
+		case *tcppkt.SessionConnected:
 			for i := 0; i < 2; i++ {
 
 				copy := i + 1
@@ -138,7 +138,7 @@ func TestSyncRPC(t *testing.T) {
 
 	StartRPCServer()
 
-	StartRPCClient(OnSyncRPCClientEvent)
+	StartRPCClient(onSyncRPCClientEvent)
 	syncRPCSignal.WaitAndExpect("sync not recv data ", 100, 200)
 
 	rpcAcceptor.Stop()
@@ -150,7 +150,7 @@ func TestASyncRPC(t *testing.T) {
 
 	StartRPCServer()
 
-	StartRPCClient(OnASyncRPCClientEvent)
+	StartRPCClient(onASyncRPCClientEvent)
 	asyncRPCSignal.WaitAndExpect("async not recv data ", 1, 2)
 
 	rpcAcceptor.Stop()

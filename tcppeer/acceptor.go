@@ -117,13 +117,7 @@ func init() {
 	cellnet.RegisterPeerCreator("ltv.tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
 		p := &socketAcceptor{}
 
-		config.Event = tcppkt.ProcTLVPacket(
-			msglog.ProcMsgLog(
-				rpc.ProcRPC(
-					tcppkt.ProcSysMsg(config.Event),
-				),
-			),
-		)
+		initEvent(&config)
 
 		p.Init(p, config)
 

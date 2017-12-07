@@ -66,7 +66,7 @@ func (self *session) Send(msg interface{}) {
 func (self *session) recvLoop() {
 
 	var err error
-	for {
+	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
 		raw := self.peer.FireEvent(cellnet.RecvEvent{self})
