@@ -2,14 +2,13 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/tcppkt"
 )
 
-func ProcRPC(f cellnet.EventFunc) cellnet.EventFunc {
+func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
-		recvEv, ok := raw.(tcppkt.RecvMsgEvent)
+		recvEv, ok := raw.(cellnet.RecvMsgEvent)
 
 		if ok {
 			switch rpcMsg := recvEv.Msg.(type) {
@@ -18,7 +17,7 @@ func ProcRPC(f cellnet.EventFunc) cellnet.EventFunc {
 
 				if msg, err := cellnet.DecodeMessage(rpcMsg.MsgID, rpcMsg.Data); err == nil {
 
-					return f(RecvMsgEvent{recvEv.Ses, msg, rpcMsg.CallID})
+					return userFunc(RecvMsgEvent{recvEv.Ses, msg, rpcMsg.CallID})
 
 				} else {
 					return err
@@ -38,6 +37,6 @@ func ProcRPC(f cellnet.EventFunc) cellnet.EventFunc {
 			}
 		}
 
-		return f(raw)
+		return userFunc(raw)
 	}
 }

@@ -34,7 +34,6 @@ func FetchCodec(name string) Codec {
 
 var (
 	ErrMessageNotFound = errors.New("msg not exists")
-	ErrCodecNotFound   = errors.New("codec not found")
 )
 
 func EncodeMessage(msg interface{}) (data []byte, msgid uint32, err error) {

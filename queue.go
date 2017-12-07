@@ -102,6 +102,10 @@ func NewEventQueueByLen(l int) EventQueue {
 }
 
 func QueuedCall(ses Session, callback func()) {
+	if ses == nil {
+		return
+	}
+
 	q := ses.Peer().EventQueue()
 
 	// Peer有队列时，在队列线程调用用户处理函数

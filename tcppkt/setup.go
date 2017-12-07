@@ -5,6 +5,26 @@ import (
 	"net"
 )
 
+func ProcSysMsg(userFunc cellnet.EventFunc) cellnet.EventFunc {
+
+	return func(raw cellnet.EventParam) cellnet.EventResult {
+
+		switch ev := raw.(type) {
+
+		case cellnet.SessionConnectErrorEvent:
+			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnectError{}})
+		case cellnet.SessionClosedEvent:
+			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionClosed{}})
+		case cellnet.SessionAcceptedEvent:
+			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionAccepted{}})
+		case cellnet.SessionConnectedEvent:
+			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnected{}})
+		}
+
+		return userFunc(raw)
+	}
+}
+
 func ProcTLVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
@@ -17,7 +37,7 @@ func ProcTLVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 				return result
 			}
 
-		case cellnet.SendEvent: // 发送数据事件
+		case cellnet.SendMsgEvent: // 发送数据事件
 
 			if result := onSendLTVPacket(ev.Ses, userFunc, ev.Msg); result != nil {
 				return result

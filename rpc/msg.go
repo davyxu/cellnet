@@ -23,6 +23,6 @@ func (self *RemoteCallREQ) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *RemoteCallACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
-	cellnet.RegisterMessageMeta("binary", "rpc.RemoteCallREQ", reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(), 11)
-	cellnet.RegisterMessageMeta("binary", "rpc.RemoteCallACK", reflect.TypeOf((*RemoteCallACK)(nil)).Elem(), 12)
+	cellnet.RegisterMessageMeta("binary", "rpc.RemoteCallREQ", reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(), 63101)
+	cellnet.RegisterMessageMeta("binary", "rpc.RemoteCallACK", reflect.TypeOf((*RemoteCallACK)(nil)).Elem(), 63102)
 }

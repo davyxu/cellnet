@@ -15,4 +15,8 @@ type Session interface {
 
 	// 标示ID
 	ID() int64
+
+	Tag() interface{}
+
+	SetTag(v interface{})
 }

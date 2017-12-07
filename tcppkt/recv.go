@@ -40,7 +40,7 @@ func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) error {
 	}
 
 	// 调用用户回调
-	eventFunc(RecvMsgEvent{ses, msg})
+	eventFunc(cellnet.RecvMsgEvent{ses, msg})
 
 	return nil
 }

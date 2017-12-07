@@ -29,6 +29,10 @@ type Peer interface {
 
 	TypeName() string
 
+	IsConnector() bool
+
+	IsAcceptor() bool
+
 	SessionAccessor
 }
 
@@ -87,4 +91,24 @@ func NewPeer(config PeerConfig) Peer {
 	}
 
 	return f(config)
+}
+
+// 继承自一个注册的PeerCreator，并重新设置EventFunc
+func InheritePeerCreator(basePeerType string, customFunc func(EventFunc) EventFunc) func(config PeerConfig) Peer {
+
+	return func(config PeerConfig) Peer {
+		userFunc := config.Event
+
+		p := NewPeer(PeerConfig{
+			PeerType:    basePeerType,
+			PeerName:    config.PeerName,
+			PeerAddress: config.PeerAddress,
+			Queue:       config.Queue,
+		})
+
+		p.SetEventFunc(customFunc(userFunc))
+
+		return p
+	}
+
 }
