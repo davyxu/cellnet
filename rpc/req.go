@@ -46,11 +46,6 @@ func createRequest(onRecv func(interface{})) *request {
 	return self
 }
 
-func requestExists(callid int64) bool {
-
-	_, ok := requestByCallID.Load(callid)
-	return ok
-}
 
 func getRequest(callid int64) *request {
 

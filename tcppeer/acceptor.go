@@ -3,9 +3,6 @@ package tcppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/internal"
-	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/tcppkt"
 	"net"
 )
 

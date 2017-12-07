@@ -16,30 +16,6 @@ var echoSignal *util.SignalTester
 
 var echoAcceptor cellnet.Peer
 
-func onEchoServerEvent(raw cellnet.EventParam) cellnet.EventResult {
-
-	ev, ok := raw.(cellnet.RecvMsgEvent)
-	if ok {
-		switch msg := ev.Msg.(type) {
-		case *tcppkt.SessionAccepted:
-			fmt.Println("server accepted")
-		case *proto.TestEchoACK:
-
-			fmt.Printf("server recv %+v\n", msg)
-
-			ev.Ses.Send(&proto.TestEchoACK{
-				Msg:   msg.Msg,
-				Value: msg.Value,
-			})
-
-		case *tcppkt.SessionClosed:
-			fmt.Println("server error: ")
-		}
-	}
-
-	return nil
-}
-
 func StartEchoServer() {
 	queue := cellnet.NewEventQueue()
 
@@ -48,35 +24,32 @@ func StartEchoServer() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "server",
-		Event:       onEchoServerEvent,
+		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+
+			ev, ok := raw.(cellnet.RecvMsgEvent)
+			if ok {
+				switch msg := ev.Msg.(type) {
+				case *tcppkt.SessionAccepted:
+					fmt.Println("server accepted")
+				case *proto.TestEchoACK:
+
+					fmt.Printf("server recv %+v\n", msg)
+
+					ev.Ses.Send(&proto.TestEchoACK{
+						Msg:   msg.Msg,
+						Value: msg.Value,
+					})
+
+				case *tcppkt.SessionClosed:
+					fmt.Println("server error: ")
+				}
+			}
+
+			return nil
+		},
 	}).Start()
 
 	queue.StartLoop()
-}
-
-func onEchoClientEvent(raw cellnet.EventParam) cellnet.EventResult {
-
-	ev, ok := raw.(cellnet.RecvMsgEvent)
-	if ok {
-		switch msg := ev.Msg.(type) {
-		case *tcppkt.SessionConnected:
-			fmt.Println("client connected")
-			ev.Ses.Send(&proto.TestEchoACK{
-				Msg:   "hello",
-				Value: 1234,
-			})
-		case *proto.TestEchoACK:
-
-			fmt.Printf("client recv %+v\n", msg)
-
-			echoSignal.Done(1)
-
-		case *tcppkt.SessionClosed:
-			fmt.Println("client error: ")
-		}
-	}
-
-	return nil
 }
 
 func StartEchoClient() {
@@ -87,7 +60,30 @@ func StartEchoClient() {
 		Queue:       queue,
 		PeerAddress: echoAddress,
 		PeerName:    "client",
-		Event:       onEchoClientEvent,
+		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+
+			ev, ok := raw.(cellnet.RecvMsgEvent)
+			if ok {
+				switch msg := ev.Msg.(type) {
+				case *tcppkt.SessionConnected:
+					fmt.Println("client connected")
+					ev.Ses.Send(&proto.TestEchoACK{
+						Msg:   "hello",
+						Value: 1234,
+					})
+				case *proto.TestEchoACK:
+
+					fmt.Printf("client recv %+v\n", msg)
+
+					echoSignal.Done(1)
+
+				case *tcppkt.SessionClosed:
+					fmt.Println("client error: ")
+				}
+			}
+
+			return nil
+		},
 	}).Start()
 
 	queue.StartLoop()

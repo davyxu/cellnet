@@ -17,25 +17,6 @@ var asyncRPCSignal *util.SignalTester
 
 var rpcAcceptor cellnet.Peer
 
-func onRPCServerEvent(raw cellnet.EventParam) cellnet.EventResult {
-
-	ev, ok := raw.(rpc.RecvMsgEvent)
-	if ok {
-		switch msg := ev.Msg.(type) {
-
-		case *proto.TestEchoACK:
-			log.Debugln("server recv rpc ", *msg)
-
-			ev.Reply(&proto.TestEchoACK{
-				Msg:   msg.Msg,
-				Value: msg.Value,
-			})
-		}
-	}
-
-	return nil
-}
-
 func StartRPCServer() {
 	queue := cellnet.NewEventQueue()
 
@@ -44,7 +25,24 @@ func StartRPCServer() {
 		Queue:       queue,
 		PeerAddress: syncRPCAddress,
 		PeerName:    "server",
-		Event:       onRPCServerEvent,
+		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+
+			ev, ok := raw.(rpc.RecvMsgEvent)
+			if ok {
+				switch msg := ev.Msg.(type) {
+
+				case *proto.TestEchoACK:
+					log.Debugln("server recv rpc ", *msg)
+
+					ev.Reply(&proto.TestEchoACK{
+						Msg:   msg.Msg,
+						Value: msg.Value,
+					})
+				}
+			}
+
+			return nil
+		},
 	}).Start()
 
 	queue.StartLoop()

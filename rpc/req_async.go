@@ -26,7 +26,8 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, timeout time.Duration, user
 	// 等待RPC回复
 	time.AfterFunc(timeout, func() {
 
-		if requestExists(req.id) {
+		// 取出请求，如果存在，调用超时
+		if getRequest(req.id) != nil{
 			cellnet.QueuedCall(ses, func() {
 				userCallback(ErrTimeout)
 			})

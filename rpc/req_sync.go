@@ -26,6 +26,10 @@ func CallSync(ud interface{}, reqMsg interface{}, timeout time.Duration) (interf
 	case v := <-ret:
 		return v, nil
 	case <-time.After(timeout):
+
+		// 清理请求
+		getRequest(req.id)
+
 		return nil, ErrTimeout
 	}
 }
