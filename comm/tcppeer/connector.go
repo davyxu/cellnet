@@ -3,9 +3,6 @@ package tcppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/internal"
-	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/tcppkt"
 	"net"
 	"sync"
 	"time"
@@ -15,7 +12,7 @@ type Connector interface {
 	SetAutoReconnectSec(sec int)
 }
 
-type socketConnector struct {
+type tcpConnector struct {
 	internal.PeerShare
 
 	defaultSes cellnet.Session
@@ -27,16 +24,16 @@ type socketConnector struct {
 	endSignal sync.WaitGroup
 }
 
-func (self *socketConnector) IsConnector() bool {
+func (self *tcpConnector) IsConnector() bool {
 	return true
 }
 
 // 自动重连间隔=0不重连
-func (self *socketConnector) SetAutoReconnectSec(sec int) {
+func (self *tcpConnector) SetAutoReconnectSec(sec int) {
 	self.autoReconnectSec = sec
 }
 
-func (self *socketConnector) Start() cellnet.Peer {
+func (self *tcpConnector) Start() cellnet.Peer {
 
 	self.WaitStopFinished()
 
@@ -49,11 +46,11 @@ func (self *socketConnector) Start() cellnet.Peer {
 	return self
 }
 
-func (self *socketConnector) Session() cellnet.Session {
+func (self *tcpConnector) Session() cellnet.Session {
 	return self.defaultSes
 }
 
-func (self *socketConnector) Stop() {
+func (self *tcpConnector) Stop() {
 	if !self.IsRunning() {
 		return
 	}
@@ -76,7 +73,7 @@ func (self *socketConnector) Stop() {
 const reportConnectFailedLimitTimes = 3
 
 // 连接器，传入连接地址和发送封包次数
-func (self *socketConnector) connect(address string) {
+func (self *tcpConnector) connect(address string) {
 
 	self.SetRunning(true)
 
@@ -87,7 +84,7 @@ func (self *socketConnector) connect(address string) {
 		conn, err := net.Dial("tcp", address)
 
 		self.endSignal.Add(1)
-		ses := internal.NewSession(conn, &self.PeerShare, func() {
+		ses := newTCPSession(conn, &self.PeerShare, func() {
 			self.endSignal.Done()
 		})
 		self.defaultSes = ses
@@ -147,32 +144,10 @@ func (self *socketConnector) connect(address string) {
 	self.EndStopping()
 }
 
-func initEvent(config *cellnet.PeerConfig) {
-	var final cellnet.EventFunc
-
-	// 有队列，添加队列处理
-	if config.Queue != nil {
-		final = tcppkt.ProcQueue(config.Event)
-	} else {
-		// 否则直接处理
-		final = config.Event
-	}
-
-	config.Event = tcppkt.ProcTLVPacket(
-		msglog.ProcMsgLog( // 消息日志
-			rpc.ProcRPC( // RPC
-				tcppkt.ProcSysMsg(final), // 系统事件转消息
-			),
-		),
-	)
-}
-
 func init() {
 
-	cellnet.RegisterPeerCreator("ltv.tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
-		p := &socketConnector{}
-
-		initEvent(&config)
+	cellnet.RegisterPeerCreator("tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+		p := &tcpConnector{}
 
 		p.Init(p, config)
 

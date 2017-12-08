@@ -2,8 +2,8 @@ package tcppkt
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/rpc"
-	"net"
 )
 
 func ProcQueue(userFunc cellnet.EventFunc) cellnet.EventFunc {
@@ -77,20 +77,53 @@ func ProcTLVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 		case cellnet.SendMsgEvent: // 发送数据事件
 
-			if result := onSendLTVPacket(ev.Ses, userFunc, ev.Msg); result != nil {
+			if result := onSendLTVPacket(ev.Ses, ev.Msg); result != nil {
 				return result
-			}
-
-		case cellnet.SessionCleanupEvent:
-			// 取Socket连接
-			conn, ok := ev.Ses.Raw().(net.Conn)
-
-			// 转换错误，或者连接已经关闭时退出
-			if ok && conn != nil {
-				conn.Close()
 			}
 		}
 
 		return userFunc(raw)
 	}
+}
+
+func initEvent(config *cellnet.PeerConfig) cellnet.EventFunc {
+	var final cellnet.EventFunc
+
+	// 有队列，添加队列处理
+	if config.Queue != nil {
+		final = ProcQueue(config.Event)
+	} else {
+		// 否则直接处理
+		final = config.Event
+	}
+
+	return ProcTLVPacket(
+		msglog.ProcMsgLog( // 消息日志
+			rpc.ProcRPC( // RPC
+				ProcSysMsg(final), // 系统事件转消息
+			),
+		),
+	)
+}
+
+func init() {
+
+	cellnet.RegisterPeerCreator("ltv.tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+
+		config.PeerType = "tcp.Connector"
+		p := cellnet.NewPeer(config)
+
+		p.SetEventFunc(initEvent(&config))
+
+		return p
+	})
+
+	cellnet.RegisterPeerCreator("ltv.tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
+		config.PeerType = "tcp.Acceptor"
+		p := cellnet.NewPeer(config)
+
+		p.SetEventFunc(initEvent(&config))
+
+		return p
+	})
 }

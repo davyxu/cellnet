@@ -3,26 +3,26 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/tcppeer"
-	"github.com/davyxu/cellnet/tcppkt"
+	_ "github.com/davyxu/cellnet/comm/tcppeer"
+	"github.com/davyxu/cellnet/comm/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
 
-const echoAddress = "127.0.0.1:7701"
+const tcpEchoAddress = "127.0.0.1:7701"
 
-var echoSignal *util.SignalTester
+var tcpEchoSignal *util.SignalTester
 
-var echoAcceptor cellnet.Peer
+var tcpEchoAcceptor cellnet.Peer
 
-func StartEchoServer() {
+func StartTCPEchoServer() {
 	queue := cellnet.NewEventQueue()
 
-	echoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
+	tcpEchoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
 		PeerType:    "ltv.tcp.Acceptor",
 		Queue:       queue,
-		PeerAddress: echoAddress,
+		PeerAddress: tcpEchoAddress,
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -52,13 +52,13 @@ func StartEchoServer() {
 	queue.StartLoop()
 }
 
-func StartEchoClient() {
+func StartTCPEchoClient() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.NewPeer(cellnet.PeerConfig{
 		PeerType:    "ltv.tcp.Connector",
 		Queue:       queue,
-		PeerAddress: echoAddress,
+		PeerAddress: tcpEchoAddress,
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -75,7 +75,7 @@ func StartEchoClient() {
 
 					fmt.Printf("client recv %+v\n", msg)
 
-					echoSignal.Done(1)
+					tcpEchoSignal.Done(1)
 
 				case *tcppkt.SessionClosed:
 					fmt.Println("client error: ")
@@ -88,16 +88,16 @@ func StartEchoClient() {
 
 	queue.StartLoop()
 
-	echoSignal.WaitAndExpect("not recv data", 1)
+	tcpEchoSignal.WaitAndExpect("not recv data", 1)
 }
 
-func TestEcho(t *testing.T) {
+func TestTCPEcho(t *testing.T) {
 
-	echoSignal = util.NewSignalTester(t)
+	tcpEchoSignal = util.NewSignalTester(t)
 
-	StartEchoServer()
+	StartTCPEchoServer()
 
-	StartEchoClient()
+	StartTCPEchoClient()
 
-	echoAcceptor.Stop()
+	tcpEchoAcceptor.Stop()
 }

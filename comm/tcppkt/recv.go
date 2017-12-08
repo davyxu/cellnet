@@ -2,7 +2,6 @@ package tcppkt
 
 import (
 	"github.com/davyxu/cellnet"
-	"io"
 	"net"
 )
 
@@ -43,26 +42,4 @@ func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) error {
 	eventFunc(cellnet.RecvMsgEvent{ses, msg})
 
 	return nil
-}
-
-func RecvLTVPacket(inputStream io.Reader) (msg interface{}, msgid uint16, err error) {
-
-	// 接收长度定界的变长封包，返回封包读取器
-	pktReader, err := RecvVariableLengthPacket(inputStream)
-
-	if err != nil {
-		return
-	}
-
-	// 读取消息ID
-	if err = pktReader.ReadValue(&msgid); err != nil {
-		return
-	}
-
-	msgData := pktReader.RemainBytes()
-
-	// 将字节数组和消息ID用户解出消息
-	msg, err = cellnet.DecodeMessage(uint32(msgid), msgData)
-
-	return
 }

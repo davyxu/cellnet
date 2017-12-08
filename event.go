@@ -5,6 +5,11 @@ type RecvEvent struct {
 	Ses Session
 }
 
+type RecvDataEvent struct {
+	Ses  Session
+	Data []byte
+}
+
 type RecvMsgEvent struct {
 	Ses Session
 	Msg interface{}

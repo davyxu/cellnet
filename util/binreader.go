@@ -1,27 +1,27 @@
-package tcppkt
+package util
 
 import (
 	"bytes"
 	"encoding/binary"
 )
 
-type PacketReader struct {
+type BinaryReader struct {
 	raw []byte
 
 	reader *bytes.Reader
 }
 
 // 初始化缓冲，清空读取器
-func (p *PacketReader) Init(raw []byte) {
+func (p *BinaryReader) Init(raw []byte) {
 	p.raw = raw
 	p.reader = nil
 }
 
-func (p *PacketReader) Raw() []byte {
+func (p *BinaryReader) Raw() []byte {
 	return p.raw
 }
 
-func (p *PacketReader) prepareReader() {
+func (p *BinaryReader) prepareReader() {
 
 	if p.reader == nil {
 		p.reader = bytes.NewReader(p.raw)
@@ -30,7 +30,7 @@ func (p *PacketReader) prepareReader() {
 }
 
 // 未读取的数据字节数
-func (p *PacketReader) RemainLen() int {
+func (p *BinaryReader) RemainLen() int {
 
 	p.prepareReader()
 
@@ -38,7 +38,7 @@ func (p *PacketReader) RemainLen() int {
 }
 
 // 剩下的未读取的字节
-func (p *PacketReader) RemainBytes() []byte {
+func (p *BinaryReader) RemainBytes() []byte {
 
 	p.prepareReader()
 
@@ -46,7 +46,7 @@ func (p *PacketReader) RemainBytes() []byte {
 }
 
 // 从字节数组中读取值
-func (p *PacketReader) ReadValue(v interface{}) error {
+func (p *BinaryReader) ReadValue(v interface{}) error {
 
 	p.prepareReader()
 
@@ -54,7 +54,7 @@ func (p *PacketReader) ReadValue(v interface{}) error {
 }
 
 // 读取字符串
-func (p *PacketReader) ReadString(str *string) error {
+func (p *BinaryReader) ReadString(str *string) error {
 	// 读取字符串长度
 	var size uint16
 	if err := p.ReadValue(&size); err != nil {

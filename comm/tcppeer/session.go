@@ -1,15 +1,17 @@
-package internal
+package tcppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/internal"
+	"net"
 	"sync"
 )
 
 // Socket会话
-type session struct {
+type tcpSession struct {
 
 	// Socket原始连接
-	conn interface{}
+	conn net.Conn
 
 	tag interface{}
 
@@ -17,7 +19,7 @@ type session struct {
 	exitSync sync.WaitGroup
 
 	// 归属的通讯端
-	peer *PeerShare
+	peer *internal.PeerShare
 
 	id int64
 
@@ -28,42 +30,42 @@ type session struct {
 }
 
 // 取原始连接
-func (self *session) Raw() interface{} {
+func (self *tcpSession) Raw() interface{} {
 	return self.conn
 }
 
-func (self *session) Tag() interface{} {
+func (self *tcpSession) Tag() interface{} {
 	return self.tag
 }
 
-func (self *session) SetTag(v interface{}) {
+func (self *tcpSession) SetTag(v interface{}) {
 	self.tag = v
 }
 
-func (self *session) ID() int64 {
+func (self *tcpSession) ID() int64 {
 	return self.id
 }
 
-func (self *session) SetID(id int64) {
+func (self *tcpSession) SetID(id int64) {
 	self.id = id
 }
 
-func (self *session) Close() {
+func (self *tcpSession) Close() {
 	self.sendChan <- nil
 }
 
 // 取会话归属的通讯端
-func (self *session) Peer() cellnet.Peer {
-	return self.peer.peerInterface
+func (self *tcpSession) Peer() cellnet.Peer {
+	return self.peer.Peer()
 }
 
 // 发送封包
-func (self *session) Send(msg interface{}) {
+func (self *tcpSession) Send(msg interface{}) {
 	self.sendChan <- msg
 }
 
 // 接收循环
-func (self *session) recvLoop() {
+func (self *tcpSession) recvLoop() {
 
 	var err error
 	for self.conn != nil {
@@ -84,7 +86,7 @@ func (self *session) recvLoop() {
 }
 
 // 发送循环
-func (self *session) sendLoop() {
+func (self *tcpSession) sendLoop() {
 
 	// 遍历要发送的数据
 	for msg := range self.sendChan {
@@ -109,11 +111,11 @@ func (self *session) sendLoop() {
 }
 
 // 清理资源
-func (self *session) cleanup() {
+func (self *tcpSession) cleanup() {
 
 	// 关闭连接
 	if self.conn != nil {
-		self.peer.FireEvent(cellnet.SessionCleanupEvent{self})
+		self.conn.Close()
 		self.conn = nil
 	}
 
@@ -128,10 +130,10 @@ func (self *session) cleanup() {
 }
 
 // 启动会话的各种资源
-func (self *session) Start() {
+func (self *tcpSession) Start() {
 
 	// 将会话添加到管理器
-	self.Peer().(SessionManager).Add(self)
+	self.Peer().(internal.SessionManager).Add(self)
 
 	// 需要接收和发送线程同时完成时才算真正的完成
 	self.exitSync.Add(2)
@@ -142,7 +144,7 @@ func (self *session) Start() {
 		self.exitSync.Wait()
 
 		// 将会话从管理器移除
-		self.Peer().(SessionManager).Remove(self)
+		self.Peer().(internal.SessionManager).Remove(self)
 
 		if self.endNotify != nil {
 			self.endNotify()
@@ -160,8 +162,8 @@ func (self *session) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func NewSession(conn interface{}, peer *PeerShare, endNotify func()) cellnet.Session {
-	return &session{
+func newTCPSession(conn net.Conn, peer *internal.PeerShare, endNotify func()) cellnet.Session {
+	return &tcpSession{
 		conn:      conn,
 		peer:      peer,
 		endNotify: endNotify,

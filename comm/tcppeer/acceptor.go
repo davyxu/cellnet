@@ -7,7 +7,7 @@ import (
 )
 
 // 接受器
-type socketAcceptor struct {
+type tcpAcceptor struct {
 	internal.PeerShare
 
 	// 保存侦听器
@@ -15,7 +15,7 @@ type socketAcceptor struct {
 }
 
 // 异步开始侦听
-func (self *socketAcceptor) Start() cellnet.Peer {
+func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	self.WaitStopFinished()
 
@@ -25,13 +25,13 @@ func (self *socketAcceptor) Start() cellnet.Peer {
 
 	ln, err := net.Listen("tcp", self.Address())
 
-	self.listener = ln
-
 	if err != nil {
 
 		log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
 		return self
 	}
+
+	self.listener = ln
 
 	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
@@ -40,7 +40,7 @@ func (self *socketAcceptor) Start() cellnet.Peer {
 	return self
 }
 
-func (self *socketAcceptor) accept() {
+func (self *tcpAcceptor) accept() {
 	self.SetRunning(true)
 
 	for {
@@ -73,9 +73,9 @@ func (self *socketAcceptor) accept() {
 
 }
 
-func (self *socketAcceptor) onNewSession(conn net.Conn) {
+func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
-	ses := internal.NewSession(conn, &self.PeerShare, nil)
+	ses := newTCPSession(conn, &self.PeerShare, nil)
 
 	ses.(interface {
 		Start()
@@ -84,12 +84,12 @@ func (self *socketAcceptor) onNewSession(conn net.Conn) {
 	self.FireEvent(cellnet.SessionAcceptedEvent{ses})
 }
 
-func (self *socketAcceptor) IsAcceptor() bool {
+func (self *tcpAcceptor) IsAcceptor() bool {
 	return true
 }
 
 // 停止侦听器
-func (self *socketAcceptor) Stop() {
+func (self *tcpAcceptor) Stop() {
 	if !self.IsRunning() {
 		return
 	}
@@ -111,10 +111,8 @@ func (self *socketAcceptor) Stop() {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("ltv.tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
-		p := &socketAcceptor{}
-
-		initEvent(&config)
+	cellnet.RegisterPeerCreator("tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
+		p := &tcpAcceptor{}
 
 		p.Init(p, config)
 

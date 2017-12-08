@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/tcppkt"
+	"github.com/davyxu/cellnet/comm/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"sync"

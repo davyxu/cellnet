@@ -2,13 +2,14 @@ package tcppkt
 
 import (
 	"encoding/binary"
+	"github.com/davyxu/cellnet/util"
 	"io"
 )
 
 const LengthSize = 2
 
 // 接收变长封包
-func RecvVariableLengthPacket(inputStream io.Reader) (pktReader PacketReader, err error) {
+func RecvVariableLengthPacket(inputStream io.Reader) (pktReader util.BinaryReader, err error) {
 
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, LengthSize)
@@ -37,12 +38,12 @@ func RecvVariableLengthPacket(inputStream io.Reader) (pktReader PacketReader, er
 }
 
 // 发送变长封包
-func SendVariableLengthPacket(outputStream io.Writer, pktWriter PacketWriter) error {
+func SendVariableLengthPacket(outputStream io.Writer, pktWriter util.BinaryWriter) error {
 
 	buffer := make([]byte, pktWriter.Len()+LengthSize)
 
 	// 将包体长度写入缓冲
-	binary.LittleEndian.PutUint16(buffer, pktWriter.Len())
+	binary.LittleEndian.PutUint16(buffer, uint16(pktWriter.Len()))
 
 	// 将包体数据写入缓冲
 	copy(buffer[LengthSize:], pktWriter.Raw())

@@ -69,6 +69,10 @@ func (self *PeerShare) NameOrAddress() string {
 	return self.Address()
 }
 
+func (self *PeerShare) Peer() cellnet.Peer {
+	return self.peerInterface
+}
+
 func (self *PeerShare) Init(p cellnet.Peer, config cellnet.PeerConfig) {
 	self.SessionManager = NewSessionManager()
 	self.peerInterface = p

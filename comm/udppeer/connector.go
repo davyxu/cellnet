@@ -1,0 +1,79 @@
+package udppeer
+
+import (
+	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/internal"
+	"net"
+)
+
+type udpConnector struct {
+	internal.PeerShare
+	localAddr *net.UDPAddr
+	conn      *net.UDPConn
+}
+
+func (self *udpConnector) Start() cellnet.Peer {
+
+	var err error
+	self.localAddr, err = net.ResolveUDPAddr("udp", self.Address())
+
+	if err != nil {
+
+		log.Errorf("#resolve udp address failed(%s) %v", self.NameOrAddress(), err.Error())
+		return self
+	}
+
+	go self.connect()
+
+	return self
+}
+
+func (self *udpConnector) connect() {
+
+	var err error
+	self.conn, err = net.DialUDP("udp", nil, self.localAddr)
+	if err != nil {
+
+		log.Errorf("#connect failed(%s) %v", self.NameOrAddress(), err.Error())
+		return
+	}
+
+	ses := newUDPSession(self.localAddr, self.conn, &self.PeerShare, nil)
+
+	ses.Start()
+
+	self.FireEvent(cellnet.SessionConnectedEvent{ses})
+
+	buff := make([]byte, 4096)
+	for {
+
+		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
+		if err != nil {
+
+			log.Errorln("disconnected:", remoteAddr.String())
+			//self.FireEvent(cellnet.SessionClosedEvent{nil})
+			break
+		}
+
+		ses.OnRecv(buff[:n])
+	}
+}
+
+func (self *udpConnector) IsConnector() bool {
+	return true
+}
+
+func (self *udpConnector) Stop() {
+
+}
+
+func init() {
+
+	cellnet.RegisterPeerCreator("udp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+		p := &udpConnector{}
+
+		p.Init(p, config)
+
+		return p
+	})
+}
