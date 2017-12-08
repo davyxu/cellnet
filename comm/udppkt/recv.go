@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 )
 
-func onRecvTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFunc) error {
+func onRecvTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFunc) cellnet.EventResult {
 
 	var pktReader util.BinaryReader
 	pktReader.Init(data)
@@ -26,7 +26,5 @@ func onRecvTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFun
 	}
 
 	// 调用用户回调
-	eventFunc(cellnet.RecvMsgEvent{ses, msg})
-
-	return nil
+	return eventFunc(cellnet.RecvMsgEvent{ses, msg})
 }

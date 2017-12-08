@@ -1,4 +1,4 @@
-package tcppkt
+package comm
 
 import (
 	"fmt"

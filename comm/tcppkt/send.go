@@ -7,7 +7,7 @@ import (
 )
 
 // 发送Length-Type-Value格式的封包流程
-func onSendLTVPacket(ses cellnet.Session, msg interface{}) error {
+func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)

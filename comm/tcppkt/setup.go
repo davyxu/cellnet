@@ -2,6 +2,7 @@ package tcppkt
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/rpc"
 )
@@ -39,37 +40,13 @@ func ProcQueue(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	}
 }
 
-func ProcSysMsg(userFunc cellnet.EventFunc) cellnet.EventFunc {
-
-	return func(raw cellnet.EventParam) cellnet.EventResult {
-
-		if userFunc == nil {
-			return nil
-		}
-
-		switch ev := raw.(type) {
-
-		case cellnet.SessionConnectErrorEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnectError{}})
-		case cellnet.SessionClosedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionClosed{}})
-		case cellnet.SessionAcceptedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionAccepted{}})
-		case cellnet.SessionConnectedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnected{}})
-		}
-
-		return userFunc(raw)
-	}
-}
-
 func ProcTLVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
 
-		case cellnet.RecvEvent: // 接收数据事件
+		case cellnet.ReadEvent: // 接收数据事件
 
 			if result := onRecvLTVPacket(ev.Ses, userFunc); result != nil {
 				return result
@@ -100,7 +77,7 @@ func initEvent(config *cellnet.PeerConfig) cellnet.EventFunc {
 	return ProcTLVPacket(
 		msglog.ProcMsgLog( // 消息日志
 			rpc.ProcRPC( // RPC
-				ProcSysMsg(final), // 系统事件转消息
+				comm.ProcSysMsg(final), // 系统事件转消息
 			),
 		),
 	)

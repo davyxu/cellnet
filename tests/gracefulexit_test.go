@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm/tcppkt"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"sync"
@@ -65,7 +65,7 @@ func runConnClose() {
 			ev, ok := raw.(cellnet.RecvMsgEvent)
 			if ok {
 				switch ev.Msg.(type) {
-				case *tcppkt.SessionConnected:
+				case *comm.SessionConnected:
 					peer.Stop()
 
 					time.Sleep(time.Millisecond * 500)
@@ -102,7 +102,7 @@ func TestCreateDestroyConnector(t *testing.T) {
 
 const clientConnectionCount = 3
 
-const createDestoryAcceptorAddress = "127.0.0.1:7701"
+const createDestoryAcceptorAddress = "127.0.0.1:7711"
 
 func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
@@ -118,7 +118,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 			ev, ok := raw.(cellnet.RecvMsgEvent)
 			if ok {
 				switch ev.Msg.(type) {
-				case *tcppkt.SessionAccepted:
+				case *comm.SessionAccepted:
 
 					allAccepted.Done()
 

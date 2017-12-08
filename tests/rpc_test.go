@@ -2,7 +2,7 @@ package tests
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm/tcppkt"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
@@ -53,7 +53,7 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
-		case *tcppkt.SessionConnected:
+		case *comm.SessionConnected:
 			for i := 0; i < 2; i++ {
 
 				// 同步阻塞请求必须并发启动，否则客户端无法接收数据
@@ -88,7 +88,7 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	ev, ok := raw.(cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
-		case *tcppkt.SessionConnected:
+		case *comm.SessionConnected:
 			for i := 0; i < 2; i++ {
 
 				copy := i + 1

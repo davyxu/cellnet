@@ -51,11 +51,14 @@ func (self *udpConnector) connect() {
 		if err != nil {
 
 			log.Errorln("disconnected:", remoteAddr.String())
-			//self.FireEvent(cellnet.SessionClosedEvent{nil})
 			break
 		}
 
-		ses.OnRecv(buff[:n])
+		err = ses.OnRecv(buff[:n])
+
+		if err != nil {
+			break
+		}
 	}
 }
 
@@ -65,6 +68,9 @@ func (self *udpConnector) IsConnector() bool {
 
 func (self *udpConnector) Stop() {
 
+	if self.conn != nil {
+		self.conn.Close()
+	}
 }
 
 func init() {

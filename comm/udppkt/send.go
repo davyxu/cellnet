@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 )
 
-func onSendTVPacket(ses cellnet.Session, msg interface{}) error {
+func onSendTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 
 	// 将用户数据转换为字节数组和消息ID
 	data, msgid, err := cellnet.EncodeMessage(msg)

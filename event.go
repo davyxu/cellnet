@@ -1,15 +1,17 @@
 package cellnet
 
-// 会话开始接收数据事件
-type RecvEvent struct {
+// 需要读取数据
+type ReadEvent struct {
 	Ses Session
 }
 
+// 接收到数据
 type RecvDataEvent struct {
 	Ses  Session
 	Data []byte
 }
 
+// 接收到消息
 type RecvMsgEvent struct {
 	Ses Session
 	Msg interface{}
@@ -42,11 +44,6 @@ type SendMsgErrorEvent struct {
 type SessionConnectErrorEvent struct {
 	Ses   Session
 	Error error
-}
-
-// 会话
-type SessionCleanupEvent struct {
-	Ses Session
 }
 
 // 会话连接关闭事件

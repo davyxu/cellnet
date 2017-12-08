@@ -3,8 +3,9 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/tcppeer"
-	"github.com/davyxu/cellnet/comm/tcppkt"
+	_ "github.com/davyxu/cellnet/comm/tcppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
@@ -29,7 +30,7 @@ func StartTCPEchoServer() {
 			ev, ok := raw.(cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
-				case *tcppkt.SessionAccepted:
+				case *comm.SessionAccepted:
 					fmt.Println("server accepted")
 				case *proto.TestEchoACK:
 
@@ -40,8 +41,8 @@ func StartTCPEchoServer() {
 						Value: msg.Value,
 					})
 
-				case *tcppkt.SessionClosed:
-					fmt.Println("server error: ")
+				case *comm.SessionClosed:
+					fmt.Println("session closed: ", ev.Ses.ID())
 				}
 			}
 
@@ -65,7 +66,7 @@ func StartTCPEchoClient() {
 			ev, ok := raw.(cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
-				case *tcppkt.SessionConnected:
+				case *comm.SessionConnected:
 					fmt.Println("client connected")
 					ev.Ses.Send(&proto.TestEchoACK{
 						Msg:   "hello",
@@ -77,7 +78,7 @@ func StartTCPEchoClient() {
 
 					tcpEchoSignal.Done(1)
 
-				case *tcppkt.SessionClosed:
+				case *comm.SessionClosed:
 					fmt.Println("client error: ")
 				}
 			}

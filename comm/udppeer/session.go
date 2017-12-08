@@ -75,9 +75,16 @@ func (self *udpSession) Send(msg interface{}) {
 	}
 }
 
-func (self *udpSession) OnRecv(data []byte) {
+func (self *udpSession) OnRecv(data []byte) error {
 
-	self.peer.FireEvent(cellnet.RecvDataEvent{self, data})
+	raw := self.peer.FireEvent(cellnet.RecvDataEvent{self, data})
+	if err, ok := raw.(error); ok && err != nil {
+		self.peer.FireEvent(cellnet.SessionClosedEvent{self, err})
+
+		return err
+	}
+
+	return nil
 }
 
 // 启动会话的各种资源

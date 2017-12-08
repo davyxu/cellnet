@@ -6,7 +6,7 @@ import (
 )
 
 // 接收Length-Type-Value格式的封包流程
-func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) error {
+func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) cellnet.EventResult {
 
 	// 取Socket连接
 	conn, ok := ses.Raw().(net.Conn)
@@ -39,7 +39,5 @@ func onRecvLTVPacket(ses cellnet.Session, eventFunc cellnet.EventFunc) error {
 	}
 
 	// 调用用户回调
-	eventFunc(cellnet.RecvMsgEvent{ses, msg})
-
-	return nil
+	return eventFunc(cellnet.RecvMsgEvent{ses, msg})
 }

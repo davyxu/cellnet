@@ -71,7 +71,7 @@ func (self *tcpSession) recvLoop() {
 	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
-		raw := self.peer.FireEvent(cellnet.RecvEvent{self})
+		raw := self.peer.FireEvent(cellnet.ReadEvent{self})
 
 		// 连接断开
 		if raw != nil && self.conn != nil {

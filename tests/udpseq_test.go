@@ -5,36 +5,42 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/udppeer"
+	_ "github.com/davyxu/cellnet/comm/udppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
 
-const udpEchoAddress = "127.0.0.1:7901"
+const udpSeqAddress = "127.0.0.1:7901"
 
-var udpEchoSignal *util.SignalTester
+var udpSeqSignal *util.SignalTester
 
-var udpEchoAcceptor cellnet.Peer
+var udpSeqAcceptor cellnet.Peer
 
-func StartUDPEchoServer() {
+func StartUDPSeqServer() {
 
-	udpEchoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
+	udpSeqAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
 		PeerType:    "tv.udp.Acceptor",
-		PeerAddress: udpEchoAddress,
+		PeerAddress: udpSeqAddress,
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
+				case *comm.SessionAccepted:
+					fmt.Println("server accepted")
 				case *proto.TestEchoACK:
 
-					fmt.Printf("server recv %+v\n", msg)
+					//fmt.Printf("server recv %+v\n", msg)
 
 					ev.Ses.Send(&proto.TestEchoACK{
 						Msg:   msg.Msg,
 						Value: msg.Value,
 					})
+
+				case *comm.SessionClosed:
+					fmt.Println("server error: ")
 				}
 			}
 
@@ -44,11 +50,13 @@ func StartUDPEchoServer() {
 
 }
 
-func StartUDPEchoClient() {
+func StartUDPSeqClient() {
+
+	var counter int32
 
 	cellnet.NewPeer(cellnet.PeerConfig{
 		PeerType:    "tv.udp.Connector",
-		PeerAddress: udpEchoAddress,
+		PeerAddress: udpSeqAddress,
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -58,14 +66,20 @@ func StartUDPEchoClient() {
 				case *comm.SessionConnected:
 					fmt.Println("client connected")
 					ev.Ses.Send(&proto.TestEchoACK{
-						Msg:   "hello",
-						Value: 1234,
+						Value: counter,
 					})
+
 				case *proto.TestEchoACK:
 
-					fmt.Printf("client recv %+v\n", msg)
+					if msg.Value != counter {
+						fmt.Println("seq not match")
+						udpSeqSignal.FailNow()
+					}
 
-					udpEchoSignal.Done(1)
+					counter++
+					ev.Ses.Send(&proto.TestEchoACK{
+						Value: counter,
+					})
 
 				case *comm.SessionClosed:
 					fmt.Println("client error: ")
@@ -76,29 +90,23 @@ func StartUDPEchoClient() {
 		},
 	}).Start()
 
-	udpEchoSignal.WaitAndExpect("not recv data", 1)
 }
 
-func TestUDPEcho(t *testing.T) {
+func TestUDPSeq(t *testing.T) {
 
-	udpEchoSignal = util.NewSignalTester(t)
+	udpSeqSignal = util.NewSignalTester(t)
 
-	StartUDPEchoServer()
+	StartUDPSeqServer()
 
-	StartUDPEchoClient()
+	StartUDPSeqClient()
 
-	udpEchoAcceptor.Stop()
+	queue := cellnet.NewEventQueue()
+
+	queue.StartLoop()
+	queue.Wait()
+
+	udpSeqAcceptor.Stop()
 }
-
-//func TestUDPServer(t *testing.T) {
-//
-//	StartUDPEchoServer()
-//
-//	queue := cellnet.NewEventQueue()
-//
-//	queue.StartLoop()
-//	queue.Wait()
-//}
 
 /*
 	_, err = conn.Write([]byte{})
