@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 )
 
-func onSendTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
+func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 
 	// 将用户数据转换为字节数组和消息ID
 	data, msgid, err := cellnet.EncodeMessage(msg)
@@ -16,6 +16,11 @@ func onSendTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 
 	// 创建封包写入器
 	var pktWriter util.BinaryWriter
+
+	// 写入消息长度做验证
+	if err := pktWriter.WriteValue(uint16(len(data)) + 2 + 2); err != nil {
+		return err
+	}
 
 	// 写入消息ID
 	if err := pktWriter.WriteValue(uint16(msgid)); err != nil {

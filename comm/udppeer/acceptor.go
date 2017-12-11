@@ -104,8 +104,6 @@ func (self *udpAcceptor) listen() {
 			self.FireEvent(cellnet.SessionAcceptedEvent{ses})
 		}
 
-		log.Debugln("recv data", buff[:n])
-
 		err = ses.OnRecv(buff[:n])
 
 		if err != nil {

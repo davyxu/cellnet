@@ -1,14 +1,30 @@
 package udppkt
 
 import (
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
 )
 
-func onRecvTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFunc) cellnet.EventResult {
+var ErrPacketCrack = errors.New("udp packet crack by len")
+
+const MTU = 1472
+
+func onRecvLTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFunc) cellnet.EventResult {
 
 	var pktReader util.BinaryReader
 	pktReader.Init(data)
+
+	// 读取消息ID
+	var datasize uint16
+	if err := pktReader.ReadValue(&datasize); err != nil {
+		return err
+	}
+
+	// 出错，等待下次数据
+	if int(datasize) != len(data) || datasize > MTU {
+		return nil
+	}
 
 	// 读取消息ID
 	var msgid uint16

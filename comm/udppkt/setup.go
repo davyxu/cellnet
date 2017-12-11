@@ -14,13 +14,13 @@ func ProcTVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 		case cellnet.RecvDataEvent: // 接收数据事件
 
-			if result := onRecvTVPacket(ev.Ses, ev.Data, userFunc); result != nil {
+			if result := onRecvLTVPacket(ev.Ses, ev.Data, userFunc); result != nil {
 				return result
 			}
 
 		case cellnet.SendMsgEvent: // 发送数据事件
 
-			if result := onSendTVPacket(ev.Ses, ev.Msg); result != nil {
+			if result := onSendLTVPacket(ev.Ses, ev.Msg); result != nil {
 				return result
 			}
 		}
