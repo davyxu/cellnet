@@ -17,6 +17,14 @@ type RecvMsgEvent struct {
 	Msg interface{}
 }
 
+func (self *RecvMsgEvent) Session() Session {
+	return self.Ses
+}
+
+func (self *RecvMsgEvent) GetMsg() interface{} {
+	return self.Msg
+}
+
 func (self *RecvMsgEvent) Send(msg interface{}) {
 	self.Ses.Send(msg)
 }
@@ -25,6 +33,14 @@ func (self *RecvMsgEvent) Send(msg interface{}) {
 type SendMsgEvent struct {
 	Ses Session
 	Msg interface{} // 用户需要发送的消息
+}
+
+func (self *SendMsgEvent) GetMsg() interface{} {
+	return self.Msg
+}
+
+func (self *SendMsgEvent) Session() Session {
+	return self.Ses
 }
 
 // 会话接收数据时发生错误的事件

@@ -12,14 +12,14 @@ func ProcSysMsg(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 		switch ev := raw.(type) {
 
-		case cellnet.SessionConnectErrorEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnectError{}})
-		case cellnet.SessionClosedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionClosed{}})
-		case cellnet.SessionAcceptedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionAccepted{}})
-		case cellnet.SessionConnectedEvent:
-			userFunc(cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnected{}})
+		case *cellnet.SessionConnectErrorEvent:
+			userFunc(&cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnectError{}})
+		case *cellnet.SessionClosedEvent:
+			userFunc(&cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionClosed{}})
+		case *cellnet.SessionAcceptedEvent:
+			userFunc(&cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionAccepted{}})
+		case *cellnet.SessionConnectedEvent:
+			userFunc(&cellnet.RecvMsgEvent{Ses: ev.Ses, Msg: &SessionConnected{}})
 		}
 
 		return userFunc(raw)

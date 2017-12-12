@@ -12,13 +12,13 @@ func ProcTVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 		switch ev := raw.(type) {
 
-		case cellnet.RecvDataEvent: // 接收数据事件
+		case *cellnet.RecvDataEvent: // 接收数据事件
 
 			if result := onRecvLTVPacket(ev.Ses, ev.Data, userFunc); result != nil {
 				return result
 			}
 
-		case cellnet.SendMsgEvent: // 发送数据事件
+		case *cellnet.SendMsgEvent: // 发送数据事件
 
 			if result := onSendLTVPacket(ev.Ses, ev.Msg); result != nil {
 				return result
@@ -33,7 +33,7 @@ func ProcQueue(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
-		case cellnet.RecvMsgEvent:
+		case *cellnet.RecvMsgEvent:
 
 			cellnet.QueuedCall(ev.Ses, func() {
 				userFunc(raw)

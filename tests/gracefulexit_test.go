@@ -26,7 +26,7 @@ func StartCreateDestoryServer() {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *proto.TestEchoACK:
@@ -62,7 +62,7 @@ func runConnClose() {
 		PeerName:    "client.ConnClose",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch ev.Msg.(type) {
 				case *comm.SessionConnected:
@@ -115,7 +115,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch ev.Msg.(type) {
 				case *comm.SessionAccepted:

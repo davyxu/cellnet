@@ -2,41 +2,66 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 )
+
+type msgEvent interface {
+	Session() cellnet.Session
+	GetMsg() interface{}
+}
 
 func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
-		recvEv, ok := raw.(cellnet.RecvMsgEvent)
+		if ev, ok := raw.(msgEvent); ok {
+			rpcMsg, ok := ev.GetMsg().(RemoteCallMsg)
+			if ok {
+				msg, meta, err := cellnet.DecodeMessage(rpcMsg.GetMsgID(), rpcMsg.GetMsgData())
 
-		if ok {
-			switch rpcMsg := recvEv.Msg.(type) {
+				if err == nil {
+					switch raw.(type) {
+					case *cellnet.RecvMsgEvent:
 
-			case *RemoteCallREQ: // 服务器端收到
+						log.Debugf("#rpc recv(%s)@%d %s(%d) | %s",
+							ev.Session().Peer().Name(),
+							ev.Session().ID(),
+							meta.Name,
+							meta.ID,
+							cellnet.MessageToString(msg))
 
-				if msg, err := cellnet.DecodeMessage(rpcMsg.MsgID, rpcMsg.Data); err == nil {
+						switch ev.GetMsg().(type) {
+						case *RemoteCallREQ:
 
-					return userFunc(RecvMsgEvent{recvEv.Ses, msg, rpcMsg.CallID})
+							userFunc(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})
 
-				} else {
-					return err
-				}
-			case *RemoteCallACK: // 客户端收到
+						case *RemoteCallACK:
+							request := getRequest(rpcMsg.GetCallID())
+							if request != nil {
+								request.RecvFeedback(msg)
+							}
+						}
 
-				if msg, err := cellnet.DecodeMessage(rpcMsg.MsgID, rpcMsg.Data); err == nil {
+					case *cellnet.SendMsgEvent:
 
-					request := getRequest(rpcMsg.CallID)
-					if request != nil {
-						request.RecvFeedback(msg)
+						log.Debugf("#rpc send(%s)@%d %s(%d) | %s",
+							ev.Session().Peer().Name(),
+							ev.Session().ID(),
+							meta.Name,
+							meta.ID,
+							cellnet.MessageToString(msg))
+
 					}
-
-				} else {
-					return err
 				}
 			}
+
 		}
 
 		return userFunc(raw)
 	}
+}
+
+func init() {
+	msglog.BlockMessageLog("rpc.RemoteCallREQ")
+	msglog.BlockMessageLog("rpc.RemoteCallACK")
 }

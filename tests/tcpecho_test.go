@@ -27,7 +27,7 @@ func StartTCPEchoServer() {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionAccepted:
@@ -63,7 +63,7 @@ func StartTCPEchoClient() {
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionConnected:

@@ -24,7 +24,7 @@ func StartUDPEchoServer() {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *proto.TestEchoACK:
@@ -52,7 +52,7 @@ func StartUDPEchoClient() {
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionConnected:

@@ -11,6 +11,9 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, timeout time.Duration, user
 	ses, err := getPeerSession(sesOrPeer)
 
 	if err != nil {
+
+		log.Errorln("Remote call failed, ", err)
+
 		cellnet.QueuedCall(ses, func() {
 			userCallback(err)
 		})
@@ -27,7 +30,7 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, timeout time.Duration, user
 	time.AfterFunc(timeout, func() {
 
 		// 取出请求，如果存在，调用超时
-		if getRequest(req.id) != nil{
+		if getRequest(req.id) != nil {
 			cellnet.QueuedCall(ses, func() {
 				userCallback(ErrTimeout)
 			})

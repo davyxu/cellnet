@@ -81,7 +81,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 		Start()
 	}).Start()
 
-	self.FireEvent(cellnet.SessionAcceptedEvent{ses})
+	self.FireEvent(&cellnet.SessionAcceptedEvent{ses})
 }
 
 func (self *tcpAcceptor) IsAcceptor() bool {

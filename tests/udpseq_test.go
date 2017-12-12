@@ -8,7 +8,6 @@ import (
 	_ "github.com/davyxu/cellnet/comm/udppkt"
 	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
-	"testing"
 )
 
 const udpSeqAddress = "127.0.0.1:7901"
@@ -25,7 +24,7 @@ func StartUDPSeqServer() {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionAccepted:
@@ -60,7 +59,7 @@ func StartUDPSeqClient() {
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(cellnet.RecvMsgEvent)
+			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionConnected:
@@ -92,21 +91,21 @@ func StartUDPSeqClient() {
 
 }
 
-func TestUDPSeq(t *testing.T) {
-
-	udpSeqSignal = util.NewSignalTester(t)
-
-	StartUDPSeqServer()
-
-	StartUDPSeqClient()
-
-	queue := cellnet.NewEventQueue()
-
-	queue.StartLoop()
-	queue.Wait()
-
-	udpSeqAcceptor.Stop()
-}
+//func TestUDPSeq(t *testing.T) {
+//
+//	udpSeqSignal = util.NewSignalTester(t)
+//
+//	StartUDPSeqServer()
+//
+//	StartUDPSeqClient()
+//
+//	queue := cellnet.NewEventQueue()
+//
+//	queue.StartLoop()
+//	queue.Wait()
+//
+//	udpSeqAcceptor.Stop()
+//}
 
 /*
 	_, err = conn.Write([]byte{})

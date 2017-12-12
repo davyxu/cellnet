@@ -104,3 +104,38 @@ func MessageMetaByID(id uint32) *MessageMeta {
 
 	return nil
 }
+
+func MessageName(msg interface{}) string {
+
+	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
+	if meta == nil {
+		return ""
+	}
+
+	return meta.Name
+}
+
+func MessageID(msg interface{}) int {
+
+	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
+	if meta == nil {
+		return 0
+	}
+
+	return int(meta.ID)
+}
+
+func MessageToString(msg interface{}) string {
+
+	if msg == nil {
+		return ""
+	}
+
+	if stringer, ok := msg.(interface {
+		String() string
+	}); ok {
+		return stringer.String()
+	}
+
+	return ""
+}

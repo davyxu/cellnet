@@ -103,7 +103,7 @@ func (self *tcpConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				self.FireEvent(cellnet.SessionConnectErrorEvent{ses, err})
+				self.FireEvent(&cellnet.SessionConnectErrorEvent{ses, err})
 				break
 			}
 
@@ -120,7 +120,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.FireEvent(cellnet.SessionConnectedEvent{ses})
+		self.FireEvent(&cellnet.SessionConnectedEvent{ses})
 
 		self.endSignal.Wait()
 

@@ -42,7 +42,7 @@ func (self *udpConnector) connect() {
 
 	ses.Start()
 
-	self.FireEvent(cellnet.SessionConnectedEvent{ses})
+	self.FireEvent(&cellnet.SessionConnectedEvent{ses})
 
 	buff := make([]byte, 4096)
 	for {

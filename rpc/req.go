@@ -24,10 +24,15 @@ func (self *request) RecvFeedback(msg interface{}) {
 }
 
 func (self *request) Send(ses cellnet.Session, msg interface{}) {
-	data, msgid, _ := cellnet.EncodeMessage(msg)
+	data, meta, err := cellnet.EncodeMessage(msg)
+
+	if err != nil {
+		log.Errorf("rpc request message encode error: %s", err)
+		return
+	}
 
 	ses.Send(&RemoteCallREQ{
-		MsgID:  msgid,
+		MsgID:  meta.ID,
 		Data:   data,
 		CallID: self.id,
 	})
@@ -45,7 +50,6 @@ func createRequest(onRecv func(interface{})) *request {
 
 	return self
 }
-
 
 func getRequest(callid int64) *request {
 

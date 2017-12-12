@@ -21,6 +21,7 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 	data, msgid, err := cellnet.EncodeMessage(msg)
 
 	if err != nil {
+		log.Errorf("send message encode error: %s", err)
 		return err
 	}
 
@@ -28,7 +29,7 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 	var pktWriter util.BinaryWriter
 
 	// 写入消息ID
-	if err := pktWriter.WriteValue(uint16(msgid)); err != nil {
+	if err := pktWriter.WriteValue(uint16(msgid.ID)); err != nil {
 		return err
 	}
 

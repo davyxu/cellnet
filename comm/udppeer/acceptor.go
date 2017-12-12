@@ -101,7 +101,7 @@ func (self *udpAcceptor) listen() {
 
 			self.sesByAddress[addr] = ses
 
-			self.FireEvent(cellnet.SessionAcceptedEvent{ses})
+			self.FireEvent(&cellnet.SessionAcceptedEvent{ses})
 		}
 
 		err = ses.OnRecv(buff[:n])

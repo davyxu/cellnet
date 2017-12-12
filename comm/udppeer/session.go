@@ -69,17 +69,17 @@ func (self *udpSession) WriteData(data []byte) error {
 // 发送封包
 func (self *udpSession) Send(msg interface{}) {
 
-	raw := self.peer.FireEvent(cellnet.SendMsgEvent{self, msg})
+	raw := self.peer.FireEvent(&cellnet.SendMsgEvent{self, msg})
 	if raw != nil {
-		self.peer.FireEvent(cellnet.SendMsgErrorEvent{self, raw.(error), msg})
+		self.peer.FireEvent(&cellnet.SendMsgErrorEvent{self, raw.(error), msg})
 	}
 }
 
 func (self *udpSession) OnRecv(data []byte) error {
 
-	raw := self.peer.FireEvent(cellnet.RecvDataEvent{self, data})
+	raw := self.peer.FireEvent(&cellnet.RecvDataEvent{self, data})
 	if err, ok := raw.(error); ok && err != nil {
-		self.peer.FireEvent(cellnet.SessionClosedEvent{self, err})
+		self.peer.FireEvent(&cellnet.SessionClosedEvent{self, err})
 
 		return err
 	}

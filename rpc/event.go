@@ -16,11 +16,17 @@ func (self *RecvMsgEvent) Queue() cellnet.EventQueue {
 
 func (self *RecvMsgEvent) Reply(msg interface{}) {
 
-	data, msgid, _ := cellnet.EncodeMessage(msg)
+	data, meta, err := cellnet.EncodeMessage(msg)
+
+	if err != nil {
+		log.Errorf("rpc reply message encode error: %s", err)
+		return
+	}
 
 	self.ses.Send(&RemoteCallACK{
-		MsgID:  msgid,
+		MsgID:  meta.ID,
 		Data:   data,
 		CallID: self.callid,
 	})
+
 }

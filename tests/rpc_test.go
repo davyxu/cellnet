@@ -27,7 +27,7 @@ func StartRPCServer() {
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(rpc.RecvMsgEvent)
+			ev, ok := raw.(*rpc.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
 
@@ -50,7 +50,7 @@ func StartRPCServer() {
 
 func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
-	ev, ok := raw.(cellnet.RecvMsgEvent)
+	ev, ok := raw.(*cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
 		case *comm.SessionConnected:
@@ -85,7 +85,7 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
-	ev, ok := raw.(cellnet.RecvMsgEvent)
+	ev, ok := raw.(*cellnet.RecvMsgEvent)
 	if ok {
 		switch ev.Msg.(type) {
 		case *comm.SessionConnected:

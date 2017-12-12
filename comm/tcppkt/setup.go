@@ -12,13 +12,13 @@ func ProcQueue(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
-		case cellnet.RecvMsgEvent:
+		case *cellnet.RecvMsgEvent:
 
 			cellnet.QueuedCall(ev.Ses, func() {
 				userFunc(raw)
 			})
 
-		case rpc.RecvMsgEvent:
+		case *rpc.RecvMsgEvent:
 
 			q := ev.Queue()
 			// Peer有队列时，在队列线程调用用户处理函数
@@ -46,13 +46,13 @@ func ProcTLVPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 		switch ev := raw.(type) {
 
-		case cellnet.ReadEvent: // 接收数据事件
+		case *cellnet.ReadEvent: // 接收数据事件
 
 			if result := onRecvLTVPacket(ev.Ses, userFunc); result != nil {
 				return result
 			}
 
-		case cellnet.SendMsgEvent: // 发送数据事件
+		case *cellnet.SendMsgEvent: // 发送数据事件
 
 			if result := onSendLTVPacket(ev.Ses, ev.Msg); result != nil {
 				return result
@@ -75,9 +75,9 @@ func initEvent(config *cellnet.PeerConfig) cellnet.EventFunc {
 	}
 
 	return ProcTLVPacket(
-		msglog.ProcMsgLog( // 消息日志
-			rpc.ProcRPC( // RPC
-				comm.ProcSysMsg(final), // 系统事件转消息
+		rpc.ProcRPC( // 消息日志
+			comm.ProcSysMsg( // 系统事件转消息
+				msglog.ProcMsgLog(final), // RPC
 			),
 		),
 	)
