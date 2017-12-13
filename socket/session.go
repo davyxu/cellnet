@@ -26,6 +26,8 @@ type socketSession struct {
 
 	tag interface{}
 
+	tagGuard sync.RWMutex
+
 	readChain *cellnet.HandlerChain
 
 	writeChain *cellnet.HandlerChain
@@ -36,10 +38,14 @@ func (self *socketSession) RawConn() interface{} {
 }
 
 func (self *socketSession) Tag() interface{} {
+	self.tagGuard.RLock()
+	defer self.tagGuard.RUnlock()
 	return self.tag
 }
 func (self *socketSession) SetTag(tag interface{}) {
+	self.tagGuard.Lock()
 	self.tag = tag
+	self.tagGuard.Unlock()
 }
 
 func (self *socketSession) ID() int64 {
