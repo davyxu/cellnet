@@ -7,7 +7,7 @@ import (
 	"github.com/davyxu/golog"
 )
 
-var log *golog.Logger = golog.New("main")
+var log = golog.New("main")
 
 func main() {
 	queue := cellnet.NewEventQueue()

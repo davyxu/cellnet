@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var log *golog.Logger = golog.New("main")
+var log = golog.New("main")
 
 func ReadConsole(callback func(string)) {
 
