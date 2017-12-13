@@ -83,7 +83,6 @@ func (self *tcpConnector) connect(address string) {
 		// 尝试用Socket连接地址
 		conn, err := net.Dial("tcp", address)
 
-		self.endSignal.Add(1)
 		ses := newTCPSession(conn, &self.PeerShare, func() {
 			self.endSignal.Done()
 		})
@@ -113,6 +112,8 @@ func (self *tcpConnector) connect(address string) {
 			// 继续连接
 			continue
 		}
+
+		self.endSignal.Add(1)
 
 		ses.(interface {
 			Start()
