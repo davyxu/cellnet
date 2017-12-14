@@ -63,6 +63,8 @@ func (self *eventQueue) protectedCall(callback func()) {
 // 开启事件循环
 func (self *eventQueue) StartLoop() {
 
+	self.endSignal.Add(1)
+
 	go func() {
 
 		for callback := range self.queue {
