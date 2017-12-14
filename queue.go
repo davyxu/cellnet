@@ -2,15 +2,16 @@ package cellnet
 
 import (
 	"runtime/debug"
+	"sync"
 )
 
 type EventQueue interface {
 	StartLoop()
 
-	StopLoop(result int)
+	StopLoop()
 
 	// 等待退出
-	Wait() int
+	Wait()
 
 	// 投递事件, 通过队列到达消费者端
 	Post(callback func())
@@ -22,34 +23,30 @@ type EventQueue interface {
 type eventQueue struct {
 	queue chan func()
 
-	exitSignal chan int
+	endSignal sync.WaitGroup
 
 	capturePanic bool
 }
 
 // 启动崩溃捕获
-func (q *eventQueue) EnableCapturePanic(v bool) {
-	q.capturePanic = v
+func (self *eventQueue) EnableCapturePanic(v bool) {
+	self.capturePanic = v
 }
 
 // 派发事件处理回调到队列中
-func (q *eventQueue) Post(callback func()) {
+func (self *eventQueue) Post(callback func()) {
 
 	if callback == nil {
 		return
 	}
 
-	q.queue <- callback
+	self.queue <- callback
 }
 
 // 保护调用用户函数
-func (q *eventQueue) protectedCall(callback func()) {
+func (self *eventQueue) protectedCall(callback func()) {
 
-	if callback == nil {
-		return
-	}
-
-	if q.capturePanic {
+	if self.capturePanic {
 		defer func() {
 
 			if err := recover(); err != nil {
@@ -64,23 +61,31 @@ func (q *eventQueue) protectedCall(callback func()) {
 }
 
 // 开启事件循环
-func (q *eventQueue) StartLoop() {
+func (self *eventQueue) StartLoop() {
 
 	go func() {
-		for callback := range q.queue {
-			q.protectedCall(callback)
+
+		for callback := range self.queue {
+
+			if callback == nil {
+				break
+			}
+
+			self.protectedCall(callback)
 		}
+
+		self.endSignal.Done()
 	}()
 }
 
 // 停止事件循环
-func (q *eventQueue) StopLoop(result int) {
-	q.exitSignal <- result
+func (self *eventQueue) StopLoop() {
+	self.queue <- nil
 }
 
 // 等待退出消息
-func (q *eventQueue) Wait() int {
-	return <-q.exitSignal
+func (self *eventQueue) Wait() {
+	self.endSignal.Wait()
 }
 
 const DefaultQueueSize = 100
@@ -88,17 +93,9 @@ const DefaultQueueSize = 100
 // 创建默认长度的队列
 func NewEventQueue() EventQueue {
 
-	return NewEventQueueByLen(DefaultQueueSize)
-}
-
-// 创建指定长度的队列
-func NewEventQueueByLen(l int) EventQueue {
-	self := &eventQueue{
-		queue:      make(chan func(), l),
-		exitSignal: make(chan int),
+	return &eventQueue{
+		queue: make(chan func(), DefaultQueueSize),
 	}
-
-	return self
 }
 
 func QueuedCall(ses Session, callback func()) {
