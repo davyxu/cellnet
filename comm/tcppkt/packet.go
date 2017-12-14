@@ -49,9 +49,5 @@ func SendVariableLengthPacket(outputStream io.Writer, pktWriter util.BinaryWrite
 	copy(buffer[LengthSize:], pktWriter.Raw())
 
 	// 将数据写入Socket
-	if _, err := outputStream.Write(buffer); err != nil {
-		return err
-	}
-
-	return nil
+	return util.WriteFull(outputStream, buffer)
 }
