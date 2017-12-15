@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/udppeer"
 	_ "github.com/davyxu/cellnet/comm/udppkt"
-	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 )
 
@@ -29,11 +28,11 @@ func StartUDPSeqServer() {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionAccepted:
 					fmt.Println("server accepted")
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 
 					//fmt.Printf("server recv %+v\n", msg)
 
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Msg:   msg.Msg,
 						Value: msg.Value,
 					})
@@ -64,11 +63,11 @@ func StartUDPSeqClient() {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionConnected:
 					fmt.Println("client connected")
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Value: counter,
 					})
 
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 
 					if msg.Value != counter {
 						fmt.Println("seq not match")
@@ -76,7 +75,7 @@ func StartUDPSeqClient() {
 					}
 
 					counter++
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Value: counter,
 					})
 

@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/udppeer"
-	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
@@ -27,11 +26,11 @@ func StartUDPEchoServer() {
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 
 					fmt.Printf("server recv %+v\n", msg)
 
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Msg:   msg.Msg,
 						Value: msg.Value,
 					})
@@ -57,11 +56,11 @@ func StartUDPEchoClient() {
 				switch msg := ev.Msg.(type) {
 				case *comm.SessionConnected:
 					fmt.Println("client connected")
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Msg:   "hello",
 						Value: 1234,
 					})
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 
 					fmt.Printf("client recv %+v\n", msg)
 

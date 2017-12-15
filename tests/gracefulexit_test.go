@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"sync"
 	"time"
@@ -29,11 +28,11 @@ func StartCreateDestoryServer() {
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
 				switch msg := ev.Msg.(type) {
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 
 					fmt.Printf("server recv %+v\n", msg)
 
-					ev.Ses.Send(&proto.TestEchoACK{
+					ev.Ses.Send(&TestEchoACK{
 						Msg:   msg.Msg,
 						Value: msg.Value,
 					})

@@ -1,4 +1,4 @@
-package proto
+package tests
 
 import (
 	"fmt"
