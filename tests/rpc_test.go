@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/tests/proto"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"
@@ -31,10 +30,10 @@ func StartRPCServer() {
 			if ok {
 				switch msg := ev.Msg.(type) {
 
-				case *proto.TestEchoACK:
+				case *TestEchoACK:
 					log.Debugln("server recv rpc ", *msg)
 
-					ev.Reply(&proto.TestEchoACK{
+					ev.Reply(&TestEchoACK{
 						Msg:   msg.Msg,
 						Value: msg.Value,
 					})
@@ -59,7 +58,7 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 				// 同步阻塞请求必须并发启动，否则客户端无法接收数据
 				go func(id int) {
 
-					result, err := rpc.CallSync(ev.Ses, &proto.TestEchoACK{
+					result, err := rpc.CallSync(ev.Ses, &TestEchoACK{
 						Msg:   "sync",
 						Value: 1234,
 					}, time.Second*5)
@@ -70,7 +69,7 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 						return
 					}
 
-					msg := result.(*proto.TestEchoACK)
+					msg := result.(*TestEchoACK)
 					log.Debugln("client sync recv:", msg.Msg, id*100)
 
 					syncRPCSignal.Done(id * 100)
@@ -93,7 +92,7 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 				copy := i + 1
 
-				rpc.Call(ev.Ses, &proto.TestEchoACK{
+				rpc.Call(ev.Ses, &TestEchoACK{
 					Msg:   "async",
 					Value: 1234,
 				}, time.Second*5, func(feedback interface{}) {
@@ -102,7 +101,7 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 					case error:
 						asyncRPCSignal.Log(v)
 						asyncRPCSignal.FailNow()
-					case *proto.TestEchoACK:
+					case *TestEchoACK:
 						log.Debugln("client sync recv:", v.Msg)
 						asyncRPCSignal.Done(copy)
 					}

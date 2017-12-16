@@ -19,7 +19,7 @@ func TestLoopPanic(t *testing.T) {
 		times--
 		if times == 0 {
 			loop.Stop()
-			q.StopLoop(0)
+			q.StopLoop()
 		}
 
 		fmt.Println("before")
