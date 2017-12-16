@@ -67,7 +67,7 @@ func initEvent(config *cellnet.PeerConfig) cellnet.EventFunc {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("tv.udp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("ltv.udp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
 
 		config.PeerType = "udp.Connector"
 		p := cellnet.NewPeer(config)
@@ -77,7 +77,7 @@ func init() {
 		return p
 	})
 
-	cellnet.RegisterPeerCreator("tv.udp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("ltv.udp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
 		config.PeerType = "udp.Acceptor"
 		p := cellnet.NewPeer(config)
 

@@ -15,7 +15,7 @@ func onRecvLTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFu
 	var pktReader util.BinaryReader
 	pktReader.Init(data)
 
-	// 读取消息ID
+	// 读取数据大小，看是否完整
 	var datasize uint16
 	if err := pktReader.ReadValue(&datasize); err != nil {
 		return err

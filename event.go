@@ -5,10 +5,18 @@ type ReadEvent struct {
 	Ses Session
 }
 
+func (self *ReadEvent) Session() Session {
+	return self.Ses
+}
+
 // 接收到数据
 type RecvDataEvent struct {
 	Ses  Session
 	Data []byte
+}
+
+func (self *RecvDataEvent) Session() Session {
+	return self.Ses
 }
 
 // 接收到消息
@@ -21,7 +29,7 @@ func (self *RecvMsgEvent) Session() Session {
 	return self.Ses
 }
 
-func (self *RecvMsgEvent) GetMsg() interface{} {
+func (self *RecvMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
@@ -35,7 +43,7 @@ type SendMsgEvent struct {
 	Msg interface{} // 用户需要发送的消息
 }
 
-func (self *SendMsgEvent) GetMsg() interface{} {
+func (self *SendMsgEvent) Message() interface{} {
 	return self.Msg
 }
 

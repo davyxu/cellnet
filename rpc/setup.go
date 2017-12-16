@@ -7,7 +7,7 @@ import (
 
 type msgEvent interface {
 	Session() cellnet.Session
-	GetMsg() interface{}
+	Message() interface{}
 }
 
 func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
@@ -15,7 +15,7 @@ func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		if ev, ok := raw.(msgEvent); ok {
-			rpcMsg, ok := ev.GetMsg().(RemoteCallMsg)
+			rpcMsg, ok := ev.Message().(RemoteCallMsg)
 			if ok {
 				msg, meta, err := cellnet.DecodeMessage(rpcMsg.GetMsgID(), rpcMsg.GetMsgData())
 
@@ -30,7 +30,7 @@ func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
 							meta.ID,
 							cellnet.MessageToString(msg))
 
-						switch ev.GetMsg().(type) {
+						switch ev.Message().(type) {
 						case *RemoteCallREQ:
 
 							userFunc(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})

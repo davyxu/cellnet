@@ -19,7 +19,7 @@ var udpSeqAcceptor cellnet.Peer
 func StartUDPSeqServer() {
 
 	udpSeqAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "tv.udp.Acceptor",
+		PeerType:    "ltv.udp.Acceptor",
 		PeerAddress: udpSeqAddress,
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -54,7 +54,7 @@ func StartUDPSeqClient() {
 	var counter int32
 
 	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "tv.udp.Connector",
+		PeerType:    "ltv.udp.Connector",
 		PeerAddress: udpSeqAddress,
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {

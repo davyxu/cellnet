@@ -19,7 +19,7 @@ var udpEchoAcceptor cellnet.Peer
 func StartUDPEchoServer() {
 
 	udpEchoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "tv.udp.Acceptor",
+		PeerType:    "ltv.udp.Acceptor",
 		PeerAddress: udpEchoAddress,
 		PeerName:    "server",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -47,7 +47,7 @@ func StartUDPEchoServer() {
 func StartUDPEchoClient() {
 
 	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "tv.udp.Connector",
+		PeerType:    "ltv.udp.Connector",
 		PeerAddress: udpEchoAddress,
 		PeerName:    "client",
 		Event: func(raw cellnet.EventParam) cellnet.EventResult {
