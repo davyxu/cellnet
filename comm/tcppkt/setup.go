@@ -14,7 +14,7 @@ func ProcQueue(userFunc cellnet.EventFunc) cellnet.EventFunc {
 		switch ev := raw.(type) {
 		case *cellnet.RecvMsgEvent:
 
-			cellnet.QueuedCall(ev.Ses, func() {
+			cellnet.SessionQueuedCall(ev.Ses, func() {
 				userFunc(raw)
 			})
 

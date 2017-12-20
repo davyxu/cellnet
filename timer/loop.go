@@ -41,7 +41,7 @@ func (self *Loop) rawPost() {
 	After(self.Queue, self.Duration, func() {
 
 		tick(self, false)
-	})
+	}, nil)
 }
 
 func (self *Loop) NextLoop() {

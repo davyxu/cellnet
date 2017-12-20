@@ -100,7 +100,7 @@ func NewEventQueue() EventQueue {
 	}
 }
 
-func QueuedCall(ses Session, callback func()) {
+func SessionQueuedCall(ses Session, callback func()) {
 	if ses == nil {
 		return
 	}
@@ -115,5 +115,13 @@ func QueuedCall(ses Session, callback func()) {
 
 		// 在I/O线程调用用户处理函数
 		callback()
+	}
+}
+
+func QueuedCall(queue EventQueue, callback func()) {
+	if queue == nil {
+		callback()
+	} else {
+		queue.Post(callback)
 	}
 }

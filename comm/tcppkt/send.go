@@ -18,7 +18,7 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 	}
 
 	// 将用户数据转换为字节数组和消息ID
-	data, msgid, err := cellnet.EncodeMessage(msg)
+	data, meta, err := cellnet.EncodeMessage(msg)
 
 	if err != nil {
 		log.Errorf("send message encode error: %s", err)
@@ -29,7 +29,7 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 	var pktWriter util.BinaryWriter
 
 	// 写入消息ID
-	if err := pktWriter.WriteValue(uint16(msgid.ID)); err != nil {
+	if err := pktWriter.WriteValue(uint16(meta.ID)); err != nil {
 		return err
 	}
 

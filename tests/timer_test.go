@@ -21,13 +21,18 @@ func TestAfterTimer(t *testing.T) {
 		log.Debugln("after 100 ms")
 
 		signal.Done(1)
-	})
+	}, nil)
 
-	timer.After(queue, 800*time.Millisecond, func() {
+	timer.After(queue, 800*time.Millisecond, func(context interface{}) {
+
+		if context.(string) != "context" {
+			t.FailNow()
+		}
+
 		log.Debugln("after 200 ms")
 
 		signal.Done(2)
-	})
+	}, "context")
 
 	signal.WaitAndExpect("1 sec after not done", 1)
 

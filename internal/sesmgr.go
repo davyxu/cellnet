@@ -12,6 +12,7 @@ type SessionManager interface {
 
 	Add(cellnet.Session)
 	Remove(cellnet.Session)
+	Count() int
 }
 
 type sesMgr struct {
@@ -20,6 +21,10 @@ type sesMgr struct {
 	sesIDGen int64 // 记录已经生成的会话ID流水号
 
 	count int64 // 记录当前在使用的会话数量
+}
+
+func (self *sesMgr) Count() int {
+	return int(atomic.LoadInt64(&self.count))
 }
 
 func (self *sesMgr) Add(ses cellnet.Session) {

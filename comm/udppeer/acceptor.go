@@ -4,41 +4,8 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/internal"
 	"net"
+	"sync"
 )
-
-type v4Address struct {
-	IP   [4]byte
-	Port int
-}
-
-type v6Address struct {
-	IP   [16]byte
-	Port int
-}
-
-func makeAddrKey(addr *net.UDPAddr) interface{} {
-
-	switch len(addr.IP) {
-	case net.IPv4len:
-		var ret v4Address
-		for i := 0; i < net.IPv4len; i++ {
-			ret.IP[i] = addr.IP[i]
-		}
-		ret.Port = addr.Port
-
-		return ret
-	case net.IPv6len:
-		var ret v6Address
-		for i := 0; i < net.IPv6len; i++ {
-			ret.IP[i] = addr.IP[i]
-		}
-		ret.Port = addr.Port
-
-		return ret
-	}
-
-	return nil
-}
 
 type udpAcceptor struct {
 	internal.PeerShare
@@ -46,7 +13,7 @@ type udpAcceptor struct {
 
 	conn *net.UDPConn
 
-	sesByAddress map[interface{}]*udpSession
+	sesByAddress sync.Map
 }
 
 func (self *udpAcceptor) Start() cellnet.Peer {
@@ -91,26 +58,46 @@ func (self *udpAcceptor) listen() {
 
 		addr := makeAddrKey(remoteAddr)
 
-		ses := self.sesByAddress[addr]
+		var ses *udpSession
 
-		if ses == nil {
+		raw, ok := self.sesByAddress.Load(addr)
 
-			ses = newUDPSession(remoteAddr, self.conn, &self.PeerShare, nil)
+		if ok {
+
+			ses = raw.(*udpSession)
+
+		} else {
+
+			ses = newUDPSession(remoteAddr, self.conn, &self.PeerShare, func() {
+				self.removeAddress(addr)
+			})
 
 			ses.Start()
 
-			self.sesByAddress[addr] = ses
+			self.sesByAddress.Store(addr, ses)
 
 			self.FireEvent(&cellnet.SessionAcceptedEvent{ses})
+
+			// mono首次封包是空
+			if n == 0 {
+				ses.HeartBeat()
+
+				continue
+			}
 		}
 
 		err = ses.OnRecv(buff[:n])
 
 		if err != nil {
-			delete(self.sesByAddress, addr)
+			self.removeAddress(addr)
 		}
 	}
 
+}
+
+func (self *udpAcceptor) removeAddress(pair addressPair) {
+
+	self.sesByAddress.Delete(pair)
 }
 
 func (self *udpAcceptor) IsAcceptor() bool {
@@ -128,9 +115,7 @@ func (self *udpAcceptor) Stop() {
 func init() {
 
 	cellnet.RegisterPeerCreator("udp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
-		p := &udpAcceptor{
-			sesByAddress: make(map[interface{}]*udpSession),
-		}
+		p := &udpAcceptor{}
 
 		p.Init(p, config)
 
