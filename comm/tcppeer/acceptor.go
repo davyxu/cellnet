@@ -82,7 +82,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 		Start()
 	}).Start()
 
-	self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
 }
 
 func (self *tcpAcceptor) IsAcceptor() bool {

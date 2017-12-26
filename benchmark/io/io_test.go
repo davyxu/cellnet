@@ -39,7 +39,7 @@ func server() {
 	config.Queue = queue
 	config.Address = benchmarkAddress
 	config.Name = "server"
-	config.InboundEvent = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
+	config.UserInboundProc = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
 
 		switch raw.(type) {
 		case packet.RecvMsgEvent:
@@ -69,7 +69,7 @@ func client() {
 	config.Queue = queue
 	config.Address = benchmarkAddress
 	config.Name = "client"
-	config.InboundEvent = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
+	config.UserInboundProc = packet.ProcTLVPacket(func(ses cellnet.Session, raw interface{}) {
 
 		switch raw.(type) {
 		case socket.ConnectedEvent:

@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 )
 
-func ProcLTVInboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -27,7 +27,7 @@ func ProcLTVInboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	}
 }
 
-func ProcLTVOutboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcLTVOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -49,7 +49,7 @@ func ProcLTVOutboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 func init() {
 
-	cellnet.RegisterEventProcessor("udp.ltv", func(userInBound cellnet.EventFunc, userOutbound cellnet.EventFunc) (cellnet.EventFunc, cellnet.EventFunc) {
+	cellnet.RegisterEventProcessor("udp.ltv", func(userInBound cellnet.EventProc, userOutbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
 
 		return ProcLTVInboundPacket(
 				cellnet.ProcQueue(

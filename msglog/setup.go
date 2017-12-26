@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet/comm"
 )
 
-func ProcMsgLog(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 

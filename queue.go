@@ -117,7 +117,7 @@ func QueuedCall(queue EventQueue, callback func()) {
 	}
 }
 
-func ProcQueue(userFunc EventFunc) EventFunc {
+func ProcQueue(userFunc EventProc) EventProc {
 
 	return func(raw EventParam) EventResult {
 

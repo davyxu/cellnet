@@ -24,7 +24,7 @@ func StartCreateDestoryServer() {
 		Queue:          queue,
 		PeerAddress:    createDestoryConnectorAddress,
 		PeerName:       "server",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -61,7 +61,7 @@ func runConnClose() {
 		Queue:          queue,
 		PeerAddress:    createDestoryConnectorAddress,
 		PeerName:       "client.ConnClose",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -115,7 +115,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 		Queue:          queue,
 		PeerAddress:    createDestoryAcceptorAddress,
 		PeerName:       "server",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
