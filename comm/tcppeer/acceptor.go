@@ -2,6 +2,7 @@ package tcppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 )
@@ -81,7 +82,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 		Start()
 	}).Start()
 
-	self.FireEvent(&cellnet.SessionAcceptedEvent{ses})
+	self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
 }
 
 func (self *tcpAcceptor) IsAcceptor() bool {
@@ -111,10 +112,10 @@ func (self *tcpAcceptor) Stop() {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("tcp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("tcp.Acceptor", func() cellnet.Peer {
 		p := &tcpAcceptor{}
 
-		p.Init(p, config)
+		p.Init(p)
 
 		return p
 	})

@@ -20,6 +20,8 @@ type request struct {
 var ErrTimeout = errors.New("time out")
 
 func (self *request) RecvFeedback(msg interface{}) {
+
+	// 异步和同步执行复杂，队列处理在具体的逻辑中手动处理
 	self.onRecv(msg)
 }
 

@@ -19,6 +19,18 @@ type PeerShare struct {
 
 	// 停止过程同步
 	stopping chan bool
+
+	InboundEvent  cellnet.EventFunc
+	OutboundEvent cellnet.EventFunc
+}
+
+func (self *PeerShare) SetEventFunc(inboundEvent, outboundEvent cellnet.EventFunc) {
+	self.InboundEvent = inboundEvent
+	self.OutboundEvent = outboundEvent
+}
+
+func (self *PeerShare) SetConfig(config cellnet.PeerConfig) {
+	self.PeerConfig = config
 }
 
 func (self *PeerShare) IsConnector() bool {
@@ -52,31 +64,40 @@ func (self *PeerShare) SetRunning(v bool) {
 }
 
 // socket包内部派发事件
-func (self *PeerShare) FireEvent(ev interface{}) interface{} {
+func (self *PeerShare) InvokeInboundEvent(ev interface{}) interface{} {
 
-	if self.Event == nil {
+	if self.InboundEvent == nil {
 		return nil
 	}
 
-	return self.Event(ev)
+	return self.InboundEvent(ev)
+}
+
+// socket包内部派发事件
+func (self *PeerShare) InvokeOutboundEvent(ev interface{}) interface{} {
+
+	if self.OutboundEvent == nil {
+		return nil
+	}
+
+	return self.OutboundEvent(ev)
 }
 
 func (self *PeerShare) NameOrAddress() string {
-	if self.Name() != "" {
-		return self.Name()
+	if self.PeerName != "" {
+		return self.PeerName
 	}
 
-	return self.Address()
+	return self.PeerAddress
 }
 
 func (self *PeerShare) Peer() cellnet.Peer {
 	return self.peerInterface
 }
 
-func (self *PeerShare) Init(p cellnet.Peer, config cellnet.PeerConfig) {
+func (self *PeerShare) Init(p cellnet.Peer) {
 	self.SessionManager = NewSessionManager()
 	self.peerInterface = p
-	self.PeerConfig = config
 }
 
 func (self *PeerShare) WaitStopFinished() {

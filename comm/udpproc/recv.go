@@ -1,4 +1,4 @@
-package udppkt
+package udpproc
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ var ErrPacketCrack = errors.New("udp packet crack by len")
 
 const MTU = 1472
 
-func onRecvLTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFunc) cellnet.EventResult {
+func RecvLTVPacket(data []byte) (msg interface{}, err error) {
 
 	var pktReader util.BinaryReader
 	pktReader.Init(data)
@@ -18,29 +18,28 @@ func onRecvLTVPacket(ses cellnet.Session, data []byte, eventFunc cellnet.EventFu
 	// 读取数据大小，看是否完整
 	var datasize uint16
 	if err := pktReader.ReadValue(&datasize); err != nil {
-		return err
+		return nil, err
 	}
 
 	// 出错，等待下次数据
 	if int(datasize) != len(data) || datasize > MTU {
-		return nil
+		return nil, nil
 	}
 
 	// 读取消息ID
 	var msgid uint16
 	if err := pktReader.ReadValue(&msgid); err != nil {
-		return err
+		return nil, err
 	}
 
 	msgData := pktReader.RemainBytes()
 
 	// 将字节数组和消息ID用户解出消息
-	msg, _, err := cellnet.DecodeMessage(uint32(msgid), msgData)
+	msg, _, err = cellnet.DecodeMessage(uint32(msgid), msgData)
 	if err != nil {
 		// TODO 接收错误时，返回消息
-		return err
+		return nil, err
 	}
 
-	// 调用用户回调
-	return eventFunc(&cellnet.RecvMsgEvent{ses, msg})
+	return
 }

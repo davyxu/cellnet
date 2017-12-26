@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/tcppeer"
-	_ "github.com/davyxu/cellnet/comm/tcppkt"
+	_ "github.com/davyxu/cellnet/comm/tcpproc"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
@@ -19,12 +19,13 @@ var tcpEchoAcceptor cellnet.Peer
 func StartTCPEchoServer() {
 	queue := cellnet.NewEventQueue()
 
-	tcpEchoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.tcp.Acceptor",
-		Queue:       queue,
-		PeerAddress: tcpEchoAddress,
-		PeerName:    "server",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	tcpEchoAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "tcp.Acceptor",
+		EventProcessor: "tcp.ltv",
+		Queue:          queue,
+		PeerAddress:    tcpEchoAddress,
+		PeerName:       "server",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -55,12 +56,13 @@ func StartTCPEchoServer() {
 func StartTCPEchoClient() {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.tcp.Connector",
-		Queue:       queue,
-		PeerAddress: tcpEchoAddress,
-		PeerName:    "client",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "tcp.Connector",
+		EventProcessor: "tcp.ltv",
+		Queue:          queue,
+		PeerAddress:    tcpEchoAddress,
+		PeerName:       "client",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {

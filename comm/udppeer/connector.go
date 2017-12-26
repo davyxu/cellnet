@@ -2,6 +2,7 @@ package udppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 )
@@ -42,7 +43,7 @@ func (self *udpConnector) connect() {
 
 	ses.Start()
 
-	self.FireEvent(&cellnet.SessionConnectedEvent{ses})
+	self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
 
 	buff := make([]byte, 4096)
 	for {
@@ -75,10 +76,10 @@ func (self *udpConnector) Stop() {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("udp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("udp.Connector", func() cellnet.Peer {
 		p := &udpConnector{}
 
-		p.Init(p, config)
+		p.Init(p)
 
 		return p
 	})

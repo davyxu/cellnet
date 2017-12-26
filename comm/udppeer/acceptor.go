@@ -2,6 +2,7 @@ package udppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
@@ -52,7 +53,7 @@ func (self *udpAcceptor) listen() {
 		if err != nil {
 
 			log.Errorln("read error:", err)
-			//self.FireEvent(cellnet.SessionClosedEvent{nil})
+			//self.InvokeInboundEvent(cellnet.SessionClosedEvent{nil})
 			break
 		}
 
@@ -76,7 +77,7 @@ func (self *udpAcceptor) listen() {
 
 			self.sesByAddress.Store(addr, ses)
 
-			self.FireEvent(&cellnet.SessionAcceptedEvent{ses})
+			self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
 
 			// mono首次封包是空
 			if n == 0 {
@@ -114,10 +115,10 @@ func (self *udpAcceptor) Stop() {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("udp.Acceptor", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("udp.Acceptor", func() cellnet.Peer {
 		p := &udpAcceptor{}
 
-		p.Init(p, config)
+		p.Init(p)
 
 		return p
 	})

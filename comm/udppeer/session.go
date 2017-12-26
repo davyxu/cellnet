@@ -2,6 +2,7 @@ package udppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
@@ -83,9 +84,9 @@ func (self *udpSession) WriteData(data []byte) error {
 // 发送封包
 func (self *udpSession) Send(data interface{}) {
 
-	raw := self.peer.FireEvent(&cellnet.SendMsgEvent{self, data})
+	raw := self.peer.InvokeOutboundEvent(&cellnet.SendMsgEvent{self, data})
 	if raw != nil {
-		self.peer.FireEvent(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
+		self.peer.InvokeInboundEvent(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
 
 		self.Close()
 	}
@@ -100,9 +101,9 @@ func (self *udpSession) OnRecv(data []byte) error {
 
 	self.HeartBeat()
 
-	raw := self.peer.FireEvent(&cellnet.RecvDataEvent{self, data})
+	raw := self.peer.InvokeInboundEvent(&cellnet.RecvDataEvent{self, data})
 	if err, ok := raw.(error); ok && err != nil {
-		self.peer.FireEvent(&cellnet.SessionClosedEvent{self, err})
+		self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 
 		return err
 	}
@@ -131,7 +132,7 @@ func (self *udpSession) Start() {
 				currValue := atomic.SwapInt64(&self.heartBeat, targetValue)
 
 				if currValue == 0 {
-					self.peer.FireEvent(&cellnet.SessionClosedEvent{self, nil})
+					self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 					goto OnExit
 				}
 
@@ -159,7 +160,7 @@ func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peer *internal.PeerShar
 		conn:        conn,
 		remote:      addr,
 		peer:        peer,
-		recvTimeout: time.Second * 5,
+		recvTimeout: time.Second * 3,
 		endNotify:   endNotify,
 		exitSignal:  make(chan bool),
 	}

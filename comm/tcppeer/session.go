@@ -2,6 +2,7 @@ package tcppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
@@ -67,17 +68,16 @@ func (self *tcpSession) Send(msg interface{}) {
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
-	var err error
 	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
-		raw := self.peer.FireEvent(&cellnet.ReadEvent{self})
+		raw := self.peer.InvokeInboundEvent(&cellnet.ReadEvent{self})
 
 		// 连接断开
 		if raw != nil && self.conn != nil {
 
-			self.peer.FireEvent(&cellnet.SessionClosedEvent{self, err})
-			//self.peer.FireEvent(cellnet.RecvErrorEvent{self, raw.(error)})
+			self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+			//self.peer.InvokeInboundEvent(cellnet.RecvErrorEvent{self, raw.(error)})
 			break
 		}
 	}
@@ -97,11 +97,11 @@ func (self *tcpSession) sendLoop() {
 		}
 
 		// 要求发送数据
-		err := self.peer.FireEvent(&cellnet.SendMsgEvent{self, msg})
+		err := self.peer.InvokeOutboundEvent(&cellnet.SendMsgEvent{self, msg})
 
 		// 发送错误时派发事件
 		if err != nil {
-			self.peer.FireEvent(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
+			self.peer.InvokeInboundEvent(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
 			break
 		}
 

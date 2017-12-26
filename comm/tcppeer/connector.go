@@ -2,6 +2,7 @@ package tcppeer
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
@@ -102,7 +103,7 @@ func (self *tcpConnector) connect(address string) {
 			// 没重连就退出
 			if self.autoReconnectSec == 0 {
 
-				self.FireEvent(&cellnet.SessionConnectErrorEvent{ses, err})
+				self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionConnectError{}})
 				break
 			}
 
@@ -121,7 +122,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.FireEvent(&cellnet.SessionConnectedEvent{ses})
+		self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
 
 		self.endSignal.Wait()
 
@@ -147,10 +148,10 @@ func (self *tcpConnector) connect(address string) {
 
 func init() {
 
-	cellnet.RegisterPeerCreator("tcp.Connector", func(config cellnet.PeerConfig) cellnet.Peer {
+	cellnet.RegisterPeerCreator("tcp.Connector", func() cellnet.Peer {
 		p := &tcpConnector{}
 
-		p.Init(p, config)
+		p.Init(p)
 
 		return p
 	})

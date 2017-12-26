@@ -33,7 +33,9 @@ func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
 						switch ev.Message().(type) {
 						case *RemoteCallREQ:
 
-							userFunc(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})
+							cellnet.SessionQueuedCall(ev.Session(), func() {
+								userFunc(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})
+							})
 
 						case *RemoteCallACK:
 							request := getRequest(rpcMsg.GetCallID())

@@ -15,62 +15,16 @@ type Peer interface {
 	// 停止通讯端
 	Stop()
 
-	SetEventFunc(EventFunc)
-
-	EventFunc() EventFunc
-
-	// 获取队列
-	EventQueue() EventQueue
-
-	// 通讯端名称
-	Name() string
-
-	Address() string
-
-	TypeName() string
-
 	IsConnector() bool
 
 	IsAcceptor() bool
 
+	PeerConfigInterface
+
 	SessionAccessor
 }
 
-type PeerConfig struct {
-	PeerType    string
-	PeerName    string
-	PeerAddress string
-	Queue       EventQueue
-	Event       EventFunc
-}
-
-// 获取通讯端的名称
-func (self *PeerConfig) Name() string {
-	return self.PeerName
-}
-
-func (self *PeerConfig) TypeName() string {
-	return self.PeerType
-}
-
-func (self *PeerConfig) Address() string {
-	return self.PeerAddress
-}
-
-// 获取队列
-func (self *PeerConfig) EventQueue() EventQueue {
-	return self.Queue
-}
-
-func (self *PeerConfig) EventFunc() EventFunc {
-	return self.Event
-}
-
-func (self *PeerConfig) SetEventFunc(eventFunc EventFunc) {
-	self.Event = eventFunc
-}
-
-type PeerCreateFunc func(PeerConfig) Peer
+type PeerCreateFunc func() Peer
 
 var creatorByTypeName = map[string]PeerCreateFunc{}
 
@@ -83,32 +37,48 @@ func RegisterPeerCreator(typeName string, f PeerCreateFunc) {
 	creatorByTypeName[typeName] = f
 }
 
-func NewPeer(config PeerConfig) Peer {
+type EventProcessor func(EventFunc, EventFunc) (EventFunc, EventFunc)
 
-	f := creatorByTypeName[config.PeerType]
+var evtprocByName = map[string]EventProcessor{}
+
+func RegisterEventProcessor(name string, f EventProcessor) {
+
+	if _, ok := creatorByTypeName[name]; ok {
+		panic("Duplicate peer type")
+	}
+
+	evtprocByName[name] = f
+}
+
+func FetchEventProcessor(name string, inbound, outbound EventFunc) (EventFunc, EventFunc) {
+
+	f := evtprocByName[name]
 	if f == nil {
+		panic("Event processor not found: " + name)
+	}
+
+	return f(inbound, outbound)
+}
+
+func CreatePeer(config PeerConfig) Peer {
+
+	peerCreator := creatorByTypeName[config.PeerType]
+	if peerCreator == nil {
 		panic("Peer name not found: " + config.PeerType)
 	}
 
-	return f(config)
-}
+	p := peerCreator()
 
-// 继承自一个注册的PeerCreator，并重新设置EventFunc
-func InheritePeerCreator(basePeerType string, customFunc func(EventFunc) EventFunc) func(config PeerConfig) Peer {
+	setter := p.(interface {
+		SetConfig(PeerConfig)
+		// 设置事件回调（入站，出站）
+		SetEventFunc(inboundEvent, outboundEvent EventFunc)
+	})
 
-	return func(config PeerConfig) Peer {
-		userFunc := config.Event
+	setter.SetConfig(config)
 
-		p := NewPeer(PeerConfig{
-			PeerType:    basePeerType,
-			PeerName:    config.PeerName,
-			PeerAddress: config.PeerAddress,
-			Queue:       config.Queue,
-		})
+	inboundEvent, outboundEvent := FetchEventProcessor(config.EventProcessor, config.InboundEvent, config.OutboundEvent)
+	setter.SetEventFunc(inboundEvent, outboundEvent)
 
-		p.SetEventFunc(customFunc(userFunc))
-
-		return p
-	}
-
+	return p
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	_ "github.com/davyxu/cellnet/comm/udppeer"
+	_ "github.com/davyxu/cellnet/comm/udpproc"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
@@ -17,11 +18,12 @@ var udpEchoAcceptor cellnet.Peer
 
 func StartUDPEchoServer() {
 
-	udpEchoAcceptor = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.udp.Acceptor",
-		PeerAddress: udpEchoAddress,
-		PeerName:    "server",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	udpEchoAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "udp.Acceptor",
+		EventProcessor: "udp.LengthTypeValue",
+		PeerAddress:    udpEchoAddress,
+		PeerName:       "server",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -45,11 +47,12 @@ func StartUDPEchoServer() {
 
 func StartUDPEchoClient() {
 
-	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.udp.Connector",
-		PeerAddress: udpEchoAddress,
-		PeerName:    "client",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "udp.Connector",
+		EventProcessor: "udp.LengthTypeValue",
+		PeerAddress:    udpEchoAddress,
+		PeerName:       "client",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {

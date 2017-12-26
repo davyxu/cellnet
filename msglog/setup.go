@@ -2,6 +2,7 @@ package msglog
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 )
 
 func ProcMsgLog(userFunc cellnet.EventFunc) cellnet.EventFunc {
@@ -9,29 +10,29 @@ func ProcMsgLog(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
-		case *cellnet.SessionConnectErrorEvent: // 连接错误事件
-			log.Debugf("#connectfailed(%s)@%d address: %s", ev.Ses.Peer().Name(), ev.Ses.ID(), ev.Ses.Peer().Address())
-		case *cellnet.SessionConnectedEvent: // 会话开始事件（连接上/接受连接）
-			log.Debugf("#connected(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
-		case *cellnet.SessionAcceptedEvent:
-
-			log.Debugf("#accepted(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
-
-		case *cellnet.SessionClosedEvent: // 会话关闭事件
-			log.Debugf("#closed(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
-
 		case *cellnet.RecvMsgEvent:
 
 			if IsBlockedMessageByID(cellnet.MessageID(ev.Msg)) {
 				break
 			}
 
-			log.Debugf("#recv(%s)@%d %s(%d) | %s",
-				ev.Ses.Peer().Name(),
-				ev.Ses.ID(),
-				cellnet.MessageName(ev.Msg),
-				cellnet.MessageID(ev.Msg),
-				cellnet.MessageToString(ev.Msg))
+			switch ev.Msg.(type) {
+			case *comm.SessionAccepted:
+				log.Debugf("#accepted(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+			case *comm.SessionClosed:
+				log.Debugf("#closed(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+			case *comm.SessionConnected:
+				log.Debugf("#connected(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+			case *comm.SessionConnectError:
+				log.Debugf("#connectfailed(%s)@%d address: %s", ev.Ses.Peer().Name(), ev.Ses.ID(), ev.Ses.Peer().Address())
+			default:
+				log.Debugf("#recv(%s)@%d %s(%d) | %s",
+					ev.Ses.Peer().Name(),
+					ev.Ses.ID(),
+					cellnet.MessageName(ev.Msg),
+					cellnet.MessageID(ev.Msg),
+					cellnet.MessageToString(ev.Msg))
+			}
 
 		case *cellnet.SendMsgEvent:
 

@@ -18,12 +18,13 @@ var singalConnector *util.SignalTester
 func StartCreateDestoryServer() {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.tcp.Acceptor",
-		Queue:       queue,
-		PeerAddress: createDestoryConnectorAddress,
-		PeerName:    "server",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "tcp.Acceptor",
+		EventProcessor: "tcp.ltv",
+		Queue:          queue,
+		PeerAddress:    createDestoryConnectorAddress,
+		PeerName:       "server",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -54,12 +55,13 @@ func runConnClose() {
 	var times int
 
 	var peer cellnet.Peer
-	peer = cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.tcp.Connector",
-		Queue:       queue,
-		PeerAddress: createDestoryConnectorAddress,
-		PeerName:    "client.ConnClose",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	peer = cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "tcp.Connector",
+		EventProcessor: "tcp.ltv",
+		Queue:          queue,
+		PeerAddress:    createDestoryConnectorAddress,
+		PeerName:       "client.ConnClose",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -107,12 +109,13 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
 	var allAccepted sync.WaitGroup
-	p := cellnet.NewPeer(cellnet.PeerConfig{
-		PeerType:    "ltv.tcp.Acceptor",
-		Queue:       queue,
-		PeerAddress: createDestoryAcceptorAddress,
-		PeerName:    "server",
-		Event: func(raw cellnet.EventParam) cellnet.EventResult {
+	p := cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       "tcp.Acceptor",
+		EventProcessor: "tcp.ltv",
+		Queue:          queue,
+		PeerAddress:    createDestoryAcceptorAddress,
+		PeerName:       "server",
+		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -160,10 +163,11 @@ func runMultiConnection() {
 
 	for i := 0; i < clientConnectionCount; i++ {
 
-		cellnet.NewPeer(cellnet.PeerConfig{
-			PeerType:    "ltv.tcp.Connector",
-			PeerAddress: createDestoryAcceptorAddress,
-			PeerName:    "client.ConnClose",
+		cellnet.CreatePeer(cellnet.PeerConfig{
+			PeerType:       "tcp.Connector",
+			EventProcessor: "tcp.ltv",
+			PeerAddress:    createDestoryAcceptorAddress,
+			PeerName:       "client.ConnClose",
 		}).Start()
 	}
 

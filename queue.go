@@ -105,23 +105,33 @@ func SessionQueuedCall(ses Session, callback func()) {
 		return
 	}
 
-	q := ses.Peer().EventQueue()
-
-	// Peer有队列时，在队列线程调用用户处理函数
-	if q != nil {
-		q.Post(callback)
-
-	} else {
-
-		// 在I/O线程调用用户处理函数
-		callback()
-	}
+	QueuedCall(ses.Peer().EventQueue(), callback)
 }
 
+// 有队列时队列调用，无队列时直接调用
 func QueuedCall(queue EventQueue, callback func()) {
 	if queue == nil {
 		callback()
 	} else {
 		queue.Post(callback)
+	}
+}
+
+func ProcQueue(userFunc EventFunc) EventFunc {
+
+	return func(raw EventParam) EventResult {
+
+		switch ev := raw.(type) {
+		case *RecvMsgEvent:
+
+			SessionQueuedCall(ev.Ses, func() {
+				userFunc(raw)
+			})
+
+		default:
+			return userFunc(raw)
+		}
+
+		return nil
 	}
 }

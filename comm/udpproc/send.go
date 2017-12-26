@@ -1,21 +1,11 @@
-package tcppkt
+package udpproc
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
-	"net"
 )
 
-// 发送Length-Type-Value格式的封包流程
-func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
-
-	// 取Socket连接
-	conn, ok := ses.Raw().(net.Conn)
-
-	// 转换错误，或者连接已经关闭时退出
-	if !ok || conn == nil {
-		return nil
-	}
+func SendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 
 	// 将用户数据转换为字节数组和消息ID
 	data, meta, err := cellnet.EncodeMessage(msg)
@@ -28,6 +18,11 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 	// 创建封包写入器
 	var pktWriter util.BinaryWriter
 
+	// 写入消息长度做验证
+	if err := pktWriter.WriteValue(uint16(len(data)) + 2 + 2); err != nil {
+		return err
+	}
+
 	// 写入消息ID
 	if err := pktWriter.WriteValue(uint16(meta.ID)); err != nil {
 		return err
@@ -38,6 +33,9 @@ func onSendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 		return err
 	}
 
-	// 发送长度定界的变长封包
-	return SendVariableLengthPacket(conn, pktWriter)
+	writer := ses.(interface {
+		WriteData(data []byte) error
+	})
+
+	return writer.WriteData(pktWriter.Raw())
 }

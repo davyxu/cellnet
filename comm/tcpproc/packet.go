@@ -1,4 +1,4 @@
-package tcppkt
+package tcpproc
 
 import (
 	"encoding/binary"

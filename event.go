@@ -63,25 +63,3 @@ type SendMsgErrorEvent struct {
 	Error error
 	Msg   interface{}
 }
-
-// 连接错误事件
-type SessionConnectErrorEvent struct {
-	Ses   Session
-	Error error
-}
-
-// 会话连接关闭事件
-type SessionClosedEvent struct {
-	Ses   Session
-	Error error
-}
-
-// 已连接上远方服务器事件
-type SessionConnectedEvent struct {
-	Ses Session
-}
-
-// 已接受一个连接事件
-type SessionAcceptedEvent struct {
-	Ses Session
-}
