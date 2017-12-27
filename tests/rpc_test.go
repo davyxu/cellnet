@@ -16,7 +16,7 @@ var asyncRPCSignal *util.SignalTester
 
 var rpcAcceptor cellnet.Peer
 
-func StartRPCServer() {
+func startRPCServer() {
 	queue := cellnet.NewEventQueue()
 
 	rpcAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
@@ -116,7 +116,7 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func StartRPCClient(eventFunc cellnet.EventProc) {
+func startRPCClient(eventFunc cellnet.EventProc) {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
@@ -135,9 +135,9 @@ func TestSyncRPC(t *testing.T) {
 
 	syncRPCSignal = util.NewSignalTester(t)
 
-	StartRPCServer()
+	startRPCServer()
 
-	StartRPCClient(onSyncRPCClientEvent)
+	startRPCClient(onSyncRPCClientEvent)
 	syncRPCSignal.WaitAndExpect("sync not recv data ", 100, 200)
 
 	rpcAcceptor.Stop()
@@ -147,9 +147,9 @@ func TestASyncRPC(t *testing.T) {
 
 	asyncRPCSignal = util.NewSignalTester(t)
 
-	StartRPCServer()
+	startRPCServer()
 
-	StartRPCClient(onASyncRPCClientEvent)
+	startRPCClient(onASyncRPCClientEvent)
 	asyncRPCSignal.WaitAndExpect("async not recv data ", 1, 2)
 
 	rpcAcceptor.Stop()
