@@ -84,9 +84,9 @@ func (self *udpSession) WriteData(data []byte) error {
 // 发送封包
 func (self *udpSession) Send(data interface{}) {
 
-	raw := self.peer.InvokeOutboundEvent(&cellnet.SendMsgEvent{self, data})
+	raw := self.peer.CallOutboundProc(&cellnet.SendMsgEvent{self, data})
 	if raw != nil {
-		self.peer.InvokeInboundEvent(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
+		self.peer.CallInboundProc(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
 
 		self.Close()
 	}
@@ -101,9 +101,9 @@ func (self *udpSession) OnRecv(data []byte) error {
 
 	self.HeartBeat()
 
-	raw := self.peer.InvokeInboundEvent(&cellnet.RecvDataEvent{self, data})
+	raw := self.peer.CallInboundProc(&cellnet.RecvDataEvent{self, data})
 	if err, ok := raw.(error); ok && err != nil {
-		self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+		self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 
 		return err
 	}
@@ -132,7 +132,7 @@ func (self *udpSession) Start() {
 				currValue := atomic.SwapInt64(&self.heartBeat, targetValue)
 
 				if currValue == 0 {
-					self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+					self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 					goto OnExit
 				}
 

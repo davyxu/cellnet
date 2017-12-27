@@ -73,13 +73,13 @@ func (self *tcpSession) recvLoop() {
 	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
-		raw := self.peer.InvokeInboundEvent(&cellnet.ReadEvent{self})
+		raw := self.peer.CallInboundProc(&cellnet.ReadEvent{self})
 
 		// 连接断开
 		if raw != nil && self.conn != nil {
 
-			self.peer.InvokeInboundEvent(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
-			//self.peer.InvokeInboundEvent(cellnet.RecvErrorEvent{self, raw.(error)})
+			self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+			//self.peer.CallInboundProc(cellnet.RecvErrorEvent{self, raw.(error)})
 			break
 		}
 	}
@@ -99,11 +99,11 @@ func (self *tcpSession) sendLoop() {
 		}
 
 		// 要求发送数据
-		err := self.peer.InvokeOutboundEvent(&cellnet.SendMsgEvent{self, msg})
+		err := self.peer.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
 
 		// 发送错误时派发事件
 		if err != nil {
-			self.peer.InvokeInboundEvent(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
+			self.peer.CallInboundProc(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
 			break
 		}
 

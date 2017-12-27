@@ -43,7 +43,7 @@ func (self *udpConnector) connect() {
 
 	ses.Start()
 
-	self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
+	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
 
 	buff := make([]byte, 4096)
 	for {

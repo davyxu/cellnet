@@ -53,7 +53,7 @@ func (self *udpAcceptor) listen() {
 		if err != nil {
 
 			log.Errorln("read error:", err)
-			//self.InvokeInboundEvent(cellnet.SessionClosedEvent{nil})
+			//self.CallInboundProc(cellnet.SessionClosedEvent{nil})
 			break
 		}
 
@@ -77,7 +77,7 @@ func (self *udpAcceptor) listen() {
 
 			self.sesByAddress.Store(addr, ses)
 
-			self.InvokeInboundEvent(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+			self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
 
 			// mono首次封包是空
 			if n == 0 {

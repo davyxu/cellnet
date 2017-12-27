@@ -25,7 +25,7 @@ func StartRPCServer() {
 		Queue:          queue,
 		PeerAddress:    syncRPCAddress,
 		PeerName:       "server",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*rpc.RecvMsgEvent)
 			if ok {
@@ -116,16 +116,16 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func StartRPCClient(eventFunc cellnet.EventFunc) {
+func StartRPCClient(eventFunc cellnet.EventProc) {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
-		PeerType:       "tcp.Connector",
-		EventProcessor: "tcp.ltv",
-		Queue:          queue,
-		PeerAddress:    syncRPCAddress,
-		PeerName:       "client",
-		InboundEvent:   eventFunc,
+		PeerType:        "tcp.Connector",
+		EventProcessor:  "tcp.ltv",
+		Queue:           queue,
+		PeerAddress:     syncRPCAddress,
+		PeerName:        "client",
+		UserInboundProc: eventFunc,
 	}).Start()
 
 	queue.StartLoop()

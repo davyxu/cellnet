@@ -22,8 +22,8 @@ type PeerConfig struct {
 
 	Queue EventQueue
 
-	InboundEvent  EventFunc
-	OutboundEvent EventFunc
+	UserInboundProc  EventProc
+	UserOutboundProc EventProc
 }
 
 // 获取通讯端的名称

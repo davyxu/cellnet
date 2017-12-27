@@ -20,13 +20,13 @@ type PeerShare struct {
 	// 停止过程同步
 	stopping chan bool
 
-	InboundEvent  cellnet.EventFunc
-	OutboundEvent cellnet.EventFunc
+	InboundProc  cellnet.EventProc
+	OutboundProc cellnet.EventProc
 }
 
-func (self *PeerShare) SetEventFunc(inboundEvent, outboundEvent cellnet.EventFunc) {
-	self.InboundEvent = inboundEvent
-	self.OutboundEvent = outboundEvent
+func (self *PeerShare) SetEventFunc(inboundEvent, outboundEvent cellnet.EventProc) {
+	self.InboundProc = inboundEvent
+	self.OutboundProc = outboundEvent
 }
 
 func (self *PeerShare) SetConfig(config cellnet.PeerConfig) {
@@ -64,23 +64,23 @@ func (self *PeerShare) SetRunning(v bool) {
 }
 
 // socket包内部派发事件
-func (self *PeerShare) InvokeInboundEvent(ev interface{}) interface{} {
+func (self *PeerShare) CallInboundProc(ev interface{}) interface{} {
 
-	if self.InboundEvent == nil {
+	if self.InboundProc == nil {
 		return nil
 	}
 
-	return self.InboundEvent(ev)
+	return self.InboundProc(ev)
 }
 
 // socket包内部派发事件
-func (self *PeerShare) InvokeOutboundEvent(ev interface{}) interface{} {
+func (self *PeerShare) CallOutboundProc(ev interface{}) interface{} {
 
-	if self.OutboundEvent == nil {
+	if self.OutboundProc == nil {
 		return nil
 	}
 
-	return self.OutboundEvent(ev)
+	return self.OutboundProc(ev)
 }
 
 func (self *PeerShare) NameOrAddress() string {

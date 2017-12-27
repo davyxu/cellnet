@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet/rpc"
 )
 
-func ProcLTVInboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -27,7 +27,7 @@ func ProcLTVInboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 	}
 }
 
-func ProcLTVOutboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcLTVOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -47,7 +47,7 @@ func ProcLTVOutboundPacket(userFunc cellnet.EventFunc) cellnet.EventFunc {
 
 func init() {
 
-	cellnet.RegisterEventProcessor("tcp.ltv", func(userInBound cellnet.EventFunc, userOutbound cellnet.EventFunc) (cellnet.EventFunc, cellnet.EventFunc) {
+	cellnet.RegisterEventProcessor("tcp.ltv", func(userInBound cellnet.EventProc, userOutbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
 
 		return ProcLTVInboundPacket(
 				rpc.ProcRPC( // 消息日志

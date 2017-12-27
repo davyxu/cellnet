@@ -10,7 +10,7 @@ type msgEvent interface {
 	Message() interface{}
 }
 
-func ProcRPC(userFunc cellnet.EventFunc) cellnet.EventFunc {
+func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 

@@ -25,7 +25,7 @@ func StartTCPEchoServer() {
 		Queue:          queue,
 		PeerAddress:    tcpEchoAddress,
 		PeerName:       "server",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
@@ -62,7 +62,7 @@ func StartTCPEchoClient() {
 		Queue:          queue,
 		PeerAddress:    tcpEchoAddress,
 		PeerName:       "client",
-		InboundEvent: func(raw cellnet.EventParam) cellnet.EventResult {
+		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
 			ev, ok := raw.(*cellnet.RecvMsgEvent)
 			if ok {
