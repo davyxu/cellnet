@@ -27,6 +27,8 @@ type tcpSession struct {
 	// 发送队列
 	sendChan chan interface{}
 
+	cleanupGuard sync.Mutex
+
 	endNotify func()
 }
 
@@ -112,6 +114,10 @@ func (self *tcpSession) sendLoop() {
 
 // 清理资源
 func (self *tcpSession) cleanup() {
+
+	self.cleanupGuard.Lock()
+
+	defer self.cleanupGuard.Unlock()
 
 	// 关闭连接
 	if self.conn != nil {
