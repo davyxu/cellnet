@@ -12,17 +12,11 @@ import (
 
 // Socket会话
 type udpSession struct {
+	internal.SessionShare
 
 	// Socket原始连接
 	remote *net.UDPAddr
 	conn   *net.UDPConn
-
-	tag interface{}
-
-	// 归属的通讯端
-	peer *internal.PeerShare
-
-	id int64
 
 	exitSignal chan bool // 通知开始退出线程
 
@@ -40,32 +34,11 @@ func (self *udpSession) Raw() interface{} {
 	return nil
 }
 
-func (self *udpSession) Tag() interface{} {
-	return self.tag
-}
-
-func (self *udpSession) SetTag(v interface{}) {
-	self.tag = v
-}
-
-func (self *udpSession) ID() int64 {
-	return self.id
-}
-
-func (self *udpSession) SetID(id int64) {
-	self.id = id
-}
-
 func (self *udpSession) Close() {
 
 	self.exitSignal <- true
 
 	self.endWaitor.Wait()
-}
-
-// 取会话归属的通讯端
-func (self *udpSession) Peer() cellnet.Peer {
-	return self.peer.Peer()
 }
 
 func (self *udpSession) WriteData(data []byte) error {
@@ -84,9 +57,9 @@ func (self *udpSession) WriteData(data []byte) error {
 // 发送封包
 func (self *udpSession) Send(data interface{}) {
 
-	raw := self.peer.CallOutboundProc(&cellnet.SendMsgEvent{self, data})
+	raw := self.PeerShare.CallOutboundProc(&cellnet.SendMsgEvent{self, data})
 	if raw != nil {
-		self.peer.CallInboundProc(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
+		self.PeerShare.CallInboundProc(&cellnet.SendMsgErrorEvent{self, raw.(error), data})
 
 		self.Close()
 	}
@@ -101,9 +74,9 @@ func (self *udpSession) OnRecv(data []byte) error {
 
 	self.HeartBeat()
 
-	raw := self.peer.CallInboundProc(&cellnet.RecvDataEvent{self, data})
+	raw := self.PeerShare.CallInboundProc(&cellnet.RecvDataEvent{self, data})
 	if err, ok := raw.(error); ok && err != nil {
-		self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+		self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 
 		return err
 	}
@@ -132,7 +105,7 @@ func (self *udpSession) Start() {
 				currValue := atomic.SwapInt64(&self.heartBeat, targetValue)
 
 				if currValue == 0 {
-					self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+					self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 					goto OnExit
 				}
 
@@ -155,13 +128,16 @@ func (self *udpSession) Start() {
 
 }
 
-func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peer *internal.PeerShare, endNotify func()) *udpSession {
-	return &udpSession{
+func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *internal.PeerShare, endNotify func()) *udpSession {
+	self := &udpSession{
 		conn:        conn,
 		remote:      addr,
-		peer:        peer,
 		recvTimeout: time.Second * 3,
 		endNotify:   endNotify,
 		exitSignal:  make(chan bool),
 	}
+
+	self.PeerShare = peerShare
+
+	return self
 }

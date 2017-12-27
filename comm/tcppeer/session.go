@@ -10,19 +10,13 @@ import (
 
 // Socket会话
 type tcpSession struct {
+	internal.SessionShare
 
 	// Socket原始连接
 	conn net.Conn
 
-	tag interface{}
-
 	// 退出同步器
 	exitSync sync.WaitGroup
-
-	// 归属的通讯端
-	peer *internal.PeerShare
-
-	id int64
 
 	// 发送队列
 	sendChan chan interface{}
@@ -37,29 +31,8 @@ func (self *tcpSession) Raw() interface{} {
 	return self.conn
 }
 
-func (self *tcpSession) Tag() interface{} {
-	return self.tag
-}
-
-func (self *tcpSession) SetTag(v interface{}) {
-	self.tag = v
-}
-
-func (self *tcpSession) ID() int64 {
-	return self.id
-}
-
-func (self *tcpSession) SetID(id int64) {
-	self.id = id
-}
-
 func (self *tcpSession) Close() {
 	self.sendChan <- nil
-}
-
-// 取会话归属的通讯端
-func (self *tcpSession) Peer() cellnet.Peer {
-	return self.peer.Peer()
 }
 
 // 发送封包
@@ -73,12 +46,12 @@ func (self *tcpSession) recvLoop() {
 	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
-		raw := self.peer.CallInboundProc(&cellnet.ReadEvent{self})
+		raw := self.PeerShare.CallInboundProc(&cellnet.ReadEvent{self})
 
 		// 连接断开
 		if raw != nil && self.conn != nil {
 
-			self.peer.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 			//self.peer.CallInboundProc(cellnet.RecvErrorEvent{self, raw.(error)})
 			break
 		}
@@ -99,11 +72,11 @@ func (self *tcpSession) sendLoop() {
 		}
 
 		// 要求发送数据
-		err := self.peer.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
+		err := self.PeerShare.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
 
 		// 发送错误时派发事件
 		if err != nil {
-			self.peer.CallInboundProc(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
+			self.PeerShare.CallInboundProc(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
 			break
 		}
 
@@ -168,11 +141,14 @@ func (self *tcpSession) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func newTCPSession(conn net.Conn, peer *internal.PeerShare, endNotify func()) cellnet.Session {
-	return &tcpSession{
+func newTCPSession(conn net.Conn, peerShare *internal.PeerShare, endNotify func()) cellnet.Session {
+	self := &tcpSession{
 		conn:      conn,
-		peer:      peer,
 		endNotify: endNotify,
 		sendChan:  make(chan interface{}, SendQueueLen),
 	}
+
+	self.PeerShare = peerShare
+
+	return self
 }

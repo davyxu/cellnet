@@ -29,7 +29,7 @@ func RegisterMessageMeta(codecName string, name string, msgType reflect.Type, id
 		Type:  msgType,
 		Name:  name,
 		ID:    id,
-		Codec: FetchCodec(codecName),
+		Codec: GetCodec(codecName),
 	}
 
 	if meta.Codec == nil {

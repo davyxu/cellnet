@@ -20,7 +20,7 @@ func RegisterEventProcessor(name string, f DuplexEventProcessor) {
 	evtprocByName[name] = f
 }
 
-func FetchEventProcessor(name string, inbound, outbound EventProc) (EventProc, EventProc) {
+func GetEventProcessor(name string, inbound, outbound EventProc) (EventProc, EventProc) {
 
 	f := evtprocByName[name]
 	if f == nil {

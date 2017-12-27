@@ -48,7 +48,7 @@ func CreatePeer(config PeerConfig) Peer {
 
 	setter.SetConfig(config)
 
-	inboundEvent, outboundEvent := FetchEventProcessor(config.EventProcessor, config.UserInboundProc, config.UserOutboundProc)
+	inboundEvent, outboundEvent := GetEventProcessor(config.EventProcessor, config.UserInboundProc, config.UserOutboundProc)
 	setter.SetEventFunc(inboundEvent, outboundEvent)
 
 	return p

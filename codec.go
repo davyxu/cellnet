@@ -27,7 +27,7 @@ func RegisterCodec(c Codec) {
 	codecByName[c.Name()] = c
 }
 
-func FetchCodec(name string) Codec {
+func GetCodec(name string) Codec {
 
 	return codecByName[name]
 }
