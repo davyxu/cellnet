@@ -2,6 +2,8 @@ package udpproc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
+	"github.com/davyxu/cellnet/comm/udppeer"
 	"github.com/davyxu/cellnet/msglog"
 )
 
@@ -18,7 +20,14 @@ func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 				return err
 			}
 
-			userFunc(&cellnet.RecvMsgEvent{ev.Ses, msg})
+			if _, ok := msg.(*comm.SessionCloseNotify); ok {
+
+				ev.Ses.(udppeer.UPDSession).RawClose()
+
+			} else {
+				userFunc(&cellnet.RecvMsgEvent{ev.Ses, msg})
+			}
+
 		default:
 			userFunc(raw)
 		}

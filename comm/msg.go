@@ -19,14 +19,20 @@ type SessionConnectError struct {
 type SessionClosed struct {
 }
 
+// udp通知关闭
+type SessionCloseNotify struct {
+}
+
 func (self *SessionAccepted) String() string     { return fmt.Sprintf("%+v", *self) }
 func (self *SessionConnected) String() string    { return fmt.Sprintf("%+v", *self) }
 func (self *SessionConnectError) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *SessionClosed) String() string       { return fmt.Sprintf("%+v", *self) }
+func (self *SessionCloseNotify) String() string  { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 	cellnet.RegisterMessageMeta("binary", "tcpproc.SessionAccepted", reflect.TypeOf((*SessionAccepted)(nil)).Elem(), 63001)
 	cellnet.RegisterMessageMeta("binary", "tcpproc.SessionConnected", reflect.TypeOf((*SessionConnected)(nil)).Elem(), 63002)
 	cellnet.RegisterMessageMeta("binary", "tcpproc.SessionConnectError", reflect.TypeOf((*SessionConnectError)(nil)).Elem(), 63003)
 	cellnet.RegisterMessageMeta("binary", "tcpproc.SessionClosed", reflect.TypeOf((*SessionClosed)(nil)).Elem(), 63004)
+	cellnet.RegisterMessageMeta("binary", "tcpproc.SessionCloseNotify", reflect.TypeOf((*SessionCloseNotify)(nil)).Elem(), 63005)
 }

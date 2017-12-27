@@ -8,6 +8,8 @@ import (
 	"sync"
 )
 
+const MaxUDPRecvBuffer = 2048
+
 type udpAcceptor struct {
 	internal.PeerShare
 	localAddr *net.UDPAddr
@@ -45,15 +47,12 @@ func (self *udpAcceptor) listen() {
 
 	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
-	buff := make([]byte, 4096)
+	buff := make([]byte, MaxUDPRecvBuffer)
 
 	for {
 
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
-
-			log.Errorln("read error:", err)
-			//self.CallInboundProc(cellnet.SessionClosedEvent{nil})
 			break
 		}
 
@@ -78,20 +77,25 @@ func (self *udpAcceptor) listen() {
 			self.sesByAddress.Store(addr, ses)
 
 			self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
-
-			// mono首次封包是空
-			if n == 0 {
-				ses.HeartBeat()
-
-				continue
-			}
 		}
 
-		err = ses.OnRecv(buff[:n])
+		// 将数据拷贝到会话缓冲区
 
-		if err != nil {
-			self.removeAddress(addr)
+		if n > 0 {
+			ses.OnRecv(buff[:n])
+
+			// 并发处理封包
+			go func() {
+				err = ses.ProcPacket()
+
+				if err != nil {
+					self.removeAddress(addr)
+				}
+			}()
+		} else { //  Mono在连上后，需要发一个包
+			ses.KeepAlive()
 		}
+
 	}
 
 }

@@ -1,6 +1,6 @@
 package cellnet
 
-// 需要读取数据
+// 需要读取数据(tcp)
 type ReadEvent struct {
 	Ses Session
 }
@@ -9,7 +9,7 @@ func (self *ReadEvent) Session() Session {
 	return self.Ses
 }
 
-// 接收到数据
+// 接收到数据(udp)
 type RecvDataEvent struct {
 	Ses  Session
 	Data []byte

@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 )
 
 type msgEvent interface {
@@ -61,6 +62,6 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 }
 
 func init() {
-	//msglog.BlockMessageLog("rpc.RemoteCallREQ")
-	//msglog.BlockMessageLog("rpc.RemoteCallACK")
+	msglog.BlockMessageLog("rpc.RemoteCallREQ")
+	msglog.BlockMessageLog("rpc.RemoteCallACK")
 }

@@ -10,20 +10,20 @@ import (
 	"testing"
 )
 
-const tcpEchoAddress = "127.0.0.1:7701"
+const tcpEcho_Address = "127.0.0.1:7701"
 
-var tcpEchoSignal *util.SignalTester
+var tcpEcho_Signal *util.SignalTester
 
-var tcpEchoAcceptor cellnet.Peer
+var tcpEcho_Acceptor cellnet.Peer
 
-func StartTCPEchoServer() {
+func tcpEcho_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	tcpEchoAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+	tcpEcho_Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    tcpEchoAddress,
+		PeerAddress:    tcpEcho_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -53,14 +53,14 @@ func StartTCPEchoServer() {
 	queue.StartLoop()
 }
 
-func StartTCPEchoClient() {
+func tcpEcho_StartClient() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "tcp.Connector",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    tcpEchoAddress,
+		PeerAddress:    tcpEcho_Address,
 		PeerName:       "client",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -77,7 +77,7 @@ func StartTCPEchoClient() {
 
 					fmt.Printf("client recv %+v\n", msg)
 
-					tcpEchoSignal.Done(1)
+					tcpEcho_Signal.Done(1)
 
 				case *comm.SessionClosed:
 					fmt.Println("client error: ")
@@ -90,16 +90,16 @@ func StartTCPEchoClient() {
 
 	queue.StartLoop()
 
-	tcpEchoSignal.WaitAndExpect("not recv data", 1)
+	tcpEcho_Signal.WaitAndExpect("not recv data", 1)
 }
 
 func TestTCPEcho(t *testing.T) {
 
-	tcpEchoSignal = util.NewSignalTester(t)
+	tcpEcho_Signal = util.NewSignalTester(t)
 
-	StartTCPEchoServer()
+	tcpEcho_StartServer()
 
-	StartTCPEchoClient()
+	tcpEcho_StartClient()
 
-	tcpEchoAcceptor.Stop()
+	tcpEcho_Acceptor.Stop()
 }

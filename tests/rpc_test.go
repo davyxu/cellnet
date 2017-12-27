@@ -9,21 +9,21 @@ import (
 	"time"
 )
 
-const syncRPCAddress = "127.0.0.1:9201"
+const syncRPC_Address = "127.0.0.1:9201"
 
-var syncRPCSignal *util.SignalTester
-var asyncRPCSignal *util.SignalTester
+var syncRPC_Signal *util.SignalTester
+var asyncRPC_Signal *util.SignalTester
 
-var rpcAcceptor cellnet.Peer
+var rpc_Acceptor cellnet.Peer
 
-func startRPCServer() {
+func rpc_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	rpcAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+	rpc_Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    syncRPCAddress,
+		PeerAddress:    syncRPC_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -48,7 +48,7 @@ func startRPCServer() {
 	queue.StartLoop()
 }
 
-func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func syncRPC_OnClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(*cellnet.RecvMsgEvent)
 	if ok {
@@ -65,15 +65,15 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 					}, time.Second*5)
 
 					if err != nil {
-						syncRPCSignal.Log(err)
-						syncRPCSignal.FailNow()
+						syncRPC_Signal.Log(err)
+						syncRPC_Signal.FailNow()
 						return
 					}
 
 					msg := result.(*TestEchoACK)
 					log.Debugln("client sync recv:", msg.Msg, id*100)
 
-					syncRPCSignal.Done(id * 100)
+					syncRPC_Signal.Done(id * 100)
 
 				}(i + 1)
 			}
@@ -83,7 +83,7 @@ func onSyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
+func asyncRPC_OnClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 	ev, ok := raw.(*cellnet.RecvMsgEvent)
 	if ok {
@@ -100,11 +100,11 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 
 					switch v := feedback.(type) {
 					case error:
-						asyncRPCSignal.Log(v)
-						asyncRPCSignal.FailNow()
+						asyncRPC_Signal.Log(v)
+						asyncRPC_Signal.FailNow()
 					case *TestEchoACK:
 						log.Debugln("client sync recv:", v.Msg)
-						asyncRPCSignal.Done(copy)
+						asyncRPC_Signal.Done(copy)
 					}
 
 				})
@@ -116,14 +116,14 @@ func onASyncRPCClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 	return nil
 }
 
-func startRPCClient(eventFunc cellnet.EventProc) {
+func rpc_StartClient(eventFunc cellnet.EventProc) {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:        "tcp.Connector",
 		EventProcessor:  "tcp.ltv",
 		Queue:           queue,
-		PeerAddress:     syncRPCAddress,
+		PeerAddress:     syncRPC_Address,
 		PeerName:        "client",
 		UserInboundProc: eventFunc,
 	}).Start()
@@ -133,24 +133,24 @@ func startRPCClient(eventFunc cellnet.EventProc) {
 
 func TestSyncRPC(t *testing.T) {
 
-	syncRPCSignal = util.NewSignalTester(t)
+	syncRPC_Signal = util.NewSignalTester(t)
 
-	startRPCServer()
+	rpc_StartServer()
 
-	startRPCClient(onSyncRPCClientEvent)
-	syncRPCSignal.WaitAndExpect("sync not recv data ", 100, 200)
+	rpc_StartClient(syncRPC_OnClientEvent)
+	syncRPC_Signal.WaitAndExpect("sync not recv data ", 100, 200)
 
-	rpcAcceptor.Stop()
+	rpc_Acceptor.Stop()
 }
 
 func TestASyncRPC(t *testing.T) {
 
-	asyncRPCSignal = util.NewSignalTester(t)
+	asyncRPC_Signal = util.NewSignalTester(t)
 
-	startRPCServer()
+	rpc_StartServer()
 
-	startRPCClient(onASyncRPCClientEvent)
-	asyncRPCSignal.WaitAndExpect("async not recv data ", 1, 2)
+	rpc_StartClient(asyncRPC_OnClientEvent)
+	asyncRPC_Signal.WaitAndExpect("async not recv data ", 1, 2)
 
-	rpcAcceptor.Stop()
+	rpc_Acceptor.Stop()
 }

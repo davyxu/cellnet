@@ -52,7 +52,6 @@ func (self *tcpSession) recvLoop() {
 		if raw != nil && self.conn != nil {
 
 			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
-			//self.peer.CallInboundProc(cellnet.RecvErrorEvent{self, raw.(error)})
 			break
 		}
 	}

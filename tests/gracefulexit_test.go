@@ -11,18 +11,18 @@ import (
 	"time"
 )
 
-const createDestoryConnectorAddress = "127.0.0.1:7201"
+const recreateConn_Address = "127.0.0.1:7201"
 
-var singalConnector *util.SignalTester
+var recreateConn_Signal *util.SignalTester
 
-func StartCreateDestoryServer() {
+func recreateConn_StartServer() {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    createDestoryConnectorAddress,
+		PeerAddress:    recreateConn_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -59,7 +59,7 @@ func runConnClose() {
 		PeerType:       "tcp.Connector",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    createDestoryConnectorAddress,
+		PeerAddress:    recreateConn_Address,
 		PeerName:       "client.ConnClose",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -75,7 +75,7 @@ func runConnClose() {
 						peer.Start()
 						times++
 					} else {
-						singalConnector.Done(1)
+						recreateConn_Signal.Done(1)
 					}
 				}
 			}
@@ -86,24 +86,24 @@ func runConnClose() {
 
 	queue.StartLoop()
 
-	singalConnector.WaitAndExpect("not expect times", 1)
+	recreateConn_Signal.WaitAndExpect("not expect times", 1)
 
 	peer.Stop()
 }
 
 func TestCreateDestroyConnector(t *testing.T) {
 
-	singalConnector = util.NewSignalTester(t)
-	singalConnector.SetTimeout(time.Second * 3)
+	recreateConn_Signal = util.NewSignalTester(t)
+	recreateConn_Signal.SetTimeout(time.Second * 3)
 
-	StartCreateDestoryServer()
+	recreateConn_StartServer()
 
 	runConnClose()
 }
 
-const clientConnectionCount = 3
+const recreateAcc_clientConnection = 3
 
-const createDestoryAcceptorAddress = "127.0.0.1:7711"
+const recreateAcc_Address = "127.0.0.1:7711"
 
 func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
@@ -113,7 +113,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
-		PeerAddress:    createDestoryAcceptorAddress,
+		PeerAddress:    recreateAcc_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -134,7 +134,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	queue.StartLoop()
 
 	log.Debugln("Start connecting...")
-	allAccepted.Add(clientConnectionCount)
+	allAccepted.Add(recreateAcc_clientConnection)
 	runMultiConnection()
 
 	log.Debugln("Wait all accept...")
@@ -150,7 +150,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 
 	p.Start()
 	log.Debugln("Start connecting...")
-	allAccepted.Add(clientConnectionCount)
+	allAccepted.Add(recreateAcc_clientConnection)
 	runMultiConnection()
 
 	log.Debugln("Wait all accept...")
@@ -161,12 +161,12 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 
 func runMultiConnection() {
 
-	for i := 0; i < clientConnectionCount; i++ {
+	for i := 0; i < recreateAcc_clientConnection; i++ {
 
 		cellnet.CreatePeer(cellnet.PeerConfig{
 			PeerType:       "tcp.Connector",
 			EventProcessor: "tcp.ltv",
-			PeerAddress:    createDestoryAcceptorAddress,
+			PeerAddress:    recreateAcc_Address,
 			PeerName:       "client.ConnClose",
 		}).Start()
 	}

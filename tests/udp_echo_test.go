@@ -10,18 +10,18 @@ import (
 	"testing"
 )
 
-const udpEchoAddress = "127.0.0.1:7901"
+const udpEcho_Address = "127.0.0.1:7901"
 
-var udpEchoSignal *util.SignalTester
+var udpEcho_Signal *util.SignalTester
 
-var udpEchoAcceptor cellnet.Peer
+var udpEcho_Acceptor cellnet.Peer
 
-func StartUDPEchoServer() {
+func udpEcho_StartServer() {
 
-	udpEchoAcceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+	udpEcho_Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "udp.Acceptor",
 		EventProcessor: "udp.ltv",
-		PeerAddress:    udpEchoAddress,
+		PeerAddress:    udpEcho_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -45,12 +45,12 @@ func StartUDPEchoServer() {
 
 }
 
-func StartUDPEchoClient() {
+func udpEcho_StartClient() {
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
 		PeerType:       "udp.Connector",
 		EventProcessor: "udp.ltv",
-		PeerAddress:    udpEchoAddress,
+		PeerAddress:    udpEcho_Address,
 		PeerName:       "client",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -67,7 +67,7 @@ func StartUDPEchoClient() {
 
 					fmt.Printf("client recv %+v\n", msg)
 
-					udpEchoSignal.Done(1)
+					udpEcho_Signal.Done(1)
 
 				case *comm.SessionClosed:
 					fmt.Println("client error: ")
@@ -78,66 +78,16 @@ func StartUDPEchoClient() {
 		},
 	}).Start()
 
-	udpEchoSignal.WaitAndExpect("not recv data", 1)
+	udpEcho_Signal.WaitAndExpect("not recv data", 1)
 }
 
 func TestUDPEcho(t *testing.T) {
 
-	udpEchoSignal = util.NewSignalTester(t)
+	udpEcho_Signal = util.NewSignalTester(t)
 
-	StartUDPEchoServer()
+	udpEcho_StartServer()
 
-	StartUDPEchoClient()
+	udpEcho_StartClient()
 
-	udpEchoAcceptor.Stop()
+	udpEcho_Acceptor.Stop()
 }
-
-//func TestUDPServer(t *testing.T) {
-//
-//	StartUDPEchoServer()
-//
-//	queue := cellnet.NewEventQueue()
-//
-//	queue.StartLoop()
-//	queue.Wait()
-//}
-
-/*
-	_, err = conn.Write([]byte{})
-
-	if err != nil {
-
-		log.Errorf("#write failed(%s) %v", self.NameOrAddress(), err.Error())
-		return
-	}
-
-	buff := make([]byte, 1024)
-	n, err := conn.Read(buff)
-	if err != nil {
-
-		log.Errorf("#read failed(%s) %v", self.NameOrAddress(), err.Error())
-		return
-	}
-
-	da := binary.BigEndian.Uint32(buff[:n])
-
-	log.Debugln(time.Unix(int64(da), 0).String(), buff[:n])
-
-*/
-//const udpAddress = "time.nist.gov:37"
-//
-//func TestUDPConnector(t *testing.T) {
-//
-//	queue := cellnet.NewEventQueue()
-//
-//	cellnet.NewPeer(cellnet.PeerConfig{
-//		PeerType:    "udp.Connector",
-//		Queue:       queue,
-//		PeerAddress: udpAddress,
-//		PeerName:    "client",
-//	}).Start()
-//
-//	queue.StartLoop()
-//
-//	queue.Wait()
-//}

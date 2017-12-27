@@ -55,7 +55,9 @@ func (self *udpConnector) connect() {
 			break
 		}
 
-		err = ses.OnRecv(buff[:n])
+		ses.OnRecv(buff[:n])
+
+		err = ses.ProcPacket()
 
 		if err != nil {
 			break
