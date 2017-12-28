@@ -1,6 +1,7 @@
 package udppeer
 
 import (
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
@@ -22,7 +23,7 @@ type UPDSession interface {
 	MarkVerified()
 
 	// 直接关闭，不通知
-	RawClose()
+	RawClose(err error)
 }
 
 // Socket会话
@@ -33,7 +34,7 @@ type udpSession struct {
 	remote *net.UDPAddr
 	conn   *net.UDPConn
 
-	exitSignal chan bool // 通知开始退出线程
+	exitSignal chan error // 通知开始退出线程
 
 	recvTimeout time.Duration // 接收超时
 
@@ -43,7 +44,9 @@ type udpSession struct {
 
 	verify int64
 
-	closeState int64
+	closing bool
+
+	closeNotify bool
 
 	endWaitor sync.WaitGroup
 
@@ -66,14 +69,27 @@ type sendDeferCall struct {
 
 func (self *udpSession) Close() {
 
+	if self.closeNotify {
+		return
+	}
+
+	self.closeNotify = true
+
 	self.Send(sendDeferCall{data: &comm.SessionCloseNotify{}, callback: func() {
-		self.RawClose()
+		self.RawClose(nil)
 	},
 	})
 }
 
-func (self *udpSession) RawClose() {
-	self.exitSignal <- true
+func (self *udpSession) RawClose(err error) {
+
+	if self.closing {
+		return
+	}
+
+	self.closing = true
+
+	self.exitSignal <- err
 
 	self.endWaitor.Wait()
 }
@@ -105,13 +121,9 @@ func (self *udpSession) Send(data interface{}) {
 
 		raw := self.PeerShare.CallOutboundProc(&cellnet.SendMsgEvent{self, data})
 
-		if raw != nil {
+		if err, ok := raw.(error); ok && err != nil && !ok {
 
-			if err, ok := raw.(error); ok {
-				self.PeerShare.CallInboundProc(&cellnet.SendMsgErrorEvent{self, err, data})
-
-				self.Close()
-			}
+			self.RawClose(err)
 		}
 
 		if ok {
@@ -133,6 +145,10 @@ func (self *udpSession) MarkVerified() {
 
 func (self *udpSession) OnRecv(data []byte) {
 
+	if self.closing {
+		return
+	}
+
 	// 将数据拷贝到session的缓冲区
 	self.recvBuffer = self.recvBuffer[0:len(data)]
 	copy(self.recvBuffer, data)
@@ -142,15 +158,21 @@ func (self *udpSession) OnRecv(data []byte) {
 
 func (self *udpSession) ProcPacket() error {
 	raw := self.PeerShare.CallInboundProc(&cellnet.RecvDataEvent{self, self.recvBuffer})
+
 	if err, ok := raw.(error); ok && err != nil {
-		log.Errorln(err)
-		self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+
+		self.RawClose(err)
 
 		return err
 	}
 
 	return nil
 }
+
+var (
+	ErrNotVerify   = errors.New("UDPSession not verify")
+	ErrReadTimeout = errors.New("UDPSession timeout")
+)
 
 // 启动会话的各种资源
 func (self *udpSession) Start() {
@@ -164,10 +186,13 @@ func (self *udpSession) Start() {
 
 		var notifyEvent = true
 
+		var err error
+
 		for {
 
 			select {
-			case <-self.exitSignal:
+			case err = <-self.exitSignal:
+				// 正常退出
 				goto OnExit
 			case <-time.After(self.recvTimeout):
 
@@ -175,7 +200,7 @@ func (self *udpSession) Start() {
 
 				// 超时未验证
 				if verifyTag == 0 {
-					log.Debugln("UDPSession not verify:", self.ID())
+					err = ErrNotVerify
 					notifyEvent = false
 					goto OnExit
 				}
@@ -183,8 +208,9 @@ func (self *udpSession) Start() {
 				var targetValue int64
 				currValue := atomic.SwapInt64(&self.heartBeat, targetValue)
 
+				// 心跳超时
 				if currValue == 0 {
-
+					err = ErrReadTimeout
 					goto OnExit
 				}
 
@@ -195,7 +221,13 @@ func (self *udpSession) Start() {
 	OnExit:
 
 		if notifyEvent {
-			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+			msg := &comm.SessionClosed{}
+
+			if err != nil {
+				msg.Error = err.Error()
+			}
+
+			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, msg})
 		}
 
 		// 将会话从管理器移除
@@ -217,7 +249,7 @@ func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *internal.Pee
 		remote:      addr,
 		recvTimeout: time.Second * 3,
 		endNotify:   endNotify,
-		exitSignal:  make(chan bool),
+		exitSignal:  make(chan error),
 		recvBuffer:  make([]byte, 0, MaxUDPRecvBuffer),
 	}
 

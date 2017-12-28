@@ -16,11 +16,11 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				break
 			}
 
-			switch ev.Msg.(type) {
+			switch msg := ev.Msg.(type) {
 			case *comm.SessionAccepted:
 				log.Debugf("#accepted(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
 			case *comm.SessionClosed:
-				log.Debugf("#closed(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+				log.Debugf("#closed(%s)@%d | Reason: %s", ev.Ses.Peer().Name(), ev.Ses.ID(), msg.Error)
 			case *comm.SessionConnected:
 				log.Debugf("#connected(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
 			case *comm.SessionConnectError:
@@ -46,11 +46,6 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				cellnet.MessageName(ev.Msg),
 				cellnet.MessageID(ev.Msg),
 				cellnet.MessageToString(ev.Msg))
-
-		case *cellnet.RecvErrorEvent: // 接收错误事件
-			log.Debugf("#recverror(%s)@%d address: %s, %s", ev.Ses.Peer().Name(), ev.Ses.ID(), ev.Ses.Peer().Address(), ev.Error)
-		case *cellnet.SendMsgErrorEvent: // 发送错误事件
-			log.Debugf("#senderror(%s)@%d address: %s, %s", ev.Ses.Peer().Name(), ev.Ses.ID(), ev.Ses.Peer().Address(), ev.Error)
 		}
 
 		if userFunc != nil {

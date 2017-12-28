@@ -43,15 +43,18 @@ func (self *tcpSession) Send(msg interface{}) {
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
+	var readEvt cellnet.ReadEvent
+	readEvt.Ses = self
+
 	for self.conn != nil {
 
 		// 发送接收消息，要求读取数据
-		raw := self.PeerShare.CallInboundProc(&cellnet.ReadEvent{self})
+		raw := self.PeerShare.CallInboundProc(&readEvt)
 
-		// 连接断开
-		if raw != nil && self.conn != nil {
+		if err, ok := raw.(error); ok && err != nil && self.conn != nil {
 
-			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
+			self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{err.Error()}})
+
 			break
 		}
 	}
@@ -71,14 +74,7 @@ func (self *tcpSession) sendLoop() {
 		}
 
 		// 要求发送数据
-		err := self.PeerShare.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
-
-		// 发送错误时派发事件
-		if err != nil {
-			self.PeerShare.CallInboundProc(&cellnet.SendMsgErrorEvent{self, err.(error), msg})
-			break
-		}
-
+		self.PeerShare.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
 	}
 
 	self.cleanup()

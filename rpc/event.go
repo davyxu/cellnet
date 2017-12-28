@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 )
 
 type RecvMsgEvent struct {
@@ -23,7 +24,7 @@ func (self *RecvMsgEvent) Reply(msg interface{}) {
 		return
 	}
 
-	self.ses.Send(&RemoteCallACK{
+	self.ses.Send(&comm.RemoteCallACK{
 		MsgID:  meta.ID,
 		Data:   data,
 		CallID: self.callid,

@@ -2,8 +2,15 @@ package rpc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/msglog"
 )
+
+type RemoteCallMsg interface {
+	GetMsgID() uint32
+	GetMsgData() []byte
+	GetCallID() int64
+}
 
 type msgEvent interface {
 	Session() cellnet.Session
@@ -31,11 +38,11 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 							cellnet.MessageToString(msg))
 
 						switch ev.Message().(type) {
-						case *RemoteCallREQ:
+						case *comm.RemoteCallREQ:
 
 							userFunc(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})
 
-						case *RemoteCallACK:
+						case *comm.RemoteCallACK:
 							request := getRequest(rpcMsg.GetCallID())
 							if request != nil {
 								request.RecvFeedback(msg)

@@ -22,7 +22,7 @@ func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 
 			if _, ok := msg.(*comm.SessionCloseNotify); ok {
 
-				ev.Ses.(udppeer.UPDSession).RawClose()
+				ev.Ses.(udppeer.UPDSession).RawClose(nil)
 
 			} else {
 				userFunc(&cellnet.RecvMsgEvent{ev.Ses, msg})

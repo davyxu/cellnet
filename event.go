@@ -50,16 +50,3 @@ func (self *SendMsgEvent) Message() interface{} {
 func (self *SendMsgEvent) Session() Session {
 	return self.Ses
 }
-
-// 会话接收数据时发生错误的事件
-type RecvErrorEvent struct {
-	Ses   Session
-	Error error
-}
-
-// 会话发送数据时发生错误的事件
-type SendMsgErrorEvent struct {
-	Ses   Session
-	Error error
-	Msg   interface{}
-}

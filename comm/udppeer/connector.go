@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
-	"sync/atomic"
 )
 
 type udpConnector struct {

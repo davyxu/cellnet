@@ -3,6 +3,7 @@ package rpc
 import (
 	"errors"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"sync"
 	"sync/atomic"
 )
@@ -33,7 +34,7 @@ func (self *request) Send(ses cellnet.Session, msg interface{}) {
 		return
 	}
 
-	ses.Send(&RemoteCallREQ{
+	ses.Send(&comm.RemoteCallREQ{
 		MsgID:  meta.ID,
 		Data:   data,
 		CallID: self.id,
