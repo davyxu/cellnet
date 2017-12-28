@@ -3,7 +3,7 @@ package tests
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/cellnet/comm/rpc"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"

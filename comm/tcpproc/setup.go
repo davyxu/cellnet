@@ -2,8 +2,8 @@ package tcpproc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm/rpc"
 	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/rpc"
 )
 
 func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
