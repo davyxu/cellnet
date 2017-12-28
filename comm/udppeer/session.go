@@ -59,14 +59,14 @@ func (self *udpSession) SetRecvTimeout(duration time.Duration) {
 	self.recvTimeout = duration
 }
 
-type sendNotifier struct {
+type sendDeferCall struct {
 	data     interface{}
 	callback func()
 }
 
 func (self *udpSession) Close() {
 
-	self.Send(sendNotifier{data: &comm.SessionCloseNotify{}, callback: func() {
+	self.Send(sendDeferCall{data: &comm.SessionCloseNotify{}, callback: func() {
 		self.RawClose()
 	},
 	})
@@ -97,7 +97,7 @@ func (self *udpSession) Send(data interface{}) {
 	// 异步发送
 	go func() {
 
-		notifier, ok := data.(sendNotifier)
+		notifier, ok := data.(sendDeferCall)
 
 		if ok {
 			data = notifier.data
@@ -143,6 +143,7 @@ func (self *udpSession) OnRecv(data []byte) {
 func (self *udpSession) ProcPacket() error {
 	raw := self.PeerShare.CallInboundProc(&cellnet.RecvDataEvent{self, self.recvBuffer})
 	if err, ok := raw.(error); ok && err != nil {
+		log.Errorln(err)
 		self.PeerShare.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{}})
 
 		return err
@@ -174,6 +175,7 @@ func (self *udpSession) Start() {
 
 				// 超时未验证
 				if verifyTag == 0 {
+					log.Debugln("UDPSession not verify:", self.ID())
 					notifyEvent = false
 					goto OnExit
 				}

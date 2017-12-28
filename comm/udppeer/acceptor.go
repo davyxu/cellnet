@@ -49,6 +49,9 @@ func (self *udpAcceptor) listen() {
 
 	buff := make([]byte, MaxUDPRecvBuffer)
 
+	var recentAddr addressPair
+	var recentSes *udpSession
+
 	for {
 
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
@@ -60,23 +63,33 @@ func (self *udpAcceptor) listen() {
 
 		var ses *udpSession
 
-		raw, ok := self.sesByAddress.Load(addr)
+		if recentAddr == addr {
 
-		if ok {
-
-			ses = raw.(*udpSession)
+			ses = recentSes
 
 		} else {
 
-			ses = newUDPSession(remoteAddr, self.conn, &self.PeerShare, func() {
-				self.removeAddress(addr)
-			})
+			raw, ok := self.sesByAddress.Load(addr)
 
-			ses.Start()
+			if ok {
 
-			self.sesByAddress.Store(addr, ses)
+				ses = raw.(*udpSession)
 
-			self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+			} else {
+
+				ses = newUDPSession(remoteAddr, self.conn, &self.PeerShare, func() {
+					self.removeAddress(addr)
+				})
+
+				ses.Start()
+
+				self.sesByAddress.Store(addr, ses)
+
+				self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+			}
+
+			recentAddr = addr
+			recentSes = ses
 		}
 
 		// 将数据拷贝到会话缓冲区
@@ -85,14 +98,9 @@ func (self *udpAcceptor) listen() {
 			ses.OnRecv(buff[:n])
 
 			// 并发处理封包
-			go func() {
-				err = ses.ProcPacket()
+			go ses.ProcPacket()
 
-				if err != nil {
-					self.removeAddress(addr)
-				}
-			}()
-		} else { //  Mono在连上后，需要发一个包
+		} else { // n=0情况 Mono在连上后，需要发一个包, 直接处理会发生EOF
 			ses.KeepAlive()
 		}
 

@@ -1,12 +1,9 @@
 package udpproc
 
 import (
-	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
 )
-
-var ErrPacketCrack = errors.New("udp packet crack by len")
 
 const MTU = 1472
 

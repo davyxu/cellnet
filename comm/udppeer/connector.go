@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/internal"
 	"net"
+	"sync/atomic"
 )
 
 type udpConnector struct {
@@ -39,14 +40,18 @@ func (self *udpConnector) connect() {
 		return
 	}
 
-	ses := newUDPSession(self.localAddr, self.conn, &self.PeerShare, nil)
+	var running = true
+
+	ses := newUDPSession(self.localAddr, self.conn, &self.PeerShare, func() {
+		running = false
+	})
 
 	ses.Start()
 
 	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
 
 	buff := make([]byte, 4096)
-	for {
+	for running {
 
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
@@ -57,11 +62,7 @@ func (self *udpConnector) connect() {
 
 		ses.OnRecv(buff[:n])
 
-		err = ses.ProcPacket()
-
-		if err != nil {
-			break
-		}
+		ses.ProcPacket()
 	}
 }
 
