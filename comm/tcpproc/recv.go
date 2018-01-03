@@ -2,6 +2,7 @@ package tcpproc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/util"
 	"net"
 )
 
@@ -17,7 +18,7 @@ func RecvLTVPacket(ses cellnet.Session) (msg interface{}, err error) {
 	}
 
 	// 接收长度定界的变长封包，返回封包读取器
-	pktReader, err := RecvVariableLengthPacket(conn)
+	pktReader, err := util.RecvVariableLengthPacket(conn)
 
 	if err != nil {
 		return nil, err

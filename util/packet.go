@@ -1,15 +1,14 @@
-package tcpproc
+package util
 
 import (
 	"encoding/binary"
-	"github.com/davyxu/cellnet/util"
 	"io"
 )
 
 const LengthSize = 2
 
 // 接收变长封包
-func RecvVariableLengthPacket(inputStream io.Reader) (pktReader util.BinaryReader, err error) {
+func RecvVariableLengthPacket(inputStream io.Reader) (pktReader BinaryReader, err error) {
 
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, LengthSize)
@@ -38,7 +37,7 @@ func RecvVariableLengthPacket(inputStream io.Reader) (pktReader util.BinaryReade
 }
 
 // 发送变长封包
-func SendVariableLengthPacket(outputStream io.Writer, pktWriter util.BinaryWriter) error {
+func SendVariableLengthPacket(outputStream io.Writer, pktWriter BinaryWriter) error {
 
 	buffer := make([]byte, pktWriter.Len()+LengthSize)
 
@@ -49,5 +48,5 @@ func SendVariableLengthPacket(outputStream io.Writer, pktWriter util.BinaryWrite
 	copy(buffer[LengthSize:], pktWriter.Raw())
 
 	// 将数据写入Socket
-	return util.WriteFull(outputStream, buffer)
+	return WriteFull(outputStream, buffer)
 }

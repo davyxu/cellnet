@@ -69,6 +69,6 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 }
 
 func init() {
-	msglog.BlockMessageLog("rpc.RemoteCallREQ")
-	msglog.BlockMessageLog("rpc.RemoteCallACK")
+	msglog.BlockMessageLog("comm.RemoteCallREQ")
+	msglog.BlockMessageLog("comm.RemoteCallACK")
 }

@@ -43,7 +43,7 @@ func (self *tcpSession) Send(msg interface{}) {
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
-	var readEvt cellnet.ReadEvent
+	var readEvt cellnet.ReadStreamEvent
 	readEvt.Ses = self
 
 	for self.conn != nil {

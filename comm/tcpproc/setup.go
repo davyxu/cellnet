@@ -11,7 +11,7 @@ func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 	return func(raw cellnet.EventParam) cellnet.EventResult {
 
 		switch ev := raw.(type) {
-		case *cellnet.ReadEvent: // 接收数据事件
+		case *cellnet.ReadStreamEvent: // 接收数据事件
 
 			msg, err := RecvLTVPacket(ev.Ses)
 			if err != nil {

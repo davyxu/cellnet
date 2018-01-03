@@ -149,6 +149,8 @@ func (self *udpSession) OnRecv(data []byte) {
 		return
 	}
 
+	// TODO 改造为sync.Pool
+
 	// 将数据拷贝到session的缓冲区
 	self.recvBuffer = self.recvBuffer[0:len(data)]
 	copy(self.recvBuffer, data)

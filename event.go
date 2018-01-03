@@ -1,11 +1,11 @@
 package cellnet
 
 // 需要读取数据(tcp)
-type ReadEvent struct {
+type ReadStreamEvent struct {
 	Ses Session
 }
 
-func (self *ReadEvent) Session() Session {
+func (self *ReadStreamEvent) Session() Session {
 	return self.Ses
 }
 

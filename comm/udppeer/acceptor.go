@@ -41,7 +41,7 @@ func (self *udpAcceptor) listen() {
 	self.conn, err = net.ListenUDP("udp", self.localAddr)
 
 	if err != nil {
-		log.Errorln("listen failed:", self.localAddr.String())
+		log.Errorln("listen failed:", err)
 		return
 	}
 
