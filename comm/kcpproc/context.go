@@ -13,24 +13,33 @@ type kcpContext struct {
 	recvbuf []byte
 	bufptr  []byte
 
-	readEvent chan struct{}
+	readSignal     chan struct{}
+	exitTickSignal chan struct{}
 
 	userFunc cellnet.EventProc
 
 	ses cellnet.Session
+
+	closed bool
 }
 
-
+func (self *kcpContext) Close() {
+	close(self.readSignal)
+	self.closed = true
+	self.exitTickSignal <- struct{}{}
+}
 
 func (self *kcpContext) tickLoop() {
 
-	heatbeat := time.NewTicker(time.Millisecond * 10)
+	ticker := time.NewTicker(time.Millisecond * 10)
 	for {
 
 		select {
-		case <-heatbeat.C:
-
+		case <-ticker.C:
 			self.kcp.Update()
+
+		case <-self.exitTickSignal:
+			return
 		}
 
 	}
@@ -42,10 +51,11 @@ func newContext(ses cellnet.Session, userFunc cellnet.EventProc) *kcpContext {
 	var self *kcpContext
 
 	self = &kcpContext{
-		userFunc:  userFunc,
-		ses:       ses,
-		recvbuf : make([]byte, mtuLimit),
-		readEvent: make(chan struct{}, 1),
+		userFunc:       userFunc,
+		ses:            ses,
+		recvbuf:        make([]byte, mtuLimit),
+		readSignal:     make(chan struct{}, 1),
+		exitTickSignal: make(chan struct{}),
 		kcp: NewKCP(0, func(buf []byte, size int) {
 
 			if size >= IKCP_OVERHEAD {
@@ -53,9 +63,6 @@ func newContext(ses cellnet.Session, userFunc cellnet.EventProc) *kcpContext {
 			}
 		}),
 	}
-
-	self.kcp.WndSize(128, 128)
-	self.kcp.NoDelay(0, 10, 0, 0)
 
 	go self.recvLoop()
 

@@ -3,6 +3,7 @@ package kcpproc
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
+	"io"
 )
 
 func (self *kcpContext) input(data []byte) {
@@ -13,7 +14,7 @@ func (self *kcpContext) input(data []byte) {
 		log.Errorln("kcp input ret: ", ret)
 	}
 
-	self.readEvent <- struct{}{}
+	self.readSignal <- struct{}{}
 }
 
 func (self *kcpContext) Read(b []byte) (n int, err error) {
@@ -50,13 +51,21 @@ func (self *kcpContext) Read(b []byte) (n int, err error) {
 			return n, nil
 		}
 
-		<-self.readEvent
+		if self.closed {
+			return 0, io.EOF
+		}
+
+		<-self.readSignal
 	}
 }
 
 func (self *kcpContext) recvLoop() {
 
 	for {
+
+		if self.closed {
+			break
+		}
 
 		pktReader, err := util.RecvVariableLengthPacket(self)
 		if err != nil {

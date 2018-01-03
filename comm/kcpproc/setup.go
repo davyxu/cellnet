@@ -8,7 +8,7 @@ import (
 
 const kcpTag = "kcp"
 
-func mustKcpContext(ses cellnet.Session) *kcpContext {
+func mustKCPContext(ses cellnet.Session) *kcpContext {
 	if kcpRaw, ok := ses.GetTag(kcpTag); ok {
 		return kcpRaw.(*kcpContext)
 	} else {
@@ -27,13 +27,15 @@ func ProcKCPInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 			case *comm.SessionAccepted,
 				*comm.SessionConnected:
 				ev.Ses.SetTag(kcpTag, newContext(ev.Ses, userFunc))
+			case *comm.SessionClosed:
+				mustKCPContext(ev.Ses).Close()
 			}
 
 			userFunc(raw)
 
 		case *cellnet.RecvDataEvent: // 接收数据事件
 
-			mustKcpContext(ev.Ses).input(ev.Data)
+			mustKCPContext(ev.Ses).input(ev.Data)
 
 		default:
 			userFunc(raw)
@@ -50,7 +52,7 @@ func ProcKCPOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 		switch ev := raw.(type) {
 		case *cellnet.SendMsgEvent: // 发送数据事件
 
-			if result := mustKcpContext(ev.Ses).sendMessage(ev.Msg); result != nil {
+			if result := mustKCPContext(ev.Ses).sendMessage(ev.Msg); result != nil {
 				return result
 			}
 

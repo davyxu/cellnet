@@ -4,26 +4,51 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
+	_ "github.com/davyxu/cellnet/comm/kcpproc"
 	_ "github.com/davyxu/cellnet/comm/tcppeer"
 	_ "github.com/davyxu/cellnet/comm/tcpproc"
+	_ "github.com/davyxu/cellnet/comm/udppeer"
+	_ "github.com/davyxu/cellnet/comm/udpproc"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
 
-const tcpEcho_Address = "127.0.0.1:7701"
+type echoContext struct {
+	Address   string
+	Protocol  string
+	Processor string
+	Tester    *util.SignalTester
+	Acceptor  cellnet.Peer
+}
 
-var tcpEcho_Signal *util.SignalTester
+var (
+	echoContexts = []*echoContext{
+		{
+			Address:   "127.0.0.1:7701",
+			Protocol:  "tcp",
+			Processor: "tcp.ltv",
+		},
+		{
+			Address:   "127.0.0.1:7702",
+			Protocol:  "udp",
+			Processor: "udp.ltv",
+		},
+		{
+			Address:   "127.0.0.1:7703",
+			Protocol:  "udp",
+			Processor: "udp.kcp",
+		},
+	}
+)
 
-var tcpEcho_Acceptor cellnet.Peer
-
-func tcpEcho_StartServer() {
+func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	tcpEcho_Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
-		PeerType:       "tcp.Acceptor",
-		EventProcessor: "tcp.ltv",
+	context.Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+		PeerType:       context.Protocol + ".Acceptor",
+		EventProcessor: context.Processor,
 		Queue:          queue,
-		PeerAddress:    tcpEcho_Address,
+		PeerAddress:    context.Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -53,14 +78,14 @@ func tcpEcho_StartServer() {
 	queue.StartLoop()
 }
 
-func tcpEcho_StartClient() {
+func echo_StartClient(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
 	cellnet.CreatePeer(cellnet.PeerConfig{
-		PeerType:       "tcp.Connector",
-		EventProcessor: "tcp.ltv",
+		PeerType:       context.Protocol + ".Connector",
+		EventProcessor: context.Processor,
 		Queue:          queue,
-		PeerAddress:    tcpEcho_Address,
+		PeerAddress:    context.Address,
 		PeerName:       "client",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
@@ -77,7 +102,7 @@ func tcpEcho_StartClient() {
 
 					fmt.Printf("client recv %+v\n", msg)
 
-					tcpEcho_Signal.Done(1)
+					context.Tester.Done(1)
 
 				case *comm.SessionClosed:
 					fmt.Println("client error: ")
@@ -90,16 +115,33 @@ func tcpEcho_StartClient() {
 
 	queue.StartLoop()
 
-	tcpEcho_Signal.WaitAndExpect("not recv data", 1)
+	context.Tester.WaitAndExpect("not recv data", 1)
 }
 
-func TestTCPEcho(t *testing.T) {
+func runEcho(t *testing.T, index int) {
 
-	tcpEcho_Signal = util.NewSignalTester(t)
+	ctx := echoContexts[index]
 
-	tcpEcho_StartServer()
+	ctx.Tester = util.NewSignalTester(t)
 
-	tcpEcho_StartClient()
+	echo_StartServer(ctx)
 
-	tcpEcho_Acceptor.Stop()
+	echo_StartClient(ctx)
+
+	ctx.Acceptor.Stop()
+}
+
+func TestEchoTCP(t *testing.T) {
+
+	runEcho(t, 0)
+}
+
+func TestEchoUDP(t *testing.T) {
+
+	runEcho(t, 1)
+}
+
+func TestEchoKCP(t *testing.T) {
+
+	runEcho(t, 2)
 }
