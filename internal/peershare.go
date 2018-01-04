@@ -70,6 +70,8 @@ func (self *PeerShare) CallInboundProc(ev interface{}) interface{} {
 		return nil
 	}
 
+	//log.Debugf("<Inbound> %T|%+v", ev, ev)
+
 	return self.InboundProc(ev)
 }
 
@@ -79,6 +81,8 @@ func (self *PeerShare) CallOutboundProc(ev interface{}) interface{} {
 	if self.OutboundProc == nil {
 		return nil
 	}
+
+	//log.Debugf("<Outbound> %T|%+v", ev, ev)
 
 	return self.OutboundProc(ev)
 }

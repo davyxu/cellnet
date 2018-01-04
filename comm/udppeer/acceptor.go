@@ -17,6 +17,8 @@ type udpAcceptor struct {
 	conn *net.UDPConn
 
 	sesByAddress sync.Map
+
+	pktPool sync.Pool
 }
 
 func (self *udpAcceptor) Start() cellnet.Peer {
@@ -30,29 +32,28 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	go self.listen()
-
-	return self
-}
-
-func (self *udpAcceptor) listen() {
-
-	var err error
 	self.conn, err = net.ListenUDP("udp", self.localAddr)
 
 	if err != nil {
 		log.Errorln("listen failed:", err)
-		return
+		return self
 	}
 
 	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
-	buff := make([]byte, MaxUDPRecvBuffer)
+	go self.accept()
+
+	return self
+}
+
+func (self *udpAcceptor) accept() {
 
 	var recentAddr addressPair
 	var recentSes *udpSession
 
 	for {
+
+		buff := self.pktPool.Get().([]byte)[:MaxUDPRecvBuffer]
 
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
@@ -95,10 +96,7 @@ func (self *udpAcceptor) listen() {
 		// 将数据拷贝到会话缓冲区
 
 		if n > 0 {
-			ses.OnRecv(buff[:n])
-
-			// 并发处理封包
-			go ses.ProcPacket()
+			ses.Recv(buff[:n])
 
 		} else { // n=0情况 Mono在连上后，需要发一个包, 直接处理会发生EOF
 			ses.KeepAlive()
@@ -129,6 +127,10 @@ func init() {
 
 	cellnet.RegisterPeerCreator("udp.Acceptor", func() cellnet.Peer {
 		p := &udpAcceptor{}
+
+		p.pktPool.New = func() interface{} {
+			return make([]byte, MaxUDPRecvBuffer)
+		}
 
 		p.Init(p)
 

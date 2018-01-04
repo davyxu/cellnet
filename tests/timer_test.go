@@ -17,13 +17,13 @@ func TestAfterTimer(t *testing.T) {
 
 	queue.StartLoop()
 
-	timer.After(queue, 500*time.Millisecond, func() {
+	timer.After(queue, 100*time.Millisecond, func() {
 		log.Debugln("after 100 ms")
 
 		signal.Done(1)
 	}, nil)
 
-	timer.After(queue, 800*time.Millisecond, func(context interface{}) {
+	timer.After(queue, 200*time.Millisecond, func(context interface{}) {
 
 		if context.(string) != "context" {
 			t.FailNow()
@@ -34,9 +34,9 @@ func TestAfterTimer(t *testing.T) {
 		signal.Done(2)
 	}, "context")
 
-	signal.WaitAndExpect("1 sec after not done", 1)
+	signal.WaitAndExpect("100ms after not done", 1)
 
-	signal.WaitAndExpect("2 sec after not done", 2)
+	signal.WaitAndExpect("200ms after not done", 2)
 }
 
 func TestLoopTimer(t *testing.T) {
@@ -52,9 +52,9 @@ func TestLoopTimer(t *testing.T) {
 	var count int
 
 	// 启动计时循环
-	timer.NewLoop(queue, time.Millisecond*100, func(ctx *timer.Loop) {
+	timer.NewLoop(queue, time.Millisecond*10, func(ctx *timer.Loop) {
 
-		log.Debugln("tick 100 ms", count)
+		log.Debugln("tick 10 ms", count)
 
 		count++
 
@@ -64,5 +64,5 @@ func TestLoopTimer(t *testing.T) {
 		}
 	}, nil).Start()
 
-	signal.WaitAndExpect("100ms * 10 times ticker not done", 1)
+	signal.WaitAndExpect("10ms * 10 times ticker not done", 1)
 }

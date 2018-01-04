@@ -59,9 +59,7 @@ func (self *udpConnector) connect() {
 			break
 		}
 
-		ses.OnRecv(buff[:n])
-
-		ses.ProcPacket()
+		ses.Recv(buff[:n])
 	}
 }
 

@@ -69,7 +69,7 @@ func runConnClose() {
 				case *comm.SessionConnected:
 					peer.Stop()
 
-					time.Sleep(time.Millisecond * 500)
+					time.Sleep(time.Millisecond * 100)
 
 					if times < 3 {
 						peer.Start()
@@ -94,7 +94,6 @@ func runConnClose() {
 func TestCreateDestroyConnector(t *testing.T) {
 
 	recreateConn_Signal = util.NewSignalTester(t)
-	recreateConn_Signal.SetTimeout(time.Second * 3)
 
 	recreateConn_StartServer()
 
