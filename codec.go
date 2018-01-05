@@ -16,20 +16,26 @@ type Codec interface {
 	Name() string
 }
 
-var codecByName = map[string]Codec{}
+var registedCodecs []Codec
 
 func RegisterCodec(c Codec) {
 
-	if _, ok := codecByName[c.Name()]; ok {
+	if GetCodec(c.Name()) != nil {
 		panic("duplicate codec: " + c.Name())
 	}
 
-	codecByName[c.Name()] = c
+	registedCodecs = append(registedCodecs, c)
 }
 
 func GetCodec(name string) Codec {
 
-	return codecByName[name]
+	for _, c := range registedCodecs {
+		if c.Name() == name {
+			return c
+		}
+	}
+
+	return nil
 }
 
 func MustGetCodec(name string) Codec {
