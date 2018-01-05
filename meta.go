@@ -9,8 +9,8 @@ import (
 
 // 消息元信息
 type MessageMeta struct {
-	Type  reflect.Type // 消息类型
 	Name  string       // 消息名称
+	Type  reflect.Type // 消息类型
 	ID    uint32       // 消息ID
 	Codec Codec        // 消息用到的编码
 }
@@ -23,34 +23,24 @@ var (
 )
 
 // 注册消息元信息
-func RegisterMessageMeta(codecName string, name string, msgType reflect.Type, id uint32) {
+func RegisterMessageMeta(meta *MessageMeta) {
 
-	meta := &MessageMeta{
-		Type:  msgType,
-		Name:  name,
-		ID:    id,
-		Codec: GetCodec(codecName),
-	}
-
-	if meta.Codec == nil {
-		panic("codec not register! " + codecName)
-	}
-
-	if _, ok := metaByName[name]; ok {
-		panic("duplicate message meta register by name: " + name)
+	if _, ok := metaByName[meta.Name]; ok {
+		panic("duplicate message meta register by name: " + meta.Name)
 	}
 
 	if _, ok := metaByID[meta.ID]; ok {
 		panic(fmt.Sprintf("duplicate message meta register by id: %d", meta.ID))
 	}
 
-	if _, ok := metaByType[msgType]; ok {
+	if _, ok := metaByType[meta.Type]; ok {
 		panic(fmt.Sprintf("duplicate message meta register by type: %d", meta.ID))
 	}
 
-	metaByName[name] = meta
+	metaByName[meta.Name] = meta
 	metaByID[meta.ID] = meta
-	metaByType[msgType] = meta
+	metaByType[meta.Type] = meta
+
 }
 
 // 根据名字查找消息元信息

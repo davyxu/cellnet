@@ -52,11 +52,46 @@ func (self *RemoteCallACK) GetMsgData() []byte { return self.Data }
 func (self *RemoteCallACK) GetCallID() int64   { return self.CallID }
 
 func init() {
-	cellnet.RegisterMessageMeta("binary", "comm.SessionAccepted", reflect.TypeOf((*SessionAccepted)(nil)).Elem(), 63001)
-	cellnet.RegisterMessageMeta("binary", "comm.SessionConnected", reflect.TypeOf((*SessionConnected)(nil)).Elem(), 63002)
-	cellnet.RegisterMessageMeta("binary", "comm.SessionConnectError", reflect.TypeOf((*SessionConnectError)(nil)).Elem(), 63003)
-	cellnet.RegisterMessageMeta("binary", "comm.SessionClosed", reflect.TypeOf((*SessionClosed)(nil)).Elem(), 63004)
-	cellnet.RegisterMessageMeta("binary", "comm.SessionCloseNotify", reflect.TypeOf((*SessionCloseNotify)(nil)).Elem(), 63005)
-	cellnet.RegisterMessageMeta("binary", "comm.RemoteCallREQ", reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(), 63006)
-	cellnet.RegisterMessageMeta("binary", "comm.RemoteCallACK", reflect.TypeOf((*RemoteCallACK)(nil)).Elem(), 63007)
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.SessionAccepted",
+		Type:  reflect.TypeOf((*SessionAccepted)(nil)).Elem(),
+		ID:    63001,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.SessionConnected",
+		Type:  reflect.TypeOf((*SessionConnected)(nil)).Elem(),
+		ID:    63002,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.SessionConnectError",
+		Type:  reflect.TypeOf((*SessionConnectError)(nil)).Elem(),
+		ID:    63003,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.SessionClosed",
+		Type:  reflect.TypeOf((*SessionClosed)(nil)).Elem(),
+		ID:    63004,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.SessionCloseNotify",
+		Type:  reflect.TypeOf((*SessionCloseNotify)(nil)).Elem(),
+		ID:    63005,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.RemoteCallREQ",
+		Type:  reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(),
+		ID:    63006,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "comm.RemoteCallACK",
+		Type:  reflect.TypeOf((*RemoteCallACK)(nil)).Elem(),
+		ID:    63007,
+	})
 }

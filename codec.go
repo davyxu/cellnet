@@ -32,6 +32,16 @@ func GetCodec(name string) Codec {
 	return codecByName[name]
 }
 
+func MustGetCodec(name string) Codec {
+	codec := GetCodec(name)
+
+	if codec == nil {
+		panic("codec not register! " + name)
+	}
+
+	return codec
+}
+
 var (
 	ErrMessageNotFound = errors.New("msg not exists")
 )

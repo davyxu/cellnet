@@ -15,5 +15,10 @@ type TestEchoACK struct {
 func (self *TestEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
-	cellnet.RegisterMessageMeta("binary", "test.TestEchoACK", reflect.TypeOf((*TestEchoACK)(nil)).Elem(), 1)
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "test.TestEchoACK",
+		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
+		ID:    1,
+	})
 }
