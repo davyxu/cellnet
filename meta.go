@@ -11,14 +11,14 @@ import (
 type MessageMeta struct {
 	Name  string       // 消息名称
 	Type  reflect.Type // 消息类型
-	ID    uint32       // 消息ID
+	ID    int          // 消息ID
 	Codec Codec        // 消息用到的编码
 }
 
 var (
 	// 消息元信息与消息名称，消息ID和消息类型的关联关系
 	metaByName = map[string]*MessageMeta{}
-	metaByID   = map[uint32]*MessageMeta{}
+	metaByID   = map[int]*MessageMeta{}
 	metaByType = map[reflect.Type]*MessageMeta{}
 )
 
@@ -87,7 +87,7 @@ func MessageFullName(rtype reflect.Type) string {
 }
 
 // 根据id查找消息元信息
-func MessageMetaByID(id uint32) *MessageMeta {
+func MessageMetaByID(id int) *MessageMeta {
 	if v, ok := metaByID[id]; ok {
 		return v
 	}

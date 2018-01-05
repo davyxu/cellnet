@@ -60,7 +60,7 @@ func EncodeMessage(msg interface{}) (data []byte, meta *MessageMeta, err error) 
 	return
 }
 
-func DecodeMessage(msgid uint32, data []byte) (interface{}, *MessageMeta, error) {
+func DecodeMessage(msgid int, data []byte) (interface{}, *MessageMeta, error) {
 
 	// 获取消息元信息
 	meta := MessageMetaByID(msgid)

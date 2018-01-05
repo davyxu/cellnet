@@ -7,7 +7,7 @@ import (
 )
 
 type RemoteCallMsg interface {
-	GetMsgID() uint32
+	GetMsgID() uint16
 	GetMsgData() []byte
 	GetCallID() int64
 }
@@ -24,7 +24,7 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 		if ev, ok := raw.(msgEvent); ok {
 			rpcMsg, ok := ev.Message().(RemoteCallMsg)
 			if ok {
-				msg, meta, err := cellnet.DecodeMessage(rpcMsg.GetMsgID(), rpcMsg.GetMsgData())
+				msg, meta, err := cellnet.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 				if err == nil {
 					switch raw.(type) {

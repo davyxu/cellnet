@@ -32,7 +32,7 @@ func RecvLTVPacket(data []byte) (msg interface{}, err error) {
 	msgData := pktReader.RemainBytes()
 
 	// 将字节数组和消息ID用户解出消息
-	msg, _, err = cellnet.DecodeMessage(uint32(msgid), msgData)
+	msg, _, err = cellnet.DecodeMessage(int(msgid), msgData)
 	if err != nil {
 		// TODO 接收错误时，返回消息
 		return nil, err

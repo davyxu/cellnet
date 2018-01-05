@@ -35,7 +35,7 @@ func (self *request) Send(ses cellnet.Session, msg interface{}) {
 	}
 
 	ses.Send(&comm.RemoteCallREQ{
-		MsgID:  meta.ID,
+		MsgID:  uint16(meta.ID),
 		Data:   data,
 		CallID: self.id,
 	})
