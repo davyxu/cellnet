@@ -44,7 +44,7 @@ var (
 func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	context.Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+	context.Acceptor = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       context.Protocol + ".Acceptor",
 		EventProcessor: context.Processor,
 		Queue:          queue,
@@ -81,7 +81,7 @@ func echo_StartServer(context *echoContext) {
 func echo_StartClient(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.PeerConfig{
+	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       context.Protocol + ".Connector",
 		EventProcessor: context.Processor,
 		Queue:          queue,

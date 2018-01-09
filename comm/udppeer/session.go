@@ -92,11 +92,13 @@ func (self *udpSession) RawClose(err error) {
 
 func (self *udpSession) WriteData(data []byte) error {
 
-	if self.Peer().IsConnector() {
+	// Connector中的Session
+	if self.remote == nil {
 
 		_, err := self.conn.Write(data)
 		return err
 
+		// Acceptor中的Session
 	} else {
 		_, err := self.conn.WriteToUDP(data, self.remote)
 		return err
@@ -224,7 +226,7 @@ func (self *udpSession) Start() {
 
 }
 
-func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *internal.PeerShare, endNotify func()) *udpSession {
+func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *internal.CommunicatePeer, endNotify func()) *udpSession {
 	self := &udpSession{
 		conn:        conn,
 		remote:      addr,

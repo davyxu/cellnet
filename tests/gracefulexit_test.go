@@ -18,7 +18,7 @@ var recreateConn_Signal *util.SignalTester
 func recreateConn_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.PeerConfig{
+	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
@@ -55,7 +55,7 @@ func runConnClose() {
 	var times int
 
 	var peer cellnet.Peer
-	peer = cellnet.CreatePeer(cellnet.PeerConfig{
+	peer = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "tcp.Connector",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
@@ -108,7 +108,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
 	var allAccepted sync.WaitGroup
-	p := cellnet.CreatePeer(cellnet.PeerConfig{
+	p := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
@@ -145,7 +145,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	// 确认所有连接已经断开
 	time.Sleep(time.Second)
 
-	log.Debugln("Session count:", p.SessionCount())
+	log.Debugln("Session count:", p.(cellnet.SessionAccessor).SessionCount())
 
 	p.Start()
 	log.Debugln("Start connecting...")
@@ -162,7 +162,7 @@ func runMultiConnection() {
 
 	for i := 0; i < recreateAcc_clientConnection; i++ {
 
-		cellnet.CreatePeer(cellnet.PeerConfig{
+		cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 			PeerType:       "tcp.Connector",
 			EventProcessor: "tcp.ltv",
 			PeerAddress:    recreateAcc_Address,

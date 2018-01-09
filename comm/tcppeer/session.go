@@ -136,7 +136,7 @@ func (self *tcpSession) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func newTCPSession(conn net.Conn, peerShare *internal.PeerShare, endNotify func()) cellnet.Session {
+func newTCPSession(conn net.Conn, peerShare *internal.CommunicatePeer, endNotify func()) cellnet.Session {
 	self := &tcpSession{
 		conn:      conn,
 		endNotify: endNotify,

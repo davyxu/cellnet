@@ -15,7 +15,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := cellnet.CreatePeer(cellnet.PeerConfig{
+	acceptor := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "udp.Acceptor",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -34,7 +34,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 		},
 	}).Start()
 
-	cellnet.CreatePeer(cellnet.PeerConfig{
+	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "udp.Connector",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -65,7 +65,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := cellnet.CreatePeer(cellnet.PeerConfig{
+	acceptor := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "udp.Acceptor",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -85,7 +85,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 		},
 	}).Start()
 
-	cellnet.CreatePeer(cellnet.PeerConfig{
+	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "udp.Connector",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,

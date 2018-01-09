@@ -1,20 +1,6 @@
 package cellnet
 
-type PeerConfigInterface interface {
-	// Peer的名称
-	Name() string
-
-	// Peer的类型，例如tcp.Connector
-	TypeName() string
-
-	// 侦听或者连接的地址:端口
-	Address() string
-
-	// 队列
-	EventQueue() EventQueue
-}
-
-type PeerConfig struct {
+type CommunicatePeerConfig struct {
 	PeerType       string
 	PeerName       string
 	PeerAddress    string
@@ -26,20 +12,22 @@ type PeerConfig struct {
 	UserOutboundProc EventProc
 }
 
-// 获取通讯端的名称
-func (self *PeerConfig) Name() string {
-	return self.PeerName
+type PeerInfoSetter interface {
+	SetAddress(addr string)
+	SetName(name string)
+	SetQueue(q EventQueue)
+	SetEventFunc(processor string, inboundEvent, outboundEvent EventProc)
 }
 
-func (self *PeerConfig) TypeName() string {
-	return self.PeerType
-}
+func CreatePeer(config CommunicatePeerConfig) Peer {
 
-func (self *PeerConfig) Address() string {
-	return self.PeerAddress
-}
+	p := NewPeer(config.PeerType)
 
-// 获取队列
-func (self *PeerConfig) EventQueue() EventQueue {
-	return self.Queue
+	setter := p.(PeerInfoSetter)
+	setter.SetName(config.PeerName)
+	setter.SetAddress(config.PeerAddress)
+	setter.SetQueue(config.Queue)
+	setter.SetEventFunc(config.EventProcessor, config.UserInboundProc, config.UserOutboundProc)
+
+	return p
 }

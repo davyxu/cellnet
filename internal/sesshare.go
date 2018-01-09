@@ -15,7 +15,7 @@ type SessionShare struct {
 	tagGuard sync.RWMutex
 	id       int64
 	// 归属的通讯端
-	PeerShare *PeerShare
+	PeerShare *CommunicatePeer
 }
 
 // 取会话归属的通讯端

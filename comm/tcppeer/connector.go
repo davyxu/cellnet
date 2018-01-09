@@ -14,7 +14,8 @@ type Connector interface {
 }
 
 type tcpConnector struct {
-	internal.PeerShare
+	internal.CommunicatePeer
+	internal.PeerInfo
 
 	defaultSes cellnet.Session
 
@@ -42,7 +43,7 @@ func (self *tcpConnector) Start() cellnet.Peer {
 		return self
 	}
 
-	go self.connect(self.PeerAddress)
+	go self.connect(self.Address())
 
 	return self
 }
@@ -84,7 +85,7 @@ func (self *tcpConnector) connect(address string) {
 		// 尝试用Socket连接地址
 		conn, err := net.Dial("tcp", address)
 
-		ses := newTCPSession(conn, &self.PeerShare, func() {
+		ses := newTCPSession(conn, &self.CommunicatePeer, func() {
 			self.endSignal.Done()
 		})
 		self.defaultSes = ses
@@ -146,9 +147,13 @@ func (self *tcpConnector) connect(address string) {
 	self.EndStopping()
 }
 
+func (self *tcpConnector) TypeName() string {
+	return "tcp.Connector"
+}
+
 func init() {
 
-	cellnet.RegisterPeerCreator("tcp.Connector", func() cellnet.Peer {
+	cellnet.RegisterPeerCreator(func() cellnet.Peer {
 		p := &tcpConnector{}
 
 		p.Init(p)

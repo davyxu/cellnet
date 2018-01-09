@@ -9,7 +9,8 @@ import (
 
 // 接受器
 type tcpAcceptor struct {
-	internal.PeerShare
+	internal.CommunicatePeer
+	internal.PeerInfo
 
 	// 保存侦听器
 	listener net.Listener
@@ -76,7 +77,7 @@ func (self *tcpAcceptor) accept() {
 
 func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
-	ses := newTCPSession(conn, &self.PeerShare, nil)
+	ses := newTCPSession(conn, &self.CommunicatePeer, nil)
 
 	ses.(interface {
 		Start()
@@ -110,9 +111,13 @@ func (self *tcpAcceptor) Stop() {
 	self.WaitStopFinished()
 }
 
+func (self *tcpAcceptor) TypeName() string {
+	return "tcp.Acceptor"
+}
+
 func init() {
 
-	cellnet.RegisterPeerCreator("tcp.Acceptor", func() cellnet.Peer {
+	cellnet.RegisterPeerCreator(func() cellnet.Peer {
 		p := &tcpAcceptor{}
 
 		p.Init(p)

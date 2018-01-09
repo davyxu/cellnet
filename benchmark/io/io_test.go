@@ -34,7 +34,7 @@ func server() {
 
 	})
 
-	var config cellnet.PeerConfig
+	var config cellnet.CommunicatePeerConfig
 	config.TypeName = "tcp.Acceptor"
 	config.Queue = queue
 	config.Address = benchmarkAddress
@@ -64,7 +64,7 @@ func client() {
 
 	queue := cellnet.NewEventQueue()
 
-	var config cellnet.PeerConfig
+	var config cellnet.CommunicatePeerConfig
 	config.TypeName = "tcp.Connector"
 	config.Queue = queue
 	config.Address = benchmarkAddress

@@ -11,7 +11,8 @@ import (
 const MaxUDPRecvBuffer = 2048
 
 type udpAcceptor struct {
-	internal.PeerShare
+	internal.CommunicatePeer
+	internal.PeerInfo
 	localAddr *net.UDPAddr
 
 	conn *net.UDPConn
@@ -78,7 +79,7 @@ func (self *udpAcceptor) accept() {
 
 			} else {
 
-				ses = newUDPSession(remoteAddr, self.conn, &self.PeerShare, func() {
+				ses = newUDPSession(remoteAddr, self.conn, &self.CommunicatePeer, func() {
 					self.removeAddress(addr)
 				})
 
@@ -123,9 +124,13 @@ func (self *udpAcceptor) Stop() {
 
 }
 
+func (self *udpAcceptor) TypeName() string {
+	return "udp.Acceptor"
+}
+
 func init() {
 
-	cellnet.RegisterPeerCreator("udp.Acceptor", func() cellnet.Peer {
+	cellnet.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpAcceptor{}
 
 		p.pktPool.New = func() interface{} {

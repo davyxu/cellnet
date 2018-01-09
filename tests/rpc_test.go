@@ -19,7 +19,7 @@ var rpc_Acceptor cellnet.Peer
 func rpc_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	rpc_Acceptor = cellnet.CreatePeer(cellnet.PeerConfig{
+	rpc_Acceptor = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
 		Queue:          queue,
@@ -119,7 +119,7 @@ func asyncRPC_OnClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 func rpc_StartClient(eventFunc cellnet.EventProc) {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.PeerConfig{
+	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
 		PeerType:        "tcp.Connector",
 		EventProcessor:  "tcp.ltv",
 		Queue:           queue,

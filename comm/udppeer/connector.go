@@ -8,15 +8,16 @@ import (
 )
 
 type udpConnector struct {
-	internal.PeerShare
-	localAddr *net.UDPAddr
-	conn      *net.UDPConn
+	internal.CommunicatePeer
+	internal.PeerInfo
+	remoteAddr *net.UDPAddr
+	conn       *net.UDPConn
 }
 
 func (self *udpConnector) Start() cellnet.Peer {
 
 	var err error
-	self.localAddr, err = net.ResolveUDPAddr("udp", self.Address())
+	self.remoteAddr, err = net.ResolveUDPAddr("udp", self.Address())
 
 	if err != nil {
 
@@ -32,7 +33,7 @@ func (self *udpConnector) Start() cellnet.Peer {
 func (self *udpConnector) connect() {
 
 	var err error
-	self.conn, err = net.DialUDP("udp", nil, self.localAddr)
+	self.conn, err = net.DialUDP("udp", nil, self.remoteAddr)
 	if err != nil {
 
 		log.Errorf("#connect failed(%s) %v", self.NameOrAddress(), err.Error())
@@ -41,7 +42,7 @@ func (self *udpConnector) connect() {
 
 	var running = true
 
-	ses := newUDPSession(self.localAddr, self.conn, &self.PeerShare, func() {
+	ses := newUDPSession(nil, self.conn, &self.CommunicatePeer, func() {
 		running = false
 	})
 
@@ -74,9 +75,13 @@ func (self *udpConnector) Stop() {
 	}
 }
 
+func (self *udpConnector) TypeName() string {
+	return "udp.Connector"
+}
+
 func init() {
 
-	cellnet.RegisterPeerCreator("udp.Connector", func() cellnet.Peer {
+	cellnet.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpConnector{}
 
 		p.Init(p)
