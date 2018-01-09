@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -28,7 +27,7 @@ type UPDSession interface {
 
 // Socket会话
 type udpSession struct {
-	internal.SessionShare
+	cellnet.CoreSessionShare
 
 	// Socket原始连接
 	remote *net.UDPAddr
@@ -207,7 +206,7 @@ OnExit:
 	}
 
 	// 将会话从管理器移除
-	self.Peer().(internal.SessionManager).Remove(self)
+	self.Peer().(cellnet.SessionManager).Remove(self)
 
 	if self.endNotify != nil {
 		self.endNotify()
@@ -220,13 +219,13 @@ OnExit:
 func (self *udpSession) Start() {
 
 	// 将会话添加到管理器
-	self.Peer().(internal.SessionManager).Add(self)
+	self.Peer().(cellnet.SessionManager).Add(self)
 
 	go self.tickLoop()
 
 }
 
-func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *internal.CommunicatePeer, endNotify func()) *udpSession {
+func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, peerShare *cellnet.CoreCommunicatePeer, endNotify func()) *udpSession {
 	self := &udpSession{
 		conn:        conn,
 		remote:      addr,

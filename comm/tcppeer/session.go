@@ -3,14 +3,13 @@ package tcppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
 )
 
 // Socket会话
 type tcpSession struct {
-	internal.SessionShare
+	cellnet.CoreSessionShare
 
 	// Socket原始连接
 	conn net.Conn
@@ -107,7 +106,7 @@ func (self *tcpSession) cleanup() {
 func (self *tcpSession) Start() {
 
 	// 将会话添加到管理器
-	self.Peer().(internal.SessionManager).Add(self)
+	self.Peer().(cellnet.SessionManager).Add(self)
 
 	// 需要接收和发送线程同时完成时才算真正的完成
 	self.exitSync.Add(2)
@@ -118,7 +117,7 @@ func (self *tcpSession) Start() {
 		self.exitSync.Wait()
 
 		// 将会话从管理器移除
-		self.Peer().(internal.SessionManager).Remove(self)
+		self.Peer().(cellnet.SessionManager).Remove(self)
 
 		if self.endNotify != nil {
 			self.endNotify()
@@ -136,7 +135,7 @@ func (self *tcpSession) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func newTCPSession(conn net.Conn, peerShare *internal.CommunicatePeer, endNotify func()) cellnet.Session {
+func newTCPSession(conn net.Conn, peerShare *cellnet.CoreCommunicatePeer, endNotify func()) cellnet.Session {
 	self := &tcpSession{
 		conn:      conn,
 		endNotify: endNotify,

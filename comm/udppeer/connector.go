@@ -3,13 +3,12 @@ package udppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/internal"
 	"net"
 )
 
 type udpConnector struct {
-	internal.CommunicatePeer
-	internal.PeerInfo
+	cellnet.CoreCommunicatePeer
+	cellnet.CorePeerInfo
 	remoteAddr *net.UDPAddr
 	conn       *net.UDPConn
 }
@@ -42,7 +41,7 @@ func (self *udpConnector) connect() {
 
 	var running = true
 
-	ses := newUDPSession(nil, self.conn, &self.CommunicatePeer, func() {
+	ses := newUDPSession(nil, self.conn, &self.CoreCommunicatePeer, func() {
 		running = false
 	})
 

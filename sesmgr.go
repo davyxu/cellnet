@@ -1,17 +1,16 @@
-package internal
+package cellnet
 
 import (
-	"github.com/davyxu/cellnet"
 	"sync"
 	"sync/atomic"
 )
 
 // 完整功能的会话管理
 type SessionManager interface {
-	cellnet.SessionAccessor
+	SessionAccessor
 
-	Add(cellnet.Session)
-	Remove(cellnet.Session)
+	Add(Session)
+	Remove(Session)
 	Count() int
 }
 
@@ -27,7 +26,7 @@ func (self *sesMgr) Count() int {
 	return int(atomic.LoadInt64(&self.count))
 }
 
-func (self *sesMgr) Add(ses cellnet.Session) {
+func (self *sesMgr) Add(ses Session) {
 
 	id := atomic.AddInt64(&self.sesIDGen, 1)
 
@@ -40,7 +39,7 @@ func (self *sesMgr) Add(ses cellnet.Session) {
 	self.sesById.Store(id, ses)
 }
 
-func (self *sesMgr) Remove(ses cellnet.Session) {
+func (self *sesMgr) Remove(ses Session) {
 
 	self.sesById.Delete(ses.ID())
 
@@ -48,26 +47,26 @@ func (self *sesMgr) Remove(ses cellnet.Session) {
 }
 
 // 获得一个连接
-func (self *sesMgr) GetSession(id int64) cellnet.Session {
+func (self *sesMgr) GetSession(id int64) Session {
 	if v, ok := self.sesById.Load(id); ok {
-		return v.(cellnet.Session)
+		return v.(Session)
 	}
 
 	return nil
 }
 
-func (self *sesMgr) VisitSession(callback func(cellnet.Session) bool) {
+func (self *sesMgr) VisitSession(callback func(Session) bool) {
 
 	self.sesById.Range(func(key, value interface{}) bool {
 
-		return callback(value.(cellnet.Session))
+		return callback(value.(Session))
 
 	})
 }
 
 func (self *sesMgr) CloseAllSession() {
 
-	self.VisitSession(func(ses cellnet.Session) bool {
+	self.VisitSession(func(ses Session) bool {
 
 		ses.Close()
 

@@ -3,14 +3,13 @@ package tcppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/internal"
 	"net"
 )
 
 // 接受器
 type tcpAcceptor struct {
-	internal.CommunicatePeer
-	internal.PeerInfo
+	cellnet.CoreCommunicatePeer
+	cellnet.CorePeerInfo
 
 	// 保存侦听器
 	listener net.Listener
@@ -77,7 +76,7 @@ func (self *tcpAcceptor) accept() {
 
 func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
-	ses := newTCPSession(conn, &self.CommunicatePeer, nil)
+	ses := newTCPSession(conn, &self.CoreCommunicatePeer, nil)
 
 	ses.(interface {
 		Start()

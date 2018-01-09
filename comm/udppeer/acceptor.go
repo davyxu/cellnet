@@ -3,7 +3,6 @@ package udppeer
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/internal"
 	"net"
 	"sync"
 )
@@ -11,8 +10,8 @@ import (
 const MaxUDPRecvBuffer = 2048
 
 type udpAcceptor struct {
-	internal.CommunicatePeer
-	internal.PeerInfo
+	cellnet.CoreCommunicatePeer
+	cellnet.CorePeerInfo
 	localAddr *net.UDPAddr
 
 	conn *net.UDPConn
@@ -79,7 +78,7 @@ func (self *udpAcceptor) accept() {
 
 			} else {
 
-				ses = newUDPSession(remoteAddr, self.conn, &self.CommunicatePeer, func() {
+				ses = newUDPSession(remoteAddr, self.conn, &self.CoreCommunicatePeer, func() {
 					self.removeAddress(addr)
 				})
 
