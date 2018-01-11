@@ -63,10 +63,6 @@ func (self *udpConnector) connect() {
 	}
 }
 
-func (self *udpConnector) IsConnector() bool {
-	return true
-}
-
 func (self *udpConnector) Stop() {
 
 	if self.conn != nil {

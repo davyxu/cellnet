@@ -29,6 +29,9 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 	if err != nil {
 
 		log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
+
+		self.SetRunning(false)
+
 		return self
 	}
 
@@ -83,10 +86,6 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 	}).Start()
 
 	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
-}
-
-func (self *tcpAcceptor) IsAcceptor() bool {
-	return true
 }
 
 // 停止侦听器

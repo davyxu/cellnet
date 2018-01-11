@@ -36,6 +36,7 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 		log.Errorln("listen failed:", err)
+		self.SetRunning(false)
 		return self
 	}
 
@@ -47,6 +48,8 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 }
 
 func (self *udpAcceptor) accept() {
+
+	self.SetRunning(true)
 
 	var recentAddr addressPair
 	var recentSes *udpSession
@@ -104,15 +107,13 @@ func (self *udpAcceptor) accept() {
 
 	}
 
+	self.SetRunning(false)
+
 }
 
 func (self *udpAcceptor) removeAddress(pair addressPair) {
 
 	self.sesByAddress.Delete(pair)
-}
-
-func (self *udpAcceptor) IsAcceptor() bool {
-	return true
 }
 
 func (self *udpAcceptor) Stop() {
@@ -121,6 +122,8 @@ func (self *udpAcceptor) Stop() {
 		self.conn.Close()
 	}
 
+	// TODO 等待accept线程结束
+	self.SetRunning(false)
 }
 
 func (self *udpAcceptor) TypeName() string {
