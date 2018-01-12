@@ -36,16 +36,30 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 
 		case *cellnet.SendMsgEvent:
 
-			if IsBlockedMessageByID(cellnet.MessageID(ev.Msg)) {
+			var msg interface{}
+
+			if rawPkt, ok := ev.Msg.(comm.RawPacket); ok {
+				rawMsg, _, err := cellnet.DecodeMessage(rawPkt.MsgID, rawPkt.MsgData)
+				if err != nil {
+					log.Errorf("process msg log decode error: %s", err)
+					return err
+				}
+
+				msg = rawMsg
+			} else {
+				msg = ev.Msg
+			}
+
+			if IsBlockedMessageByID(cellnet.MessageID(msg)) {
 				break
 			}
 
 			log.Debugf("#send(%s)@%d %s(%d) | %s",
 				ev.Ses.Peer().Name(),
 				ev.Ses.ID(),
-				cellnet.MessageName(ev.Msg),
-				cellnet.MessageID(ev.Msg),
-				cellnet.MessageToString(ev.Msg))
+				cellnet.MessageName(msg),
+				cellnet.MessageID(msg),
+				cellnet.MessageToString(msg))
 		}
 
 		if userFunc != nil {

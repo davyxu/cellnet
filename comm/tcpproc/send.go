@@ -2,14 +2,10 @@ package tcpproc
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/util"
 	"net"
 )
-
-type RawPacket struct {
-	MsgData []byte
-	MsgID   int
-}
 
 // 发送Length-Type-Value格式的封包流程
 func SendLTVPacket(ses cellnet.Session, data interface{}) cellnet.EventResult {
@@ -26,7 +22,7 @@ func SendLTVPacket(ses cellnet.Session, data interface{}) cellnet.EventResult {
 	var msgID int
 
 	switch m := data.(type) {
-	case RawPacket: // 发裸包
+	case comm.RawPacket: // 发裸包
 		msgData = m.MsgData
 		msgID = m.MsgID
 	default: // 发普通编码包

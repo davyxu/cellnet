@@ -10,8 +10,6 @@ import (
 
 type Connector interface {
 	SetReconnectDuration(dur time.Duration)
-
-	IsConnected() bool
 }
 
 type tcpConnector struct {
@@ -144,7 +142,7 @@ func (self *tcpConnector) connect(address string) {
 	self.EndStopping()
 }
 
-func (self *tcpConnector) IsConnected() bool {
+func (self *tcpConnector) IsReady() bool {
 	return self.SessionCount() != 0
 }
 
