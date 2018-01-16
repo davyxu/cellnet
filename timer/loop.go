@@ -56,8 +56,9 @@ func (self *Loop) Stop() {
 	self.running = false
 }
 
-func (self *Loop) Notify() {
+func (self *Loop) Notify() *Loop {
 	self.userCallback(self)
+	return self
 }
 
 func tick(ctx interface{}, nextLoop bool) {
