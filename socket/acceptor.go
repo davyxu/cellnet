@@ -86,10 +86,11 @@ func (self *socketAcceptor) onAccepted(conn net.Conn) {
 		self.Remove(ses)
 	}
 
-	ses.run()
-
-	// 通知逻辑
+	// 投递连接已接受事件
 	extend.PostSystemEvent(ses, cellnet.Event_Accepted, self.ChainListRecv(), cellnet.Result_OK)
+
+	// 事件处理完成开始处理数据收发
+	ses.run()
 }
 
 func (self *socketAcceptor) Stop() {

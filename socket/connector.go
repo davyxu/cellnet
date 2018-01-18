@@ -1,10 +1,11 @@
 package socket
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/extend"
 	"net"
 	"time"
+
+	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/extend"
 )
 
 // 连接器, 可由Peer转换
@@ -86,14 +87,11 @@ func (self *socketConnector) connect(address string) {
 			continue
 		}
 
-		ses := newSession(conn, self)
-		self.defaultSes = ses
-		ses.run()
-
-		self.tryConnTimes = 0
-
 		// 创建Session
+		ses := newSession(conn, self)
 
+		self.defaultSes = ses
+		self.tryConnTimes = 0
 		self.Add(ses)
 
 		// 内部断开回调
@@ -102,7 +100,11 @@ func (self *socketConnector) connect(address string) {
 			self.closeSignal <- true
 		}
 
+		// 投递连接建立事件
 		extend.PostSystemEvent(ses, cellnet.Event_Connected, self.ChainListRecv(), cellnet.Result_OK)
+
+		// 事件处理完成开始处理数据收发
+		ses.run()
 
 		if <-self.closeSignal {
 
