@@ -15,6 +15,10 @@ type MessageMeta struct {
 	Codec Codec        // 消息用到的编码
 }
 
+func (self *MessageMeta) NewType() interface{} {
+	return reflect.New(self.Type).Interface()
+}
+
 var (
 	// 消息元信息与消息名称，消息ID和消息类型的关联关系
 	metaByName = map[string]*MessageMeta{}

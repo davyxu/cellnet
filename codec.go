@@ -77,7 +77,7 @@ func DecodeMessage(msgid int, data []byte) (interface{}, *MessageMeta, error) {
 	}
 
 	// 创建消息
-	msg := reflect.New(meta.Type).Interface()
+	msg := meta.NewType()
 
 	// 从字节数组转换为消息
 	err := meta.Codec.Decode(data, msg)

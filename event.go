@@ -1,5 +1,13 @@
 package cellnet
 
+import "net/http"
+
+type HttpEvent struct {
+	Response http.ResponseWriter
+
+	Req *http.Request
+}
+
 // 需要读取数据(tcp)
 type ReadStreamEvent struct {
 	Ses Session
