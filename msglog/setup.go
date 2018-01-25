@@ -12,7 +12,7 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 		switch ev := raw.(type) {
 		case *cellnet.RecvMsgEvent:
 
-			if IsBlockedMessageByID(cellnet.MessageID(ev.Msg)) {
+			if IsBlockedMessageByID(cellnet.MessageToID(ev.Msg)) {
 				break
 			}
 
@@ -29,8 +29,8 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				log.Debugf("#recv(%s)@%d %s(%d) | %s",
 					ev.Ses.Peer().Name(),
 					ev.Ses.ID(),
-					cellnet.MessageName(ev.Msg),
-					cellnet.MessageID(ev.Msg),
+					cellnet.MessageToName(ev.Msg),
+					cellnet.MessageToID(ev.Msg),
 					cellnet.MessageToString(ev.Msg))
 			}
 
@@ -50,15 +50,15 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				msg = ev.Msg
 			}
 
-			if IsBlockedMessageByID(cellnet.MessageID(msg)) {
+			if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 				break
 			}
 
 			log.Debugf("#send(%s)@%d %s(%d) | %s",
 				ev.Ses.Peer().Name(),
 				ev.Ses.ID(),
-				cellnet.MessageName(msg),
-				cellnet.MessageID(msg),
+				cellnet.MessageToName(msg),
+				cellnet.MessageToID(msg),
 				cellnet.MessageToString(msg))
 		}
 

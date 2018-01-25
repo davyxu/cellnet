@@ -9,10 +9,44 @@ import (
 
 // 消息元信息
 type MessageMeta struct {
-	Name  string       // 消息名称
-	Type  reflect.Type // 消息类型
-	ID    int          // 消息ID
 	Codec Codec        // 消息用到的编码
+	Type  reflect.Type // 消息类型
+
+	ID        int    // 消息ID (二进制协议中使用)
+	URL       string // 消息名称(HTTP协议使用)
+	EventFunc EventProc
+}
+
+func (self *MessageMeta) TypeName() string {
+
+	if self == nil {
+		return ""
+	}
+
+	if self.Type.Kind() == reflect.Ptr {
+		return self.Type.Elem().Name()
+	}
+
+	return self.Type.Name()
+}
+
+func (self *MessageMeta) FullName() string {
+
+	if self == nil {
+		return ""
+	}
+
+	rtype := self.Type
+	if rtype.Kind() == reflect.Ptr {
+		rtype = rtype.Elem()
+	}
+
+	var b bytes.Buffer
+	b.WriteString(path.Base(rtype.PkgPath()))
+	b.WriteString(".")
+	b.WriteString(rtype.Name())
+
+	return b.String()
 }
 
 func (self *MessageMeta) NewType() interface{} {
@@ -21,35 +55,57 @@ func (self *MessageMeta) NewType() interface{} {
 
 var (
 	// 消息元信息与消息名称，消息ID和消息类型的关联关系
-	metaByName = map[string]*MessageMeta{}
-	metaByID   = map[int]*MessageMeta{}
-	metaByType = map[reflect.Type]*MessageMeta{}
+	metaByURL      = map[string]*MessageMeta{}
+	metaByFullName = map[string]*MessageMeta{}
+	metaByID       = map[int]*MessageMeta{}
+	metaByType     = map[reflect.Type]*MessageMeta{}
 )
 
 // 注册消息元信息
 func RegisterMessageMeta(meta *MessageMeta) {
 
-	if _, ok := metaByName[meta.Name]; ok {
-		panic("duplicate message meta register by name: " + meta.Name)
-	}
-
-	if _, ok := metaByID[meta.ID]; ok {
-		panic(fmt.Sprintf("duplicate message meta register by id: %d", meta.ID))
-	}
-
 	if _, ok := metaByType[meta.Type]; ok {
-		panic(fmt.Sprintf("duplicate message meta register by type: %d", meta.ID))
+		panic(fmt.Sprintf("Duplicate message meta register by type: %d", meta.ID))
+	} else {
+		metaByType[meta.Type] = meta
 	}
 
-	metaByName[meta.Name] = meta
-	metaByID[meta.ID] = meta
-	metaByType[meta.Type] = meta
+	if _, ok := metaByFullName[meta.FullName()]; ok {
+		panic(fmt.Sprintf("Duplicate message meta register by fullname: %d", meta.FullName()))
+	} else {
+		metaByFullName[meta.FullName()] = meta
+	}
+
+	if meta.ID != 0 {
+		if _, ok := metaByID[meta.ID]; ok {
+			panic(fmt.Sprintf("Duplicate message meta register by id: %d", meta.ID))
+		} else {
+			metaByID[meta.ID] = meta
+		}
+	}
+
+	if meta.URL != "" {
+		if _, ok := metaByURL[meta.URL]; ok {
+			panic("Duplicate message meta register by URL: " + meta.URL)
+		} else {
+			metaByURL[meta.URL] = meta
+		}
+
+	}
 
 }
 
 // 根据名字查找消息元信息
-func MessageMetaByName(name string) *MessageMeta {
-	if v, ok := metaByName[name]; ok {
+func MessageMetaByFullName(name string) *MessageMeta {
+	if v, ok := metaByFullName[name]; ok {
+		return v
+	}
+
+	return nil
+}
+
+func MessageMetaByURL(url string) *MessageMeta {
+	if v, ok := metaByURL[url]; ok {
 		return v
 	}
 
@@ -70,26 +126,6 @@ func MessageMetaByType(t reflect.Type) *MessageMeta {
 	return nil
 }
 
-// 消息全名
-func MessageFullName(rtype reflect.Type) string {
-
-	if rtype == nil {
-		panic("empty msg type")
-	}
-
-	if rtype.Kind() == reflect.Ptr {
-		rtype = rtype.Elem()
-	}
-
-	var b bytes.Buffer
-	b.WriteString(path.Base(rtype.PkgPath()))
-	b.WriteString(".")
-	b.WriteString(rtype.Name())
-
-	return b.String()
-
-}
-
 // 根据id查找消息元信息
 func MessageMetaByID(id int) *MessageMeta {
 	if v, ok := metaByID[id]; ok {
@@ -99,17 +135,17 @@ func MessageMetaByID(id int) *MessageMeta {
 	return nil
 }
 
-func MessageName(msg interface{}) string {
+func MessageToName(msg interface{}) string {
 
 	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
 	if meta == nil {
 		return ""
 	}
 
-	return meta.Name
+	return meta.TypeName()
 }
 
-func MessageID(msg interface{}) int {
+func MessageToID(msg interface{}) int {
 
 	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
 	if meta == nil {

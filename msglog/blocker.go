@@ -22,7 +22,7 @@ var (
 )
 
 func BlockMessageLog(msgName string) error {
-	meta := cellnet.MessageMetaByName(msgName)
+	meta := cellnet.MessageMetaByFullName(msgName)
 
 	if meta == nil {
 		return ErrMessageNotFound

@@ -3,7 +3,7 @@ package cellnet
 import "net/http"
 
 type HttpEvent struct {
-	Response http.ResponseWriter
+	Ses Session
 
 	Req *http.Request
 }

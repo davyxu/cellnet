@@ -13,6 +13,7 @@ type CommunicatePeer interface {
 type CoreCommunicatePeer struct {
 	SessionManager
 	CoreTagger
+	CoreDuplexEventProc
 
 	// 单独保存的保存Peer接口
 	peerInterface Peer
@@ -22,13 +23,6 @@ type CoreCommunicatePeer struct {
 
 	// 停止过程同步
 	stopping chan bool
-
-	InboundProc  EventProc
-	OutboundProc EventProc
-}
-
-func (self *CoreCommunicatePeer) SetEventFunc(processor string, inboundEvent, outboundEvent EventProc) {
-	self.InboundProc, self.OutboundProc = MakeEventProcessor(processor, inboundEvent, outboundEvent)
 }
 
 func (self *CoreCommunicatePeer) IsRunning() bool {
@@ -43,30 +37,6 @@ func (self *CoreCommunicatePeer) SetRunning(v bool) {
 	self.runningGuard.Lock()
 	self.running = v
 	self.runningGuard.Unlock()
-}
-
-// socket包内部派发事件
-func (self *CoreCommunicatePeer) CallInboundProc(ev interface{}) interface{} {
-
-	if self.InboundProc == nil {
-		return nil
-	}
-
-	//log.Debugf("<Inbound> %T|%+v", ev, ev)
-
-	return self.InboundProc(ev)
-}
-
-// socket包内部派发事件
-func (self *CoreCommunicatePeer) CallOutboundProc(ev interface{}) interface{} {
-
-	if self.OutboundProc == nil {
-		return nil
-	}
-
-	//log.Debugf("<Outbound> %T|%+v", ev, ev)
-
-	return self.OutboundProc(ev)
 }
 
 func (self *CoreCommunicatePeer) Peer() Peer {

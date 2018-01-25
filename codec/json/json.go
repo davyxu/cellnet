@@ -14,16 +14,16 @@ func (self *jsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *jsonCodec) Encode(msgObj interface{}) ([]byte, error) {
+func (self *jsonCodec) Encode(msgObj interface{}) (data interface{}, err error) {
 
 	return json.Marshal(msgObj)
 
 }
 
 // 将JSON的字节数组解码为结构体
-func (self *jsonCodec) Decode(data []byte, msgObj interface{}) error {
+func (self *jsonCodec) Decode(data interface{}, msgObj interface{}) error {
 
-	return json.Unmarshal(data, msgObj)
+	return json.Unmarshal(data.([]byte), msgObj)
 }
 
 func init() {

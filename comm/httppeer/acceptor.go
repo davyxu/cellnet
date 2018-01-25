@@ -3,15 +3,17 @@ package httppeer
 import (
 	"github.com/davyxu/cellnet"
 	"net/http"
-	"strings"
 )
 
 type httpAcceptor struct {
 	cellnet.CoreTagger
 	cellnet.CorePeerInfo
+	cellnet.CoreDuplexEventProc
 }
 
 func (self *httpAcceptor) Start() cellnet.Peer {
+
+	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
 	go http.ListenAndServe(self.Address(), self)
 
@@ -20,32 +22,21 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
-	contentType := req.Header.Get("Content-Type")
-
-	if req.Method == "POST" || req.Method == "PUT" || req.Method == "PATCH" || contentType != "" {
-		if strings.Contains(contentType, "form-urlencoded") {
-			//context.Invoke(Form(obj, ifacePtr...))
-		} else if strings.Contains(contentType, "multipart/form-data") {
-			//context.Invoke(MultipartForm(obj, ifacePtr...))
-		} else if strings.Contains(contentType, "json") {
-			//context.Invoke(Json(obj, ifacePtr...))
-		} else {
-			//var errors Errors
-			//if contentType == "" {
-			//	errors.Add([]string{}, ContentTypeError, "Empty Content-Type")
-			//} else {
-			//	errors.Add([]string{}, ContentTypeError, "Unsupported Content-Type")
-			//}
-			//context.Map(errors)
-		}
-	} else {
-		//context.Invoke(Form(obj, ifacePtr...))
-	}
-
-	meta := cellnet.MessageMetaByName(req.URL.Path)
+	meta := cellnet.MessageMetaByURL(req.URL.Path)
 	if meta == nil {
+		res.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	msg := meta.NewType()
+
+	if err := meta.Codec.Decode(req, msg); err != nil {
+		return
+	}
+
+	ses := newHttpSession(self, res)
+
+	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, msg})
 }
 
 // 停止侦听器

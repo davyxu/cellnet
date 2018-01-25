@@ -6,9 +6,9 @@ import (
 )
 
 type EventQueue interface {
-	StartLoop()
+	StartLoop() EventQueue
 
-	StopLoop()
+	StopLoop() EventQueue
 
 	// 等待退出
 	Wait()
@@ -61,7 +61,7 @@ func (self *eventQueue) protectedCall(callback func()) {
 }
 
 // 开启事件循环
-func (self *eventQueue) StartLoop() {
+func (self *eventQueue) StartLoop() EventQueue {
 
 	self.endSignal.Add(1)
 
@@ -78,11 +78,14 @@ func (self *eventQueue) StartLoop() {
 
 		self.endSignal.Done()
 	}()
+
+	return self
 }
 
 // 停止事件循环
-func (self *eventQueue) StopLoop() {
+func (self *eventQueue) StopLoop() EventQueue {
 	self.queue <- nil
+	return self
 }
 
 // 等待退出消息

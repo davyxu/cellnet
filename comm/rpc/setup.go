@@ -33,7 +33,7 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 						log.Debugf("#rpc recv(%s)@%d %s(%d) | %s",
 							ev.Session().Peer().Name(),
 							ev.Session().ID(),
-							meta.Name,
+							meta.TypeName(),
 							meta.ID,
 							cellnet.MessageToString(msg))
 
@@ -54,7 +54,7 @@ func ProcRPC(userFunc cellnet.EventProc) cellnet.EventProc {
 						log.Debugf("#rpc send(%s)@%d %s(%d) | %s",
 							ev.Session().Peer().Name(),
 							ev.Session().ID(),
-							meta.Name,
+							meta.TypeName(),
 							meta.ID,
 							cellnet.MessageToString(msg))
 

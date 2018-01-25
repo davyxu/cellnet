@@ -29,3 +29,51 @@ func MakeEventProcessor(name string, inbound, outbound EventProc) (EventProc, Ev
 
 	return f(inbound, outbound)
 }
+
+type DuplexEventInitor interface {
+	SetEventFunc(processor string, inboundEvent, outboundEvent EventProc)
+	SetRaw(inboundEvent, outboundEvent EventProc)
+}
+
+type DuplexEventInvoker interface {
+	CallInboundProc(ev interface{}) interface{}
+
+	CallOutboundProc(ev interface{}) interface{}
+}
+
+type CoreDuplexEventProc struct {
+	InboundProc  EventProc
+	OutboundProc EventProc
+}
+
+func (self *CoreDuplexEventProc) SetEventFunc(processor string, inboundEvent, outboundEvent EventProc) {
+	self.InboundProc, self.OutboundProc = MakeEventProcessor(processor, inboundEvent, outboundEvent)
+}
+
+func (self *CoreDuplexEventProc) SetRaw(inboundEvent, outboundEvent EventProc) {
+	self.InboundProc, self.OutboundProc = inboundEvent, outboundEvent
+}
+
+// socket包内部派发事件
+func (self *CoreDuplexEventProc) CallInboundProc(ev interface{}) interface{} {
+
+	if self.InboundProc == nil {
+		return nil
+	}
+
+	//log.Debugf("<Inbound> %T|%+v", ev, ev)
+
+	return self.InboundProc(ev)
+}
+
+// socket包内部派发事件
+func (self *CoreDuplexEventProc) CallOutboundProc(ev interface{}) interface{} {
+
+	if self.OutboundProc == nil {
+		return nil
+	}
+
+	//log.Debugf("<Outbound> %T|%+v", ev, ev)
+
+	return self.OutboundProc(ev)
+}

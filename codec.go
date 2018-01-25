@@ -7,10 +7,10 @@ import (
 
 type Codec interface {
 	// 将数据转换为字节数组
-	Encode(interface{}) ([]byte, error)
+	Encode(msgObj interface{}) (data interface{}, err error)
 
 	// 将字节数组转换为数据
-	Decode([]byte, interface{}) error
+	Decode(data interface{}, msgObj interface{}) error
 
 	// 编码器的名字
 	Name() string
@@ -61,7 +61,10 @@ func EncodeMessage(msg interface{}) (data []byte, meta *MessageMeta, err error) 
 	}
 
 	// 将消息编码为字节数组
-	data, err = meta.Codec.Encode(msg)
+	var raw interface{}
+	raw, err = meta.Codec.Encode(msg)
+
+	data = raw.([]byte)
 
 	return
 }
