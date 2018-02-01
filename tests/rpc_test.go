@@ -3,7 +3,8 @@ package tests
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	"github.com/davyxu/cellnet/comm/rpc"
+	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"
@@ -19,10 +20,10 @@ var rpc_Acceptor cellnet.Peer
 func rpc_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	rpc_Acceptor = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	rpc_Acceptor = peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    syncRPC_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -119,10 +120,10 @@ func asyncRPC_OnClientEvent(raw cellnet.EventParam) cellnet.EventResult {
 func rpc_StartClient(eventFunc cellnet.EventProc) {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:        "tcp.Connector",
 		EventProcessor:  "tcp.ltv",
-		Queue:           queue,
+		UserQueue:       queue,
 		PeerAddress:     syncRPC_Address,
 		PeerName:        "client",
 		UserInboundProc: eventFunc,

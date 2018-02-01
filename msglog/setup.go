@@ -5,6 +5,11 @@ import (
 	"github.com/davyxu/cellnet/comm"
 )
 
+type nameAdressGetter interface {
+	Name() string
+	Address() string
+}
+
 func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 
 	return func(raw cellnet.EventParam) cellnet.EventResult {
@@ -16,18 +21,20 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				break
 			}
 
+			peerInfo := ev.Ses.Peer().(nameAdressGetter)
+
 			switch msg := ev.Msg.(type) {
 			case *comm.SessionAccepted:
-				log.Debugf("#accepted(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+				log.Debugf("#accepted(%s)@%d", peerInfo.Name(), ev.Ses.ID())
 			case *comm.SessionClosed:
-				log.Debugf("#closed(%s)@%d | Reason: %s", ev.Ses.Peer().Name(), ev.Ses.ID(), msg.Error)
+				log.Debugf("#closed(%s)@%d | Reason: %s", peerInfo.Name(), ev.Ses.ID(), msg.Error)
 			case *comm.SessionConnected:
-				log.Debugf("#connected(%s)@%d", ev.Ses.Peer().Name(), ev.Ses.ID())
+				log.Debugf("#connected(%s)@%d", peerInfo.Name(), ev.Ses.ID())
 			case *comm.SessionConnectError:
-				log.Debugf("#connectfailed(%s)@%d address: %s", ev.Ses.Peer().Name(), ev.Ses.ID(), ev.Ses.Peer().Address())
+				log.Debugf("#connectfailed(%s)@%d address: %s", peerInfo.Name(), ev.Ses.ID(), peerInfo.Address())
 			default:
 				log.Debugf("#recv(%s)@%d %s(%d) | %s",
-					ev.Ses.Peer().Name(),
+					peerInfo.Name(),
 					ev.Ses.ID(),
 					cellnet.MessageToName(ev.Msg),
 					cellnet.MessageToID(ev.Msg),
@@ -54,8 +61,10 @@ func ProcMsgLog(userFunc cellnet.EventProc) cellnet.EventProc {
 				break
 			}
 
+			peerInfo := ev.Ses.Peer().(nameAdressGetter)
+
 			log.Debugf("#send(%s)@%d %s(%d) | %s",
-				ev.Ses.Peer().Name(),
+				peerInfo.Name(),
 				ev.Ses.ID(),
 				cellnet.MessageToName(msg),
 				cellnet.MessageToID(msg),

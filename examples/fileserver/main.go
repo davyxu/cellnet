@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/comm/httpfilepeer"
+	_ "github.com/davyxu/cellnet/peer/httpfilepeer"
 )
 
 func main() {

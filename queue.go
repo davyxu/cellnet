@@ -107,8 +107,11 @@ func SessionQueuedCall(ses Session, callback func()) {
 	if ses == nil {
 		return
 	}
+	q := ses.Peer().(interface {
+		Queue() EventQueue
+	}).Queue()
 
-	QueuedCall(ses.Peer().EventQueue(), callback)
+	QueuedCall(q, callback)
 }
 
 // 有队列时队列调用，无队列时直接调用

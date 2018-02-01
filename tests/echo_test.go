@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	_ "github.com/davyxu/cellnet/comm/kcpproc"
-	_ "github.com/davyxu/cellnet/comm/tcppeer"
-	_ "github.com/davyxu/cellnet/comm/tcpproc"
-	_ "github.com/davyxu/cellnet/comm/udppeer"
-	_ "github.com/davyxu/cellnet/comm/udpproc"
+	"github.com/davyxu/cellnet/peer"
+	_ "github.com/davyxu/cellnet/peer/tcp"
+	_ "github.com/davyxu/cellnet/peer/udp"
+	_ "github.com/davyxu/cellnet/proc/kcp"
+	_ "github.com/davyxu/cellnet/proc/tcp"
+	_ "github.com/davyxu/cellnet/proc/udp"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
@@ -44,10 +45,10 @@ var (
 func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	context.Acceptor = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	context.Acceptor = peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       context.Protocol + ".Acceptor",
 		EventProcessor: context.Processor,
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    context.Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -81,10 +82,10 @@ func echo_StartServer(context *echoContext) {
 func echo_StartClient(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       context.Protocol + ".Connector",
 		EventProcessor: context.Processor,
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    context.Address,
 		PeerName:       "client",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {

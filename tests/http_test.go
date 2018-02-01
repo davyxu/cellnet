@@ -6,7 +6,8 @@ import (
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/codec/httpform"
 	_ "github.com/davyxu/cellnet/codec/json"
-	_ "github.com/davyxu/cellnet/comm/httppeer"
+	"github.com/davyxu/cellnet/peer"
+	_ "github.com/davyxu/cellnet/peer/http"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -15,26 +16,30 @@ import (
 
 func TestHttp(t *testing.T) {
 
-	p := cellnet.NewPeer("http.Acceptor")
-	infoSetter := p.(cellnet.PeerInfo)
-	infoSetter.SetAddress("127.0.0.1:8081")
-	eventInitor := p.(cellnet.DuplexEventInitor)
-	eventInitor.SetRaw(func(raw cellnet.EventParam) cellnet.EventResult {
-
-		switch ev := raw.(type) {
-		case *cellnet.RecvMsgEvent:
-
-			ev.Send(&HttpEchoACK{
-				Status: 0,
-				Token:  "ok",
-			})
-		}
-
-		return nil
-
-	}, nil)
+	p := peer.NewPeer("http.Acceptor")
+	//infoSetter := p.(cellnet.PeerInfo)
+	//infoSetter.SetAddress("127.0.0.1:8081")
+	//eventInitor := p.(cellnet.DuplexEventInitor)
+	//eventInitor.SetRaw(func(raw cellnet.EventParam) cellnet.EventResult {
+	//
+	//	switch ev := raw.(type) {
+	//	case *cellnet.RecvMsgEvent:
+	//
+	//		ev.Send(&HttpEchoACK{
+	//			Status: 0,
+	//			Token:  "ok",
+	//		})
+	//	}
+	//
+	//	return nil
+	//
+	//}, nil)
 	p.Start()
 
+	fmt.Scanln()
+}
+
+func sendRequest(t *testing.T) {
 	resp, err := http.Get("http://127.0.0.1:8081/hello?UserName=kitty")
 	if err != nil {
 		t.Log("http req failed", err)
@@ -58,7 +63,6 @@ func TestHttp(t *testing.T) {
 		t.Log("unexpect token result", err)
 		t.FailNow()
 	}
-
 }
 
 type HttpEchoREQ struct {
@@ -75,9 +79,10 @@ func (self *HttpEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: cellnet.MustGetCodec("httpform"),
-		URL:   "/hello",
-		Type:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
+		Codec:  cellnet.MustGetCodec("httpform"),
+		URL:    "/hello",
+		Method: "GET",
+		Type:   reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{

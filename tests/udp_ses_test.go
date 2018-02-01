@@ -3,8 +3,9 @@ package tests
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
-	_ "github.com/davyxu/cellnet/comm/udppeer"
-	_ "github.com/davyxu/cellnet/comm/udpproc"
+	"github.com/davyxu/cellnet/peer"
+	_ "github.com/davyxu/cellnet/peer/udp"
+	_ "github.com/davyxu/cellnet/proc/udp"
 	"github.com/davyxu/cellnet/util"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	acceptor := peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "udp.Acceptor",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -34,7 +35,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 		},
 	}).Start()
 
-	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "udp.Connector",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -65,7 +66,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	acceptor := peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "udp.Acceptor",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,
@@ -85,7 +86,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 		},
 	}).Start()
 
-	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "udp.Connector",
 		EventProcessor: "udp.ltv",
 		PeerAddress:    udpSes_Address,

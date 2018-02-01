@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
+	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
 	"sync"
 	"time"
@@ -18,10 +19,10 @@ var recreateConn_Signal *util.SignalTester
 func recreateConn_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    recreateConn_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -54,11 +55,11 @@ func runConnClose() {
 
 	var times int
 
-	var peer cellnet.Peer
-	peer = cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	var peerIns cellnet.Peer
+	peerIns = peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "tcp.Connector",
 		EventProcessor: "tcp.ltv",
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    recreateConn_Address,
 		PeerName:       "client.ConnClose",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -67,12 +68,12 @@ func runConnClose() {
 			if ok {
 				switch ev.Msg.(type) {
 				case *comm.SessionConnected:
-					peer.Stop()
+					peerIns.Stop()
 
 					time.Sleep(time.Millisecond * 100)
 
 					if times < 3 {
-						peer.Start()
+						peerIns.Start()
 						times++
 					} else {
 						recreateConn_Signal.Done(1)
@@ -88,7 +89,7 @@ func runConnClose() {
 
 	recreateConn_Signal.WaitAndExpect("not expect times", 1)
 
-	peer.Stop()
+	peerIns.Stop()
 }
 
 func TestCreateDestroyConnector(t *testing.T) {
@@ -108,10 +109,10 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
 	var allAccepted sync.WaitGroup
-	p := cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+	p := peer.CreatePeer(peer.CommunicateConfig{
 		PeerType:       "tcp.Acceptor",
 		EventProcessor: "tcp.ltv",
-		Queue:          queue,
+		UserQueue:      queue,
 		PeerAddress:    recreateAcc_Address,
 		PeerName:       "server",
 		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
@@ -162,7 +163,7 @@ func runMultiConnection() {
 
 	for i := 0; i < recreateAcc_clientConnection; i++ {
 
-		cellnet.CreatePeer(cellnet.CommunicatePeerConfig{
+		peer.CreatePeer(peer.CommunicateConfig{
 			PeerType:       "tcp.Connector",
 			EventProcessor: "tcp.ltv",
 			PeerAddress:    recreateAcc_Address,
