@@ -29,7 +29,7 @@ type UPDSession interface {
 
 // Socket会话
 type udpSession struct {
-	peer.CoreTagger
+	peer.CorePropertySet
 	peer.CoreSessionIdentify
 	proc.DuplexEventInvoker
 

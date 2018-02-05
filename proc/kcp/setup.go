@@ -4,14 +4,15 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/msglog"
+	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 )
 
 const kcpTag = "kcp"
 
-func mustKCPContext(ses cellnet.Session) *kcpContext {
-	if kcpRaw, ok := ses.GetTag(kcpTag); ok {
-		return kcpRaw.(*kcpContext)
+func mustKCPContext(ses cellnet.Session) (ctx *kcpContext) {
+	if ses.(peer.PropertySet).GetProperty(kcpTag, &ctx) {
+		return
 	} else {
 		panic("invalid kcp context")
 	}
@@ -27,7 +28,7 @@ func ProcKCPInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
 			switch ev.Msg.(type) {
 			case *comm.SessionAccepted,
 				*comm.SessionConnected:
-				ev.Ses.SetTag(kcpTag, newContext(ev.Ses, userFunc))
+				ev.Ses.(peer.PropertySet).SetProperty(kcpTag, newContext(ev.Ses, userFunc))
 			case *comm.SessionClosed:
 				mustKCPContext(ev.Ses).Close()
 			}

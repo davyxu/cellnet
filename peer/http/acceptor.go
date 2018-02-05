@@ -8,7 +8,7 @@ import (
 )
 
 type httpAcceptor struct {
-	peer.CoreTagger
+	peer.CorePropertySet
 	proc.CoreDuplexEventProc
 	peer.CommunicateConfig
 

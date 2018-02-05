@@ -16,7 +16,7 @@ type Connector interface {
 
 type tcpConnector struct {
 	peer.CoreSessionManager
-	peer.CoreTagger
+	peer.CorePropertySet
 	peer.CoreRunningTag
 	proc.CoreDuplexEventProc
 	peer.CommunicateConfig

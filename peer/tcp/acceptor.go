@@ -11,7 +11,7 @@ import (
 // 接受器
 type tcpAcceptor struct {
 	peer.CoreSessionManager
-	peer.CoreTagger
+	peer.CorePropertySet
 	peer.CoreRunningTag
 	proc.CoreDuplexEventProc
 	peer.CommunicateConfig

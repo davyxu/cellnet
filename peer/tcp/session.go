@@ -11,7 +11,7 @@ import (
 
 // Socket会话
 type tcpSession struct {
-	peer.CoreTagger
+	peer.CorePropertySet
 	peer.CoreSessionIdentify
 	proc.DuplexEventInvoker
 

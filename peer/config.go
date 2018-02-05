@@ -27,6 +27,10 @@ func (self *CommunicateConfig) Address() string {
 	return self.PeerAddress
 }
 
+func (self *CommunicateConfig) SetAddress(addr string) {
+	self.PeerAddress = addr
+}
+
 func (self *CommunicateConfig) NameOrAddress() string {
 	if self.PeerName != "" {
 		return self.PeerName

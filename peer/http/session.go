@@ -11,7 +11,7 @@ type Status struct {
 }
 
 type httpSession struct {
-	peer.CoreTagger
+	peer.CorePropertySet
 	Response http.ResponseWriter
 
 	// 单独保存的保存Peer接口
