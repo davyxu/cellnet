@@ -16,9 +16,7 @@ type kcpContext struct {
 	readSignal     chan struct{}
 	exitTickSignal chan struct{}
 
-	userFunc cellnet.EventProc
-
-	ses cellnet.Session
+	ses cellnet.BaseSession
 
 	closed bool
 }
@@ -46,12 +44,11 @@ func (self *kcpContext) tickLoop() {
 
 }
 
-func newContext(ses cellnet.Session, userFunc cellnet.EventProc) *kcpContext {
+func newContext(ses cellnet.BaseSession) *kcpContext {
 
 	var self *kcpContext
 
 	self = &kcpContext{
-		userFunc:       userFunc,
 		ses:            ses,
 		recvbuf:        make([]byte, mtuLimit),
 		readSignal:     make(chan struct{}, 1),
@@ -63,8 +60,6 @@ func newContext(ses cellnet.Session, userFunc cellnet.EventProc) *kcpContext {
 			}
 		}),
 	}
-
-	go self.recvLoop()
 
 	go self.tickLoop()
 

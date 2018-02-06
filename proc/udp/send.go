@@ -1,14 +1,15 @@
 package udp
 
 import (
-	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/util"
 )
 
-func SendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
+func SendLTVPacket(writer udp.DataWriter, msg interface{}) error {
 
 	// 将用户数据转换为字节数组和消息ID
-	data, meta, err := cellnet.EncodeMessage(msg)
+	data, meta, err := codec.EncodeMessage(msg)
 
 	if err != nil {
 		log.Errorf("send message encode error: %s", err)
@@ -33,9 +34,7 @@ func SendLTVPacket(ses cellnet.Session, msg interface{}) cellnet.EventResult {
 		return err
 	}
 
-	writer := ses.(interface {
-		WriteData(data []byte) error
-	})
+	writer.WriteData(pktWriter.Raw())
 
-	return writer.WriteData(pktWriter.Raw())
+	return nil
 }

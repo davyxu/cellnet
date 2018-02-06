@@ -2,73 +2,38 @@ package udp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
 )
 
-func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
-
-	return func(raw cellnet.EventParam) cellnet.EventResult {
-
-		switch ev := raw.(type) {
-
-		case *cellnet.RecvDataEvent: // 接收数据事件
-
-			msg, err := RecvLTVPacket(ev.Data)
-			if err != nil {
-				return err
-			}
-
-			if _, ok := msg.(*comm.SessionCloseNotify); ok {
-
-				ev.Ses.(udp.UPDSession).RawClose(nil)
-
-			} else {
-				userFunc(&cellnet.RecvMsgEvent{ev.Ses, msg})
-			}
-
-		default:
-			userFunc(raw)
-		}
-
-		return nil
-	}
+type MessageProc struct {
 }
 
-func ProcLTVOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
+func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
 
-	return func(raw cellnet.EventParam) cellnet.EventResult {
+	data := ses.Raw().(udp.DataReader).ReadData()
 
-		switch ev := raw.(type) {
-		case *cellnet.SendMsgEvent: // 发送数据事件
+	return RecvLTVPacket(data)
+}
 
-			if result := SendLTVPacket(ev.Ses, ev.Msg); result != nil {
-				return result
-			}
-		}
+func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
 
-		if userFunc != nil {
-			return userFunc(raw)
-		}
+	writer := ses.(udp.DataWriter)
 
-		return nil
-	}
+	return SendLTVPacket(writer, msg)
 }
 
 func init() {
 
-	proc.RegisterEventProcessor("udp.ltv", func(userInBound cellnet.EventProc, userOutbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
+	msgProc := new(MessageProc)
+	msgLogger := new(msglog.LogHooker)
 
-		return ProcLTVInboundPacket(
-				cellnet.ProcQueue(
-					msglog.ProcMsgLog(userInBound),
-				),
-			),
+	proc.RegisterEventProcessor("udp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
 
-			msglog.ProcMsgLog(
-				ProcLTVOutboundPacket(userOutbound),
-			)
+		initor.SetEventProcessor(msgProc)
+		initor.SetEventHooker(msgLogger)
+		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
+
 	})
 }

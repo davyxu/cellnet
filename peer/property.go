@@ -5,14 +5,6 @@ import (
 	"sync"
 )
 
-type PropertySet interface {
-	GetProperty(key, valuePtr interface{}) bool
-
-	SetProperty(name interface{}, v interface{})
-
-	RawGetProperty(name interface{}) (interface{}, bool)
-}
-
 type property struct {
 	key   interface{}
 	value interface{}
@@ -30,9 +22,34 @@ func (self *CorePropertySet) GetProperty(key, valuePtr interface{}) bool {
 		return false
 	}
 
-	v := reflect.Indirect(reflect.ValueOf(valuePtr))
+	switch rawValue := valuePtr.(type) {
+	case *string:
+		*rawValue = pv.(string)
+	case *int:
+		*rawValue = pv.(int)
+	case *int32:
+		*rawValue = pv.(int32)
+	case *int64:
+		*rawValue = pv.(int64)
+	case *uint:
+		*rawValue = pv.(uint)
+	case *uint32:
+		*rawValue = pv.(uint32)
+	case *uint64:
+		*rawValue = pv.(uint64)
+	case *bool:
+		*rawValue = pv.(bool)
+	case *float32:
+		*rawValue = pv.(float32)
+	case *float64:
+		*rawValue = pv.(float64)
+	case *[]byte:
+		*rawValue = pv.([]byte)
+	default:
+		v := reflect.Indirect(reflect.ValueOf(valuePtr))
 
-	v.Set(reflect.ValueOf(pv))
+		v.Set(reflect.ValueOf(pv))
+	}
 
 	return true
 }

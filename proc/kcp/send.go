@@ -2,33 +2,33 @@ package kcp
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/util"
 )
 
 func (self *kcpContext) output(data []byte) {
 
-	//log.Debugln("output", self.ses.Peer().Name(), len(data), data)
+	log.Debugln("output", self.ses.Peer().(cellnet.PeerProperty).Name(), len(data), data)
 
-	writer := self.ses.(interface {
-		WriteData(data []byte) error
-	})
+	writer := self.ses.(udp.DataWriter)
 
 	writer.WriteData(data)
 }
 
 func (self *kcpContext) Write(p []byte) (n int, err error) {
 
-	//log.Debugln("write", self.ses.Peer().Name(), len(p), p)
+	log.Debugln("write", self.ses.Peer().(cellnet.PeerProperty).Name(), len(p), p)
 
 	self.kcp.Send(p)
 
 	return len(p), nil
 }
 
-func (ctx *kcpContext) sendMessage(msg interface{}) cellnet.EventResult {
+func (ctx *kcpContext) sendMessage(msg interface{}) error {
 
 	// 将用户数据转换为字节数组和消息ID
-	data, meta, err := cellnet.EncodeMessage(msg)
+	data, meta, err := codec.EncodeMessage(msg)
 
 	if err != nil {
 		log.Errorf("send message encode error: %s", err)

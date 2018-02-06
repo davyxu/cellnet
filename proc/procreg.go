@@ -2,28 +2,33 @@ package proc
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
 )
 
-type DuplexEventProcessor func(cellnet.EventProc, cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc)
-
-var evtprocByName = map[string]DuplexEventProcessor{}
-
-func RegisterEventProcessor(name string, f DuplexEventProcessor) {
-
-	if peer.PeerCreatorExists(name) {
-		panic("Duplicate peer type")
-	}
-
-	evtprocByName[name] = f
+type ProcessorBundleInitor interface {
+	SetEventProcessor(v cellnet.MessageProcessor)
+	SetEventHooker(v cellnet.EventHooker)
+	SetEventHandler(v cellnet.EventHandler)
 }
 
-func MakeEventProcessor(name string, inbound, outbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
+type ProcessorBinder func(initor ProcessorBundleInitor, userHandler cellnet.UserMessageHandler)
 
-	f := evtprocByName[name]
-	if f == nil {
-		panic("Event processor not found: " + name)
+var (
+	procByName = map[string]ProcessorBinder{}
+)
+
+func RegisterEventProcessor(procName string, f ProcessorBinder) {
+
+	procByName[procName] = f
+}
+
+func BindProcessor(peer cellnet.Peer, procName string, userHandler cellnet.UserMessageHandler) {
+
+	if proc, ok := procByName[procName]; ok {
+
+		initor := peer.(ProcessorBundleInitor)
+
+		proc(initor, userHandler)
+	} else {
+		panic("processor not found:" + procName)
 	}
-
-	return f(inbound, outbound)
 }

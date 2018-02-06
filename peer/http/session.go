@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
 	"net/http"
 )
@@ -43,7 +44,7 @@ func (self *httpSession) Send(raw interface{}) {
 		self.Response.WriteHeader(msg.Code)
 	default:
 
-		data, _, err := cellnet.EncodeMessage(msg)
+		data, _, err := codec.EncodeMessage(msg)
 		if err != nil {
 			self.Response.WriteHeader(http.StatusNotFound)
 			return

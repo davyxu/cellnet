@@ -103,7 +103,7 @@ func NewEventQueue() EventQueue {
 	}
 }
 
-func SessionQueuedCall(ses Session, callback func()) {
+func SessionQueuedCall(ses BaseSession, callback func()) {
 	if ses == nil {
 		return
 	}
@@ -120,24 +120,5 @@ func QueuedCall(queue EventQueue, callback func()) {
 		callback()
 	} else {
 		queue.Post(callback)
-	}
-}
-
-func ProcQueue(userFunc EventProc) EventProc {
-
-	return func(raw EventParam) EventResult {
-
-		switch ev := raw.(type) {
-		case *RecvMsgEvent:
-
-			SessionQueuedCall(ev.Ses, func() {
-				userFunc(raw)
-			})
-
-		default:
-			return userFunc(raw)
-		}
-
-		return nil
 	}
 }

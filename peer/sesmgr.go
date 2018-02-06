@@ -6,6 +6,15 @@ import (
 	"sync/atomic"
 )
 
+// 完整功能的会话管理
+type SessionManager interface {
+	cellnet.SessionAccessor
+
+	Add(cellnet.Session)
+	Remove(cellnet.Session)
+	Count() int
+}
+
 type CoreSessionManager struct {
 	sesById sync.Map // 使用Id关联会话
 

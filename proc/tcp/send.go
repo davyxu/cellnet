@@ -2,22 +2,16 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/util"
-	"net"
+	"io"
 )
 
 // 发送Length-Type-Value格式的封包流程
-func SendLTVPacket(ses cellnet.Session, data interface{}) cellnet.EventResult {
+func SendLTVPacket(writer io.Writer, data interface{}) error {
 
 	// 取Socket连接
-	conn, ok := ses.Raw().(net.Conn)
-
-	// 转换错误，或者连接已经关闭时退出
-	if !ok || conn == nil {
-		return nil
-	}
-
 	var msgData []byte
 	var msgID int
 
@@ -29,7 +23,7 @@ func SendLTVPacket(ses cellnet.Session, data interface{}) cellnet.EventResult {
 		var err error
 		var meta *cellnet.MessageMeta
 		// 将用户数据转换为字节数组和消息ID
-		msgData, meta, err = cellnet.EncodeMessage(data)
+		msgData, meta, err = codec.EncodeMessage(data)
 
 		if err != nil {
 			log.Errorf("send message encode error: %s", err)
@@ -39,10 +33,10 @@ func SendLTVPacket(ses cellnet.Session, data interface{}) cellnet.EventResult {
 		msgID = meta.ID
 	}
 
-	return rawSend(conn, msgData, msgID)
+	return rawSend(writer, msgData, msgID)
 }
 
-func rawSend(conn net.Conn, msgData []byte, msgid int) cellnet.EventResult {
+func rawSend(writer io.Writer, msgData []byte, msgid int) error {
 	// 创建封包写入器
 	var pktWriter util.BinaryWriter
 
@@ -57,5 +51,5 @@ func rawSend(conn net.Conn, msgData []byte, msgid int) cellnet.EventResult {
 	}
 
 	// 发送长度定界的变长封包
-	return util.SendVariableLengthPacket(conn, pktWriter)
+	return util.SendVariableLengthPacket(writer, pktWriter)
 }

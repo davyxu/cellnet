@@ -3,14 +3,12 @@ package http
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net/http"
 )
 
 type httpAcceptor struct {
-	peer.CorePropertySet
-	proc.CoreDuplexEventProc
-	peer.CommunicateConfig
+	peer.CorePeerProperty
+	peer.CoreProcessorBundle
 
 	*StaticFile
 }
@@ -35,9 +33,9 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 			return
 		}
 
-		ses := newHttpSession(self, res)
+		//ses := newHttpSession(self, res)
 
-		self.CallInboundProc(&cellnet.RecvMsgEvent{ses, msg})
+		//self.CallInboundProc(&cellnet.RecvMsgEvent{ses, msg})
 
 	} else {
 

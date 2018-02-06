@@ -2,18 +2,16 @@ package udp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net"
 )
 
 type udpConnector struct {
 	peer.CoreSessionManager
-	peer.CorePropertySet
+	peer.CorePeerProperty
 	peer.CoreRunningTag
-	proc.CoreDuplexEventProc
-	peer.CommunicateConfig
+	peer.CoreProcessorBundle
+
 	remoteAddr *net.UDPAddr
 	conn       *net.UDPConn
 }
@@ -52,7 +50,7 @@ func (self *udpConnector) connect() {
 
 	ses.Start()
 
-	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
+	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
 	buff := make([]byte, 4096)
 	for running {

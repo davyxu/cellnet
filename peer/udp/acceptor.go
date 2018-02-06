@@ -2,9 +2,7 @@ package udp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net"
 	"sync"
 )
@@ -13,10 +11,10 @@ const MaxUDPRecvBuffer = 2048
 
 type udpAcceptor struct {
 	peer.CoreSessionManager
-	peer.CorePropertySet
+	peer.CorePeerProperty
 	peer.CoreRunningTag
-	proc.CoreDuplexEventProc
-	peer.CommunicateConfig
+	peer.CoreProcessorBundle
+
 	localAddr *net.UDPAddr
 
 	conn *net.UDPConn
@@ -94,7 +92,7 @@ func (self *udpAcceptor) accept() {
 
 				self.sesByAddress.Store(addr, ses)
 
-				self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+				self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 			}
 
 			recentAddr = addr

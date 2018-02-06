@@ -1,14 +1,13 @@
 package tests
 
 import (
-	"testing"
-
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/util"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -19,32 +18,27 @@ var recreateConn_Signal *util.SignalTester
 func recreateConn_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	peer.CreatePeer(peer.CommunicateConfig{
-		PeerType:       "tcp.Acceptor",
-		EventProcessor: "tcp.ltv",
-		UserQueue:      queue,
-		PeerAddress:    recreateConn_Address,
-		PeerName:       "server",
-		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
+	p := peer.NewPeer("tcp.Acceptor")
+	pset := p.(cellnet.PropertySet)
+	pset.SetProperty("Address", recreateConn_Address)
+	pset.SetProperty("Name", "server")
+	pset.SetProperty("Queue", queue)
 
-			ev, ok := raw.(*cellnet.RecvMsgEvent)
-			if ok {
-				switch msg := ev.Msg.(type) {
-				case *TestEchoACK:
+	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
 
-					fmt.Printf("server recv %+v\n", msg)
+		switch msg := ev.Message().(type) {
+		case *TestEchoACK:
 
-					ev.Ses.Send(&TestEchoACK{
-						Msg:   msg.Msg,
-						Value: msg.Value,
-					})
+			fmt.Printf("server recv %+v\n", msg)
 
-				}
-			}
+			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+				Msg:   msg.Msg,
+				Value: msg.Value,
+			})
+		}
+	})
 
-			return nil
-		},
-	}).Start()
+	p.Start()
 
 	queue.StartLoop()
 }
@@ -55,35 +49,30 @@ func runConnClose() {
 
 	var times int
 
-	var peerIns cellnet.Peer
-	peerIns = peer.CreatePeer(peer.CommunicateConfig{
-		PeerType:       "tcp.Connector",
-		EventProcessor: "tcp.ltv",
-		UserQueue:      queue,
-		PeerAddress:    recreateConn_Address,
-		PeerName:       "client.ConnClose",
-		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
+	peerIns := peer.NewPeer("tcp.Connector")
+	pset := peerIns.(cellnet.PropertySet)
+	pset.SetProperty("Address", recreateConn_Address)
+	pset.SetProperty("Name", "client.ConnClose")
+	pset.SetProperty("Queue", queue)
 
-			ev, ok := raw.(*cellnet.RecvMsgEvent)
-			if ok {
-				switch ev.Msg.(type) {
-				case *comm.SessionConnected:
-					peerIns.Stop()
+	proc.BindProcessor(peerIns, "tcp.ltv", func(ev cellnet.Event) {
 
-					time.Sleep(time.Millisecond * 100)
+		switch ev.Message().(type) {
+		case *cellnet.SessionConnected:
+			peerIns.Stop()
 
-					if times < 3 {
-						peerIns.Start()
-						times++
-					} else {
-						recreateConn_Signal.Done(1)
-					}
-				}
+			time.Sleep(time.Millisecond * 100)
+
+			if times < 3 {
+				peerIns.Start()
+				times++
+			} else {
+				recreateConn_Signal.Done(1)
 			}
+		}
+	})
 
-			return nil
-		},
-	}).Start()
+	peerIns.Start()
 
 	queue.StartLoop()
 
@@ -109,27 +98,24 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
 	var allAccepted sync.WaitGroup
-	p := peer.CreatePeer(peer.CommunicateConfig{
-		PeerType:       "tcp.Acceptor",
-		EventProcessor: "tcp.ltv",
-		UserQueue:      queue,
-		PeerAddress:    recreateAcc_Address,
-		PeerName:       "server",
-		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
 
-			ev, ok := raw.(*cellnet.RecvMsgEvent)
-			if ok {
-				switch ev.Msg.(type) {
-				case *comm.SessionAccepted:
+	p := peer.NewPeer("tcp.Acceptor")
+	pset := p.(cellnet.PropertySet)
+	pset.SetProperty("Address", recreateAcc_Address)
+	pset.SetProperty("Name", "server")
+	pset.SetProperty("Queue", queue)
 
-					allAccepted.Done()
+	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
 
-				}
-			}
+		switch ev.Message().(type) {
+		case *cellnet.SessionAccepted:
 
-			return nil
-		},
-	}).Start()
+			allAccepted.Done()
+
+		}
+	})
+
+	p.Start()
 
 	queue.StartLoop()
 
@@ -163,12 +149,17 @@ func runMultiConnection() {
 
 	for i := 0; i < recreateAcc_clientConnection; i++ {
 
-		peer.CreatePeer(peer.CommunicateConfig{
-			PeerType:       "tcp.Connector",
-			EventProcessor: "tcp.ltv",
-			PeerAddress:    recreateAcc_Address,
-			PeerName:       "client.ConnClose",
-		}).Start()
+		peerIns := peer.NewPeer("tcp.Connector")
+		pset := peerIns.(cellnet.PropertySet)
+		pset.SetProperty("Address", recreateAcc_Address)
+		pset.SetProperty("Name", "client.ConnClose")
+
+		proc.BindProcessor(peerIns, "tcp.ltv", func(ev cellnet.Event) {
+
+		})
+
+		peerIns.Start()
+
 	}
 
 }

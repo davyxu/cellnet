@@ -2,7 +2,7 @@ package json
 
 import (
 	"encoding/json"
-	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 )
 
 type jsonCodec struct {
@@ -29,5 +29,5 @@ func (self *jsonCodec) Decode(data interface{}, msgObj interface{}) error {
 func init() {
 
 	// 注册编码器
-	cellnet.RegisterCodec(new(jsonCodec))
+	codec.RegisterCodec(new(jsonCodec))
 }

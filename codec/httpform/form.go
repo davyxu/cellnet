@@ -1,7 +1,7 @@
 package httpform
 
 import (
-	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	"net/http"
 )
 
@@ -36,5 +36,5 @@ func (self *httpFormCodec) Decode(data interface{}, msgObj interface{}) error {
 
 func init() {
 
-	cellnet.RegisterCodec(new(httpFormCodec))
+	codec.RegisterCodec(new(httpFormCodec))
 }

@@ -3,15 +3,16 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	_ "github.com/davyxu/cellnet/peer/udp"
+	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/kcp"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	_ "github.com/davyxu/cellnet/proc/udp"
 	"github.com/davyxu/cellnet/util"
 	"testing"
+	"time"
 )
 
 type echoContext struct {
@@ -37,7 +38,7 @@ var (
 		{
 			Address:   "127.0.0.1:7703",
 			Protocol:  "udp",
-			Processor: "udp.kcp",
+			Processor: "udp.kcp.ltv",
 		},
 	}
 )
@@ -45,78 +46,71 @@ var (
 func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	context.Acceptor = peer.CreatePeer(peer.CommunicateConfig{
-		PeerType:       context.Protocol + ".Acceptor",
-		EventProcessor: context.Processor,
-		UserQueue:      queue,
-		PeerAddress:    context.Address,
-		PeerName:       "server",
-		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
+	context.Acceptor = peer.NewPeer(context.Protocol + ".Acceptor")
+	pset := context.Acceptor.(cellnet.PropertySet)
+	pset.SetProperty("Address", context.Address)
+	pset.SetProperty("Name", "server")
+	pset.SetProperty("Queue", queue)
 
-			ev, ok := raw.(*cellnet.RecvMsgEvent)
-			if ok {
-				switch msg := ev.Msg.(type) {
-				case *comm.SessionAccepted:
-					fmt.Println("server accepted")
-				case *TestEchoACK:
+	proc.BindProcessor(context.Acceptor, context.Processor, func(ev cellnet.Event) {
 
-					fmt.Printf("server recv %+v\n", msg)
+		switch msg := ev.Message().(type) {
+		case *cellnet.SessionAccepted:
+			fmt.Println("server accepted")
+		case *TestEchoACK:
 
-					ev.Ses.Send(&TestEchoACK{
-						Msg:   msg.Msg,
-						Value: msg.Value,
-					})
+			fmt.Printf("server recv %+v\n", msg)
 
-				case *comm.SessionClosed:
-					fmt.Println("session closed: ", ev.Ses.ID())
-				}
-			}
+			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+				Msg:   msg.Msg,
+				Value: msg.Value,
+			})
 
-			return nil
-		},
-	}).Start()
+		case *cellnet.SessionClosed:
+			fmt.Println("session closed: ", ev.BaseSession().(cellnet.Session).ID())
+		}
+
+	})
+
+	context.Acceptor.Start()
 
 	queue.StartLoop()
 }
 
-func echo_StartClient(context *echoContext) {
+func echo_StartClient(echoContext *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	peer.CreatePeer(peer.CommunicateConfig{
-		PeerType:       context.Protocol + ".Connector",
-		EventProcessor: context.Processor,
-		UserQueue:      queue,
-		PeerAddress:    context.Address,
-		PeerName:       "client",
-		UserInboundProc: func(raw cellnet.EventParam) cellnet.EventResult {
+	p := peer.NewPeer(echoContext.Protocol + ".Connector")
+	pset := p.(cellnet.PropertySet)
+	pset.SetProperty("Address", echoContext.Address)
+	pset.SetProperty("Name", "client")
+	pset.SetProperty("Queue", queue)
 
-			ev, ok := raw.(*cellnet.RecvMsgEvent)
-			if ok {
-				switch msg := ev.Msg.(type) {
-				case *comm.SessionConnected:
-					fmt.Println("client connected")
-					ev.Ses.Send(&TestEchoACK{
-						Msg:   "hello",
-						Value: 1234,
-					})
-				case *TestEchoACK:
+	proc.BindProcessor(p, echoContext.Processor, func(ev cellnet.Event) {
 
-					fmt.Printf("client recv %+v\n", msg)
+		switch msg := ev.Message().(type) {
+		case *cellnet.SessionConnected:
+			fmt.Println("client connected")
+			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+				Msg:   "hello",
+				Value: 1234,
+			})
+		case *TestEchoACK:
 
-					context.Tester.Done(1)
+			fmt.Printf("client recv %+v\n", msg)
 
-				case *comm.SessionClosed:
-					fmt.Println("client error: ")
-				}
-			}
+			echoContext.Tester.Done(1)
 
-			return nil
-		},
-	}).Start()
+		case *cellnet.SessionClosed:
+			fmt.Println("client error: ")
+		}
+	})
+
+	p.Start()
 
 	queue.StartLoop()
 
-	context.Tester.WaitAndExpect("not recv data", 1)
+	echoContext.Tester.WaitAndExpect("not recv data", 1)
 }
 
 func runEcho(t *testing.T, index int) {
@@ -124,6 +118,7 @@ func runEcho(t *testing.T, index int) {
 	ctx := echoContexts[index]
 
 	ctx.Tester = util.NewSignalTester(t)
+	ctx.Tester.SetTimeout(time.Hour)
 
 	echo_StartServer(ctx)
 

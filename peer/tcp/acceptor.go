@@ -2,19 +2,16 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net"
 )
 
 // 接受器
 type tcpAcceptor struct {
 	peer.CoreSessionManager
-	peer.CorePropertySet
+	peer.CorePeerProperty
 	peer.CoreRunningTag
-	proc.CoreDuplexEventProc
-	peer.CommunicateConfig
+	peer.CoreProcessorBundle
 
 	// 保存侦听器
 	listener net.Listener
@@ -66,8 +63,6 @@ func (self *tcpAcceptor) accept() {
 				log.Errorf("#accept failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
-			//extend.PostSystemEvent(nil, cellnet.Event_AcceptFailed, self.ChainListRecv(), errToResult(err))
-
 			break
 		}
 
@@ -90,7 +85,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 		Start()
 	}).Start()
 
-	self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionAccepted{}})
+	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 }
 
 // 停止侦听器

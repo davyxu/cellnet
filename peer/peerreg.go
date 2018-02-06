@@ -26,8 +26,3 @@ func NewPeer(peerType string) cellnet.Peer {
 
 	return peerCreator()
 }
-
-func PeerCreatorExists(peerType string) bool {
-	_, ok := creatorByTypeName[peerType]
-	return ok
-}

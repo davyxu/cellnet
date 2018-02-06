@@ -2,9 +2,7 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net"
 	"sync"
 )
@@ -13,7 +11,9 @@ import (
 type tcpSession struct {
 	peer.CorePropertySet
 	peer.CoreSessionIdentify
-	proc.DuplexEventInvoker
+	*peer.CoreProcessorBundle
+
+	pInterface cellnet.Peer
 
 	// Socket原始连接
 	conn net.Conn
@@ -30,7 +30,7 @@ type tcpSession struct {
 }
 
 func (self *tcpSession) Peer() cellnet.Peer {
-	return self.DuplexEventInvoker.(cellnet.Peer)
+	return self.pInterface
 }
 
 // 取原始连接
@@ -50,20 +50,18 @@ func (self *tcpSession) Send(msg interface{}) {
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
-	var readEvt cellnet.ReadStreamEvent
-	readEvt.Ses = self
-
 	for self.conn != nil {
 
-		// 发送接收消息，要求读取数据
-		raw := self.CallInboundProc(&readEvt)
+		msg, err := self.ReadMessage(self)
 
-		if err, ok := raw.(error); ok && err != nil && self.conn != nil {
-
-			self.CallInboundProc(&cellnet.RecvMsgEvent{self, &comm.SessionClosed{err.Error()}})
-
+		if err != nil {
+			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{
+				Error: err.Error(),
+			}})
 			break
 		}
+
+		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
 
 	self.cleanup()
@@ -80,8 +78,8 @@ func (self *tcpSession) sendLoop() {
 			break
 		}
 
-		// 要求发送数据
-		self.CallOutboundProc(&cellnet.SendMsgEvent{self, msg})
+		self.SendMessage(&cellnet.SendMsgEvent{self, msg})
+
 	}
 
 	self.cleanup()
@@ -114,7 +112,7 @@ func (self *tcpSession) cleanup() {
 func (self *tcpSession) Start() {
 
 	// 将会话添加到管理器
-	self.Peer().(cellnet.SessionManager).Add(self)
+	self.Peer().(peer.SessionManager).Add(self)
 
 	// 需要接收和发送线程同时完成时才算真正的完成
 	self.exitSync.Add(2)
@@ -125,7 +123,7 @@ func (self *tcpSession) Start() {
 		self.exitSync.Wait()
 
 		// 将会话从管理器移除
-		self.Peer().(cellnet.SessionManager).Remove(self)
+		self.Peer().(peer.SessionManager).Remove(self)
 
 		if self.endNotify != nil {
 			self.endNotify()
@@ -143,12 +141,15 @@ func (self *tcpSession) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func newTCPSession(conn net.Conn, eventInvoker proc.DuplexEventInvoker, endNotify func()) cellnet.Session {
+func newTCPSession(conn net.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
 	self := &tcpSession{
-		conn:               conn,
-		endNotify:          endNotify,
-		sendChan:           make(chan interface{}, SendQueueLen),
-		DuplexEventInvoker: eventInvoker,
+		conn:       conn,
+		endNotify:  endNotify,
+		sendChan:   make(chan interface{}, SendQueueLen),
+		pInterface: p,
+		CoreProcessorBundle: p.(interface {
+			GetBundle() *peer.CoreProcessorBundle
+		}).GetBundle(),
 	}
 
 	return self

@@ -1,7 +1,7 @@
 package binary
 
 import (
-	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/goobjfmt"
 )
 
@@ -25,5 +25,5 @@ func (self *binaryCodec) Decode(data interface{}, msgObj interface{}) error {
 
 func init() {
 
-	cellnet.RegisterCodec(new(binaryCodec))
+	codec.RegisterCodec(new(binaryCodec))
 }

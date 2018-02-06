@@ -12,10 +12,9 @@ type MessageMeta struct {
 	Codec Codec        // 消息用到的编码
 	Type  reflect.Type // 消息类型
 
-	ID        int    // 消息ID (二进制协议中使用)
-	URL       string // HTTP协议的请求路径
-	Method    string // HTTP请求方式
-	EventFunc EventProc
+	ID     int    // 消息ID (二进制协议中使用)
+	URL    string // HTTP协议的请求路径
+	Method string // HTTP请求方式
 }
 
 func (self *MessageMeta) TypeName() string {

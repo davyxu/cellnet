@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/httpform"
 	_ "github.com/davyxu/cellnet/codec/json"
 	"github.com/davyxu/cellnet/peer"
@@ -79,14 +80,14 @@ func (self *HttpEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec:  cellnet.MustGetCodec("httpform"),
+		Codec:  codec.MustGetCodec("httpform"),
 		URL:    "/hello",
 		Method: "GET",
 		Type:   reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: cellnet.MustGetCodec("json"),
+		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
 	})
 }

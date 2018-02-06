@@ -2,9 +2,7 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
 	"net"
 	"sync"
 	"time"
@@ -16,10 +14,9 @@ type Connector interface {
 
 type tcpConnector struct {
 	peer.CoreSessionManager
-	peer.CorePropertySet
+	peer.CorePeerProperty
 	peer.CoreRunningTag
-	proc.CoreDuplexEventProc
-	peer.CommunicateConfig
+	peer.CoreProcessorBundle
 
 	defaultSes cellnet.Session
 
@@ -104,7 +101,7 @@ func (self *tcpConnector) connect(address string) {
 			// 没重连就退出
 			if self.reconnDuration == 0 {
 
-				self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionConnectError{}})
+				self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnectError{}})
 				break
 			}
 
@@ -123,7 +120,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.CallInboundProc(&cellnet.RecvMsgEvent{ses, &comm.SessionConnected{}})
+		self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
 		self.endSignal.Wait()
 

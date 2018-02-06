@@ -4,66 +4,65 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/cellnet/proc/rpc"
+	"io"
 )
 
-func ProcLTVInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
-
-	return func(raw cellnet.EventParam) cellnet.EventResult {
-
-		switch ev := raw.(type) {
-		case *cellnet.ReadStreamEvent: // 接收数据事件
-
-			msg, err := RecvLTVPacket(ev.Ses)
-			if err != nil {
-				return err
-			}
-
-			userFunc(&cellnet.RecvMsgEvent{ev.Ses, msg})
-		default:
-			userFunc(raw)
-		}
-
-		return nil
-	}
+type MessageProc struct {
 }
 
-func ProcLTVOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
+func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
 
-	return func(raw cellnet.EventParam) cellnet.EventResult {
+	reader, ok := ses.Raw().(io.Reader)
 
-		switch ev := raw.(type) {
-		case *cellnet.SendMsgEvent: // 发送数据事件
+	// 转换错误，或者连接已经关闭时退出
+	if !ok || reader == nil {
+		return nil, nil
+	}
 
-			if result := SendLTVPacket(ev.Ses, ev.Msg); result != nil {
-				return result
-			}
-		default:
-			userFunc(raw)
-		}
+	return RecvLTVPacket(reader)
+}
 
+func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
+
+	writer, ok := ses.Raw().(io.Writer)
+
+	// 转换错误，或者连接已经关闭时退出
+	if !ok || writer == nil {
 		return nil
 	}
+
+	return SendLTVPacket(writer, msg)
+}
+
+type rpcEventHooker struct {
+	rpc.EventHooker
+	msglog.LogHooker
+}
+
+func (self rpcEventHooker) OnInboundEvent(ev cellnet.Event) {
+
+	self.LogHooker.OnInboundEvent(ev)
+	self.EventHooker.OnInboundEvent(ev)
+
+}
+
+func (self rpcEventHooker) OnOutboundEvent(ev cellnet.Event) {
+
+	self.LogHooker.OnOutboundEvent(ev)
+	self.EventHooker.OnOutboundEvent(ev)
 }
 
 func init() {
 
-	proc.RegisterEventProcessor("tcp.ltv", func(userInBound cellnet.EventProc, userOutbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
+	msgProc := new(MessageProc)
+	msgLogger := new(rpcEventHooker)
 
-		return ProcLTVInboundPacket(
-				rpc.ProcRPC( // 消息日志
-					cellnet.ProcQueue(
-						msglog.ProcMsgLog(
-							userInBound), // RPC
-					),
-				),
-			),
+	proc.RegisterEventProcessor("tcp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
 
-			msglog.ProcMsgLog(
-				rpc.ProcRPC(
-					ProcLTVOutboundPacket(userOutbound),
-				),
-			)
+		initor.SetEventProcessor(msgProc)
+		initor.SetEventHooker(msgLogger)
+		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
 
 	})
 }

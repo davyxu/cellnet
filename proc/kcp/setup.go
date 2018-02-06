@@ -2,84 +2,83 @@ package kcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
 )
 
 const kcpTag = "kcp"
 
-func mustKCPContext(ses cellnet.Session) (ctx *kcpContext) {
-	if ses.(peer.PropertySet).GetProperty(kcpTag, &ctx) {
+func mustKCPContext(ses cellnet.BaseSession) (ctx *kcpContext) {
+	if ses.(cellnet.PropertySet).GetProperty(kcpTag, &ctx) {
 		return
 	} else {
 		panic("invalid kcp context")
 	}
 }
 
-func ProcKCPInboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
+type MessageProc struct {
+}
 
-	return func(raw cellnet.EventParam) cellnet.EventResult {
+func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
 
-		switch ev := raw.(type) {
-		case *cellnet.RecvMsgEvent:
+	ctx := mustKCPContext(ses)
 
-			switch ev.Msg.(type) {
-			case *comm.SessionAccepted,
-				*comm.SessionConnected:
-				ev.Ses.(peer.PropertySet).SetProperty(kcpTag, newContext(ev.Ses, userFunc))
-			case *comm.SessionClosed:
-				mustKCPContext(ev.Ses).Close()
-			}
+	var recvingData = true
 
-			userFunc(raw)
+	go func() {
+		for recvingData {
 
-		case *cellnet.RecvDataEvent: // 接收数据事件
+			data := ses.Raw().(udp.DataReader).ReadData()
 
-			mustKCPContext(ev.Ses).input(ev.Data)
-
-		default:
-			userFunc(raw)
+			ctx.input(data)
 		}
+	}()
 
-		return nil
+	msg, err = ctx.RecvLTVPacket()
+
+	recvingData = false
+	return
+}
+
+func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
+
+	return mustKCPContext(ses).sendMessage(msg)
+}
+
+type udpEventHooker struct {
+	logger msglog.LogHooker
+}
+
+func (self udpEventHooker) OnInboundEvent(ev cellnet.Event) {
+
+	self.logger.OnInboundEvent(ev)
+
+	switch ev.Message().(type) {
+	case *cellnet.SessionInit:
+		ev.BaseSession().(cellnet.PropertySet).SetProperty(kcpTag, newContext(ev.BaseSession()))
+	case *cellnet.SessionClosed:
+		mustKCPContext(ev.BaseSession()).Close()
 	}
 }
 
-func ProcKCPOutboundPacket(userFunc cellnet.EventProc) cellnet.EventProc {
+func (self udpEventHooker) OnOutboundEvent(ev cellnet.Event) {
 
-	return func(raw cellnet.EventParam) cellnet.EventResult {
-
-		switch ev := raw.(type) {
-		case *cellnet.SendMsgEvent: // 发送数据事件
-
-			if result := mustKCPContext(ev.Ses).sendMessage(ev.Msg); result != nil {
-				return result
-			}
-
-		}
-
-		if userFunc != nil {
-			return userFunc(raw)
-		}
-
-		return nil
-	}
+	self.logger.OnOutboundEvent(ev)
 }
 
 func init() {
 
-	proc.RegisterEventProcessor("udp.kcp", func(userInBound cellnet.EventProc, userOutbound cellnet.EventProc) (cellnet.EventProc, cellnet.EventProc) {
+	msgProc := new(MessageProc)
+	msgHooker := new(udpEventHooker)
 
-		return ProcKCPInboundPacket(
-				cellnet.ProcQueue(
-					msglog.ProcMsgLog(userInBound),
-				),
-			),
+	proc.RegisterEventProcessor("udp.kcp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
 
-			msglog.ProcMsgLog(
-				ProcKCPOutboundPacket(userOutbound),
-			)
+		// TODO 添加RPC支持
+
+		initor.SetEventProcessor(msgProc)
+		initor.SetEventHooker(msgHooker)
+		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
+
 	})
 }

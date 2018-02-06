@@ -8,32 +8,13 @@ type HttpEvent struct {
 	Req *http.Request
 }
 
-// 需要读取数据(tcp)
-type ReadStreamEvent struct {
-	Ses Session
-}
-
-func (self *ReadStreamEvent) Session() Session {
-	return self.Ses
-}
-
-// 接收到数据(udp)
-type RecvDataEvent struct {
-	Ses  Session
-	Data []byte
-}
-
-func (self *RecvDataEvent) Session() Session {
-	return self.Ses
-}
-
 // 接收到消息
 type RecvMsgEvent struct {
 	Ses Session
 	Msg interface{}
 }
 
-func (self *RecvMsgEvent) Session() Session {
+func (self *RecvMsgEvent) BaseSession() BaseSession {
 	return self.Ses
 }
 
@@ -55,6 +36,6 @@ func (self *SendMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
-func (self *SendMsgEvent) Session() Session {
+func (self *SendMsgEvent) BaseSession() BaseSession {
 	return self.Ses
 }

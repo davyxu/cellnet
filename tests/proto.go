@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/binary"
 	"reflect"
 )
@@ -16,7 +17,7 @@ func (self *TestEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: cellnet.MustGetCodec("binary"),
+		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
 		ID:    1,
 	})
