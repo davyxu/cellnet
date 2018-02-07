@@ -2,8 +2,8 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/msglog"
 	"github.com/davyxu/cellnet/proc/rpc"
 	"io"
 )
@@ -36,21 +36,21 @@ func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error
 }
 
 type rpcEventHooker struct {
-	rpc.EventHooker
+	rpc.RPCHooker
 	msglog.LogHooker
 }
 
 func (self rpcEventHooker) OnInboundEvent(ev cellnet.Event) {
 
 	self.LogHooker.OnInboundEvent(ev)
-	self.EventHooker.OnInboundEvent(ev)
+	self.RPCHooker.OnInboundEvent(ev)
 
 }
 
 func (self rpcEventHooker) OnOutboundEvent(ev cellnet.Event) {
 
 	self.LogHooker.OnOutboundEvent(ev)
-	self.EventHooker.OnOutboundEvent(ev)
+	self.RPCHooker.OnOutboundEvent(ev)
 }
 
 func init() {

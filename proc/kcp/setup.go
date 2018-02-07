@@ -2,9 +2,9 @@ package kcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/msglog"
 )
 
 const kcpTag = "kcp"

@@ -3,8 +3,8 @@ package rpc
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/proc/msglog"
 )
 
 type RemoteCallMsg interface {
@@ -13,10 +13,10 @@ type RemoteCallMsg interface {
 	GetCallID() int64
 }
 
-type EventHooker struct {
+type RPCHooker struct {
 }
 
-func (self EventHooker) OnInboundEvent(ev cellnet.Event) {
+func (self RPCHooker) OnInboundEvent(ev cellnet.Event) {
 
 	rpcMsg, ok := ev.Message().(RemoteCallMsg)
 	if !ok {
@@ -56,7 +56,7 @@ func (self EventHooker) OnInboundEvent(ev cellnet.Event) {
 
 }
 
-func (self EventHooker) OnOutboundEvent(ev cellnet.Event) {
+func (self RPCHooker) OnOutboundEvent(ev cellnet.Event) {
 	rpcMsg, ok := ev.Message().(RemoteCallMsg)
 	if !ok {
 		return
