@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -21,6 +22,28 @@ func (self *httpFormCodec) MimeType() string {
 	return "application/x-www-form-urlencoded"
 }
 
+func anyToString(any interface{}) string {
+
+	switch v := any.(type) {
+	case string:
+		return v
+	case bool:
+		return strconv.FormatBool(v)
+	case int:
+		return strconv.FormatInt(int64(v), 10)
+	case int32:
+		return strconv.FormatInt(int64(v), 10)
+	case int64:
+		return strconv.FormatInt(int64(v), 10)
+	case float32:
+		return strconv.FormatFloat(float64(v), 'f', -1, 32)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	default:
+		panic("Unknown type to convert to string")
+	}
+}
+
 func structToUrlValues(obj interface{}) url.Values {
 	objValue := reflect.Indirect(reflect.ValueOf(obj))
 
@@ -33,7 +56,7 @@ func structToUrlValues(obj interface{}) url.Values {
 
 		fieldValue := objValue.Field(i)
 
-		formValues.Add(fieldType.Name, fieldValue.String())
+		formValues.Add(fieldType.Name, anyToString(fieldValue.Interface()))
 	}
 
 	return formValues

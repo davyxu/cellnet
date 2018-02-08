@@ -28,7 +28,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	if err != nil {
 
-		log.Warnf("#http.%s(%s) %s | 404 NotFound",
+		log.Warnf("#recv %s(%s) %s | 404 NotFound",
 			req.Method,
 			self.Name(),
 			req.URL.Path)
@@ -39,7 +39,9 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
+	if msg != nil {
+		self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
+	}
 }
 
 // 停止侦听器
@@ -54,9 +56,7 @@ func (self *httpAcceptor) TypeName() string {
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &httpAcceptor{
-		//StaticFile: newStaticFile("", "."),
-		}
+		p := &httpAcceptor{}
 
 		return p
 	})

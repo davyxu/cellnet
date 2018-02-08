@@ -2,16 +2,25 @@ package main
 
 import (
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/peer/httpfilepeer"
+	"github.com/davyxu/cellnet/peer"
+	_ "github.com/davyxu/cellnet/peer/http"
+	"github.com/davyxu/cellnet/proc"
+	_ "github.com/davyxu/cellnet/proc/http"
 )
 
 func main() {
 	queue := cellnet.NewEventQueue()
-	peer := cellnet.NewPeer("http.file.Acceptor")
-	peerInfo := peer.(cellnet.PeerInfo)
-	peerInfo.SetName("httpfile")
-	peerInfo.SetAddress(":9001")
-	peer.Start()
+	peerIns := peer.NewPeer("http.Acceptor")
+	pset := peerIns.(cellnet.PropertySet)
+	pset.SetProperty("Address", ":9001")
+	pset.SetProperty("Name", "httpfile")
+	pset.SetProperty("HttpDir", ".")
+	pset.SetProperty("HttpRoot", ".")
+
+	proc.BindProcessor(peerIns, "httpfile", nil)
+
+	peerIns.Start()
 	queue.StartLoop()
+
 	queue.Wait()
 }
