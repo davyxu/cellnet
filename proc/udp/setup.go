@@ -10,14 +10,14 @@ import (
 type MessageProc struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
+func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	data := ses.Raw().(udp.DataReader).ReadData()
 
 	return RecvLTVPacket(data)
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
+func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	writer := ses.(udp.DataWriter)
 

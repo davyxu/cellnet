@@ -61,13 +61,13 @@ func echo_StartServer(context *echoContext) {
 
 			fmt.Printf("server recv %+v\n", msg)
 
-			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+			ev.Session().Send(&TestEchoACK{
 				Msg:   msg.Msg,
 				Value: msg.Value,
 			})
 
 		case *cellnet.SessionClosed:
-			fmt.Println("session closed: ", ev.BaseSession().(cellnet.Session).ID())
+			fmt.Println("session closed: ", ev.Session().ID())
 		}
 
 	})
@@ -91,7 +91,7 @@ func echo_StartClient(echoContext *echoContext) {
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected:
 			fmt.Println("client connected")
-			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+			ev.Session().Send(&TestEchoACK{
 				Msg:   "hello",
 				Value: 1234,
 			})

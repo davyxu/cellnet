@@ -54,7 +54,7 @@ func syncRPC_OnClientEvent(ev cellnet.Event) {
 			// 同步阻塞请求必须并发启动，否则客户端无法接收数据
 			go func(id int) {
 
-				result, err := rpc.CallSync(ev.BaseSession(), &TestEchoACK{
+				result, err := rpc.CallSync(ev.Session(), &TestEchoACK{
 					Msg:   "sync",
 					Value: 1234,
 				}, time.Second*5)
@@ -83,7 +83,7 @@ func asyncRPC_OnClientEvent(ev cellnet.Event) {
 
 			copy := i + 1
 
-			rpc.Call(ev.BaseSession(), &TestEchoACK{
+			rpc.Call(ev.Session(), &TestEchoACK{
 				Msg:   "async",
 				Value: 1234,
 			}, time.Second*5, func(feedback interface{}) {

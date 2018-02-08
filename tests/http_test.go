@@ -8,7 +8,7 @@ import (
 	_ "github.com/davyxu/cellnet/codec/httpform"
 	_ "github.com/davyxu/cellnet/codec/json"
 	"github.com/davyxu/cellnet/peer"
-	_ "github.com/davyxu/cellnet/peer/http"
+	httppeer "github.com/davyxu/cellnet/peer/http"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/http"
 	"io/ioutil"
@@ -29,9 +29,7 @@ func TestHttp(t *testing.T) {
 		switch raw.Message().(type) {
 		case *HttpEchoREQ:
 
-			raw.(interface {
-				Send(interface{})
-			}).Send(&HttpEchoACK{
+			raw.Session().Send(&HttpEchoACK{
 				Status: 0,
 				Token:  "ok",
 			})
@@ -50,14 +48,14 @@ func TestHttp(t *testing.T) {
 }
 
 func requestor(t *testing.T) {
-	p := peer.NewPeer("http.Connector")
-	pset := p.(cellnet.PropertySet)
+	peerIns := peer.NewPeer("http.Connector")
+	pset := peerIns.(cellnet.PropertySet)
 	pset.SetProperty("Name", "httpclient")
 	pset.SetProperty("Address", "127.0.0.1:8081")
 
-	raw, err := p.(interface {
-		Request(method string, raw interface{}) (interface{}, error)
-	}).Request("GET", &HttpEchoREQ{
+	requestor := peerIns.(httppeer.HttpRequestor)
+
+	raw, err := requestor.Request("GET", &HttpEchoREQ{
 		UserName: "kitty",
 	})
 

@@ -29,6 +29,14 @@ func (self *httpSession) Raw() interface{} {
 	return nil
 }
 
+func (self *httpSession) ID() int64 {
+	return 0
+}
+
+// 取原始连接
+func (self *httpSession) Close() {
+}
+
 // 取会话归属的通讯端
 func (self *httpSession) Peer() cellnet.Peer {
 	return self.peerInterface
@@ -40,7 +48,7 @@ func (self *httpSession) Send(raw interface{}) {
 	self.SendMessage(&cellnet.SendMsgEvent{self, raw})
 }
 
-func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) cellnet.BaseSession {
+func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) cellnet.Session {
 
 	return &httpSession{
 		req:           req,

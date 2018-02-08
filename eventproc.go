@@ -1,14 +1,14 @@
 package cellnet
 
 type Event interface {
-	BaseSession() BaseSession
+	Session() Session
 	Message() interface{}
 }
 
 // 消息处理器
 type MessageProcessor interface {
-	OnRecvMessage(ses BaseSession) (raw interface{}, err error)
-	OnSendMessage(ses BaseSession, raw interface{}) error
+	OnRecvMessage(ses Session) (raw interface{}, err error)
+	OnSendMessage(ses Session, raw interface{}) error
 }
 
 // 处理钩子
@@ -35,7 +35,7 @@ type UserMessageHandlerQueued func(ev Event)
 
 func (self UserMessageHandlerQueued) OnEvent(ev Event) {
 
-	SessionQueuedCall(ev.BaseSession(), func() {
+	SessionQueuedCall(ev.Session(), func() {
 
 		self(ev)
 	})

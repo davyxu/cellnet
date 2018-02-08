@@ -88,12 +88,12 @@ func RegisterMessageMeta(meta *MessageMeta) {
 
 	if meta.ID == 0 {
 		panic("message meta require 'ID' field: " + meta.TypeName())
+	}
 
-		if _, ok := metaByID[meta.ID]; ok {
-			panic(fmt.Sprintf("Duplicate message meta register by id: %d", meta.ID))
-		} else {
-			metaByID[meta.ID] = meta
-		}
+	if _, ok := metaByID[meta.ID]; ok {
+		panic(fmt.Sprintf("Duplicate message meta register by id: %d", meta.ID))
+	} else {
+		metaByID[meta.ID] = meta
 	}
 
 }

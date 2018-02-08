@@ -9,7 +9,7 @@ import (
 
 const kcpTag = "kcp"
 
-func mustKCPContext(ses cellnet.BaseSession) (ctx *kcpContext) {
+func mustKCPContext(ses cellnet.Session) (ctx *kcpContext) {
 	if ses.(cellnet.PropertySet).GetProperty(kcpTag, &ctx) {
 		return
 	} else {
@@ -20,7 +20,7 @@ func mustKCPContext(ses cellnet.BaseSession) (ctx *kcpContext) {
 type MessageProc struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
+func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	ctx := mustKCPContext(ses)
 
@@ -41,7 +41,7 @@ func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err 
 	return
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
+func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	return mustKCPContext(ses).sendMessage(msg)
 }
@@ -56,9 +56,9 @@ func (self udpEventHooker) OnInboundEvent(ev cellnet.Event) {
 
 	switch ev.Message().(type) {
 	case *cellnet.SessionInit:
-		ev.BaseSession().(cellnet.PropertySet).SetProperty(kcpTag, newContext(ev.BaseSession()))
+		ev.Session().(cellnet.PropertySet).SetProperty(kcpTag, newContext(ev.Session()))
 	case *cellnet.SessionClosed:
-		mustKCPContext(ev.BaseSession()).Close()
+		mustKCPContext(ev.Session()).Close()
 	}
 }
 

@@ -1,7 +1,7 @@
 package cellnet
 
-// 基础会话
-type BaseSession interface {
+// 长连接
+type Session interface {
 
 	// 获得原始的Socket连接
 	Raw() interface{}
@@ -11,11 +11,6 @@ type BaseSession interface {
 
 	// 发送消息，消息需要以指针格式传入
 	Send(msg interface{})
-}
-
-// 长连接
-type Session interface {
-	BaseSession
 
 	// 断开
 	Close()

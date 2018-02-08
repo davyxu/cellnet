@@ -103,7 +103,7 @@ func NewEventQueue() EventQueue {
 	}
 }
 
-func SessionQueuedCall(ses BaseSession, callback func()) {
+func SessionQueuedCall(ses Session, callback func()) {
 	if ses == nil {
 		return
 	}

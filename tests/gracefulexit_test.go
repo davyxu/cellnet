@@ -31,7 +31,7 @@ func recreateConn_StartServer() {
 
 			fmt.Printf("server recv %+v\n", msg)
 
-			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+			ev.Session().Send(&TestEchoACK{
 				Msg:   msg.Msg,
 				Value: msg.Value,
 			})

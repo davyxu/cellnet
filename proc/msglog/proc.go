@@ -17,7 +17,7 @@ type LogHooker struct {
 func (LogHooker) OnInboundEvent(ev cellnet.Event) {
 
 	msg := ev.Message()
-	ses := ev.BaseSession().(cellnet.Session)
+	ses := ev.Session()
 
 	if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
@@ -46,7 +46,7 @@ func (LogHooker) OnInboundEvent(ev cellnet.Event) {
 func (LogHooker) OnOutboundEvent(ev cellnet.Event) {
 
 	msg := ev.Message()
-	ses := ev.BaseSession().(cellnet.Session)
+	ses := ev.Session()
 
 	if rawPkt, ok := msg.(comm.RawPacket); ok {
 		rawMsg, _, err := codec.DecodeMessage(rawPkt.MsgID, rawPkt.MsgData)

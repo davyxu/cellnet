@@ -2,11 +2,11 @@ package cellnet
 
 // 接收到消息
 type RecvMsgEvent struct {
-	Ses BaseSession
+	Ses Session
 	Msg interface{}
 }
 
-func (self *RecvMsgEvent) BaseSession() BaseSession {
+func (self *RecvMsgEvent) Session() Session {
 	return self.Ses
 }
 
@@ -20,7 +20,7 @@ func (self *RecvMsgEvent) Send(msg interface{}) {
 
 // 会话开始发送数据事件
 type SendMsgEvent struct {
-	Ses BaseSession
+	Ses Session
 	Msg interface{} // 用户需要发送的消息
 }
 
@@ -28,6 +28,6 @@ func (self *SendMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
-func (self *SendMsgEvent) BaseSession() BaseSession {
+func (self *SendMsgEvent) Session() Session {
 	return self.Ses
 }

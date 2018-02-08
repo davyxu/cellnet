@@ -11,7 +11,7 @@ import (
 type MessageProc struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
+func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	reader, ok := ses.Raw().(io.Reader)
 
@@ -23,7 +23,7 @@ func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err 
 	return RecvLTVPacket(reader)
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.BaseSession, msg interface{}) error {
+func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	writer, ok := ses.Raw().(io.Writer)
 

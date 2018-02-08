@@ -21,7 +21,7 @@ type MessageProc struct {
 
 var errNotHandled = errors.New("request not handled")
 
-func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
+func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	httpContext := ses.(HttpContext)
 	req := httpContext.Request()
@@ -42,7 +42,7 @@ func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err 
 	return nil, errNotHandled
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.BaseSession, raw interface{}) error {
+func (MessageProc) OnSendMessage(ses cellnet.Session, raw interface{}) error {
 
 	httpContext := ses.(HttpContext)
 	resp := httpContext.Response()

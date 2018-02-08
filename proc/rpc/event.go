@@ -11,7 +11,7 @@ type RecvMsgEvent struct {
 	callid int64
 }
 
-func (self *RecvMsgEvent) BaseSession() cellnet.BaseSession {
+func (self *RecvMsgEvent) Session() cellnet.Session {
 	return self.ses
 }
 

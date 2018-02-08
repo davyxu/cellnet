@@ -11,7 +11,7 @@ type LogHooker struct {
 func (LogHooker) OnInboundEvent(raw cellnet.Event) {
 
 	msg := raw.Message()
-	ses := raw.BaseSession()
+	ses := raw.Session()
 
 	if msglog.IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
@@ -35,7 +35,7 @@ func (LogHooker) OnInboundEvent(raw cellnet.Event) {
 func (LogHooker) OnOutboundEvent(raw cellnet.Event) {
 
 	msg := raw.Message()
-	ses := raw.BaseSession()
+	ses := raw.Session()
 
 	if msglog.IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return

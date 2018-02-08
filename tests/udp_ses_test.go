@@ -40,7 +40,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
-			ev.BaseSession().(cellnet.Session).Close()
+			ev.Session().Close()
 		case *cellnet.SessionClosed:
 			signal.Done(1)
 		}
@@ -67,7 +67,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionAccepted:
-			ev.BaseSession().(cellnet.Session).Close()
+			ev.Session().Close()
 			signal.Done(1)
 		}
 	})
@@ -83,7 +83,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
-			ev.BaseSession().(cellnet.Session).Send(&TestEchoACK{
+			ev.Session().Send(&TestEchoACK{
 				Msg:   "hello",
 				Value: 1234,
 			})
