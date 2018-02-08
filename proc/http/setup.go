@@ -26,12 +26,12 @@ func (MessageProc) OnRecvMessage(ses cellnet.BaseSession) (msg interface{}, err 
 	httpContext := ses.(HttpContext)
 	req := httpContext.Request()
 
-	meta := cellnet.HttpMessageMetaByInput(req.Method, req.URL.Path)
+	meta := cellnet.HttpMetaByMethodURL(req.Method, req.URL.Path)
 	if meta != nil {
 
-		msg = meta.NewType()
+		msg = reflect.New(meta.RequestType).Interface()
 
-		if err = meta.Codec.Decode(req, msg); err != nil {
+		if err = meta.RequestCodec.Decode(req, msg); err != nil {
 			return
 		}
 
@@ -53,14 +53,14 @@ func (MessageProc) OnSendMessage(ses cellnet.BaseSession, raw interface{}) error
 	default:
 
 		// 获取消息元信息
-		meta := cellnet.HttpMessageMetaByType(reflect.TypeOf(msg))
+		meta := cellnet.HttpMetaByResponseType(httpContext.Request().Method, reflect.TypeOf(msg))
 		if meta == nil {
 			return codec.ErrMessageNotFound
 		}
 
 		// 将消息编码为字节数组
 		var data interface{}
-		data, err := meta.Codec.Encode(msg)
+		data, err := meta.ResponseCodec.Encode(msg)
 
 		if err != nil {
 			return err

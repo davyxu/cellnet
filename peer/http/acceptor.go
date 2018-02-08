@@ -9,8 +9,6 @@ import (
 type httpAcceptor struct {
 	peer.CorePeerProperty
 	peer.CoreProcessorBundle
-
-	*StaticFile
 }
 
 func (self *httpAcceptor) Start() cellnet.Peer {
@@ -57,7 +55,7 @@ func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		p := &httpAcceptor{
-			StaticFile: newStaticFile("", "."),
+		//StaticFile: newStaticFile("", "."),
 		}
 
 		return p

@@ -23,7 +23,7 @@ func (LogHooker) OnInboundEvent(raw cellnet.Event) {
 
 	switch raw.(type) {
 	case *cellnet.RecvMsgEvent:
-		log.Debugf("#http.%s(%s) %s %s | %s",
+		log.Debugf("#recv %s(%s) %s %s | %s",
 			httpContext.Request().Method,
 			peerInfo.Name(),
 			httpContext.Request().URL.Path,
@@ -47,7 +47,7 @@ func (LogHooker) OnOutboundEvent(raw cellnet.Event) {
 
 	switch raw.(type) {
 	case *cellnet.SendMsgEvent:
-		log.Debugf("#http.Respond(%s) %s %s | %s",
+		log.Debugf("#send Response(%s) %s %s | %s",
 			peerInfo.Name(),
 			httpContext.Request().URL.Path,
 			cellnet.MessageToName(msg),

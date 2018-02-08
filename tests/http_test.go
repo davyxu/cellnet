@@ -42,10 +42,36 @@ func TestHttp(t *testing.T) {
 
 	p.Start()
 
-	//fmt.Scanln()
-	requestForm(t)
+	requestor(t)
 
-	postForm(t)
+	//fmt.Scanln()
+	//requestForm(t)
+	//postForm(t)
+}
+
+func requestor(t *testing.T) {
+	p := peer.NewPeer("http.Connector")
+	pset := p.(cellnet.PropertySet)
+	pset.SetProperty("Name", "httpclient")
+	pset.SetProperty("Address", "127.0.0.1:8081")
+
+	raw, err := p.(interface {
+		Request(method string, raw interface{}) (interface{}, error)
+	}).Request("GET", &HttpEchoREQ{
+		UserName: "kitty",
+	})
+
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	msg := raw.(*HttpEchoACK)
+	if msg.Token != "ok" {
+		t.Log("unexpect token result", err)
+		t.FailNow()
+	}
+
 }
 
 func requestForm(t *testing.T) {
@@ -116,22 +142,24 @@ func (self *HttpEchoREQ) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *HttpEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
-	cellnet.RegisterHttpMeta(&cellnet.HttpMessageMeta{
-		Codec:  codec.MustGetCodec("httpform"),
-		URL:    "/hello",
-		Method: "GET",
-		Type:   reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
+	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
+		URL:          "/hello",
+		Method:       "GET",
+		RequestCodec: codec.MustGetCodec("httpform"),
+		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
+
+		ResponseCodec: codec.MustGetCodec("json"),
+		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
 	})
 
-	cellnet.RegisterHttpMeta(&cellnet.HttpMessageMeta{
-		Codec:  codec.MustGetCodec("httpform"),
-		URL:    "/hello",
-		Method: "POST",
-		Type:   reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
+	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
+		URL:          "/hello",
+		Method:       "POST",
+		RequestCodec: codec.MustGetCodec("httpform"),
+		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
+
+		ResponseCodec: codec.MustGetCodec("json"),
+		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
 	})
 
-	cellnet.RegisterHttpMeta(&cellnet.HttpMessageMeta{
-		Codec: codec.MustGetCodec("json"),
-		Type:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
-	})
 }

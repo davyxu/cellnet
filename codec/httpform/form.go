@@ -3,6 +3,9 @@ package httpform
 import (
 	"github.com/davyxu/cellnet/codec"
 	"net/http"
+	"net/url"
+	"reflect"
+	"strings"
 )
 
 type httpFormCodec struct {
@@ -14,9 +17,31 @@ func (self *httpFormCodec) Name() string {
 	return "httpform"
 }
 
+func (self *httpFormCodec) MimeType() string {
+	return "application/x-www-form-urlencoded"
+}
+
+func structToUrlValues(obj interface{}) url.Values {
+	objValue := reflect.Indirect(reflect.ValueOf(obj))
+
+	objType := objValue.Type()
+
+	var formValues = url.Values{}
+	for i := 0; i < objValue.NumField(); i++ {
+
+		fieldType := objType.Field(i)
+
+		fieldValue := objValue.Field(i)
+
+		formValues.Add(fieldType.Name, fieldValue.String())
+	}
+
+	return formValues
+}
+
 func (self *httpFormCodec) Encode(msgObj interface{}) (data interface{}, err error) {
 
-	return nil, nil
+	return strings.NewReader(structToUrlValues(msgObj).Encode()), err
 }
 
 func (self *httpFormCodec) Decode(data interface{}, msgObj interface{}) error {
