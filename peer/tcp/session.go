@@ -78,6 +78,7 @@ func (self *tcpSession) sendLoop() {
 			break
 		}
 
+		// TODO SendMsgEvent并不是很有意义
 		self.SendMessage(&cellnet.SendMsgEvent{self, msg})
 
 	}

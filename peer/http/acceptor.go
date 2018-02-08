@@ -24,23 +24,24 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
-	meta := cellnet.MessageMetaByHTTPRequest(req.Method, req.URL.Path)
-	if meta != nil {
+	ses := newHttpSession(self, req, res)
 
-		msg := meta.NewType()
+	msg, err := self.ReadMessage(ses)
 
-		if err := meta.Codec.Decode(req, msg); err != nil {
-			return
-		}
+	if err != nil {
 
-		//ses := newHttpSession(self, res)
+		log.Warnf("#http.%s(%s) %s | 404 NotFound",
+			req.Method,
+			self.Name(),
+			req.URL.Path)
 
-		//self.CallInboundProc(&cellnet.RecvMsgEvent{ses, msg})
+		res.WriteHeader(http.StatusNotFound)
+		res.Write([]byte(err.Error()))
 
-	} else {
-
-		self.ServeFile(res, req)
+		return
 	}
+
+	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
 }
 
 // 停止侦听器

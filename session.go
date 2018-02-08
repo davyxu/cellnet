@@ -8,6 +8,9 @@ type BaseSession interface {
 
 	// 获得Session归属的Peer
 	Peer() Peer
+
+	// 发送消息，消息需要以指针格式传入
+	Send(msg interface{})
 }
 
 // 长连接
@@ -19,7 +22,4 @@ type Session interface {
 
 	// 标示ID
 	ID() int64
-
-	// 发送消息，消息需要以指针格式传入
-	Send(msg interface{})
 }

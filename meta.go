@@ -12,9 +12,7 @@ type MessageMeta struct {
 	Codec Codec        // 消息用到的编码
 	Type  reflect.Type // 消息类型
 
-	ID     int    // 消息ID (二进制协议中使用)
-	URL    string // HTTP协议的请求路径
-	Method string // HTTP请求方式
+	ID int // 消息ID (二进制协议中使用)
 }
 
 func (self *MessageMeta) TypeName() string {
@@ -53,21 +51,28 @@ func (self *MessageMeta) NewType() interface{} {
 	return reflect.New(self.Type).Interface()
 }
 
-type httpPair struct {
-	Method string
-	URL    string
-}
-
 var (
 	// 消息元信息与消息名称，消息ID和消息类型的关联关系
-	metaByHttpPair = map[httpPair]*MessageMeta{}
 	metaByFullName = map[string]*MessageMeta{}
 	metaByID       = map[int]*MessageMeta{}
 	metaByType     = map[reflect.Type]*MessageMeta{}
 )
 
+/*
+http消息
+Method URL -> Meta
+Type -> Meta
+
+非http消息
+ID -> Meta
+Type -> Meta
+
+*/
+
 // 注册消息元信息
 func RegisterMessageMeta(meta *MessageMeta) {
+
+	// 非http类,才需要包装Type必须唯一
 
 	if _, ok := metaByType[meta.Type]; ok {
 		panic(fmt.Sprintf("Duplicate message meta register by type: %d", meta.ID))
@@ -81,7 +86,9 @@ func RegisterMessageMeta(meta *MessageMeta) {
 		metaByFullName[meta.FullName()] = meta
 	}
 
-	if meta.ID != 0 {
+	if meta.ID == 0 {
+		panic("message meta require 'ID' field: " + meta.TypeName())
+
 		if _, ok := metaByID[meta.ID]; ok {
 			panic(fmt.Sprintf("Duplicate message meta register by id: %d", meta.ID))
 		} else {
@@ -89,35 +96,11 @@ func RegisterMessageMeta(meta *MessageMeta) {
 		}
 	}
 
-	if meta.URL != "" {
-
-		if meta.Method == "" {
-			panic("HTTP meta require 'Method' field: " + meta.URL)
-		}
-
-		pair := httpPair{meta.Method, meta.URL}
-
-		if _, ok := metaByHttpPair[pair]; ok {
-			panic("Duplicate message meta register by URL: " + meta.URL)
-		} else {
-			metaByHttpPair[pair] = meta
-		}
-
-	}
-
 }
 
 // 根据名字查找消息元信息
 func MessageMetaByFullName(name string) *MessageMeta {
 	if v, ok := metaByFullName[name]; ok {
-		return v
-	}
-
-	return nil
-}
-
-func MessageMetaByHTTPRequest(method, url string) *MessageMeta {
-	if v, ok := metaByHttpPair[httpPair{method, url}]; ok {
 		return v
 	}
 

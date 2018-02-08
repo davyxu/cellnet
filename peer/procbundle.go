@@ -33,7 +33,7 @@ func (self *CoreProcessorBundle) SetEventHandler(v cellnet.EventHandler) {
 
 var notHandled = errors.New("not handled")
 
-func (self *CoreProcessorBundle) ReadMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (self *CoreProcessorBundle) ReadMessage(ses cellnet.BaseSession) (msg interface{}, err error) {
 
 	if self.proc != nil {
 		return self.proc.OnRecvMessage(ses)

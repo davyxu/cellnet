@@ -1,16 +1,8 @@
 package cellnet
 
-import "net/http"
-
-type HttpEvent struct {
-	Ses Session
-
-	Req *http.Request
-}
-
 // 接收到消息
 type RecvMsgEvent struct {
-	Ses Session
+	Ses BaseSession
 	Msg interface{}
 }
 
@@ -28,7 +20,7 @@ func (self *RecvMsgEvent) Send(msg interface{}) {
 
 // 会话开始发送数据事件
 type SendMsgEvent struct {
-	Ses Session
+	Ses BaseSession
 	Msg interface{} // 用户需要发送的消息
 }
 

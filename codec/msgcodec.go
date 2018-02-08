@@ -22,6 +22,10 @@ func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err
 	var raw interface{}
 	raw, err = meta.Codec.Encode(msg)
 
+	if err != nil {
+		return
+	}
+
 	data = raw.([]byte)
 
 	return

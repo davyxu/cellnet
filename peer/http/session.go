@@ -2,30 +2,31 @@ package http
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
 	"net/http"
 )
 
-type Status struct {
-	Code int
-}
-
 type httpSession struct {
 	peer.CorePropertySet
-	Response http.ResponseWriter
+	*peer.CoreProcessorBundle
+	req  *http.Request
+	resp http.ResponseWriter
 
 	// 单独保存的保存Peer接口
 	peerInterface cellnet.Peer
 }
 
-// 取原始连接
-func (self *httpSession) Raw() interface{} {
-	return self.Response
+func (self *httpSession) Request() *http.Request {
+	return self.req
 }
 
-func (self *httpSession) ID() int64 {
-	return 0
+func (self *httpSession) Response() http.ResponseWriter {
+	return self.resp
+}
+
+// 取原始连接
+func (self *httpSession) Raw() interface{} {
+	return nil
 }
 
 // 取会话归属的通讯端
@@ -33,31 +34,20 @@ func (self *httpSession) Peer() cellnet.Peer {
 	return self.peerInterface
 }
 
-func (self *httpSession) Close() {
-}
-
 // 发送封包
 func (self *httpSession) Send(raw interface{}) {
 
-	switch msg := raw.(type) {
-	case Status:
-		self.Response.WriteHeader(msg.Code)
-	default:
-
-		data, _, err := codec.EncodeMessage(msg)
-		if err != nil {
-			self.Response.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		self.Response.Write(data)
-	}
+	self.SendMessage(&cellnet.SendMsgEvent{self, raw})
 }
 
-func newHttpSession(peer cellnet.Peer, response http.ResponseWriter) cellnet.Session {
+func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) cellnet.BaseSession {
 
 	return &httpSession{
-		peerInterface: peer,
-		Response:      response,
+		req:           req,
+		resp:          response,
+		peerInterface: peerIns,
+		CoreProcessorBundle: peerIns.(interface {
+			GetBundle() *peer.CoreProcessorBundle
+		}).GetBundle(),
 	}
 }

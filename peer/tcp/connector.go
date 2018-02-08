@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-type Connector interface {
-	SetReconnectDuration(dur time.Duration)
-}
-
 type tcpConnector struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
@@ -20,16 +16,9 @@ type tcpConnector struct {
 
 	defaultSes cellnet.Session
 
-	reconnDuration time.Duration // 重连间隔时间, 0为不重连
-
 	tryConnTimes int // 尝试连接次数
 
 	endSignal sync.WaitGroup
-}
-
-// 自动重连间隔=0不重连
-func (self *tcpConnector) SetReconnectDuration(dur time.Duration) {
-	self.reconnDuration = dur
 }
 
 func (self *tcpConnector) Start() cellnet.Peer {
@@ -69,6 +58,11 @@ func (self *tcpConnector) Stop() {
 
 }
 
+func (self *tcpConnector) ReconnectDuration() (ret time.Duration) {
+	self.GetProperty("ReconnectDuration", &ret)
+	return
+}
+
 const reportConnectFailedLimitTimes = 3
 
 // 连接器，传入连接地址和发送封包次数
@@ -99,14 +93,14 @@ func (self *tcpConnector) connect(address string) {
 			}
 
 			// 没重连就退出
-			if self.reconnDuration == 0 {
+			if self.ReconnectDuration() == 0 {
 
 				self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnectError{}})
 				break
 			}
 
 			// 有重连就等待
-			time.Sleep(self.reconnDuration)
+			time.Sleep(self.ReconnectDuration())
 
 			// 继续连接
 			continue
@@ -127,12 +121,12 @@ func (self *tcpConnector) connect(address string) {
 		self.defaultSes = nil
 
 		// 没重连就退出/主动退出
-		if self.IsStopping() || self.reconnDuration == 0 {
+		if self.IsStopping() || self.ReconnectDuration() == 0 {
 			break
 		}
 
 		// 有重连就等待
-		time.Sleep(time.Duration(self.reconnDuration) * time.Second)
+		time.Sleep(self.ReconnectDuration() * time.Second)
 
 		// 继续连接
 		continue
