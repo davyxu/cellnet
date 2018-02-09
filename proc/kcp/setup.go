@@ -74,8 +74,6 @@ func init() {
 
 	proc.RegisterEventProcessor("udp.kcp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
 
-		// TODO 添加RPC支持
-
 		initor.SetEventProcessor(msgProc)
 		initor.SetEventHooker(msgHooker)
 		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))

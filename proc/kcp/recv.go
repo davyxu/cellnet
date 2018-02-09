@@ -1,7 +1,6 @@
 package kcp
 
 import (
-	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/util"
 	"io"
@@ -9,7 +8,7 @@ import (
 
 func (self *kcpContext) input(data []byte) {
 
-	log.Debugln("input", self.ses.Peer().(cellnet.PeerProperty).Name(), len(data), data)
+	//log.Debugln("input", self.ses.Peer().(cellnet.PeerProperty).Name(), len(data), data)
 
 	if ret := self.kcp.Input(data, true, true); ret != 0 {
 		log.Errorln("kcp input ret: ", ret)
@@ -20,7 +19,7 @@ func (self *kcpContext) input(data []byte) {
 
 func (self *kcpContext) Read(b []byte) (n int, err error) {
 
-	defer log.Debugln("read", self.ses.Peer().(cellnet.PeerProperty).Name(), n, b)
+	//defer log.Debugln("read", self.ses.Peer().(cellnet.PeerProperty).Name(), n, b)
 
 	for {
 

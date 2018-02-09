@@ -1,7 +1,6 @@
 package kcp
 
 import (
-	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/util"
@@ -9,7 +8,7 @@ import (
 
 func (self *kcpContext) output(data []byte) {
 
-	log.Debugln("output", self.ses.Peer().(cellnet.PeerProperty).Name(), len(data), data)
+	//log.Debugln("output", self.ses.Peer().(cellnet.PeerProperty).Name(), len(data), data)
 
 	writer := self.ses.(udp.DataWriter)
 
@@ -18,7 +17,7 @@ func (self *kcpContext) output(data []byte) {
 
 func (self *kcpContext) Write(p []byte) (n int, err error) {
 
-	log.Debugln("write", self.ses.Peer().(cellnet.PeerProperty).Name(), len(p), p)
+	//log.Debugln("write", self.ses.Peer().(cellnet.PeerProperty).Name(), len(p), p)
 
 	self.kcp.Send(p)
 
