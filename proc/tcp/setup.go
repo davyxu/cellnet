@@ -40,17 +40,20 @@ type rpcEventHooker struct {
 	msglog.LogHooker
 }
 
-func (self rpcEventHooker) OnInboundEvent(ev cellnet.Event) {
+func (self rpcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	self.LogHooker.OnInboundEvent(ev)
-	self.RPCHooker.OnInboundEvent(ev)
+	self.LogHooker.OnInboundEvent(inputEvent)
+	self.RPCHooker.OnInboundEvent(inputEvent)
 
+	return inputEvent
 }
 
-func (self rpcEventHooker) OnOutboundEvent(ev cellnet.Event) {
+func (self rpcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	self.LogHooker.OnOutboundEvent(ev)
-	self.RPCHooker.OnOutboundEvent(ev)
+	self.LogHooker.OnOutboundEvent(inputEvent)
+	self.RPCHooker.OnOutboundEvent(inputEvent)
+
+	return inputEvent
 }
 
 func init() {

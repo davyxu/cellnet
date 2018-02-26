@@ -8,10 +8,10 @@ import (
 type LogHooker struct {
 }
 
-func (LogHooker) OnInboundEvent(raw cellnet.Event) {
+func (LogHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msg := raw.Message()
-	ses := raw.Session()
+	msg := inputEvent.Message()
+	ses := inputEvent.Session()
 
 	if msglog.IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
@@ -21,7 +21,7 @@ func (LogHooker) OnInboundEvent(raw cellnet.Event) {
 
 	httpContext := ses.(HttpContext)
 
-	switch raw.(type) {
+	switch inputEvent.(type) {
 	case *cellnet.RecvMsgEvent:
 		log.Debugf("#recv %s(%s) %s %s | %s",
 			httpContext.Request().Method,
@@ -31,11 +31,13 @@ func (LogHooker) OnInboundEvent(raw cellnet.Event) {
 			cellnet.MessageToString(msg))
 	}
 
-}
-func (LogHooker) OnOutboundEvent(raw cellnet.Event) {
+	return inputEvent
 
-	msg := raw.Message()
-	ses := raw.Session()
+}
+func (LogHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+
+	msg := inputEvent.Message()
+	ses := inputEvent.Session()
 
 	if msglog.IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
@@ -45,7 +47,7 @@ func (LogHooker) OnOutboundEvent(raw cellnet.Event) {
 
 	httpContext := ses.(HttpContext)
 
-	switch raw.(type) {
+	switch inputEvent.(type) {
 	case *cellnet.SendMsgEvent:
 		log.Debugf("#send Response(%s) %s %s | %s",
 			peerInfo.Name(),
@@ -53,4 +55,6 @@ func (LogHooker) OnOutboundEvent(raw cellnet.Event) {
 			cellnet.MessageToName(msg),
 			cellnet.MessageToString(msg))
 	}
+
+	return inputEvent
 }

@@ -14,10 +14,10 @@ type nameAddressGetter interface {
 type LogHooker struct {
 }
 
-func (LogHooker) OnInboundEvent(ev cellnet.Event) {
+func (LogHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msg := ev.Message()
-	ses := ev.Session()
+	msg := inputEvent.Message()
+	ses := inputEvent.Session()
 
 	if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
@@ -42,11 +42,13 @@ func (LogHooker) OnInboundEvent(ev cellnet.Event) {
 			cellnet.MessageToID(msg),
 			cellnet.MessageToString(msg))
 	}
-}
-func (LogHooker) OnOutboundEvent(ev cellnet.Event) {
 
-	msg := ev.Message()
-	ses := ev.Session()
+	return inputEvent
+}
+func (LogHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+
+	msg := inputEvent.Message()
+	ses := inputEvent.Session()
 
 	if rawPkt, ok := msg.(comm.RawPacket); ok {
 		rawMsg, _, err := codec.DecodeMessage(rawPkt.MsgID, rawPkt.MsgData)
@@ -70,4 +72,6 @@ func (LogHooker) OnOutboundEvent(ev cellnet.Event) {
 		cellnet.MessageToName(msg),
 		cellnet.MessageToID(msg),
 		cellnet.MessageToString(msg))
+
+	return inputEvent
 }

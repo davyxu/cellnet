@@ -16,9 +16,9 @@ type RemoteCallMsg interface {
 type RPCHooker struct {
 }
 
-func (self RPCHooker) OnInboundEvent(ev cellnet.Event) {
+func (self RPCHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	rpcMsg, ok := ev.Message().(RemoteCallMsg)
+	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
 		return
 	}
@@ -29,23 +29,23 @@ func (self RPCHooker) OnInboundEvent(ev cellnet.Event) {
 		return
 	}
 
-	peerInfo := ev.Session().Peer().(interface {
+	peerInfo := inputEvent.Session().Peer().(interface {
 		Name() string
 	})
 
 	log.Debugf("#rpc recv(%s)@%d %s(%d) | %s",
 		peerInfo.Name(),
-		ev.Session().ID(),
+		inputEvent.Session().ID(),
 		meta.TypeName(),
 		meta.ID,
 		cellnet.MessageToString(msg))
 
-	poster := ev.Session().Peer().(peer.MessagePoster)
+	poster := inputEvent.Session().Peer().(peer.MessagePoster)
 
-	switch ev.Message().(type) {
+	switch inputEvent.Message().(type) {
 	case *RemoteCallREQ: // 服务端收到客户端的请求
 
-		poster.PostEvent(&RecvMsgEvent{ev.Session(), msg, rpcMsg.GetCallID()})
+		poster.PostEvent(&RecvMsgEvent{inputEvent.Session(), msg, rpcMsg.GetCallID()})
 
 	case *RemoteCallACK: // 客户端收到服务器的回应
 		request := getRequest(rpcMsg.GetCallID())
@@ -54,10 +54,11 @@ func (self RPCHooker) OnInboundEvent(ev cellnet.Event) {
 		}
 	}
 
+	return inputEvent
 }
 
-func (self RPCHooker) OnOutboundEvent(ev cellnet.Event) {
-	rpcMsg, ok := ev.Message().(RemoteCallMsg)
+func (self RPCHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
 		return
 	}
@@ -68,17 +69,18 @@ func (self RPCHooker) OnOutboundEvent(ev cellnet.Event) {
 		return
 	}
 
-	peerInfo := ev.Session().Peer().(interface {
+	peerInfo := inputEvent.Session().Peer().(interface {
 		Name() string
 	})
 
 	log.Debugf("#rpc send(%s)@%d %s(%d) | %s",
 		peerInfo.Name(),
-		ev.Session().ID(),
+		inputEvent.Session().ID(),
 		meta.TypeName(),
 		meta.ID,
 		cellnet.MessageToString(msg))
 
+	return inputEvent
 }
 
 func init() {

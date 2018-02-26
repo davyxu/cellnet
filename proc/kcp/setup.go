@@ -50,21 +50,23 @@ type udpEventHooker struct {
 	logger msglog.LogHooker
 }
 
-func (self udpEventHooker) OnInboundEvent(ev cellnet.Event) {
+func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	self.logger.OnInboundEvent(ev)
+	self.logger.OnInboundEvent(inputEvent)
 
-	switch ev.Message().(type) {
+	switch inputEvent.Message().(type) {
 	case *cellnet.SessionInit:
-		ev.Session().(cellnet.PropertySet).SetProperty(kcpTag, newContext(ev.Session()))
+		inputEvent.Session().(cellnet.PropertySet).SetProperty(kcpTag, newContext(inputEvent.Session()))
 	case *cellnet.SessionClosed:
-		mustKCPContext(ev.Session()).Close()
+		mustKCPContext(inputEvent.Session()).Close()
 	}
+
+	return inputEvent
 }
 
-func (self udpEventHooker) OnOutboundEvent(ev cellnet.Event) {
+func (self udpEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	self.logger.OnOutboundEvent(ev)
+	return self.logger.OnOutboundEvent(inputEvent)
 }
 
 func init() {

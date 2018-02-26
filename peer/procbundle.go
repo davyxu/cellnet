@@ -45,10 +45,10 @@ func (self *CoreProcessorBundle) ReadMessage(ses cellnet.Session) (msg interface
 func (self *CoreProcessorBundle) SendMessage(ev cellnet.Event) {
 
 	if self.hooker != nil {
-		self.hooker.OnOutboundEvent(ev)
+		ev = self.hooker.OnOutboundEvent(ev)
 	}
 
-	if self.proc != nil {
+	if self.proc != nil && ev != nil {
 		self.proc.OnSendMessage(ev.Session(), ev.Message())
 	}
 }
@@ -56,10 +56,10 @@ func (self *CoreProcessorBundle) SendMessage(ev cellnet.Event) {
 func (self *CoreProcessorBundle) PostEvent(ev cellnet.Event) {
 
 	if self.hooker != nil {
-		self.hooker.OnInboundEvent(ev)
+		ev = self.hooker.OnInboundEvent(ev)
 	}
 
-	if self.handler != nil {
+	if self.handler != nil && ev != nil {
 		self.handler.OnEvent(ev)
 	}
 }
