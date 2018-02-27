@@ -60,6 +60,13 @@ func (LogHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.
 		msg = rawMsg
 	}
 
+	WriteSendLogger(ses, msg)
+
+	return inputEvent
+}
+
+func WriteSendLogger(ses cellnet.Session, msg interface{}) {
+
 	if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 		return
 	}
@@ -72,6 +79,4 @@ func (LogHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.
 		cellnet.MessageToName(msg),
 		cellnet.MessageToID(msg),
 		cellnet.MessageToString(msg))
-
-	return inputEvent
 }
