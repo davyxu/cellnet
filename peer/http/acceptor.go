@@ -1,15 +1,22 @@
 package http
 
 import (
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"net/http"
+	"reflect"
 )
 
 type httpAcceptor struct {
 	peer.CorePeerProperty
 	peer.CoreProcessorBundle
 }
+
+var (
+	errNotHandled = errors.New("Request not handled")
+	errNotFound   = errors.New("404 Not found")
+)
 
 func (self *httpAcceptor) Start() cellnet.Peer {
 
@@ -24,7 +31,27 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	ses := newHttpSession(self, req, res)
 
-	msg, err := self.ReadMessage(ses)
+	var msg interface{}
+	var err error
+
+	// 请求转消息，文件处理
+	meta := cellnet.HttpMetaByMethodURL(req.Method, req.URL.Path)
+	if meta != nil {
+
+		// 直接打开页面时，无需创建消息
+		if meta.RequestType != nil {
+			msg = reflect.New(meta.RequestType).Interface()
+
+			if err := meta.RequestCodec.Decode(req, msg); err != nil {
+				return
+			}
+		}
+
+	}
+
+	if err == errNotHandled {
+		msg, err = self.ServeFileWithDir(res, req)
+	}
 
 	if err != nil {
 
@@ -39,9 +66,8 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	if msg != nil {
-		self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
-	}
+	// 处理消息及页面下发
+	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
 }
 
 // 停止侦听器

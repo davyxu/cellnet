@@ -4,17 +4,12 @@ import (
 	"github.com/davyxu/cellnet"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
 
-type StaticFileProc struct {
-	dir http.Dir
-}
-
-func (self *StaticFileProc) InitDir(set cellnet.PropertySet) {
+func (self *httpAcceptor) GetDir(set cellnet.PropertySet) http.Dir {
 
 	var (
 		httpDir  string
@@ -24,24 +19,23 @@ func (self *StaticFileProc) InitDir(set cellnet.PropertySet) {
 	set.GetProperty("HttpRoot", &httpRoot)
 
 	if filepath.IsAbs(httpDir) {
-		self.dir = http.Dir(httpDir)
+		return http.Dir(httpDir)
 	} else {
-		self.dir = http.Dir(filepath.Join(httpRoot, httpDir))
+		return http.Dir(filepath.Join(httpRoot, httpDir))
 	}
 
-	workDir, _ := os.Getwd()
-	log.Debugf("Http serve file: %s (%s)", self.dir, workDir)
-
+	//workDir, _ := os.Getwd()
+	//log.Debugf("Http serve file: %s (%s)", self.dir, workDir)
 }
 
-func (self *StaticFileProc) ServeFile(res http.ResponseWriter, req *http.Request) error {
+func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, dir http.Dir) error {
 	if req.Method != "GET" && req.Method != "HEAD" {
 		return nil
 	}
 
 	file := req.URL.Path
 
-	f, err := self.dir.Open(file)
+	f, err := dir.Open(file)
 	if err != nil {
 
 		if err != nil {
@@ -69,7 +63,7 @@ func (self *StaticFileProc) ServeFile(res http.ResponseWriter, req *http.Request
 		}
 
 		file = path.Join(file, "index.html")
-		f, err = self.dir.Open(file)
+		f, err = dir.Open(file)
 		if err != nil {
 			return errNotFound
 		}
@@ -88,20 +82,14 @@ func (self *StaticFileProc) ServeFile(res http.ResponseWriter, req *http.Request
 	return nil
 }
 
-func (self *StaticFileProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (self *httpAcceptor) ServeFileWithDir(res http.ResponseWriter, req *http.Request) (msg interface{}, err error) {
 
-	httpContext := ses.(HttpContext)
-	req := httpContext.Request()
-	resp := httpContext.Response()
+	dir := self.GetDir(&self.CorePropertySet)
 
-	if self.dir == "" {
-		self.InitDir(ses.Peer().(cellnet.PropertySet))
+	if dir == "" {
+		log.Warnln("peer's 'HttpDir' 'HttpRoot' property not set")
+		return nil, errNotFound
 	}
 
-	return nil, self.ServeFile(resp, req)
-}
-
-func (StaticFileProc) OnSendMessage(ses cellnet.Session, raw interface{}) error {
-
-	return nil
+	return nil, self.ServeFile(res, req, dir)
 }

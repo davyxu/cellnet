@@ -24,6 +24,7 @@ func TestHttp(t *testing.T) {
 	pset := p.(cellnet.PropertySet)
 	pset.SetProperty("Name", "httpserver")
 	pset.SetProperty("Address", "127.0.0.1:8081")
+
 	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
 
 		switch raw.Message().(type) {
@@ -40,14 +41,14 @@ func TestHttp(t *testing.T) {
 
 	p.Start()
 
-	requestor(t)
-
-	//fmt.Scanln()
-	//requestForm(t)
-	//postForm(t)
+	requestThenValid(t, &HttpEchoREQ{
+		UserName: "kitty",
+	}, &HttpEchoACK{
+		Token: "ok",
+	})
 }
 
-func requestor(t *testing.T) {
+func requestThenValid(t *testing.T, req, expectACK interface{}) {
 	peerIns := peer.NewPeer("http.Connector")
 	pset := peerIns.(cellnet.PropertySet)
 	pset.SetProperty("Name", "httpclient")
@@ -55,44 +56,37 @@ func requestor(t *testing.T) {
 
 	requestor := peerIns.(httppeer.HttpRequestor)
 
-	raw, err := requestor.Request("GET", &HttpEchoREQ{
-		UserName: "kitty",
-	})
+	ack, err := requestor.Request("GET", req)
 
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 
-	msg := raw.(*HttpEchoACK)
-	if msg.Token != "ok" {
+	if !reflect.DeepEqual(ack, expectACK) {
 		t.Log("unexpect token result", err)
 		t.FailNow()
 	}
 
 }
 
-func requestForm(t *testing.T) {
-	resp, err := http.Get("http://127.0.0.1:8081/hello?UserName=kitty")
+func validPage(t *testing.T, url, expectAck string) {
+	resp, err := http.Get(url)
 	if err != nil {
 		t.Log("http req failed", err)
 		t.FailNow()
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	bodyData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Log("http response failed", err)
 		t.FailNow()
 	}
 
-	var ack HttpEchoACK
-	if err := json.Unmarshal(body, &ack); err != nil {
-		t.Log("json unmarshal failed", err)
-		t.FailNow()
-	}
+	body := string(bodyData)
 
-	if ack.Token != "ok" {
+	if body != expectAck {
 		t.Log("unexpect token result", err)
 		t.FailNow()
 	}

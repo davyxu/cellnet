@@ -27,7 +27,9 @@ type UserMessageHandler func(ev Event)
 
 func (self UserMessageHandler) OnEvent(ev Event) {
 
-	self(ev)
+	if self != nil {
+		self(ev)
+	}
 }
 
 // 放队列中回调
@@ -35,9 +37,11 @@ type UserMessageHandlerQueued func(ev Event)
 
 func (self UserMessageHandlerQueued) OnEvent(ev Event) {
 
-	SessionQueuedCall(ev.Session(), func() {
+	if self != nil {
+		SessionQueuedCall(ev.Session(), func() {
 
-		self(ev)
-	})
+			self(ev)
+		})
+	}
 
 }

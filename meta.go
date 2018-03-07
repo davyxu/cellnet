@@ -132,6 +132,10 @@ func MessageMetaByID(id int) *MessageMeta {
 
 func MessageToName(msg interface{}) string {
 
+	if msg == nil {
+		return ""
+	}
+
 	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
 	if meta == nil {
 		return ""
