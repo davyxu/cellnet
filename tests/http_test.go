@@ -30,9 +30,12 @@ func TestHttp(t *testing.T) {
 		switch raw.Message().(type) {
 		case *HttpEchoREQ:
 
-			raw.Session().Send(&HttpEchoACK{
-				Status: 0,
-				Token:  "ok",
+			raw.Session().Send(&httppeer.Message{
+				StatusCode: http.StatusOK,
+				Msg: &HttpEchoACK{
+					Status: 0,
+					Token:  "ok",
+				},
 			})
 
 		}
@@ -46,6 +49,8 @@ func TestHttp(t *testing.T) {
 	}, &HttpEchoACK{
 		Token: "ok",
 	})
+
+	//validPage(t, "http://127.0.0.1:8081", "")
 }
 
 func requestThenValid(t *testing.T, req, expectACK interface{}) {

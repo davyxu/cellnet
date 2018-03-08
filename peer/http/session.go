@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"html/template"
@@ -21,6 +22,9 @@ type httpSession struct {
 	peerInterface cellnet.Peer
 
 	t *template.Template
+
+	responed bool
+	err      error
 }
 
 func (self *httpSession) Match(method, url string) bool {
@@ -54,36 +58,33 @@ func (self *httpSession) Peer() cellnet.Peer {
 	return self.peerInterface
 }
 
-type StatusCode int
-
-type HTML struct {
-	Code int
-
-	PageTemplate string
-
-	TemplateModel interface{}
+type RespondProc interface {
+	WriteRespond(*httpSession) error
 }
+
+var (
+	ErrUnknownOperation = errors.New("Unknown http operation")
+)
 
 // 发送封包
 func (self *httpSession) Send(raw interface{}) {
 
-	switch msg := raw.(type) {
-	case StatusCode:
-		self.resp.WriteHeader(int(msg))
-	case HTML:
-		writeHTMLRespond(self, msg.Code, msg.PageTemplate, msg.TemplateModel)
-	default:
-		writeMessageRespond(self, msg)
+	if proc, ok := raw.(RespondProc); ok {
+		self.err = proc.WriteRespond(self)
+		self.responed = true
+	} else {
+		self.err = ErrUnknownOperation
 	}
+
 }
 
-func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) cellnet.Session {
+func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) *httpSession {
 
 	return &httpSession{
 		req:           req,
 		resp:          response,
 		peerInterface: peerIns,
-		t:             compile(prepareOptions([]Options{})),
+		t:             compile(peerIns.(cellnet.PropertySet)),
 		CoreProcessorBundle: peerIns.(interface {
 			GetBundle() *peer.CoreProcessorBundle
 		}).GetBundle(),

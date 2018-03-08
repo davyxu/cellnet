@@ -2,68 +2,14 @@ package http
 
 import (
 	"bytes"
+	"github.com/davyxu/cellnet"
 	"html/template"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 )
-
-// Delims represents a set of Left and Right delimiters for HTML template rendering
-type Delims struct {
-	// Left delimiter, defaults to {{
-	Left string
-	// Right delimiter, defaults to }}
-	Right string
-}
-
-// Options is a struct for specifying configuration options for the render.Renderer middleware
-type Options struct {
-	// Directory to load templates. Default is "templates"
-	Directory string
-	// Layout template name. Will not render a layout if "". Defaults to "".
-	Layout string
-	// Extensions to parse template files from. Defaults to [".tmpl"]
-	Extensions []string
-	// Funcs is a slice of FuncMaps to apply to the template upon compilation. This is useful for helper functions. Defaults to [].
-	Funcs []template.FuncMap
-	// Delims sets the action delimiters to the specified strings in the Delims struct.
-	Delims Delims
-	// Appends the given charset to the Content-Type header. Default is "UTF-8".
-	Charset string
-	// Outputs human readable JSON
-	IndentJSON bool
-	// Outputs human readable XML
-	IndentXML bool
-	// Prefixes the JSON output with the given bytes.
-	PrefixJSON []byte
-	// Prefixes the XML output with the given bytes.
-	PrefixXML []byte
-	// Allows changing of output to XHTML instead of HTML. Default is "text/html"
-	HTMLContentType string
-}
-
-func prepareOptions(options []Options) Options {
-	var opt Options
-	if len(options) > 0 {
-		opt = options[0]
-	}
-
-	// Defaults
-	if len(opt.Directory) == 0 {
-		opt.Directory = "."
-	}
-	if len(opt.Extensions) == 0 {
-		opt.Extensions = []string{".tpl"}
-	}
-	if len(opt.HTMLContentType) == 0 {
-		opt.HTMLContentType = "text/html"
-	}
-
-	return opt
-}
 
 func getExt(s string) string {
 	if strings.Index(s, ".") == -1 {
@@ -72,22 +18,45 @@ func getExt(s string) string {
 	return "." + strings.Join(strings.Split(s, ".")[1:], ".")
 }
 
-func compile(options Options) *template.Template {
-	dir := options.Directory
-	t := template.New(dir)
-	t.Delims(options.Delims.Left, options.Delims.Right)
+func compile(pset cellnet.PropertySet) *template.Template {
+
+	var (
+		templateDir   string
+		delimsLeft    string
+		delimsRight   string
+		templateExts  []string
+		templateFuncs []template.FuncMap
+	)
+
+	pset.GetProperty("TemplateDir", &templateDir)
+	pset.GetProperty("TemplateExts", &templateExts)
+	pset.GetProperty("TemplateFuncs", &templateFuncs)
+	pset.GetProperty("DelimsLeft", &delimsLeft)
+	pset.GetProperty("DelimsRight", &delimsRight)
+
+	if templateDir == "" {
+		templateDir = "."
+	}
+
+	if len(templateExts) == 0 {
+		templateExts = []string{".tpl", ".html"}
+	}
+
+	t := template.New(templateDir)
+
+	t.Delims(delimsLeft, delimsRight)
 	// parse an initial template in case we don't have any
 	//template.Must(t.Parse("Martini"))
 
-	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		r, err := filepath.Rel(dir, path)
+	filepath.Walk(templateDir, func(path string, info os.FileInfo, err error) error {
+		r, err := filepath.Rel(templateDir, path)
 		if err != nil {
 			return err
 		}
 
 		ext := getExt(r)
 
-		for _, extension := range options.Extensions {
+		for _, extension := range templateExts {
 			if ext == extension {
 
 				buf, err := ioutil.ReadFile(path)
@@ -99,7 +68,7 @@ func compile(options Options) *template.Template {
 				tmpl := t.New(filepath.ToSlash(name))
 
 				// add our funcmaps
-				for _, funcs := range options.Funcs {
+				for _, funcs := range templateFuncs {
 					tmpl.Funcs(funcs)
 				}
 
@@ -115,22 +84,40 @@ func compile(options Options) *template.Template {
 	return t
 }
 
-func writeHTMLRespond(ses *httpSession, status int, name string, model interface{}) {
+type HTML struct {
+	StatusCode int
+
+	PageTemplate string
+
+	TemplateModel interface{}
+}
+
+func (self *HTML) WriteRespond(ses *httpSession) error {
+
+	peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+	log.Debugf("#recv(%s) http.%s %s | [%d] HTML %s",
+		peerInfo.Name(),
+		ses.req.Method,
+		ses.req.URL.Path,
+		self.StatusCode,
+		self.PageTemplate)
 
 	buf := make([]byte, 64)
 
 	bb := bytes.NewBuffer(buf)
 	bb.Reset()
 
-	err := ses.t.ExecuteTemplate(bb, name, model)
+	err := ses.t.ExecuteTemplate(bb, self.PageTemplate, self.TemplateModel)
 
 	if err != nil {
-		http.Error(ses.resp, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	// template rendered fine, write out the result
 	ses.resp.Header().Set("Content-Type", "text/html")
-	ses.resp.WriteHeader(status)
+	ses.resp.WriteHeader(self.StatusCode)
 	io.Copy(ses.resp, bb)
+
+	return nil
 }

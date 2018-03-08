@@ -40,9 +40,9 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 	// 将消息编码为字节数组
 	data, err := meta.RequestCodec.Encode(raw)
 
-	log.Debugf("#send %s(%s) %s %s | %s",
-		meta.Method,
+	log.Debugf("#send(%s) http.%s %s | Message(%s) %s",
 		self.Name(),
+		meta.Method,
 		meta.URL,
 		meta.RequestTypeName(),
 		cellnet.MessageToString(raw))
@@ -77,9 +77,11 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 
 	err = meta.ResponseCodec.Decode(body, msg)
 
-	log.Debugf("#recv Response(%s) %s %s | %s",
+	log.Debugf("#recv(%s) http.%s %s | [%d] Message(%s) %s",
 		self.Name(),
+		resp.Request.Method,
 		meta.URL,
+		resp.StatusCode,
 		meta.ResponseTypeName(),
 		cellnet.MessageToString(msg))
 

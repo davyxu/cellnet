@@ -14,15 +14,19 @@ type httpAcceptor struct {
 }
 
 var (
-	errNotHandled = errors.New("Request not handled")
-	errNotFound   = errors.New("404 Not found")
+	errNotFound = errors.New("404 Not found")
 )
 
 func (self *httpAcceptor) Start() cellnet.Peer {
 
 	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
-	go http.ListenAndServe(self.Address(), self)
+	go func() {
+		err := http.ListenAndServe(self.Address(), self)
+		if err != nil {
+			log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
+		}
+	}()
 
 	return self
 }
@@ -33,6 +37,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	var msg interface{}
 	var err error
+	var fileHandled bool
 
 	// 请求转消息，文件处理
 	meta := cellnet.HttpMetaByMethodURL(req.Method, req.URL.Path)
@@ -42,23 +47,36 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		if meta.RequestType != nil {
 			msg = reflect.New(meta.RequestType).Interface()
 
-			if err := meta.RequestCodec.Decode(req, msg); err != nil {
-				return
-			}
+			err = meta.RequestCodec.Decode(req, msg)
 		}
-
-	}
-
-	if err == errNotHandled {
-		msg, err = self.ServeFileWithDir(res, req)
 	}
 
 	if err != nil {
+		goto OnError
+	}
 
-		log.Warnf("#recv %s(%s) %s | 404 NotFound",
-			req.Method,
+	// 处理消息及页面下发
+	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
+
+	if ses.err != nil {
+		err = ses.err
+		goto OnError
+	}
+
+	if ses.responed {
+		return
+	}
+
+	// 处理静态文件
+	msg, err, fileHandled = self.ServeFileWithDir(res, req)
+
+	if err != nil {
+
+		log.Warnf("#recv http.%s '%s' %s | [%d] File not found",
 			self.Name(),
-			req.URL.Path)
+			req.Method,
+			req.URL.Path,
+			http.StatusNotFound)
 
 		res.WriteHeader(http.StatusNotFound)
 		res.Write([]byte(err.Error()))
@@ -66,8 +84,29 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	// 处理消息及页面下发
-	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
+	if fileHandled {
+		log.Debugf("#recv http.%s '%s' %s | [%d] File",
+			self.Name(),
+			req.Method,
+			req.URL.Path,
+			http.StatusOK)
+	}
+
+	log.Warnf("#recv(%s) http.%s %s | Unhandled",
+		self.Name(),
+		req.Method,
+		req.URL.Path)
+
+	return
+OnError:
+	log.Errorf("#recv(%s) http.%s %s | [%d] %s",
+		self.Name(),
+		req.Method,
+		req.URL.Path,
+		http.StatusInternalServerError,
+		err.Error())
+
+	http.Error(ses.resp, err.Error(), http.StatusInternalServerError)
 }
 
 // 停止侦听器

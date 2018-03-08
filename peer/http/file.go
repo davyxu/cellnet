@@ -28,9 +28,9 @@ func (self *httpAcceptor) GetDir(set cellnet.PropertySet) http.Dir {
 	//log.Debugf("Http serve file: %s (%s)", self.dir, workDir)
 }
 
-func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, dir http.Dir) error {
+func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, dir http.Dir) (error, bool) {
 	if req.Method != "GET" && req.Method != "HEAD" {
-		return nil
+		return nil, false
 	}
 
 	file := req.URL.Path
@@ -39,14 +39,14 @@ func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, 
 	if err != nil {
 
 		if err != nil {
-			return errNotFound
+			return errNotFound, false
 		}
 	}
 	defer f.Close()
 
 	fi, err := f.Stat()
 	if err != nil {
-		return errNotFound
+		return errNotFound, false
 	}
 
 	// try to serve index file
@@ -59,37 +59,37 @@ func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, 
 				Fragment: req.URL.Fragment,
 			}
 			http.Redirect(res, req, dest.String(), http.StatusFound)
-			return nil
+			return nil, false
 		}
 
 		file = path.Join(file, "index.html")
 		f, err = dir.Open(file)
 		if err != nil {
-			return errNotFound
+			return errNotFound, false
 		}
 		defer f.Close()
 
 		fi, err = f.Stat()
 		if err != nil || fi.IsDir() {
-			return errNotFound
+			return errNotFound, false
 		}
 	}
 
-	log.Debugln("#file ", file)
-
 	http.ServeContent(res, req, file, fi.ModTime(), f)
 
-	return nil
+	return nil, true
 }
 
-func (self *httpAcceptor) ServeFileWithDir(res http.ResponseWriter, req *http.Request) (msg interface{}, err error) {
+func (self *httpAcceptor) ServeFileWithDir(res http.ResponseWriter, req *http.Request) (msg interface{}, err error, handled bool) {
 
 	dir := self.GetDir(&self.CorePropertySet)
 
 	if dir == "" {
 		log.Warnln("peer's 'HttpDir' 'HttpRoot' property not set")
-		return nil, errNotFound
+		return nil, errNotFound, false
 	}
 
-	return nil, self.ServeFile(res, req, dir)
+	err, handled = self.ServeFile(res, req, dir)
+
+	return
 }
