@@ -2,9 +2,11 @@ package http
 
 import "github.com/davyxu/cellnet"
 
-type StatusCode int
+type StatusRespond struct {
+	StatusCode int
+}
 
-func (self StatusCode) WriteRespond(ses *httpSession) error {
+func (self *StatusRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
@@ -14,6 +16,6 @@ func (self StatusCode) WriteRespond(ses *httpSession) error {
 		ses.req.URL.Path,
 		self)
 
-	ses.resp.WriteHeader(int(self))
+	ses.resp.WriteHeader(int(self.StatusCode))
 	return nil
 }

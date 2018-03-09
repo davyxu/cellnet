@@ -7,12 +7,12 @@ import (
 	"reflect"
 )
 
-type Message struct {
+type MessageRespond struct {
 	StatusCode int
 	Msg        interface{}
 }
 
-func (self *Message) WriteRespond(ses *httpSession) error {
+func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
 	msg := self.Msg

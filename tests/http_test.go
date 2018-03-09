@@ -30,7 +30,7 @@ func TestHttp(t *testing.T) {
 		switch raw.Message().(type) {
 		case *HttpEchoREQ:
 
-			raw.Session().Send(&httppeer.Message{
+			raw.Session().Send(&httppeer.MessageRespond{
 				StatusCode: http.StatusOK,
 				Msg: &HttpEchoACK{
 					Status: 0,

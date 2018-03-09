@@ -85,11 +85,12 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	}
 
 	if fileHandled {
-		log.Debugf("#recv http.%s '%s' %s | [%d] File",
+		log.Debugf("#recv(%s) http.%s %s | [%d] File",
 			self.Name(),
 			req.Method,
 			req.URL.Path,
 			http.StatusOK)
+		return
 	}
 
 	log.Warnf("#recv(%s) http.%s %s | Unhandled",

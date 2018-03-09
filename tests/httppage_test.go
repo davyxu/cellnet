@@ -19,7 +19,7 @@ func TestPrintPage(t *testing.T) {
 		switch {
 		case raw.Session().(httppeer.RequestMatcher).Match("GET", "/"):
 
-			raw.Session().Send(&httppeer.HTML{
+			raw.Session().Send(&httppeer.HTMLRespond{
 				StatusCode:    http.StatusOK,
 				PageTemplate:  "index",
 				TemplateModel: "world",

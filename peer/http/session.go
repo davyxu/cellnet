@@ -11,6 +11,13 @@ import (
 type RequestMatcher interface {
 	Match(method, url string) bool
 }
+type RespondProc interface {
+	WriteRespond(*httpSession) error
+}
+
+var (
+	ErrUnknownOperation = errors.New("Unknown http operation")
+)
 
 type httpSession struct {
 	peer.CorePropertySet
@@ -57,14 +64,6 @@ func (self *httpSession) Close() {
 func (self *httpSession) Peer() cellnet.Peer {
 	return self.peerInterface
 }
-
-type RespondProc interface {
-	WriteRespond(*httpSession) error
-}
-
-var (
-	ErrUnknownOperation = errors.New("Unknown http operation")
-)
 
 // 发送封包
 func (self *httpSession) Send(raw interface{}) {

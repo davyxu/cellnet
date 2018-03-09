@@ -84,7 +84,7 @@ func compile(pset cellnet.PropertySet) *template.Template {
 	return t
 }
 
-type HTML struct {
+type HTMLRespond struct {
 	StatusCode int
 
 	PageTemplate string
@@ -92,7 +92,7 @@ type HTML struct {
 	TemplateModel interface{}
 }
 
-func (self *HTML) WriteRespond(ses *httpSession) error {
+func (self *HTMLRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
