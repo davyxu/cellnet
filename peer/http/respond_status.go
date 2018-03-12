@@ -14,7 +14,7 @@ func (self *StatusRespond) WriteRespond(ses *httpSession) error {
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,
-		self)
+		self.StatusCode)
 
 	ses.resp.WriteHeader(int(self.StatusCode))
 	return nil

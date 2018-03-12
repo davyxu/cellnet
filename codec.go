@@ -9,4 +9,6 @@ type Codec interface {
 
 	// 编码器的名字
 	Name() string
+
+	MimeType() string
 }

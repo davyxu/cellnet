@@ -12,6 +12,10 @@ func (self *binaryCodec) Name() string {
 	return "binary"
 }
 
+func (self *binaryCodec) MimeType() string {
+	return "application/binary"
+}
+
 func (self *binaryCodec) Encode(msgObj interface{}) (data interface{}, err error) {
 
 	return goobjfmt.BinaryWrite(msgObj)

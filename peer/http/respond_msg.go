@@ -31,6 +31,10 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 		return errors.New("message not found:" + reflect.TypeOf(msg).Name())
 	}
 
+	if meta.ResponseCodec == nil {
+		return errors.New("ResponseCodec not found:" + reflect.TypeOf(msg).Name())
+	}
+
 	// 将消息编码为字节数组
 	var data interface{}
 	data, err := meta.ResponseCodec.Encode(msg)
@@ -39,6 +43,7 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 		return err
 	}
 
+	ses.resp.Header().Set("Content-Type", meta.ResponseCodec.MimeType()+";charset=UTF-8")
 	ses.resp.WriteHeader(http.StatusOK)
 	ses.resp.Write(data.([]byte))
 
