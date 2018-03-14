@@ -85,7 +85,7 @@ func (self *tcpConnector) connect(address string) {
 		if err != nil {
 
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
-				log.Errorf("#connect failed(%s) %v", self.NameOrAddress(), err.Error())
+				log.Errorf("#tcp.connect failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
 			if self.tryConnTimes == reportConnectFailedLimitTimes {
@@ -95,7 +95,7 @@ func (self *tcpConnector) connect(address string) {
 			// 没重连就退出
 			if self.ReconnectDuration() == 0 {
 
-				log.Debugf("#connectfailed(%s)@%d address: %s", self.Name(), ses.ID(), self.Address())
+				log.Debugf("#tcp.connect failed(%s)@%d address: %s", self.Name(), ses.ID(), self.Address())
 
 				self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnectError{}})
 				break
@@ -117,7 +117,7 @@ func (self *tcpConnector) connect(address string) {
 		self.tryConnTimes = 0
 
 		if log.IsDebugEnabled() {
-			log.Debugf("#connected(%s)@%d", self.Name(), ses.ID())
+			log.Debugf("#tcp.connected(%s)@%d", self.Name(), ses.ID())
 		}
 
 		self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})

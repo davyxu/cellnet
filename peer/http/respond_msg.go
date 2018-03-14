@@ -17,7 +17,7 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 
 	msg := self.Msg
 
-	log.Debugf("#recv(%s) http.%s %s | [%d] Message(%s) %s",
+	log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,

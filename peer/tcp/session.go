@@ -2,8 +2,8 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc/msglog"
 	"net"
 	"sync"
 )
@@ -58,7 +58,7 @@ func (self *tcpSession) recvLoop() {
 		if err != nil {
 
 			if log.IsDebugEnabled() {
-				log.Debugf("#closed(%s)@%d | Reason: %s", self.pInterface.(cellnet.PeerProperty).Name(), self.ID(), err.Error())
+				log.Debugf("#tcp.closed(%s)@%d | Reason: %s", self.pInterface.(cellnet.PeerProperty).Name(), self.ID(), err.Error())
 			}
 
 			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{
@@ -67,7 +67,7 @@ func (self *tcpSession) recvLoop() {
 			break
 		}
 
-		msglog.WriteRecvLogger(self, msg)
+		msglog.WriteRecvLogger(log, "tcp", self, msg)
 
 		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
@@ -86,7 +86,7 @@ func (self *tcpSession) sendLoop() {
 			break
 		}
 
-		msglog.WriteSendLogger(self, msg)
+		msglog.WriteSendLogger(log, "tcp", self, msg)
 
 		// TODO SendMsgEvent并不是很有意义
 		self.SendMessage(&cellnet.SendMsgEvent{self, msg})

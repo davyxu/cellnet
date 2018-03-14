@@ -24,9 +24,7 @@ func ReadConsole(callback func(string)) {
 			break
 		}
 
-		text = strings.TrimRight(text, "\r\n ")
-
-		text = strings.TrimLeft(text, " ")
+		text = strings.TrimSpace(text)
 
 		callback(text)
 

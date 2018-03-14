@@ -2,6 +2,7 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/rpc"
 	"io"
@@ -19,7 +20,11 @@ func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err erro
 		return nil, nil
 	}
 
-	return RecvLTVPacket(reader)
+	msg, err = RecvLTVPacket(reader)
+
+	msglog.WriteRecvLogger(log, "udp", ses, msg)
+
+	return
 }
 
 func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {

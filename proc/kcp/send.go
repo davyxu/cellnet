@@ -2,6 +2,7 @@ package kcp
 
 import (
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/util"
 )
@@ -25,6 +26,8 @@ func (self *kcpContext) Write(p []byte) (n int, err error) {
 }
 
 func (ctx *kcpContext) sendMessage(msg interface{}) error {
+
+	msglog.WriteSendLogger(log, "kcp", ctx.ses, msg)
 
 	// 将用户数据转换为字节数组和消息ID
 	data, meta, err := codec.EncodeMessage(msg)

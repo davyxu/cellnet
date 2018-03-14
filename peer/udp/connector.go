@@ -38,7 +38,7 @@ func (self *udpConnector) connect() {
 	self.conn, err = net.DialUDP("udp", nil, self.remoteAddr)
 	if err != nil {
 
-		log.Errorf("#connect failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#udp.connect failed(%s) %v", self.NameOrAddress(), err.Error())
 		return
 	}
 
@@ -58,7 +58,7 @@ func (self *udpConnector) connect() {
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
 
-			log.Errorln("disconnected:", remoteAddr.String())
+			log.Errorf("#udp.recv failed:", remoteAddr.String())
 			break
 		}
 

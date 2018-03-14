@@ -30,7 +30,7 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#tcp.listen failed(%s) %v", self.NameOrAddress(), err.Error())
 
 		self.SetRunning(false)
 
@@ -39,7 +39,7 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	self.listener = ln
 
-	log.Infof("#listen(%s) %s", self.Name(), self.Address())
+	log.Infof("#tcp.listen(%s) %s", self.Name(), self.Address())
 
 	go self.accept()
 
@@ -60,7 +60,7 @@ func (self *tcpAcceptor) accept() {
 
 			// 调试状态时, 才打出accept的具体错误
 			if log.IsDebugEnabled() {
-				log.Errorf("#accept failed(%s) %v", self.NameOrAddress(), err.Error())
+				log.Errorf("#tcp.accept failed(%s) %v", self.NameOrAddress(), err.Error())
 			}
 
 			break
@@ -86,7 +86,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 	}).Start()
 
 	if log.IsDebugEnabled() {
-		log.Debugf("#accepted(%s)@%d", self.Name(), ses.ID())
+		log.Debugf("#tcp.accepted(%s)@%d", self.Name(), ses.ID())
 	}
 
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})

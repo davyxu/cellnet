@@ -3,8 +3,8 @@ package rpc
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc/msglog"
 )
 
 type RemoteCallMsg interface {
@@ -84,6 +84,6 @@ func (self RPCHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cel
 }
 
 func init() {
-	msglog.BlockMessageLog("cellnet.RemoteCallREQ")
-	msglog.BlockMessageLog("cellnet.RemoteCallACK")
+	msglog.BlockMessageLog("rpc.RemoteCallREQ")
+	msglog.BlockMessageLog("rpc.RemoteCallACK")
 }

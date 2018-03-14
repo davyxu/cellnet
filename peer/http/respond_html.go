@@ -96,7 +96,7 @@ func (self *HTMLRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-	log.Debugf("#recv(%s) http.%s %s | [%d] HTML %s",
+	log.Debugf("#http.recv(%s) '%s' %s | [%d] HTML %s",
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,

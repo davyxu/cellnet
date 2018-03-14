@@ -2,6 +2,7 @@ package kcp
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
 )
@@ -35,6 +36,8 @@ func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err erro
 	}()
 
 	msg, err = ctx.RecvLTVPacket()
+
+	msglog.WriteRecvLogger(log, "kcp", ctx.ses, msg)
 
 	recvingData = false
 	return

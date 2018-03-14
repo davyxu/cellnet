@@ -3,7 +3,6 @@ package tcp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/comm"
 	"github.com/davyxu/cellnet/util"
 	"io"
 )
@@ -16,7 +15,7 @@ func SendLTVPacket(writer io.Writer, data interface{}) error {
 	var msgID int
 
 	switch m := data.(type) {
-	case comm.RawPacket: // 发裸包
+	case *cellnet.RawPacket: // 发裸包
 		msgData = m.MsgData
 		msgID = m.MsgID
 	default: // 发普通编码包

@@ -105,6 +105,7 @@ func (self *udpSession) recvLoop() {
 
 			self.RawClose(nil)
 		} else {
+
 			self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
 		}
 

@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-func Te2stHttp(t *testing.T) {
+func TestHttp(t *testing.T) {
 
 	p := peer.NewPeer("http.Acceptor")
 	pset := p.(cellnet.PropertySet)

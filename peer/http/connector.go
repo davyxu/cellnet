@@ -40,7 +40,7 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 	// 将消息编码为字节数组
 	data, err := meta.RequestCodec.Encode(raw)
 
-	log.Debugf("#send(%s) http.%s %s | Message(%s) %s",
+	log.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
 		self.Name(),
 		meta.Method,
 		meta.URL,
@@ -77,7 +77,7 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 
 	err = meta.ResponseCodec.Decode(body, msg)
 
-	log.Debugf("#recv(%s) http.%s %s | [%d] Message(%s) %s",
+	log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
 		self.Name(),
 		resp.Request.Method,
 		meta.URL,

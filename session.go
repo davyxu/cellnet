@@ -1,5 +1,33 @@
 package cellnet
 
+// 直接发送数据时，将*RawPacket作为Send参数
+type RawPacket struct {
+	MsgData []byte
+	MsgID   int
+}
+
+func (self *RawPacket) Message() interface{} {
+
+	// 获取消息元信息
+	meta := MessageMetaByID(self.MsgID)
+
+	// 消息没有注册
+	if meta == nil {
+		return struct{}{}
+	}
+
+	// 创建消息
+	msg := meta.NewType()
+
+	// 从字节数组转换为消息
+	err := meta.Codec.Decode(self.MsgData, msg)
+	if err != nil {
+		return struct{}{}
+	}
+
+	return msg
+}
+
 // 长连接
 type Session interface {
 

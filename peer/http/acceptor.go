@@ -21,7 +21,7 @@ var (
 
 func (self *httpAcceptor) Start() cellnet.Peer {
 
-	log.Infof("#listen(%s) %s", self.Name(), self.Address())
+	log.Infof("#http.listen(%s) %s", self.Name(), self.Address())
 
 	self.sv = &http.Server{Addr: self.Address(), Handler: self}
 
@@ -29,7 +29,7 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 		err := self.sv.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
+			log.Errorf("#http.listen failed(%s) %v", self.NameOrAddress(), err.Error())
 		}
 
 	}()
@@ -78,7 +78,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	if err != nil {
 
-		log.Warnf("#recv http.%s '%s' %s | [%d] File not found",
+		log.Warnf("#http.recv(%s) '%s' %s | [%d] File not found",
 			self.Name(),
 			req.Method,
 			req.URL.Path,
@@ -91,7 +91,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	}
 
 	if fileHandled {
-		log.Debugf("#recv(%s) http.%s %s | [%d] File",
+		log.Debugf("#http.recv(%s) '%s' %s | [%d] File",
 			self.Name(),
 			req.Method,
 			req.URL.Path,
@@ -99,14 +99,14 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	log.Warnf("#recv(%s) http.%s %s | Unhandled",
+	log.Warnf("#http.recv(%s) '%s' %s | Unhandled",
 		self.Name(),
 		req.Method,
 		req.URL.Path)
 
 	return
 OnError:
-	log.Errorf("#recv(%s) http.%s %s | [%d] %s",
+	log.Errorf("#http.recv(%s) '%s' %s | [%d] %s",
 		self.Name(),
 		req.Method,
 		req.URL.Path,
@@ -120,7 +120,7 @@ OnError:
 func (self *httpAcceptor) Stop() {
 
 	if err := self.sv.Shutdown(nil); err != nil {
-		log.Errorf("#stop failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#http.stop failed(%s) %v", self.NameOrAddress(), err.Error())
 	}
 }
 

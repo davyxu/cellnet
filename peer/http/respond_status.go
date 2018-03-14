@@ -10,7 +10,7 @@ func (self *StatusRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-	log.Debugf("#recv(%s) http.%s %s | [%d] Status",
+	log.Debugf("#http.recv(%s) '%s' %s | [%d] Status",
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,
