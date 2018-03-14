@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	httppeer "github.com/davyxu/cellnet/peer/http"
@@ -9,11 +10,13 @@ import (
 	"testing"
 )
 
+const pageAddress = "127.0.0.1:10087"
+
 func TestPrintPage(t *testing.T) {
 	p := peer.NewPeer("http.Acceptor")
 	pset := p.(cellnet.PropertySet)
 	pset.SetProperty("Name", "httpserver")
-	pset.SetProperty("Address", "127.0.0.1:8081")
+	pset.SetProperty("Address", "127.0.0.1:10087")
 	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
 
 		switch {
@@ -30,6 +33,8 @@ func TestPrintPage(t *testing.T) {
 
 	p.Start()
 
-	validPage(t, "http://127.0.0.1:8081", "<h1>Hello world</h1>")
+	validPage(t, fmt.Sprintf("http://%s", pageAddress), "<h1>Hello world</h1>")
+
+	p.Stop()
 
 }

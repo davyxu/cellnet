@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/proc/msglog"
 )
 
 type MessageProc struct {
@@ -27,12 +26,10 @@ func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 func init() {
 
 	msgProc := new(MessageProc)
-	msgLogger := new(msglog.LogHooker)
 
 	proc.RegisterEventProcessor("udp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
 
 		initor.SetEventProcessor(msgProc)
-		initor.SetEventHooker(msgLogger)
 		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
 
 	})

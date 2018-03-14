@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/proc/msglog"
 )
 
 const kcpTag = "kcp"
@@ -47,12 +46,9 @@ func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 }
 
 type udpEventHooker struct {
-	logger msglog.LogHooker
 }
 
 func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
-
-	self.logger.OnInboundEvent(inputEvent)
 
 	switch inputEvent.Message().(type) {
 	case *cellnet.SessionInit:
@@ -66,7 +62,7 @@ func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent
 
 func (self udpEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	return self.logger.OnOutboundEvent(inputEvent)
+	return inputEvent
 }
 
 func init() {

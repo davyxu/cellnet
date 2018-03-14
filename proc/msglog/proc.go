@@ -2,39 +2,14 @@ package msglog
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/comm"
 )
 
-type nameAddressGetter interface {
-	Name() string
-	Address() string
-}
+func WriteRecvLogger(ses cellnet.Session, msg interface{}) {
 
-type LogHooker struct {
-}
+	if log.IsDebugEnabled() && !IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 
-func (LogHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+		peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-	msg := inputEvent.Message()
-	ses := inputEvent.Session()
-
-	if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
-		return
-	}
-
-	peerInfo := ses.Peer().(nameAddressGetter)
-
-	switch msg := msg.(type) {
-	case *cellnet.SessionAccepted:
-		log.Debugf("#accepted(%s)@%d", peerInfo.Name(), ses.ID())
-	case *cellnet.SessionClosed:
-		log.Debugf("#closed(%s)@%d | Reason: %s", peerInfo.Name(), ses.ID(), msg.Error)
-	case *cellnet.SessionConnected:
-		log.Debugf("#connected(%s)@%d", peerInfo.Name(), ses.ID())
-	case *cellnet.SessionConnectError:
-		log.Debugf("#connectfailed(%s)@%d address: %s", peerInfo.Name(), ses.ID(), peerInfo.Address())
-	default:
 		log.Debugf("#recv(%s)@%d %s(%d) | %s",
 			peerInfo.Name(),
 			ses.ID(),
@@ -42,41 +17,20 @@ func (LogHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.E
 			cellnet.MessageToID(msg),
 			cellnet.MessageToString(msg))
 	}
-
-	return inputEvent
-}
-func (LogHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
-
-	msg := inputEvent.Message()
-	ses := inputEvent.Session()
-
-	if rawPkt, ok := msg.(comm.RawPacket); ok {
-		rawMsg, _, err := codec.DecodeMessage(rawPkt.MsgID, rawPkt.MsgData)
-		if err != nil {
-			log.Errorf("process msg log decode error: %s", err)
-			return
-		}
-
-		msg = rawMsg
-	}
-
-	WriteSendLogger(ses, msg)
-
-	return inputEvent
 }
 
 func WriteSendLogger(ses cellnet.Session, msg interface{}) {
 
-	if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
-		return
+	if log.IsDebugEnabled() && !IsBlockedMessageByID(cellnet.MessageToID(msg)) {
+
+		peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+		log.Debugf("#send(%s)@%d %s(%d) | %s",
+			peerInfo.Name(),
+			ses.ID(),
+			cellnet.MessageToName(msg),
+			cellnet.MessageToID(msg),
+			cellnet.MessageToString(msg))
 	}
 
-	peerInfo := ses.Peer().(nameAddressGetter)
-
-	log.Debugf("#send(%s)@%d %s(%d) | %s",
-		peerInfo.Name(),
-		ses.ID(),
-		cellnet.MessageToName(msg),
-		cellnet.MessageToID(msg),
-		cellnet.MessageToString(msg))
 }

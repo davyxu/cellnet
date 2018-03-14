@@ -11,6 +11,8 @@ import (
 type httpAcceptor struct {
 	peer.CorePeerProperty
 	peer.CoreProcessorBundle
+
+	sv *http.Server
 }
 
 var (
@@ -21,11 +23,15 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 	log.Infof("#listen(%s) %s", self.Name(), self.Address())
 
+	self.sv = &http.Server{Addr: self.Address(), Handler: self}
+
 	go func() {
-		err := http.ListenAndServe(self.Address(), self)
-		if err != nil {
+
+		err := self.sv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
 			log.Errorf("#listen failed(%s) %v", self.NameOrAddress(), err.Error())
 		}
+
 	}()
 
 	return self
@@ -113,6 +119,9 @@ OnError:
 // 停止侦听器
 func (self *httpAcceptor) Stop() {
 
+	if err := self.sv.Shutdown(nil); err != nil {
+		log.Errorf("#stop failed(%s) %v", self.NameOrAddress(), err.Error())
+	}
 }
 
 func (self *httpAcceptor) TypeName() string {

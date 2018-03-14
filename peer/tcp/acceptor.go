@@ -85,6 +85,10 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 		Start()
 	}).Start()
 
+	if log.IsDebugEnabled() {
+		log.Debugf("#accepted(%s)@%d", self.Name(), ses.ID())
+	}
+
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 }
 

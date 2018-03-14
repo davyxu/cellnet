@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	msgMetaByID sync.Map
+	blockedMsgByID sync.Map
 )
 
 func IsBlockedMessageByID(msgid int) bool {
 
-	_, ok := msgMetaByID.Load(msgid)
+	_, ok := blockedMsgByID.Load(msgid)
 
 	return ok
 }
@@ -28,7 +28,7 @@ func BlockMessageLog(msgName string) error {
 		return ErrMessageNotFound
 	}
 
-	msgMetaByID.Store(int(meta.ID), meta)
+	blockedMsgByID.Store(int(meta.ID), meta)
 
 	return nil
 }

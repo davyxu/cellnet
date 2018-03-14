@@ -136,12 +136,21 @@ func MessageToName(msg interface{}) string {
 		return ""
 	}
 
-	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
+	meta := MessageMetaByType(indirectType(msg))
 	if meta == nil {
 		return ""
 	}
 
 	return meta.TypeName()
+}
+
+func indirectType(msg interface{}) reflect.Type {
+	t := reflect.TypeOf(msg)
+	if t.Kind() == reflect.Ptr {
+		return t.Elem()
+	}
+
+	return t
 }
 
 func MessageToID(msg interface{}) int {
@@ -150,7 +159,9 @@ func MessageToID(msg interface{}) int {
 		return 0
 	}
 
-	meta := MessageMetaByType(reflect.TypeOf(msg).Elem())
+	reflect.TypeOf(msg)
+
+	meta := MessageMetaByType(indirectType(msg))
 	if meta == nil {
 		return 0
 	}

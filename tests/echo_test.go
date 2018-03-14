@@ -102,7 +102,7 @@ func echo_StartClient(echoContext *echoContext) {
 			echoContext.Tester.Done(1)
 
 		case *cellnet.SessionClosed:
-			fmt.Println("client error: ")
+			fmt.Println("client closed")
 		}
 	})
 
