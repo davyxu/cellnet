@@ -3,29 +3,39 @@ package peer
 import "github.com/davyxu/cellnet"
 
 type CorePeerProperty struct {
-	CorePropertySet
+	name  string
+	queue cellnet.EventQueue
+	addr  string
 }
 
 // 获取通讯端的名称
-func (self *CorePeerProperty) Name() (ret string) {
-	self.GetProperty("Name", &ret)
-	return
+func (self *CorePeerProperty) Name() string {
+	return self.name
 }
 
 // 获取队列
-func (self *CorePeerProperty) Queue() (ret cellnet.EventQueue) {
-	self.GetProperty("Queue", &ret)
-	return
+func (self *CorePeerProperty) Queue() cellnet.EventQueue {
+	return self.queue
 }
-func (self *CorePeerProperty) Address() (ret string) {
-	self.GetProperty("Address", &ret)
-	return
+func (self *CorePeerProperty) Address() string {
+
+	return self.addr
+}
+
+func (self *CorePeerProperty) SetName(v string) {
+	self.name = v
+}
+func (self *CorePeerProperty) SetQueue(v cellnet.EventQueue) {
+	self.queue = v
+}
+func (self *CorePeerProperty) SetAddress(v string) {
+	self.addr = v
 }
 
 func (self *CorePeerProperty) NameOrAddress() string {
-	if name := self.Name(); name != "" {
+	if name := self.name; name != "" {
 		return name
 	}
 
-	return self.Address()
+	return self.addr
 }

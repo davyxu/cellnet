@@ -12,8 +12,9 @@ const MaxUDPRecvBuffer = 2048
 type udpAcceptor struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
+	peer.CoreContextSet
 	peer.CoreRunningTag
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
 
 	localAddr *net.UDPAddr
 

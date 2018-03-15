@@ -35,9 +35,9 @@ type DataWriter interface {
 
 // Socket会话
 type udpSession struct {
-	peer.CorePropertySet
+	peer.CoreContextSet
 	peer.CoreSessionIdentify
-	*peer.CoreProcessorBundle
+	*peer.CoreProcBundle
 
 	pInterface cellnet.Peer
 
@@ -269,8 +269,8 @@ func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, p cellnet.Peer, endNoti
 		exitSignal:  make(chan error),
 		recvChan:    make(chan []byte, RecvBufferLen),
 		pInterface:  p,
-		CoreProcessorBundle: p.(interface {
-			GetBundle() *peer.CoreProcessorBundle
+		CoreProcBundle: p.(interface {
+			GetBundle() *peer.CoreProcBundle
 		}).GetBundle(),
 	}
 

@@ -13,10 +13,9 @@ import (
 const pageAddress = "127.0.0.1:10087"
 
 func TestPrintPage(t *testing.T) {
-	p := peer.NewPeer("http.Acceptor")
-	pset := p.(cellnet.PropertySet)
-	pset.SetProperty("Name", "httpserver")
-	pset.SetProperty("Address", "127.0.0.1:10087")
+
+	p := peer.NewGenericPeer("http.Acceptor", "httpserver", pageAddress, nil)
+
 	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
 
 		switch {

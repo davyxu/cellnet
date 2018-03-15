@@ -20,11 +20,7 @@ var rpc_Acceptor cellnet.Peer
 func rpc_StartServer() {
 	queue := cellnet.NewEventQueue()
 
-	rpc_Acceptor = peer.NewPeer("tcp.Acceptor")
-	pset := rpc_Acceptor.(cellnet.PropertySet)
-	pset.SetProperty("Address", syncRPC_Address)
-	pset.SetProperty("Name", "server")
-	pset.SetProperty("Queue", queue)
+	rpc_Acceptor = peer.NewGenericPeer("tcp.Acceptor", "server", syncRPC_Address, queue)
 
 	proc.BindProcessor(rpc_Acceptor, "tcp.ltv", func(ev cellnet.Event) {
 		switch msg := ev.Message().(type) {
@@ -104,13 +100,10 @@ func asyncRPC_OnClientEvent(ev cellnet.Event) {
 }
 
 func rpc_StartClient(eventFunc func(event cellnet.Event)) {
+
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewPeer("tcp.Connector")
-	pset := p.(cellnet.PropertySet)
-	pset.SetProperty("Address", syncRPC_Address)
-	pset.SetProperty("Name", "client")
-	pset.SetProperty("Queue", queue)
+	p := peer.NewGenericPeer("tcp.Connector", "client", syncRPC_Address, queue)
 
 	proc.BindProcessor(p, "tcp.ltv", eventFunc)
 

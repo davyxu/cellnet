@@ -81,7 +81,7 @@ func RegisterMessageMeta(meta *MessageMeta) {
 	}
 
 	if _, ok := metaByFullName[meta.FullName()]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by fullname: %d", meta.FullName()))
+		panic(fmt.Sprintf("Duplicate message meta register by fullname: %s", meta.FullName()))
 	} else {
 		metaByFullName[meta.FullName()] = meta
 	}

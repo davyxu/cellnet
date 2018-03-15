@@ -1,7 +1,6 @@
 package http
 
 import (
-	"github.com/davyxu/cellnet"
 	"net/http"
 	"net/url"
 	"path"
@@ -9,19 +8,18 @@ import (
 	"strings"
 )
 
-func (self *httpAcceptor) GetDir(set cellnet.PropertySet) http.Dir {
+func (self *httpAcceptor) SetFileServe(dir string, root string) {
 
-	var (
-		httpDir  string
-		httpRoot string
-	)
-	set.GetProperty("HttpDir", &httpDir)
-	set.GetProperty("HttpRoot", &httpRoot)
+	self.httpDir = dir
+	self.httpRoot = root
+}
 
-	if filepath.IsAbs(httpDir) {
-		return http.Dir(httpDir)
+func (self *httpAcceptor) GetDir() http.Dir {
+
+	if filepath.IsAbs(self.httpDir) {
+		return http.Dir(self.httpDir)
 	} else {
-		return http.Dir(filepath.Join(httpRoot, httpDir))
+		return http.Dir(filepath.Join(self.httpRoot, self.httpDir))
 	}
 
 	//workDir, _ := os.Getwd()
@@ -82,7 +80,7 @@ func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, 
 
 func (self *httpAcceptor) ServeFileWithDir(res http.ResponseWriter, req *http.Request) (msg interface{}, err error, handled bool) {
 
-	dir := self.GetDir(&self.CorePropertySet)
+	dir := self.GetDir()
 
 	if dir == "" {
 		log.Warnln("peer's 'HttpDir' 'HttpRoot' property not set")

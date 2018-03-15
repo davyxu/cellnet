@@ -11,14 +11,17 @@ import (
 type tcpConnector struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
+	peer.CoreContextSet
 	peer.CoreRunningTag
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
 
 	defaultSes cellnet.Session
 
 	tryConnTimes int // 尝试连接次数
 
 	endSignal sync.WaitGroup
+
+	reconDur time.Duration
 }
 
 func (self *tcpConnector) Start() cellnet.Peer {
@@ -58,9 +61,13 @@ func (self *tcpConnector) Stop() {
 
 }
 
-func (self *tcpConnector) ReconnectDuration() (ret time.Duration) {
-	self.GetProperty("ReconnectDuration", &ret)
-	return
+func (self *tcpConnector) ReconnectDuration() time.Duration {
+
+	return self.reconDur
+}
+
+func (self *tcpConnector) SetReconnectDuration(v time.Duration) {
+	self.reconDur = v
 }
 
 const reportConnectFailedLimitTimes = 3

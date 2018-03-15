@@ -10,9 +10,9 @@ import (
 
 // Socket会话
 type tcpSession struct {
-	peer.CorePropertySet
+	peer.CoreContextSet
 	peer.CoreSessionIdentify
-	*peer.CoreProcessorBundle
+	*peer.CoreProcBundle
 
 	pInterface cellnet.Peer
 
@@ -158,8 +158,8 @@ func newTCPSession(conn net.Conn, p cellnet.Peer, endNotify func()) cellnet.Sess
 		endNotify:  endNotify,
 		sendChan:   make(chan interface{}, SendQueueLen),
 		pInterface: p,
-		CoreProcessorBundle: p.(interface {
-			GetBundle() *peer.CoreProcessorBundle
+		CoreProcBundle: p.(interface {
+			GetBundle() *peer.CoreProcBundle
 		}).GetBundle(),
 	}
 

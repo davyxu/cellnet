@@ -10,16 +10,13 @@ import (
 
 func main() {
 	queue := cellnet.NewEventQueue()
-	peerIns := peer.NewPeer("http.Acceptor")
-	pset := peerIns.(cellnet.PropertySet)
-	pset.SetProperty("Address", ":9001")
-	pset.SetProperty("Name", "httpfile")
-	pset.SetProperty("HttpDir", ".")
-	pset.SetProperty("HttpRoot", ".")
 
-	proc.BindProcessor(peerIns, "httpfile", nil)
+	p := peer.NewGenericPeer("http.Acceptor", "httpfile", ":9001", nil).(cellnet.HTTPAcceptor)
+	p.SetFileServe(".", ".")
 
-	peerIns.Start()
+	proc.BindProcessor(p, "httpfile", nil)
+
+	p.Start()
 	queue.StartLoop()
 
 	queue.Wait()

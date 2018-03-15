@@ -34,7 +34,7 @@ func init() {
 
 	msgProc := new(MessageProc)
 
-	proc.RegisterEventProcessor("udp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("udp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
 
 		initor.SetEventProcessor(msgProc)
 		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))

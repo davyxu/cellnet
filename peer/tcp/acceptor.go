@@ -10,8 +10,9 @@ import (
 type tcpAcceptor struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
+	peer.CoreContextSet
 	peer.CoreRunningTag
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
 
 	// 保存侦听器
 	listener net.Listener

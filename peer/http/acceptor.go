@@ -4,15 +4,26 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"html/template"
 	"net/http"
 	"reflect"
 )
 
 type httpAcceptor struct {
 	peer.CorePeerProperty
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
+	peer.CoreContextSet
 
 	sv *http.Server
+
+	httpDir  string
+	httpRoot string
+
+	templateDir   string
+	delimsLeft    string
+	delimsRight   string
+	templateExts  []string
+	templateFuncs []template.FuncMap
 }
 
 var (

@@ -18,45 +18,49 @@ func getExt(s string) string {
 	return "." + strings.Join(strings.Split(s, ".")[1:], ".")
 }
 
-func compile(pset cellnet.PropertySet) *template.Template {
+func (self *httpAcceptor) SetTemplateDir(dir string) {
 
-	var (
-		templateDir   string
-		delimsLeft    string
-		delimsRight   string
-		templateExts  []string
-		templateFuncs []template.FuncMap
-	)
+	self.templateDir = dir
+}
 
-	pset.GetProperty("TemplateDir", &templateDir)
-	pset.GetProperty("TemplateExts", &templateExts)
-	pset.GetProperty("TemplateFuncs", &templateFuncs)
-	pset.GetProperty("DelimsLeft", &delimsLeft)
-	pset.GetProperty("DelimsRight", &delimsRight)
+func (self *httpAcceptor) SetTemplateDelims(delimsLeft, delimsRight string) {
+	self.delimsLeft = delimsLeft
+	self.delimsRight = delimsRight
+}
 
-	if templateDir == "" {
-		templateDir = "."
+func (self *httpAcceptor) SetTemplateExtensions(exts []string) {
+	self.templateExts = exts
+}
+
+func (self *httpAcceptor) SetTemplateFunc(f []template.FuncMap) {
+	self.templateFuncs = f
+}
+
+func (self *httpAcceptor) Compile() *template.Template {
+
+	if self.templateDir == "" {
+		self.templateDir = "."
 	}
 
-	if len(templateExts) == 0 {
-		templateExts = []string{".tpl", ".html"}
+	if len(self.templateExts) == 0 {
+		self.templateExts = []string{".tpl", ".html"}
 	}
 
-	t := template.New(templateDir)
+	t := template.New(self.templateDir)
 
-	t.Delims(delimsLeft, delimsRight)
+	t.Delims(self.delimsLeft, self.delimsRight)
 	// parse an initial template in case we don't have any
 	//template.Must(t.Parse("Martini"))
 
-	filepath.Walk(templateDir, func(path string, info os.FileInfo, err error) error {
-		r, err := filepath.Rel(templateDir, path)
+	filepath.Walk(self.templateDir, func(path string, info os.FileInfo, err error) error {
+		r, err := filepath.Rel(self.templateDir, path)
 		if err != nil {
 			return err
 		}
 
 		ext := getExt(r)
 
-		for _, extension := range templateExts {
+		for _, extension := range self.templateExts {
 			if ext == extension {
 
 				buf, err := ioutil.ReadFile(path)
@@ -68,7 +72,7 @@ func compile(pset cellnet.PropertySet) *template.Template {
 				tmpl := t.New(filepath.ToSlash(name))
 
 				// add our funcmaps
-				for _, funcs := range templateFuncs {
+				for _, funcs := range self.templateFuncs {
 					tmpl.Funcs(funcs)
 				}
 

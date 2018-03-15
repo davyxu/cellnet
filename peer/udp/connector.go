@@ -9,8 +9,9 @@ import (
 type udpConnector struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
+	peer.CoreContextSet
 	peer.CoreRunningTag
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
 
 	remoteAddr *net.UDPAddr
 	conn       *net.UDPConn

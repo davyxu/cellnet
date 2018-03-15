@@ -1,6 +1,6 @@
 package cellnet
 
-// 端, 可通过接口查询获得更多接口支持,如PeerProperty,PropertySet, SessionAccessor
+// 端, 可通过接口查询获得更多接口支持,如PeerProperty,ContextSet, SessionAccessor
 type Peer interface {
 	// 开启端，传入地址
 	Start() Peer
@@ -12,20 +12,28 @@ type Peer interface {
 	TypeName() string
 }
 
-// Peer属性,基于PropertySet
+// Peer基础属性
 type PeerProperty interface {
-	Name() (ret string)
-	Queue() (ret EventQueue)
-	Address() (ret string)
+	Name() string
+
+	Queue() EventQueue
+
+	Address() string
+
+	SetName(v string)
+
+	SetQueue(v EventQueue)
+
+	SetAddress(v string)
 }
 
 // 设置和获取预制属性,自定义属性
-type PropertySet interface {
-	GetProperty(key, valuePtr interface{}) bool
+type ContextSet interface {
+	GetContext(key, valuePtr interface{}) bool
 
-	SetProperty(key interface{}, v interface{})
+	SetContext(key interface{}, v interface{})
 
-	RawGetProperty(key interface{}) (interface{}, bool)
+	RawGetContext(key interface{}) (interface{}, bool)
 }
 
 // 会话访问

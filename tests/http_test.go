@@ -19,12 +19,11 @@ import (
 	"time"
 )
 
+const httpTestAddr = "127.0.0.1:8081"
+
 func TestHttp(t *testing.T) {
 
-	p := peer.NewPeer("http.Acceptor")
-	pset := p.(cellnet.PropertySet)
-	pset.SetProperty("Name", "httpserver")
-	pset.SetProperty("Address", "127.0.0.1:8081")
+	p := peer.NewGenericPeer("http.Acceptor", "httpserver", httpTestAddr, nil)
 
 	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
 
@@ -57,14 +56,10 @@ func TestHttp(t *testing.T) {
 }
 
 func requestThenValid(t *testing.T, req, expectACK interface{}) {
-	peerIns := peer.NewPeer("http.Connector")
-	pset := peerIns.(cellnet.PropertySet)
-	pset.SetProperty("Name", "httpclient")
-	pset.SetProperty("Address", "127.0.0.1:8081")
 
-	requestor := peerIns.(httppeer.HttpRequestor)
+	p := peer.NewGenericPeer("http.Connector", "httpclient", httpTestAddr, nil).(cellnet.HTTPConnector)
 
-	ack, err := requestor.Request("GET", req)
+	ack, err := p.Request("GET", req)
 
 	if err != nil {
 		t.Error(err)

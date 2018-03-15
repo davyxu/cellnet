@@ -62,7 +62,7 @@ func init() {
 	msgProc := new(MessageProc)
 	msgLogger := new(rpcEventHooker)
 
-	proc.RegisterEventProcessor("tcp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("tcp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
 
 		initor.SetEventProcessor(msgProc)
 		initor.SetEventHooker(msgLogger)

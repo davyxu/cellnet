@@ -26,3 +26,13 @@ func NewPeer(peerType string) cellnet.Peer {
 
 	return peerCreator()
 }
+
+func NewGenericPeer(peerType, name, addr string, q cellnet.EventQueue) cellnet.GenericPeer {
+
+	p := NewPeer(peerType)
+	gp := p.(cellnet.GenericPeer)
+	gp.SetName(name)
+	gp.SetAddress(addr)
+	gp.SetQueue(q)
+	return gp
+}

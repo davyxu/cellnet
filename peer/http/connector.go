@@ -11,13 +11,10 @@ import (
 	"reflect"
 )
 
-type HttpRequestor interface {
-	Request(method string, raw interface{}) (interface{}, error)
-}
-
 type httpConnector struct {
 	peer.CorePeerProperty
-	peer.CoreProcessorBundle
+	peer.CoreProcBundle
+	peer.CoreContextSet
 }
 
 func (self *httpConnector) Start() cellnet.Peer {

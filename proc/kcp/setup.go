@@ -10,7 +10,7 @@ import (
 const kcpTag = "kcp"
 
 func mustKCPContext(ses cellnet.Session) (ctx *kcpContext) {
-	if ses.(cellnet.PropertySet).GetProperty(kcpTag, &ctx) {
+	if ses.(cellnet.ContextSet).GetContext(kcpTag, &ctx) {
 		return
 	} else {
 		panic("invalid kcp context")
@@ -55,7 +55,7 @@ func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent
 
 	switch inputEvent.Message().(type) {
 	case *cellnet.SessionInit:
-		inputEvent.Session().(cellnet.PropertySet).SetProperty(kcpTag, newContext(inputEvent.Session()))
+		inputEvent.Session().(cellnet.ContextSet).SetContext(kcpTag, newContext(inputEvent.Session()))
 	case *cellnet.SessionClosed:
 		mustKCPContext(inputEvent.Session()).Close()
 	}
@@ -73,7 +73,7 @@ func init() {
 	msgProc := new(MessageProc)
 	msgHooker := new(udpEventHooker)
 
-	proc.RegisterEventProcessor("udp.kcp.ltv", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("udp.kcp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
 
 		initor.SetEventProcessor(msgProc)
 		initor.SetEventHooker(msgHooker)

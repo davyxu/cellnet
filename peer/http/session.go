@@ -20,8 +20,8 @@ var (
 )
 
 type httpSession struct {
-	peer.CorePropertySet
-	*peer.CoreProcessorBundle
+	peer.CoreContextSet
+	*peer.CoreProcBundle
 	req  *http.Request
 	resp http.ResponseWriter
 
@@ -77,15 +77,13 @@ func (self *httpSession) Send(raw interface{}) {
 
 }
 
-func newHttpSession(peerIns cellnet.Peer, req *http.Request, response http.ResponseWriter) *httpSession {
+func newHttpSession(acc *httpAcceptor, req *http.Request, response http.ResponseWriter) *httpSession {
 
 	return &httpSession{
-		req:           req,
-		resp:          response,
-		peerInterface: peerIns,
-		t:             compile(peerIns.(cellnet.PropertySet)),
-		CoreProcessorBundle: peerIns.(interface {
-			GetBundle() *peer.CoreProcessorBundle
-		}).GetBundle(),
+		req:            req,
+		resp:           response,
+		peerInterface:  acc,
+		t:              acc.Compile(),
+		CoreProcBundle: acc.GetBundle(),
 	}
 }

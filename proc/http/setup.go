@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-	proc.RegisterEventProcessor("http", func(initor proc.ProcessorBundleInitor, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("http", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
 		initor.SetEventHandler(userHandler)
 	})
 

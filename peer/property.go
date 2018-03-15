@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type property struct {
+type ctx struct {
 	key   interface{}
 	value interface{}
 }
 
-type CorePropertySet struct {
-	properties      []property
-	propertiesGuard sync.RWMutex
+type CoreContextSet struct {
+	ctxes      []ctx
+	ctxesGuard sync.RWMutex
 }
 
-func (self *CorePropertySet) GetProperty(key, valuePtr interface{}) bool {
+func (self *CoreContextSet) GetContext(key, valuePtr interface{}) bool {
 
-	pv, ok := self.RawGetProperty(key)
+	pv, ok := self.RawGetContext(key)
 	if !ok {
 		return false
 	}
@@ -54,12 +54,12 @@ func (self *CorePropertySet) GetProperty(key, valuePtr interface{}) bool {
 	return true
 }
 
-func (self *CorePropertySet) RawGetProperty(key interface{}) (interface{}, bool) {
+func (self *CoreContextSet) RawGetContext(key interface{}) (interface{}, bool) {
 
-	self.propertiesGuard.RLock()
-	defer self.propertiesGuard.RUnlock()
+	self.ctxesGuard.RLock()
+	defer self.ctxesGuard.RUnlock()
 
-	for _, t := range self.properties {
+	for _, t := range self.ctxes {
 		if t.key == key {
 			return t.value, true
 		}
@@ -68,17 +68,17 @@ func (self *CorePropertySet) RawGetProperty(key interface{}) (interface{}, bool)
 	return nil, false
 }
 
-func (self *CorePropertySet) SetProperty(key, v interface{}) {
+func (self *CoreContextSet) SetContext(key, v interface{}) {
 
-	self.propertiesGuard.Lock()
-	defer self.propertiesGuard.Unlock()
+	self.ctxesGuard.Lock()
+	defer self.ctxesGuard.Unlock()
 
-	for i, t := range self.properties {
+	for i, t := range self.ctxes {
 		if t.key == key {
-			self.properties[i] = property{key, v}
+			self.ctxes[i] = ctx{key, v}
 			return
 		}
 	}
 
-	self.properties = append(self.properties, property{key, v})
+	self.ctxes = append(self.ctxes, ctx{key, v})
 }

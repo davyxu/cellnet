@@ -16,12 +16,9 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := peer.NewPeer("udp.Acceptor")
-	pset := acceptor.(cellnet.PropertySet)
-	pset.SetProperty("Address", udpSes_Address)
-	pset.SetProperty("Name", "server")
+	acc := peer.NewGenericPeer("udp.Acceptor", "server", udpSes_Address, nil)
 
-	proc.BindProcessor(acceptor, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessor(acc, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionClosed:
@@ -29,12 +26,9 @@ func TestUDPClientPositiveClose(t *testing.T) {
 		}
 	})
 
-	acceptor.Start()
+	acc.Start()
 
-	connector := peer.NewPeer("udp.Connector")
-	pset2 := connector.(cellnet.PropertySet)
-	pset2.SetProperty("Address", udpSes_Address)
-	pset2.SetProperty("Name", "client")
+	connector := peer.NewGenericPeer("udp.Connector", "client", udpSes_Address, nil)
 
 	proc.BindProcessor(connector, "udp.ltv", func(ev cellnet.Event) {
 
@@ -51,19 +45,16 @@ func TestUDPClientPositiveClose(t *testing.T) {
 	signal.WaitAndExpect("client not closed", 1)
 	signal.WaitAndExpect("server not recv closed", 2)
 
-	acceptor.Stop()
+	acc.Stop()
 }
 
 func TestUDPServerPositiveClose(t *testing.T) {
 
 	signal := util.NewSignalTester(t)
 
-	acceptor := peer.NewPeer("udp.Acceptor")
-	pset := acceptor.(cellnet.PropertySet)
-	pset.SetProperty("Address", udpSes_Address)
-	pset.SetProperty("Name", "server")
+	acc := peer.NewGenericPeer("udp.Acceptor", "server", udpSes_Address, nil)
 
-	proc.BindProcessor(acceptor, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessor(acc, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionAccepted:
@@ -72,12 +63,9 @@ func TestUDPServerPositiveClose(t *testing.T) {
 		}
 	})
 
-	acceptor.Start()
+	acc.Start()
 
-	connector := peer.NewPeer("udp.Connector")
-	pset2 := connector.(cellnet.PropertySet)
-	pset2.SetProperty("Address", udpSes_Address)
-	pset2.SetProperty("Name", "client")
+	connector := peer.NewGenericPeer("udp.Connector", "client", udpSes_Address, nil)
 
 	proc.BindProcessor(connector, "udp.ltv", func(ev cellnet.Event) {
 
@@ -97,5 +85,5 @@ func TestUDPServerPositiveClose(t *testing.T) {
 	signal.WaitAndExpect("server not accept", 1)
 	signal.WaitAndExpect("client not recv closed closed", 2)
 
-	acceptor.Stop()
+	acc.Stop()
 }

@@ -20,7 +20,7 @@ type echoContext struct {
 	Protocol  string
 	Processor string
 	Tester    *util.SignalTester
-	Acceptor  cellnet.Peer
+	Acceptor  cellnet.GenericPeer
 }
 
 var (
@@ -46,11 +46,7 @@ var (
 func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	context.Acceptor = peer.NewPeer(context.Protocol + ".Acceptor")
-	pset := context.Acceptor.(cellnet.PropertySet)
-	pset.SetProperty("Address", context.Address)
-	pset.SetProperty("Name", "server")
-	pset.SetProperty("Queue", queue)
+	context.Acceptor = peer.NewGenericPeer(context.Protocol+".Acceptor", "server", context.Address, queue)
 
 	proc.BindProcessor(context.Acceptor, context.Processor, func(ev cellnet.Event) {
 
@@ -80,11 +76,7 @@ func echo_StartServer(context *echoContext) {
 func echo_StartClient(echoContext *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewPeer(echoContext.Protocol + ".Connector")
-	pset := p.(cellnet.PropertySet)
-	pset.SetProperty("Address", echoContext.Address)
-	pset.SetProperty("Name", "client")
-	pset.SetProperty("Queue", queue)
+	p := peer.NewGenericPeer(echoContext.Protocol+".Connector", "client", echoContext.Address, queue)
 
 	proc.BindProcessor(p, echoContext.Processor, func(ev cellnet.Event) {
 

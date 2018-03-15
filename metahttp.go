@@ -86,13 +86,13 @@ func RegisterHttpMeta(meta *HttpMeta) {
 	}
 
 	if _, ok := metaByRequestType[reqPair]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by request type: %d", meta.URL))
+		panic(fmt.Sprintf("Duplicate message meta register by request type: %s", meta.URL))
 	} else {
 		metaByRequestType[reqPair] = meta
 	}
 
 	if _, ok := metaByResponseType[respPair]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by response type: %d", meta.URL))
+		panic(fmt.Sprintf("Duplicate message meta register by response type: %s", meta.URL))
 	} else {
 		metaByResponseType[respPair] = meta
 	}

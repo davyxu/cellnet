@@ -4,13 +4,13 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type ProcessorBundleInitor interface {
+type ProcessorBundleSetter interface {
 	SetEventProcessor(v cellnet.MessageProcessor)
 	SetEventHooker(v cellnet.EventHooker)
 	SetEventHandler(v cellnet.EventHandler)
 }
 
-type ProcessorBinder func(initor ProcessorBundleInitor, userHandler cellnet.UserMessageHandler)
+type ProcessorBinder func(initor ProcessorBundleSetter, userHandler cellnet.UserMessageHandler)
 
 var (
 	procByName = map[string]ProcessorBinder{}
@@ -25,7 +25,7 @@ func BindProcessor(peer cellnet.Peer, procName string, userHandler cellnet.UserM
 
 	if proc, ok := procByName[procName]; ok {
 
-		initor := peer.(ProcessorBundleInitor)
+		initor := peer.(ProcessorBundleSetter)
 
 		proc(initor, userHandler)
 	} else {

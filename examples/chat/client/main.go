@@ -36,11 +36,7 @@ func main() {
 
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewPeer("tcp.Connector")
-	pset := p.(cellnet.PropertySet)
-	pset.SetProperty("Address", "127.0.0.1:8801")
-	pset.SetProperty("Name", "client")
-	pset.SetProperty("Queue", queue)
+	p := peer.NewGenericPeer("tcp.Connector", "client", "127.0.0.1:8801", queue)
 
 	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
 		switch msg := ev.Message().(type) {
