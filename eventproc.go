@@ -5,8 +5,8 @@ type Event interface {
 	Message() interface{}
 }
 
-// 消息处理器
-type MessageProcessor interface {
+// 消息收发器
+type MessageTransmitter interface {
 	OnRecvMessage(ses Session) (raw interface{}, err error)
 	OnSendMessage(ses Session, raw interface{}) error
 }
@@ -18,30 +18,20 @@ type EventHooker interface {
 }
 
 // 用户端处理
-type EventHandler interface {
-	OnEvent(ev Event)
-}
+type EventCallback func(ev Event)
 
 // 直接回调用户回调
-type UserMessageHandler func(ev Event)
-
-func (self UserMessageHandler) OnEvent(ev Event) {
-
-	if self != nil {
-		self(ev)
-	}
-}
 
 // 放队列中回调
-type UserMessageHandlerQueued func(ev Event)
+func NewQueuedEventCallback(callback EventCallback) EventCallback {
 
-func (self UserMessageHandlerQueued) OnEvent(ev Event) {
+	return func(ev Event) {
+		if callback != nil {
+			SessionQueuedCall(ev.Session(), func() {
 
-	if self != nil {
-		SessionQueuedCall(ev.Session(), func() {
-
-			self(ev)
-		})
+				callback(ev)
+			})
+		}
 	}
 
 }

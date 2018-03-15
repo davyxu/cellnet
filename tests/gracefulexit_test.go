@@ -20,7 +20,7 @@ func recreateConn_StartServer() {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "server", recreateConn_Address, queue)
 
-	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *TestEchoACK:
@@ -47,7 +47,7 @@ func runConnClose() {
 
 	p := peer.NewGenericPeer("tcp.Connector", "client.ConnClose", recreateConn_Address, queue)
 
-	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
@@ -93,7 +93,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "server", recreateAcc_Address, queue)
 
-	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionAccepted:
@@ -139,7 +139,7 @@ func runMultiConnection() {
 
 		p := peer.NewGenericPeer("tcp.Connector", "client.ConnClose", recreateAcc_Address, nil)
 
-		proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
+		proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		})
 

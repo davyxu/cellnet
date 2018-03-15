@@ -17,10 +17,10 @@ func mustKCPContext(ses cellnet.Session) (ctx *kcpContext) {
 	}
 }
 
-type MessageProc struct {
+type KCPMessageTransmitter struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (KCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	ctx := mustKCPContext(ses)
 
@@ -43,15 +43,15 @@ func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err erro
 	return
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
+func (KCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	return mustKCPContext(ses).sendMessage(msg)
 }
 
-type udpEventHooker struct {
+type kcpEventHooker struct {
 }
 
-func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (self kcpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch inputEvent.Message().(type) {
 	case *cellnet.SessionInit:
@@ -63,21 +63,21 @@ func (self udpEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent
 	return inputEvent
 }
 
-func (self udpEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (self kcpEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	return inputEvent
 }
 
 func init() {
 
-	msgProc := new(MessageProc)
-	msgHooker := new(udpEventHooker)
+	transmitter := new(KCPMessageTransmitter)
+	hooker := new(kcpEventHooker)
 
-	proc.RegisterEventProcessor("udp.kcp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("udp.kcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		initor.SetEventProcessor(msgProc)
-		initor.SetEventHooker(msgHooker)
-		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
+		bundle.SetEventTransmitter(transmitter)
+		bundle.SetEventHooker(hooker)
+		bundle.SetEventCallback(cellnet.NewQueuedEventCallback(userCallback))
 
 	})
 }

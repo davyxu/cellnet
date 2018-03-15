@@ -4,30 +4,35 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type ProcessorBundleSetter interface {
-	SetEventProcessor(v cellnet.MessageProcessor)
+type ProcessorBundle interface {
+	SetEventTransmitter(v cellnet.MessageTransmitter)
+
 	SetEventHooker(v cellnet.EventHooker)
-	SetEventHandler(v cellnet.EventHandler)
+
+	SetEventCallback(v cellnet.EventCallback)
 }
 
-type ProcessorBinder func(initor ProcessorBundleSetter, userHandler cellnet.UserMessageHandler)
+type ProcessorBinder func(bundle ProcessorBundle, userCallback cellnet.EventCallback)
 
 var (
 	procByName = map[string]ProcessorBinder{}
 )
 
+// 注册事件处理器，内部及自定义收发流程时使用
 func RegisterEventProcessor(procName string, f ProcessorBinder) {
 
 	procByName[procName] = f
 }
 
-func BindProcessor(peer cellnet.Peer, procName string, userHandler cellnet.UserMessageHandler) {
+// 绑定固定回调处理器
+func BindProcessorHandler(peer cellnet.Peer, procName string, userCallback cellnet.EventCallback) {
 
 	if proc, ok := procByName[procName]; ok {
 
-		initor := peer.(ProcessorBundleSetter)
+		bundle := peer.(ProcessorBundle)
 
-		proc(initor, userHandler)
+		proc(bundle, userCallback)
+
 	} else {
 		panic("processor not found:" + procName)
 	}

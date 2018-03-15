@@ -51,5 +51,6 @@ type TCPConnector interface {
 type TCPAcceptor interface {
 	GenericPeer
 
+	// 访问会话
 	SessionAccessor
 }

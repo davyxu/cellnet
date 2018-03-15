@@ -25,7 +25,7 @@ func TestHttp(t *testing.T) {
 
 	p := peer.NewGenericPeer("http.Acceptor", "httpserver", httpTestAddr, nil)
 
-	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
+	proc.BindProcessorHandler(p, "http", func(raw cellnet.Event) {
 
 		switch raw.Message().(type) {
 		case *HttpEchoREQ:

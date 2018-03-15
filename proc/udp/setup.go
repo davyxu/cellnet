@@ -7,10 +7,10 @@ import (
 	"github.com/davyxu/cellnet/proc"
 )
 
-type MessageProc struct {
+type UDPMessageTransmitter struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (UDPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	data := ses.Raw().(udp.DataReader).ReadData()
 
@@ -21,7 +21,7 @@ func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err erro
 	return
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
+func (UDPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	writer := ses.(udp.DataWriter)
 
@@ -32,12 +32,12 @@ func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 func init() {
 
-	msgProc := new(MessageProc)
+	transmitter := new(UDPMessageTransmitter)
 
-	proc.RegisterEventProcessor("udp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("udp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		initor.SetEventProcessor(msgProc)
-		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
+		bundle.SetEventTransmitter(transmitter)
+		bundle.SetEventCallback(userCallback)
 
 	})
 }

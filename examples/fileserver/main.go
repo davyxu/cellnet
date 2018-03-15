@@ -14,7 +14,7 @@ func main() {
 	p := peer.NewGenericPeer("http.Acceptor", "httpfile", ":9001", nil).(cellnet.HTTPAcceptor)
 	p.SetFileServe(".", ".")
 
-	proc.BindProcessor(p, "httpfile", nil)
+	proc.BindProcessorHandler(p, "httpfile", nil)
 
 	p.Start()
 	queue.StartLoop()

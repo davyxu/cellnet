@@ -22,7 +22,7 @@ func rpc_StartServer() {
 
 	rpc_Acceptor = peer.NewGenericPeer("tcp.Acceptor", "server", syncRPC_Address, queue)
 
-	proc.BindProcessor(rpc_Acceptor, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(rpc_Acceptor, "tcp.ltv", func(ev cellnet.Event) {
 		switch msg := ev.Message().(type) {
 		case *TestEchoACK:
 			log.Debugln("server recv rpc ", *msg)
@@ -105,7 +105,7 @@ func rpc_StartClient(eventFunc func(event cellnet.Event)) {
 
 	p := peer.NewGenericPeer("tcp.Connector", "client", syncRPC_Address, queue)
 
-	proc.BindProcessor(p, "tcp.ltv", eventFunc)
+	proc.BindProcessorHandler(p, "tcp.ltv", eventFunc)
 
 	p.Start()
 

@@ -16,18 +16,21 @@ type Peer interface {
 type PeerProperty interface {
 	Name() string
 
-	Queue() EventQueue
-
 	Address() string
 
+	Queue() EventQueue
+
+	// 设置名称（可选）
 	SetName(v string)
 
-	SetQueue(v EventQueue)
-
+	// 设置Peer地址
 	SetAddress(v string)
+
+	// 设置Peer挂接队列（可选）
+	SetQueue(v EventQueue)
 }
 
-// 设置和获取预制属性,自定义属性
+// 设置和获取自定义属性
 type ContextSet interface {
 	GetContext(key, valuePtr interface{}) bool
 

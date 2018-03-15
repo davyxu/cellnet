@@ -8,10 +8,10 @@ import (
 	"io"
 )
 
-type MessageProc struct {
+type TCPMessageTransmitter struct {
 }
 
-func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	reader, ok := ses.Raw().(io.Reader)
 
@@ -22,12 +22,12 @@ func (MessageProc) OnRecvMessage(ses cellnet.Session) (msg interface{}, err erro
 
 	msg, err = RecvLTVPacket(reader)
 
-	msglog.WriteRecvLogger(log, "udp", ses, msg)
+	msglog.WriteRecvLogger(log, "tcp", ses, msg)
 
 	return
 }
 
-func (MessageProc) OnSendMessage(ses cellnet.Session, msg interface{}) error {
+func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
 	writer, ok := ses.Raw().(io.Writer)
 
@@ -59,14 +59,14 @@ func (self rpcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEven
 
 func init() {
 
-	msgProc := new(MessageProc)
-	msgLogger := new(rpcEventHooker)
+	transmitter := new(TCPMessageTransmitter)
+	hooker := new(rpcEventHooker)
 
-	proc.RegisterEventProcessor("tcp.ltv", func(initor proc.ProcessorBundleSetter, userHandler cellnet.UserMessageHandler) {
+	proc.RegisterEventProcessor("tcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		initor.SetEventProcessor(msgProc)
-		initor.SetEventHooker(msgLogger)
-		initor.SetEventHandler(cellnet.UserMessageHandlerQueued(userHandler))
+		bundle.SetEventTransmitter(transmitter)
+		bundle.SetEventHooker(hooker)
+		bundle.SetEventCallback(cellnet.NewQueuedEventCallback(userCallback))
 
 	})
 }

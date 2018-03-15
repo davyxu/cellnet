@@ -48,7 +48,7 @@ func echo_StartServer(context *echoContext) {
 
 	context.Acceptor = peer.NewGenericPeer(context.Protocol+".Acceptor", "server", context.Address, queue)
 
-	proc.BindProcessor(context.Acceptor, context.Processor, func(ev cellnet.Event) {
+	proc.BindProcessorHandler(context.Acceptor, context.Processor, func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
@@ -78,7 +78,7 @@ func echo_StartClient(echoContext *echoContext) {
 
 	p := peer.NewGenericPeer(echoContext.Protocol+".Connector", "client", echoContext.Address, queue)
 
-	proc.BindProcessor(p, echoContext.Processor, func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, echoContext.Processor, func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected:

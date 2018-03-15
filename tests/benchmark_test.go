@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/util"
 	"testing"
 )
 
@@ -13,17 +12,16 @@ func server() {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "server", "127.0.0.1:7701", queue)
 
-	proc.BindProcessor(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, "tcp.ltv", proc.GlobalDispatcher.OnEvent)
 
-		switch msg := ev.Message().(type) {
-		case *TestEchoACK:
+	proc.RegisterMessage(p, "tests.TestEchoACK", func(ev cellnet.Event) {
 
-			ev.Session().Send(&TestEchoACK{
-				Msg:   msg.Msg,
-				Value: msg.Value,
-			})
-		}
+		msg := ev.Message().(*TestEchoACK)
 
+		ev.Session().Send(&TestEchoACK{
+			Msg:   msg.Msg,
+			Value: msg.Value,
+		})
 	})
 
 	p.Start()
@@ -37,13 +35,15 @@ func client() {
 
 	p := peer.NewGenericPeer("tcp.Connector", "client", "127.0.0.1:7701", queue)
 
-	proc.BindProcessor(p, "tcp.ltv", func(event cellnet.Event) {})
+	proc.BindProcessorHandler(p, "tcp.ltv", func(event cellnet.Event) {})
 
 	p.Start()
 
 	queue.StartLoop()
 
-	util.SyncRecvEvent(p, func(ev cellnet.Event) {
+	rv := proc.NewSyncReceiver(p)
+
+	rv.Recv(func(ev cellnet.Event) {
 		msg := ev.Message().(*cellnet.SessionConnected)
 		msg = msg
 
@@ -52,9 +52,7 @@ func client() {
 			Value: 1234,
 		})
 
-	})
-
-	util.SyncRecvEvent(p, func(ev cellnet.Event) {
+	}).Recv(func(ev cellnet.Event) {
 
 		msg := ev.Message().(*TestEchoACK)
 

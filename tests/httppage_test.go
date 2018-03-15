@@ -16,7 +16,7 @@ func TestPrintPage(t *testing.T) {
 
 	p := peer.NewGenericPeer("http.Acceptor", "httpserver", pageAddress, nil)
 
-	proc.BindProcessor(p, "http", func(raw cellnet.Event) {
+	proc.BindProcessorHandler(p, "http", func(raw cellnet.Event) {
 
 		switch {
 		case raw.Session().(httppeer.RequestMatcher).Match("GET", "/"):

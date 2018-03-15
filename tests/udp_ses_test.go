@@ -18,7 +18,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 	acc := peer.NewGenericPeer("udp.Acceptor", "server", udpSes_Address, nil)
 
-	proc.BindProcessor(acc, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(acc, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionClosed:
@@ -30,7 +30,7 @@ func TestUDPClientPositiveClose(t *testing.T) {
 
 	connector := peer.NewGenericPeer("udp.Connector", "client", udpSes_Address, nil)
 
-	proc.BindProcessor(connector, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(connector, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
@@ -54,7 +54,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 	acc := peer.NewGenericPeer("udp.Acceptor", "server", udpSes_Address, nil)
 
-	proc.BindProcessor(acc, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(acc, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionAccepted:
@@ -67,7 +67,7 @@ func TestUDPServerPositiveClose(t *testing.T) {
 
 	connector := peer.NewGenericPeer("udp.Connector", "client", udpSes_Address, nil)
 
-	proc.BindProcessor(connector, "udp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(connector, "udp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:

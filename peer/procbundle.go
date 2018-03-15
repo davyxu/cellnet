@@ -10,33 +10,33 @@ type MessagePoster interface {
 }
 
 type CoreProcBundle struct {
-	proc    cellnet.MessageProcessor
-	hooker  cellnet.EventHooker
-	handler cellnet.EventHandler
+	transmit cellnet.MessageTransmitter
+	hooker   cellnet.EventHooker
+	callback cellnet.EventCallback
 }
 
 func (self *CoreProcBundle) GetBundle() *CoreProcBundle {
 	return self
 }
 
-func (self *CoreProcBundle) SetEventProcessor(v cellnet.MessageProcessor) {
-	self.proc = v
+func (self *CoreProcBundle) SetEventTransmitter(v cellnet.MessageTransmitter) {
+	self.transmit = v
 }
 
 func (self *CoreProcBundle) SetEventHooker(v cellnet.EventHooker) {
 	self.hooker = v
 }
 
-func (self *CoreProcBundle) SetEventHandler(v cellnet.EventHandler) {
-	self.handler = v
+func (self *CoreProcBundle) SetEventCallback(v cellnet.EventCallback) {
+	self.callback = v
 }
 
 var notHandled = errors.New("msg not handled")
 
 func (self *CoreProcBundle) ReadMessage(ses cellnet.Session) (msg interface{}, err error) {
 
-	if self.proc != nil {
-		return self.proc.OnRecvMessage(ses)
+	if self.transmit != nil {
+		return self.transmit.OnRecvMessage(ses)
 	}
 
 	return nil, notHandled
@@ -48,8 +48,8 @@ func (self *CoreProcBundle) SendMessage(ev cellnet.Event) {
 		ev = self.hooker.OnOutboundEvent(ev)
 	}
 
-	if self.proc != nil && ev != nil {
-		self.proc.OnSendMessage(ev.Session(), ev.Message())
+	if self.transmit != nil && ev != nil {
+		self.transmit.OnSendMessage(ev.Session(), ev.Message())
 	}
 }
 
@@ -59,7 +59,7 @@ func (self *CoreProcBundle) PostEvent(ev cellnet.Event) {
 		ev = self.hooker.OnInboundEvent(ev)
 	}
 
-	if self.handler != nil && ev != nil {
-		self.handler.OnEvent(ev)
+	if self.callback != nil && ev != nil {
+		self.callback(ev)
 	}
 }
