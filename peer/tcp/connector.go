@@ -139,7 +139,7 @@ func (self *tcpConnector) connect(address string) {
 		}
 
 		// 有重连就等待
-		time.Sleep(self.ReconnectDuration() * time.Second)
+		time.Sleep(self.ReconnectDuration())
 
 		// 继续连接
 		continue
