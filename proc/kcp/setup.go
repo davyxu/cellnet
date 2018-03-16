@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/util"
 )
 
 const kcpTag = "kcp"
@@ -35,7 +36,7 @@ func (KCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		}
 	}()
 
-	msg, err = ctx.RecvLTVPacket()
+	msg, err = util.RecvLTVPacket(ctx)
 
 	msglog.WriteRecvLogger(log, "kcp", ctx.ses, msg)
 
@@ -45,7 +46,11 @@ func (KCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 
 func (KCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) error {
 
-	return mustKCPContext(ses).sendMessage(msg)
+	ctx := mustKCPContext(ses)
+
+	msglog.WriteSendLogger(log, "kcp", ctx.ses, msg)
+
+	return util.SendLTVPacket(ctx, msg)
 }
 
 type kcpEventHooker struct {

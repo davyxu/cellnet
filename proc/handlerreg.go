@@ -7,16 +7,21 @@ import (
 )
 
 type MessageDispatcher struct {
-	handlerByType sync.Map
+	handlerByType      map[reflect.Type][]cellnet.EventCallback
+	handlerByTypeGuard sync.RWMutex
 }
 
 func (self *MessageDispatcher) OnEvent(ev cellnet.Event) {
 
 	msgType := reflect.TypeOf(ev.Message())
 
-	if handlers, ok := self.handlerByType.Load(msgType.Elem()); ok {
+	self.handlerByTypeGuard.RLock()
+	handlers, ok := self.handlerByType[msgType.Elem()]
+	self.handlerByTypeGuard.RUnlock()
 
-		for _, callback := range handlers.([]cellnet.EventCallback) {
+	if ok {
+
+		for _, callback := range handlers {
 
 			callback(ev)
 		}
@@ -24,30 +29,26 @@ func (self *MessageDispatcher) OnEvent(ev cellnet.Event) {
 	}
 }
 
-func (self *MessageDispatcher) RegisterMessage(peer cellnet.Peer, msgName string, userCallback cellnet.EventCallback) {
+func (self *MessageDispatcher) RegisterMessage(msgName string, userCallback cellnet.EventCallback) {
 	meta := cellnet.MessageMetaByFullName(msgName)
 	if meta == nil {
 		panic("message not found:" + msgName)
 	}
 
-	rawhandlers, _ := self.handlerByType.Load(meta.Type)
-
-	if rawhandlers != nil {
-		handlers := rawhandlers.([]cellnet.EventCallback)
-
-		handlers = append(handlers, userCallback)
-		self.handlerByType.Store(meta.Type, handlers)
-
-	} else {
-		self.handlerByType.Store(meta.Type, []cellnet.EventCallback{userCallback})
-	}
-
+	self.handlerByTypeGuard.Lock()
+	handlers, _ := self.handlerByType[meta.Type]
+	handlers = append(handlers, userCallback)
+	self.handlerByType[meta.Type] = handlers
+	self.handlerByTypeGuard.Unlock()
 }
 
-var (
-	GlobalDispatcher = new(MessageDispatcher)
-)
+func NewMessageDispatcher(peer cellnet.Peer, processorName string) *MessageDispatcher {
 
-func RegisterMessage(peer cellnet.Peer, msgName string, userHandler cellnet.EventCallback) {
-	GlobalDispatcher.RegisterMessage(peer, msgName, userHandler)
+	self := &MessageDispatcher{
+		handlerByType: make(map[reflect.Type][]cellnet.EventCallback),
+	}
+
+	BindProcessorHandler(peer, processorName, self.OnEvent)
+
+	return self
 }

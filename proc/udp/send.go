@@ -1,40 +1,33 @@
 package udp
 
 import (
+	"encoding/binary"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer/udp"
-	"github.com/davyxu/cellnet/util"
 )
 
 func SendLTVPacket(writer udp.DataWriter, msg interface{}) error {
 
 	// 将用户数据转换为字节数组和消息ID
-	data, meta, err := codec.EncodeMessage(msg)
+	msgData, meta, err := codec.EncodeMessage(msg)
 
 	if err != nil {
 		log.Errorf("send message encode error: %s", err)
 		return err
 	}
 
-	// 创建封包写入器
-	var pktWriter util.BinaryWriter
+	pkt := make([]byte, 2+2+len(msgData))
 
 	// 写入消息长度做验证
-	if err := pktWriter.WriteValue(uint16(len(data)) + 2 + 2); err != nil {
-		return err
-	}
+	binary.LittleEndian.PutUint16(pkt, uint16(2+2+len(msgData)))
 
-	// 写入消息ID
-	if err := pktWriter.WriteValue(uint16(meta.ID)); err != nil {
-		return err
-	}
+	// Type
+	binary.LittleEndian.PutUint16(pkt[2:], uint16(meta.ID))
 
-	// 写入序列化好的消息数据
-	if err := pktWriter.WriteValue(data); err != nil {
-		return err
-	}
+	// Value
+	copy(pkt[2+2:], msgData)
 
-	writer.WriteData(pktWriter.Raw())
+	writer.WriteData(pkt)
 
 	return nil
 }

@@ -46,6 +46,7 @@ func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, e
 
 	// 从字节数组转换为消息
 	err := meta.Codec.Decode(data, msg)
+
 	if err != nil {
 		return nil, meta, err
 	}

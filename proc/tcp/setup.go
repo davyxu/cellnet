@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/rpc"
+	"github.com/davyxu/cellnet/util"
 	"io"
 )
 
@@ -20,7 +21,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		return nil, nil
 	}
 
-	msg, err = RecvLTVPacket(reader)
+	msg, err = util.RecvLTVPacket(reader)
 
 	msglog.WriteRecvLogger(log, "tcp", ses, msg)
 
@@ -36,7 +37,7 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 		return nil
 	}
 
-	return SendLTVPacket(writer, msg)
+	return util.SendLTVPacket(writer, msg)
 }
 
 type rpcEventHooker struct {

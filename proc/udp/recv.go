@@ -1,35 +1,26 @@
 package udp
 
 import (
+	"encoding/binary"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/util"
 )
 
 const MTU = 1472
 
-func RecvLTVPacket(data []byte) (msg interface{}, err error) {
+func RecvLTVPacket(pktData []byte) (msg interface{}, err error) {
 
-	var pktReader util.BinaryReader
-	pktReader.Init(data)
-
-	// 读取数据大小，看是否完整
-	var datasize uint16
-	if err := pktReader.ReadValue(&datasize); err != nil {
-		return nil, err
-	}
+	// 用小端格式读取Size
+	datasize := binary.LittleEndian.Uint16(pktData)
 
 	// 出错，等待下次数据
-	if int(datasize) != len(data) || datasize > MTU {
+	if int(datasize) != len(pktData) || datasize > MTU {
 		return nil, nil
 	}
 
 	// 读取消息ID
-	var msgid uint16
-	if err := pktReader.ReadValue(&msgid); err != nil {
-		return nil, err
-	}
+	msgid := binary.LittleEndian.Uint16(pktData[2:])
 
-	msgData := pktReader.RemainBytes()
+	msgData := pktData[2+2:]
 
 	// 将字节数组和消息ID用户解出消息
 	msg, _, err = codec.DecodeMessage(int(msgid), msgData)

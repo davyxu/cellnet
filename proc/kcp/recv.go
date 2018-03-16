@@ -1,8 +1,6 @@
 package kcp
 
 import (
-	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/util"
 	"io"
 )
 
@@ -57,26 +55,4 @@ func (self *kcpContext) Read(b []byte) (n int, err error) {
 
 		<-self.readSignal
 	}
-}
-
-func (self *kcpContext) RecvLTVPacket() (msg interface{}, err error) {
-
-	pktReader, err := util.RecvVariableLengthPacket(self)
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
-
-	// 读取消息ID
-	var msgid uint16
-	if err = pktReader.ReadValue(&msgid); err != nil {
-		return
-	}
-
-	msgData := pktReader.RemainBytes()
-
-	// 将字节数组和消息ID用户解出消息
-	msg, _, err = codec.DecodeMessage(int(msgid), msgData)
-
-	return
 }
