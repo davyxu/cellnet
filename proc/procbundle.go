@@ -31,7 +31,7 @@ type MultiHooker []cellnet.EventHooker
 func (self MultiHooker) OnInboundEvent(input cellnet.Event) (output cellnet.Event) {
 
 	for _, h := range self {
-		h.OnInboundEvent(input)
+		input = h.OnInboundEvent(input)
 	}
 
 	return input
@@ -40,7 +40,7 @@ func (self MultiHooker) OnInboundEvent(input cellnet.Event) (output cellnet.Even
 func (self MultiHooker) OnOutboundEvent(input cellnet.Event) (output cellnet.Event) {
 
 	for _, h := range self {
-		h.OnOutboundEvent(input)
+		input = h.OnOutboundEvent(input)
 	}
 
 	return input
