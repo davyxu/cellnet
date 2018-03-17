@@ -19,19 +19,3 @@ type EventHooker interface {
 
 // 用户端处理
 type EventCallback func(ev Event)
-
-// 直接回调用户回调
-
-// 放队列中回调
-func NewQueuedEventCallback(callback EventCallback) EventCallback {
-
-	return func(ev Event) {
-		if callback != nil {
-			SessionQueuedCall(ev.Session(), func() {
-
-				callback(ev)
-			})
-		}
-	}
-
-}

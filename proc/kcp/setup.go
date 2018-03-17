@@ -82,7 +82,7 @@ func init() {
 
 		bundle.SetEventTransmitter(transmitter)
 		bundle.SetEventHooker(hooker)
-		bundle.SetEventCallback(cellnet.NewQueuedEventCallback(userCallback))
+		bundle.SetEventCallback(proc.NewQueuedEventCallback(userCallback))
 
 	})
 }

@@ -4,14 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-type ProcessorBundle interface {
-	SetEventTransmitter(v cellnet.MessageTransmitter)
-
-	SetEventHooker(v cellnet.EventHooker)
-
-	SetEventCallback(v cellnet.EventCallback)
-}
-
 type ProcessorBinder func(bundle ProcessorBundle, userCallback cellnet.EventCallback)
 
 var (
