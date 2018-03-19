@@ -7,8 +7,8 @@ import (
 
 func init() {
 
-	proc.RegisterEventProcessor("http", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
-		bundle.SetEventCallback(userCallback)
+	proc.RegisterProcessor("http", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+		bundle.SetCallback(userCallback)
 	})
 
 }

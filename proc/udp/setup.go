@@ -34,10 +34,10 @@ func init() {
 
 	transmitter := new(UDPMessageTransmitter)
 
-	proc.RegisterEventProcessor("udp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("udp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetEventTransmitter(transmitter)
-		bundle.SetEventCallback(userCallback)
+		bundle.SetTransmitter(transmitter)
+		bundle.SetCallback(userCallback)
 
 	})
 }

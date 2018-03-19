@@ -5,11 +5,11 @@ import (
 )
 
 type ProcessorBundle interface {
-	SetEventTransmitter(v cellnet.MessageTransmitter)
+	SetTransmitter(v cellnet.MessageTransmitter)
 
-	SetEventHooker(v cellnet.EventHooker)
+	SetHooker(v cellnet.EventHooker)
 
-	SetEventCallback(v cellnet.EventCallback)
+	SetCallback(v cellnet.EventCallback)
 }
 
 // 放队列中回调

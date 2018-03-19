@@ -45,6 +45,9 @@ type TCPConnector interface {
 
 	// 获取重连时间
 	ReconnectDuration() time.Duration
+
+	// 默认会话
+	Session() Session
 }
 
 // TCP接受器，具备会话访问

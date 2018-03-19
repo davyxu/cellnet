@@ -78,11 +78,11 @@ func init() {
 	transmitter := new(KCPMessageTransmitter)
 	hooker := new(kcpEventHooker)
 
-	proc.RegisterEventProcessor("udp.kcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("udp.kcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetEventTransmitter(transmitter)
-		bundle.SetEventHooker(hooker)
-		bundle.SetEventCallback(proc.NewQueuedEventCallback(userCallback))
+		bundle.SetTransmitter(transmitter)
+		bundle.SetHooker(hooker)
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 
 	})
 }

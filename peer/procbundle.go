@@ -19,15 +19,15 @@ func (self *CoreProcBundle) GetBundle() *CoreProcBundle {
 	return self
 }
 
-func (self *CoreProcBundle) SetEventTransmitter(v cellnet.MessageTransmitter) {
+func (self *CoreProcBundle) SetTransmitter(v cellnet.MessageTransmitter) {
 	self.transmit = v
 }
 
-func (self *CoreProcBundle) SetEventHooker(v cellnet.EventHooker) {
+func (self *CoreProcBundle) SetHooker(v cellnet.EventHooker) {
 	self.hooker = v
 }
 
-func (self *CoreProcBundle) SetEventCallback(v cellnet.EventCallback) {
+func (self *CoreProcBundle) SetCallback(v cellnet.EventCallback) {
 	self.callback = v
 }
 

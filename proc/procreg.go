@@ -11,7 +11,7 @@ var (
 )
 
 // 注册事件处理器，内部及自定义收发流程时使用
-func RegisterEventProcessor(procName string, f ProcessorBinder) {
+func RegisterProcessor(procName string, f ProcessorBinder) {
 
 	procByName[procName] = f
 }
