@@ -14,6 +14,10 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 
 	if log.IsDebugEnabled() {
 
+		if peeker, ok := msg.(PacketMessagePeeker); ok {
+			msg = peeker.Message()
+		}
+
 		if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
 			return
 		}

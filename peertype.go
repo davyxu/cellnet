@@ -57,3 +57,11 @@ type TCPAcceptor interface {
 	// 访问会话
 	SessionAccessor
 }
+
+// UDP连接器
+type UDPConnector interface {
+	GenericPeer
+
+	// 默认会话
+	Session() Session
+}

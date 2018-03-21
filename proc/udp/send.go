@@ -6,7 +6,9 @@ import (
 	"github.com/davyxu/cellnet/peer/udp"
 )
 
-func SendLTVPacket(writer udp.DataWriter, msg interface{}) error {
+const headerSize = 2 + 2
+
+func sendPacket(writer udp.DataWriter, msg interface{}) error {
 
 	// 将用户数据转换为字节数组和消息ID
 	msgData, meta, err := codec.EncodeMessage(msg)
@@ -16,18 +18,18 @@ func SendLTVPacket(writer udp.DataWriter, msg interface{}) error {
 		return err
 	}
 
-	pkt := make([]byte, 2+2+len(msgData))
+	pktData := make([]byte, headerSize+len(msgData))
 
 	// 写入消息长度做验证
-	binary.LittleEndian.PutUint16(pkt, uint16(2+2+len(msgData)))
+	binary.LittleEndian.PutUint16(pktData, uint16(headerSize+len(msgData)))
 
 	// Type
-	binary.LittleEndian.PutUint16(pkt[2:], uint16(meta.ID))
+	binary.LittleEndian.PutUint16(pktData[2:], uint16(meta.ID))
 
 	// Value
-	copy(pkt[2+2:], msgData)
+	copy(pktData[headerSize:], msgData)
 
-	writer.WriteData(pkt)
+	writer.WriteData(pktData)
 
 	return nil
 }

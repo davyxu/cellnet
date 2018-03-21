@@ -14,7 +14,7 @@ func (UDPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 
 	data := ses.Raw().(udp.DataReader).ReadData()
 
-	msg, err = RecvLTVPacket(data)
+	msg, err = recvPacket(data)
 
 	msglog.WriteRecvLogger(log, "udp", ses, msg)
 
@@ -27,7 +27,7 @@ func (UDPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 
 	msglog.WriteSendLogger(log, "udp", ses, msg)
 
-	return SendLTVPacket(writer, msg)
+	return sendPacket(writer, msg)
 }
 
 func init() {

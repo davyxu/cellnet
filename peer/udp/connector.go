@@ -15,6 +15,8 @@ type udpConnector struct {
 
 	remoteAddr *net.UDPAddr
 	conn       *net.UDPConn
+
+	defaultSes cellnet.Session
 }
 
 func (self *udpConnector) Start() cellnet.Peer {
@@ -33,6 +35,10 @@ func (self *udpConnector) Start() cellnet.Peer {
 	return self
 }
 
+func (self *udpConnector) Session() cellnet.Session {
+	return self.defaultSes
+}
+
 func (self *udpConnector) connect() {
 
 	var err error
@@ -45,21 +51,16 @@ func (self *udpConnector) connect() {
 
 	var running = true
 
-	ses := newUDPSession(nil, self.conn, self, func() {
-		running = false
-	})
-
-	ses.Start()
+	ses := newUDPSession(nil, self.conn, self)
+	self.defaultSes = ses
 
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
-	buff := make([]byte, 4096)
+	buff := make([]byte, MaxUDPRecvBuffer)
 	for running {
 
-		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
+		n, _, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
-
-			log.Errorf("#udp.recv failed:", remoteAddr.String())
 			break
 		}
 

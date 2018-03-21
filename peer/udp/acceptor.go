@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"net"
-	"sync"
 )
 
 const MaxUDPRecvBuffer = 2048
@@ -19,10 +18,6 @@ type udpAcceptor struct {
 	localAddr *net.UDPAddr
 
 	conn *net.UDPConn
-
-	sesByAddress sync.Map
-
-	pktPool sync.Pool
 }
 
 func (self *udpAcceptor) Start() cellnet.Peer {
@@ -55,69 +50,25 @@ func (self *udpAcceptor) accept() {
 
 	self.SetRunning(true)
 
-	var recentAddr addressPair
-	var recentSes *udpSession
-
 	for {
 
-		buff := self.pktPool.Get().([]byte)[:MaxUDPRecvBuffer]
+		buff := make([]byte, MaxUDPRecvBuffer)
 
 		n, remoteAddr, err := self.conn.ReadFromUDP(buff)
 		if err != nil {
 			break
 		}
 
-		addr := makeAddrKey(remoteAddr)
-
-		var ses *udpSession
-
-		if recentAddr == addr {
-
-			ses = recentSes
-
-		} else {
-
-			raw, ok := self.sesByAddress.Load(addr)
-
-			if ok {
-
-				ses = raw.(*udpSession)
-
-			} else {
-
-				ses = newUDPSession(remoteAddr, self.conn, self, func() {
-					self.removeAddress(addr)
-				})
-
-				ses.Start()
-
-				self.sesByAddress.Store(addr, ses)
-
-				self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
-			}
-
-			recentAddr = addr
-			recentSes = ses
-		}
-
-		// 将数据拷贝到会话缓冲区
+		ses := newUDPSession(remoteAddr, self.conn, self)
 
 		if n > 0 {
 			ses.Recv(buff[:n])
-
-		} else { // n=0情况 Mono在连上后，需要发一个包, 直接处理会发生EOF
-			ses.KeepAlive()
 		}
 
 	}
 
 	self.SetRunning(false)
 
-}
-
-func (self *udpAcceptor) removeAddress(pair addressPair) {
-
-	self.sesByAddress.Delete(pair)
 }
 
 func (self *udpAcceptor) Stop() {
@@ -138,10 +89,6 @@ func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpAcceptor{}
-
-		p.pktPool.New = func() interface{} {
-			return make([]byte, MaxUDPRecvBuffer)
-		}
 
 		return p
 	})

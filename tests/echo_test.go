@@ -7,7 +7,6 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	_ "github.com/davyxu/cellnet/peer/udp"
 	"github.com/davyxu/cellnet/proc"
-	_ "github.com/davyxu/cellnet/proc/kcp"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	_ "github.com/davyxu/cellnet/proc/udp"
 	"github.com/davyxu/cellnet/util"
@@ -34,11 +33,6 @@ var (
 			Address:   "127.0.0.1:7702",
 			Protocol:  "udp",
 			Processor: "udp.ltv",
-		},
-		{
-			Address:   "127.0.0.1:7703",
-			Protocol:  "udp",
-			Processor: "udp.kcp.ltv",
 		},
 	}
 )
@@ -127,9 +121,4 @@ func TestEchoTCP(t *testing.T) {
 func TestEchoUDP(t *testing.T) {
 
 	runEcho(t, 1)
-}
-
-func TestEchoKCP(t *testing.T) {
-
-	runEcho(t, 2)
 }
