@@ -17,7 +17,6 @@ type DataWriter interface {
 // Socket会话
 type udpSession struct {
 	*peer.CoreProcBundle
-	peer.CoreSessionIdentify
 
 	pInterface cellnet.Peer
 
@@ -26,6 +25,10 @@ type udpSession struct {
 	// Socket原始连接
 	remote *net.UDPAddr
 	conn   *net.UDPConn
+}
+
+func (self *udpSession) ID() int64 {
+	return 0
 }
 
 func (self *udpSession) Peer() cellnet.Peer {

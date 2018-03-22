@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package test;
+
+message ContentACK
+{
+    string Msg = 1;
+    int32 Value = 2;
+}
