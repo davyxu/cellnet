@@ -25,7 +25,7 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 
 		peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#%s.recv(%s)@%d len:%d %s | %s",
+		log.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
 			protocol,
 			peerInfo.Name(),
 			ses.ID(),

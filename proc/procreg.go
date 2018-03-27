@@ -2,6 +2,7 @@ package proc
 
 import (
 	"github.com/davyxu/cellnet"
+	"sort"
 )
 
 type ProcessorBinder func(bundle ProcessorBundle, userCallback cellnet.EventCallback)
@@ -14,6 +15,16 @@ var (
 func RegisterProcessor(procName string, f ProcessorBinder) {
 
 	procByName[procName] = f
+}
+
+func ProcessorList() (ret []string) {
+
+	for name := range procByName {
+		ret = append(ret, name)
+	}
+
+	sort.Strings(ret)
+	return
 }
 
 // 绑定固定回调处理器

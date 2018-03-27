@@ -1,6 +1,9 @@
 package peer
 
-import "github.com/davyxu/cellnet"
+import (
+	"github.com/davyxu/cellnet"
+	"sort"
+)
 
 type PeerCreateFunc func() cellnet.Peer
 
@@ -16,6 +19,16 @@ func RegisterPeerCreator(f PeerCreateFunc) {
 	}
 
 	creatorByTypeName[dummyPeer.TypeName()] = f
+}
+
+func PeerCreatorList() (ret []string) {
+
+	for name := range creatorByTypeName {
+		ret = append(ret, name)
+	}
+
+	sort.Strings(ret)
+	return
 }
 
 func NewPeer(peerType string) cellnet.Peer {
