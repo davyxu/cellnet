@@ -9,7 +9,8 @@ import (
 )
 
 type tcpConnector struct {
-	peer.CoreSessionManager
+	peer.SessionManager
+
 	peer.CorePeerProperty
 	peer.CoreContextSet
 	peer.CoreRunningTag
@@ -24,12 +25,20 @@ type tcpConnector struct {
 	reconDur time.Duration
 }
 
+func (self *tcpConnector) SetSessionManager(raw interface{}) {
+	self.SessionManager = raw.(peer.SessionManager)
+}
+
 func (self *tcpConnector) Start() cellnet.Peer {
 
 	self.WaitStopFinished()
 
 	if self.IsRunning() {
 		return self
+	}
+
+	if self.SessionManager == nil {
+		self.SessionManager = new(peer.CoreSessionManager)
 	}
 
 	go self.connect(self.Address())
@@ -152,6 +161,7 @@ func (self *tcpConnector) connect(address string) {
 }
 
 func (self *tcpConnector) IsReady() bool {
+
 	return self.SessionCount() != 0
 }
 
