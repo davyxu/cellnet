@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/extend"
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 type wsSession struct {
@@ -12,6 +13,8 @@ type wsSession struct {
 	id int64
 
 	p cellnet.Peer
+	
+	endSync sync.WaitGroup
 
 	conn *websocket.Conn
 
@@ -77,6 +80,8 @@ func (self *wsSession) RawSend(ev *cellnet.Event) {
 }
 
 func (self *wsSession) sendThread() {
+	
+	defer self.endSync.Done()
 
 	for ev := range self.sendChan {
 
@@ -135,7 +140,9 @@ func (self *wsSession) ReadPacket() (msgid uint32, data []byte, result cellnet.R
 }
 
 func (self *wsSession) recvThread() {
-
+	
+	defer self.endSync.Done()
+	
 	for {
 
 		msgid, data, result := self.ReadPacket()
@@ -166,6 +173,14 @@ func (self *wsSession) recvThread() {
 }
 
 func (self *wsSession) run() {
+	
+	self.endSync.Add(2)
+	go func() {
+		self.endSync.Wait()
+		if self.OnClose != nil {
+			self.OnClose()
+		}
+	}()
 
 	go self.recvThread()
 
