@@ -37,10 +37,6 @@ func (self *tcpConnector) Start() cellnet.Peer {
 		return self
 	}
 
-	if self.SessionManager == nil {
-		self.SessionManager = new(peer.CoreSessionManager)
-	}
-
 	go self.connect(self.Address())
 
 	return self
@@ -172,7 +168,9 @@ func (self *tcpConnector) TypeName() string {
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &tcpConnector{}
+		p := &tcpConnector{
+			SessionManager: new(peer.CoreSessionManager),
+		}
 
 		return p
 	})

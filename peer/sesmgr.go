@@ -13,6 +13,9 @@ type SessionManager interface {
 	Add(cellnet.Session)
 	Remove(cellnet.Session)
 	Count() int
+
+	// 设置ID开始的号
+	SetIDBase(base int64)
 }
 
 type CoreSessionManager struct {
@@ -21,6 +24,11 @@ type CoreSessionManager struct {
 	sesIDGen int64 // 记录已经生成的会话ID流水号
 
 	count int64 // 记录当前在使用的会话数量
+}
+
+func (self *CoreSessionManager) SetIDBase(base int64) {
+
+	atomic.StoreInt64(&self.sesIDGen, base)
 }
 
 func (self *CoreSessionManager) Count() int {

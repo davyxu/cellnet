@@ -36,9 +36,17 @@ type HTTPConnector interface {
 	Request(method string, raw interface{}) (interface{}, error)
 }
 
+type SessionManagerSetter interface {
+
+	// 将peer.SesssionManager设置给Connector，Connector的session就分配到一个SessionManager中
+	SetSessionManager(sessionManager interface{})
+}
+
 // TCP连接器
 type TCPConnector interface {
 	GenericPeer
+
+	SessionManagerSetter
 
 	// 设置重连时间
 	SetReconnectDuration(time.Duration)
@@ -48,14 +56,13 @@ type TCPConnector interface {
 
 	// 默认会话
 	Session() Session
-
-	// 将peer.SesssionManager设置给Connector，Connector的session就分配到一个SessionManager中
-	SetSessionManager(sessionManager interface{})
 }
 
 // TCP接受器，具备会话访问
 type TCPAcceptor interface {
 	GenericPeer
+
+	SessionManagerSetter
 
 	// 访问会话
 	SessionAccessor

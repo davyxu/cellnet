@@ -8,7 +8,7 @@ import (
 
 // 接受器
 type tcpAcceptor struct {
-	peer.CoreSessionManager
+	peer.SessionManager
 	peer.CorePeerProperty
 	peer.CoreContextSet
 	peer.CoreRunningTag
@@ -121,7 +121,9 @@ func (self *tcpAcceptor) TypeName() string {
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &tcpAcceptor{}
+		p := &tcpAcceptor{
+			SessionManager: new(peer.CoreSessionManager),
+		}
 
 		return p
 	})
