@@ -169,6 +169,24 @@ func MessageToID(msg interface{}) int {
 	return int(meta.ID)
 }
 
+func MessageSize(msg interface{}) int {
+
+	// 获取消息元信息
+	meta := MessageMetaByType(reflect.TypeOf(msg))
+	if meta == nil {
+		return 0
+	}
+
+	// 将消息编码为字节数组
+	raw, err := meta.Codec.Encode(msg)
+
+	if err != nil {
+		return 0
+	}
+
+	return len(raw.([]byte))
+}
+
 func MessageToString(msg interface{}) string {
 
 	if msg == nil {

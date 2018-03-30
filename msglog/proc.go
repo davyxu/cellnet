@@ -2,7 +2,6 @@ package msglog
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/golog"
 )
 
@@ -29,15 +28,10 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 			protocol,
 			peerInfo.Name(),
 			ses.ID(),
-			msgSize(msg),
+			cellnet.MessageSize(msg),
 			cellnet.MessageToName(msg),
 			cellnet.MessageToString(msg))
 	}
-}
-
-func msgSize(msg interface{}) int {
-	data, _, _ := codec.EncodeMessage(msg)
-	return len(data)
 }
 
 func WriteSendLogger(log *golog.Logger, protocol string, ses cellnet.Session, msg interface{}) {
@@ -58,7 +52,7 @@ func WriteSendLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 			protocol,
 			peerInfo.Name(),
 			ses.ID(),
-			msgSize(msg),
+			cellnet.MessageSize(msg),
 			cellnet.MessageToName(msg),
 			cellnet.MessageToString(msg))
 	}
