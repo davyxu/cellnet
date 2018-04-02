@@ -9,6 +9,11 @@ const MTU = 1472
 
 func recvPacket(pktData []byte) (msg interface{}, err error) {
 
+	// 小于包头，使用nc指令测试时，为1
+	if len(pktData) < 2 {
+		return nil, nil
+	}
+
 	// 用小端格式读取Size
 	datasize := binary.LittleEndian.Uint16(pktData)
 
