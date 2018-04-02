@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"regexp"
 )
 
 // 消息元信息
@@ -107,6 +108,25 @@ func MessageMetaByFullName(name string) *MessageMeta {
 	return nil
 }
 
+func MessageMetaVisit(nameRule string, callback func(meta *MessageMeta) bool) error {
+	exp, err := regexp.Compile(nameRule)
+	if err != nil {
+		return err
+	}
+
+	for name, meta := range metaByFullName {
+		if exp.MatchString(name) {
+
+			if !callback(meta) {
+				return nil
+			}
+
+		}
+	}
+
+	return nil
+}
+
 // 根据类型查找消息元信息
 func MessageMetaByType(t reflect.Type) *MessageMeta {
 
@@ -170,6 +190,10 @@ func MessageToID(msg interface{}) int {
 }
 
 func MessageSize(msg interface{}) int {
+
+	if msg == nil {
+		return 0
+	}
 
 	// 获取消息元信息
 	meta := MessageMetaByType(reflect.TypeOf(msg))

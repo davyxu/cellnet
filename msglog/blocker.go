@@ -1,7 +1,6 @@
 package msglog
 
 import (
-	"errors"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -17,18 +16,15 @@ func IsBlockedMessageByID(msgid int) bool {
 	return ok
 }
 
-var (
-	ErrMessageNotFound = errors.New("msg not exists")
-)
+func BlockMessageLog(nameRule string) (err error, matchCount int) {
 
-func BlockMessageLog(msgName string) error {
-	meta := cellnet.MessageMetaByFullName(msgName)
+	err = cellnet.MessageMetaVisit(nameRule, func(meta *cellnet.MessageMeta) bool {
 
-	if meta == nil {
-		return ErrMessageNotFound
-	}
+		blockedMsgByID.Store(int(meta.ID), meta)
+		matchCount++
 
-	blockedMsgByID.Store(int(meta.ID), meta)
+		return true
+	})
 
-	return nil
+	return
 }
