@@ -13,74 +13,87 @@ type RemoteCallMsg interface {
 	GetCallID() int64
 }
 
-type RPCHooker struct {
-}
+func ProcInboundEvent(inputEvent cellnet.Event) (handled bool) {
 
-func (self RPCHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+	if _, ok := inputEvent.(*RecvMsgEvent); ok {
+		return true
+	}
 
 	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
-		return
+		return false
 	}
 
 	msg, meta, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 	if err != nil {
-		return
+		return false
 	}
 
-	peerInfo := inputEvent.Session().Peer().(interface {
-		Name() string
-	})
+	if log.IsDebugEnabled() {
 
-	log.Debugf("#rpc recv(%s)@%d %s(%d) | %s",
-		peerInfo.Name(),
-		inputEvent.Session().ID(),
-		meta.TypeName(),
-		meta.ID,
-		cellnet.MessageToString(msg))
+		peerInfo := inputEvent.Session().Peer().(interface {
+			Name() string
+		})
 
-	poster := inputEvent.Session().Peer().(peer.MessagePoster)
+		log.Debugf("#rpc.recv(%s)@%d %s(%d) | %s",
+			peerInfo.Name(),
+			inputEvent.Session().ID(),
+			meta.TypeName(),
+			meta.ID,
+			cellnet.MessageToString(msg))
+	}
 
 	switch inputEvent.Message().(type) {
 	case *RemoteCallREQ: // 服务端收到客户端的请求
 
+		poster := inputEvent.Session().Peer().(peer.MessagePoster)
 		poster.PostEvent(&RecvMsgEvent{inputEvent.Session(), msg, rpcMsg.GetCallID()})
+
+		// 避免后续环节处理
+		return true
 
 	case *RemoteCallACK: // 客户端收到服务器的回应
 		request := getRequest(rpcMsg.GetCallID())
 		if request != nil {
 			request.RecvFeedback(msg)
 		}
+
+		return true
 	}
 
-	return inputEvent
+	return false
 }
 
-func (self RPCHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func ProcOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
-		return
+		return false
 	}
 
 	msg, meta, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 	if err != nil {
-		return
+		return false
 	}
 
-	peerInfo := inputEvent.Session().Peer().(interface {
-		Name() string
-	})
+	if log.IsDebugEnabled() {
 
-	log.Debugf("#rpc send(%s)@%d %s(%d) | %s",
-		peerInfo.Name(),
-		inputEvent.Session().ID(),
-		meta.TypeName(),
-		meta.ID,
-		cellnet.MessageToString(msg))
+		peerInfo := inputEvent.Session().Peer().(interface {
+			Name() string
+		})
 
-	return inputEvent
+		log.Debugf("#rpc.send(%s)@%d %s(%d) | %s",
+			peerInfo.Name(),
+			inputEvent.Session().ID(),
+			meta.TypeName(),
+			meta.ID,
+			cellnet.MessageToString(msg))
+	}
+
+	// 避免后续环节处理
+
+	return true
 }
 
 func init() {

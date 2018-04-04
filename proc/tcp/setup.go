@@ -8,7 +8,7 @@ import (
 func init() {
 
 	transmitter := new(TCPMessageTransmitter)
-	hooker := new(rpcEventHooker)
+	hooker := new(MsgHooker)
 
 	proc.RegisterProcessor("tcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 

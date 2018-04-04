@@ -6,24 +6,24 @@ import (
 	"github.com/davyxu/cellnet/proc/rpc"
 )
 
-type rpcEventHooker struct {
-	rpc.RPCHooker
+// 自动区分rpc日志和tcp日志
+type MsgHooker struct {
 }
 
-func (self rpcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msglog.WriteRecvLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
-
-	self.RPCHooker.OnInboundEvent(inputEvent)
+	if !rpc.ProcInboundEvent(inputEvent) {
+		msglog.WriteRecvLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+	}
 
 	return inputEvent
 }
 
-func (self rpcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (self MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msglog.WriteSendLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
-
-	self.RPCHooker.OnOutboundEvent(inputEvent)
+	if !rpc.ProcOutboundEvent(inputEvent) {
+		msglog.WriteSendLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+	}
 
 	return inputEvent
 }
