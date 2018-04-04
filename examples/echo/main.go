@@ -8,6 +8,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp" // 注册TCP Peer
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp" // 注册TCP Processor
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -92,7 +93,7 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    1,
+		ID:    int(util.StringHash("main.TestEchoACK")),
 	})
 }
 

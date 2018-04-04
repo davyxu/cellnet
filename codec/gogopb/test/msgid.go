@@ -8,6 +8,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/gogopb"
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -17,6 +18,6 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("gogopb"),
 		Type:  reflect.TypeOf((*ContentACK)(nil)).Elem(),
-		ID:    45525,
+		ID:    int(util.StringHash("test.ContentACK")),
 	})
 }

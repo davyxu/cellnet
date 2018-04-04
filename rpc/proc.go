@@ -3,8 +3,6 @@ package rpc
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/cellnet/peer"
 )
 
 type RemoteCallMsg interface {
@@ -13,21 +11,21 @@ type RemoteCallMsg interface {
 	GetCallID() int64
 }
 
-func ProcInboundEvent(inputEvent cellnet.Event) (handled bool) {
+func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, handled bool) {
 
 	if _, ok := inputEvent.(*RecvMsgEvent); ok {
-		return true
+		return inputEvent, false
 	}
 
 	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
-		return false
+		return inputEvent, false
 	}
 
 	msg, meta, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 	if err != nil {
-		return false
+		return inputEvent, false
 	}
 
 	if log.IsDebugEnabled() {
@@ -47,11 +45,11 @@ func ProcInboundEvent(inputEvent cellnet.Event) (handled bool) {
 	switch inputEvent.Message().(type) {
 	case *RemoteCallREQ: // 服务端收到客户端的请求
 
-		poster := inputEvent.Session().Peer().(peer.MessagePoster)
-		poster.PostEvent(&RecvMsgEvent{inputEvent.Session(), msg, rpcMsg.GetCallID()})
-
-		// 避免后续环节处理
-		return true
+		return &RecvMsgEvent{
+			inputEvent.Session(),
+			msg,
+			rpcMsg.GetCallID(),
+		}, true
 
 	case *RemoteCallACK: // 客户端收到服务器的回应
 		request := getRequest(rpcMsg.GetCallID())
@@ -59,13 +57,13 @@ func ProcInboundEvent(inputEvent cellnet.Event) (handled bool) {
 			request.RecvFeedback(msg)
 		}
 
-		return true
+		return inputEvent, true
 	}
 
-	return false
+	return inputEvent, false
 }
 
-func ProcOutboundEvent(inputEvent cellnet.Event) (handled bool) {
+func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 	rpcMsg, ok := inputEvent.Message().(RemoteCallMsg)
 	if !ok {
 		return false
@@ -94,9 +92,4 @@ func ProcOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 	// 避免后续环节处理
 
 	return true
-}
-
-func init() {
-	msglog.BlockMessageLog("rpc.RemoteCallREQ")
-	msglog.BlockMessageLog("rpc.RemoteCallACK")
 }

@@ -10,6 +10,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 	"log"
 	"os"
@@ -94,7 +95,7 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    1,
+		ID:    int(util.StringHash("main.TestEchoACK")),
 	})
 }
 

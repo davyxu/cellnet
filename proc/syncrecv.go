@@ -20,9 +20,7 @@ func NewSyncReceiver(p cellnet.Peer) *SyncReceiver {
 	self := &SyncReceiver{
 		evChan: make(chan cellnet.Event),
 	}
-	p.(interface {
-		SetEventCallback(v cellnet.EventCallback)
-	}).SetEventCallback(func(ev cellnet.Event) {
+	p.(ProcessorBundle).SetCallback(func(ev cellnet.Event) {
 
 		self.evChan <- ev
 	})

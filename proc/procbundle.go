@@ -33,11 +33,6 @@ func (self MultiHooker) OnInboundEvent(input cellnet.Event) (output cellnet.Even
 	for _, h := range self {
 
 		input = h.OnInboundEvent(input)
-
-		// 不再处理后续
-		if input == nil {
-			return nil
-		}
 	}
 
 	return input
@@ -48,11 +43,6 @@ func (self MultiHooker) OnOutboundEvent(input cellnet.Event) (output cellnet.Eve
 	for _, h := range self {
 
 		input = h.OnOutboundEvent(input)
-
-		// 不再处理后续，且不再发送
-		if input == nil {
-			return nil
-		}
 	}
 
 	return input

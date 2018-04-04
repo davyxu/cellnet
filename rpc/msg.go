@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -33,11 +34,11 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(),
-		ID:    63007,
+		ID:    int(util.StringHash("rpc.RemoteCallREQ")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RemoteCallACK)(nil)).Elem(),
-		ID:    63008,
+		ID:    int(util.StringHash("rpc.RemoteCallACK")),
 	})
 }
