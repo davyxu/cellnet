@@ -12,7 +12,7 @@ import (
 type RelayACK struct {
 	MsgID     uint16
 	Data      []byte
-	SessionID []int64
+	ContextID []int64
 }
 
 func (self *RelayACK) String() string { return fmt.Sprintf("%+v", *self) }

@@ -10,7 +10,8 @@ var (
 	ErrInvalidPeerSession = errors.New("relay: Require cellnet.Session")
 )
 
-func Relay(sesDetector, msg interface{}, sesid ...int64) error {
+// sesDetector: 提供要发送到的目标session， 发送msg消息，并携带ContextID
+func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
 
 	ses, err := getSession(sesDetector)
 	if err != nil {
@@ -26,7 +27,7 @@ func Relay(sesDetector, msg interface{}, sesid ...int64) error {
 	ses.Send(&RelayACK{
 		MsgID:     uint16(meta.ID),
 		Data:      data,
-		SessionID: sesid,
+		ContextID: contextIDList,
 	})
 
 	return nil

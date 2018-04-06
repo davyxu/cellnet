@@ -35,8 +35,8 @@ func relay_backend() {
 
 		if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {
 
-			log.Debugln("Relay to agent", relayEvent.Message(), relayEvent.SessionID)
-			relay.Relay(relay_BackendToAgentConnector, relayEvent.Message(), relayEvent.SessionID...)
+			log.Debugln("Relay to agent", relayEvent.Message(), relayEvent.ContextID)
+			relay.Relay(relay_BackendToAgentConnector, relayEvent.Message(), relayEvent.ContextID...)
 
 		}
 
@@ -75,7 +75,7 @@ func relay_agent() {
 			sesAccessor := relay_ClientToAgentAcceptor.(cellnet.SessionAccessor)
 
 			// 要广播的客户端列表
-			for _, maskedSessionID := range event.SessionID {
+			for _, maskedSessionID := range event.ContextID {
 
 				// 去掉掩码
 				sesID := maskedSessionID - AgentSessionIDMask

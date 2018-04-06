@@ -22,7 +22,7 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 		return inputEvent, false
 	}
 
-	msg, meta, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
+	userMsg, _, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 	if err != nil {
 		return inputEvent, false
@@ -30,16 +30,14 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 
 	if log.IsDebugEnabled() {
 
-		peerInfo := inputEvent.Session().Peer().(interface {
-			Name() string
-		})
+		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.recv(%s)@%d %s(%d) | %s",
+		log.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
 			peerInfo.Name(),
 			inputEvent.Session().ID(),
-			meta.TypeName(),
-			meta.ID,
-			cellnet.MessageToString(msg))
+			cellnet.MessageSize(userMsg),
+			cellnet.MessageToName(userMsg),
+			cellnet.MessageToString(userMsg))
 	}
 
 	switch inputEvent.Message().(type) {
@@ -47,14 +45,14 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 
 		return &RecvMsgEvent{
 			inputEvent.Session(),
-			msg,
+			userMsg,
 			rpcMsg.GetCallID(),
 		}, true
 
 	case *RemoteCallACK: // 客户端收到服务器的回应
 		request := getRequest(rpcMsg.GetCallID())
 		if request != nil {
-			request.RecvFeedback(msg)
+			request.RecvFeedback(userMsg)
 		}
 
 		return inputEvent, true
@@ -69,7 +67,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 		return false
 	}
 
-	msg, meta, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
+	userMsg, _, err := codec.DecodeMessage(int(rpcMsg.GetMsgID()), rpcMsg.GetMsgData())
 
 	if err != nil {
 		return false
@@ -77,16 +75,14 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 
 	if log.IsDebugEnabled() {
 
-		peerInfo := inputEvent.Session().Peer().(interface {
-			Name() string
-		})
+		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.send(%s)@%d %s(%d) | %s",
+		log.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
 			peerInfo.Name(),
 			inputEvent.Session().ID(),
-			meta.TypeName(),
-			meta.ID,
-			cellnet.MessageToString(msg))
+			cellnet.MessageSize(userMsg),
+			cellnet.MessageToName(userMsg),
+			cellnet.MessageToString(userMsg))
 	}
 
 	// 避免后续环节处理

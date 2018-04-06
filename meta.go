@@ -1,11 +1,11 @@
 package cellnet
 
 import (
-	"bytes"
 	"fmt"
 	"path"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 // 消息元信息
@@ -40,12 +40,12 @@ func (self *MessageMeta) FullName() string {
 		rtype = rtype.Elem()
 	}
 
-	var b bytes.Buffer
-	b.WriteString(path.Base(rtype.PkgPath()))
-	b.WriteString(".")
-	b.WriteString(rtype.Name())
+	var sb strings.Builder
+	sb.WriteString(path.Base(rtype.PkgPath()))
+	sb.WriteString(".")
+	sb.WriteString(rtype.Name())
 
-	return b.String()
+	return sb.String()
 }
 
 func (self *MessageMeta) NewType() interface{} {

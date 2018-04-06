@@ -10,27 +10,25 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
 
-		userMsg, meta, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
+		userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
 		if err == nil {
 
 			if log.IsDebugEnabled() {
 
-				peerInfo := inputEvent.Session().Peer().(interface {
-					Name() string
-				})
+				peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-				log.Debugf("#relay.recv(%s)@%d %s(%d) | %s",
+				log.Debugf("#relay.recv(%s)@%d len: %d %s | %s",
 					peerInfo.Name(),
 					inputEvent.Session().ID(),
-					meta.TypeName(),
-					meta.ID,
+					cellnet.MessageSize(userMsg),
+					cellnet.MessageToName(userMsg),
 					cellnet.MessageToString(userMsg))
 			}
 
 			ev := &RecvMsgEvent{
 				inputEvent.Session(),
 				userMsg,
-				relayMsg.SessionID,
+				relayMsg.ContextID,
 			}
 
 			if bcFunc == nil || bcFunc(ev) {
@@ -50,18 +48,16 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
 
-		userMsg, meta, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
+		userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
 		if err == nil {
 
-			peerInfo := inputEvent.Session().Peer().(interface {
-				Name() string
-			})
+			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.send(%s)@%d %s(%d) | %s",
+			log.Debugf("#relay.send(%s)@%d len: %d %s | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
-				meta.TypeName(),
-				meta.ID,
+				cellnet.MessageSize(userMsg),
+				cellnet.MessageToName(userMsg),
 				cellnet.MessageToString(userMsg))
 
 			return true
