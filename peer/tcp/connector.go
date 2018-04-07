@@ -128,10 +128,6 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		if log.IsDebugEnabled() {
-			log.Debugf("#tcp.connected(%s)@%d", self.Name(), ses.ID())
-		}
-
 		self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
 		self.endSignal.Wait()

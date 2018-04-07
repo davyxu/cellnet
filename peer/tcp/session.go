@@ -56,13 +56,7 @@ func (self *tcpSession) recvLoop() {
 
 		if err != nil {
 
-			if log.IsDebugEnabled() {
-				log.Debugf("#tcp.closed(%s)@%d | Reason: %s", self.pInterface.(cellnet.PeerProperty).Name(), self.ID(), err.Error())
-			}
-
-			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{
-				Error: err.Error(),
-			}})
+			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
 			break
 		}
 
