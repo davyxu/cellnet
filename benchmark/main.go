@@ -47,23 +47,19 @@ func client() {
 
 	p := peer.NewGenericPeer("tcp.Connector", "client", "127.0.0.1:7701", queue)
 
-	proc.BindProcessorHandler(p, "tcp.ltv", nil)
+	rv := proc.NewSyncReceiver(p)
+
+	proc.BindProcessorHandler(p, "tcp.ltv", rv.EventCallback())
 
 	p.Start()
 
 	queue.StartLoop()
 
-	rv := proc.NewSyncReceiver(p)
+	rv.WaitMessage("cellnet.SessionConnected")
 
-	rv.Recv(func(ev cellnet.Event) {
-		msg := ev.Message().(*cellnet.SessionConnected)
-		msg = msg
-
-		ev.Session().Send(&TestEchoACK{
-			Msg:   "hello",
-			Value: 1234,
-		})
-
+	p.(cellnet.TCPConnector).Session().Send(&TestEchoACK{
+		Msg:   "hello",
+		Value: 1234,
 	})
 
 	begin := time.Now()
@@ -108,15 +104,18 @@ func main() {
 
 	f, err := os.Create(*profile)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(*profile)
 	}
 
-	golog.SetLevelByString("*", "info")
+	golog.SetLevelByString("tcpproc", "info")
 
 	server()
 
 	client()
 
-	pprof.WriteHeapProfile(f)
-	f.Close()
+	if f != nil {
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
+
 }

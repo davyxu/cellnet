@@ -3,6 +3,7 @@ package tcp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"io"
 	"net"
 	"sync"
 )
@@ -47,6 +48,14 @@ func (self *tcpSession) Send(msg interface{}) {
 	self.sendChan <- msg
 }
 
+func isEOFOrNetReadError(err error) bool {
+	if err == io.EOF {
+		return true
+	}
+	ne, ok := err.(*net.OpError)
+	return ok && ne.Op == "read"
+}
+
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
@@ -55,6 +64,9 @@ func (self *tcpSession) recvLoop() {
 		msg, err := self.ReadMessage(self)
 
 		if err != nil {
+			if !isEOFOrNetReadError(err) {
+				log.Errorln("session closed:", err)
+			}
 
 			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
 			break

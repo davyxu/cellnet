@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrInvalidPeerSession = errors.New("rpc: Invalid peer type, require cellnet.RPCSessionGetter or cellnet.Session")
+	ErrEmptySession       = errors.New("rpc: Empty session")
 )
 
 type RPCSessionGetter interface {
@@ -14,7 +15,7 @@ type RPCSessionGetter interface {
 }
 
 // 从peer获取rpc使用的session
-func getPeerSession(ud interface{}) (cellnet.Session, error) {
+func getPeerSession(ud interface{}) (ses cellnet.Session, err error) {
 
 	if ud == nil {
 		return nil, ErrInvalidPeerSession
@@ -22,10 +23,19 @@ func getPeerSession(ud interface{}) (cellnet.Session, error) {
 
 	switch i := ud.(type) {
 	case RPCSessionGetter:
-		return i.RPCSession(), nil
+		ses = i.RPCSession()
 	case cellnet.Session:
-		return i, nil
+		ses = i
+	case cellnet.TCPConnector:
+		ses = i.Session()
 	default:
-		return nil, ErrInvalidPeerSession
+		err = ErrInvalidPeerSession
+		return
 	}
+
+	if ses == nil {
+		return nil, ErrEmptySession
+	}
+
+	return
 }

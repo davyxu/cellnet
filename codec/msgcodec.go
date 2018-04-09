@@ -1,13 +1,8 @@
 package codec
 
 import (
-	"errors"
 	"github.com/davyxu/cellnet"
 	"reflect"
-)
-
-var (
-	ErrMessageNotFound = errors.New("msg not exists")
 )
 
 func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err error) {
@@ -15,7 +10,7 @@ func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err
 	// 获取消息元信息
 	meta = cellnet.MessageMetaByType(reflect.TypeOf(msg))
 	if meta == nil {
-		return nil, nil, ErrMessageNotFound
+		return nil, nil, cellnet.NewErrorContext("msg not exists", msg)
 	}
 
 	// 将消息编码为字节数组
@@ -38,7 +33,7 @@ func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, e
 
 	// 消息没有注册
 	if meta == nil {
-		return nil, nil, ErrMessageNotFound
+		return nil, nil, cellnet.NewErrorContext("msg not exists", msgid)
 	}
 
 	// 创建消息

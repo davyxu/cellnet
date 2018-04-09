@@ -396,9 +396,9 @@ TCPConnector某些时候需要主动发送消息时，可以这样写
 peerIns.(cellnet.TCPConnector).Session().Send( &YourMsg{ ... } )
 ```
 
-## 不要缓存Event
+- 不要缓存Event
 
-cellnet.Event是消息处理的上下文, 不要缓存Event
+cellnet.Event是消息处理的上下文, 可能在底层存在内存池及各种重用行为, 因此不要缓存Event
 
 
 # 定制自己的Codec
