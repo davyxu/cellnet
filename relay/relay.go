@@ -15,12 +15,14 @@ func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
 
 	ses, err := getSession(sesDetector)
 	if err != nil {
+		log.Errorln("relay.Relay:", err)
 		return err
 	}
 
 	data, meta, err := codec.EncodeMessage(msg)
 
 	if err != nil {
+		log.Errorln("relay.Relay:", err)
 		return err
 	}
 

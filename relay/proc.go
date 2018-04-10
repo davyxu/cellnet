@@ -17,12 +17,15 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 
 				peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-				log.Debugf("#relay.recv(%s)@%d len: %d %s | %s",
+				log.Debugf("#relay.recv(%s)@%d len: %d %s context: %v | %s",
 					peerInfo.Name(),
 					inputEvent.Session().ID(),
 					cellnet.MessageSize(userMsg),
 					cellnet.MessageToName(userMsg),
+					relayMsg.ContextID,
 					cellnet.MessageToString(userMsg))
+			} else {
+				log.Errorln("relay.ResoleveInboundEvent:", err)
 			}
 
 			ev := &RecvMsgEvent{
@@ -31,10 +34,15 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 				relayMsg.ContextID,
 			}
 
-			if bcFunc == nil || bcFunc(ev) {
-				ouputEvent = ev
-				handled = true
+			if bcFunc != nil {
+				// 转到对应线程中调用
+				cellnet.SessionQueuedCall(inputEvent.Session(), func() {
+					bcFunc(ev)
+				})
 			}
+
+			ouputEvent = ev
+			handled = true
 
 			return
 		}
@@ -53,11 +61,12 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.send(%s)@%d len: %d %s | %s",
+			log.Debugf("#relay.send(%s)@%d len: %d %s context: %v | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
 				cellnet.MessageSize(userMsg),
 				cellnet.MessageToName(userMsg),
+				relayMsg.ContextID,
 				cellnet.MessageToString(userMsg))
 
 			return true

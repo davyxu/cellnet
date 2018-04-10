@@ -7,7 +7,7 @@ import (
 	"github.com/davyxu/cellnet/rpc"
 )
 
-// 自动区分rpc日志和tcp日志
+// 带有RPC和relay功能
 type MsgHooker struct {
 }
 
