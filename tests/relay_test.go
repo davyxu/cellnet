@@ -66,7 +66,7 @@ func relay_agent() {
 
 	})
 
-	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) bool {
+	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) {
 
 		// 仅限于从后端来的Relay消息, 本Test中，因为3个进程逻辑混在一起，必须这样区分来源
 		if event.Ses.Peer() == relay_BackendToAgentAcceptor {
@@ -89,7 +89,6 @@ func relay_agent() {
 			}
 		}
 
-		return true
 	})
 
 	relay_BackendToAgentAcceptor.Start()

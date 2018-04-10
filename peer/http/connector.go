@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
 	"io"
 	"io/ioutil"
@@ -31,7 +30,7 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 	// 获取消息元信息
 	meta := cellnet.HttpMetaByRequestType(method, reflect.TypeOf(raw))
 	if meta == nil {
-		return nil, codec.ErrMessageNotFound
+		return nil, cellnet.NewErrorContext("msg not found", raw)
 	}
 
 	// 将消息编码为字节数组
