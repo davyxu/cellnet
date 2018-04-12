@@ -11,6 +11,8 @@ import (
 
 type wsAcceptor struct {
 	*wsPeer
+	certfile string
+	keyfile string
 }
 
 var upgrader = websocket.Upgrader{
@@ -67,7 +69,11 @@ func (self *wsAcceptor) Start(address string) cellnet.Peer {
 
 	go func() {
 
-		err = http.ListenAndServe(url.Host, nil)
+		if url.Scheme == "https" {
+			err = http.ListenAndServeTLS(url.Host, self.certfile, self.keyfile, nil)
+		} else {
+			err = http.ListenAndServe(url.Host, nil)
+		}
 
 		if err != nil {
 			log.Errorln(err)
@@ -91,6 +97,17 @@ func NewAcceptor(q cellnet.EventQueue) cellnet.Peer {
 
 	self := &wsAcceptor{
 		wsPeer: newPeer(q, cellnet.NewSessionManager()),
+	}
+
+	return self
+}
+
+func NewAcceptorForWSS(q cellnet.EventQueue, certfile, keyfile string) cellnet.Peer {
+
+	self := &wsAcceptor{
+		wsPeer: newPeer(q, cellnet.NewSessionManager()),
+		certfile:certfile,
+		keyfile:keyfile,
 	}
 
 	return self
