@@ -11,9 +11,31 @@
 [12]: LICENSE
 
 cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
-![cellnetlogo](./logo.png)
 
-# 特性
+![cellnetlogo](doc/logo.png)
+
+# 版本历史
+2018.5  v4版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v4/CHANGES.md)
+
+2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
+
+2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v2/CHANGES.md)
+
+2015.8	v1版本
+
+# 使用领域
+
+cellnet经过多个版本的迭代，无论是作为初学者学习的范例，还是作为私用、商用项目的基础构建乃至核心技术层已经在业内广受了解及使用。
+
+主要使用领域：
+
+- 游戏服务器
+
+- ARM设备网络通讯
+
+- 证券软件内部RPC
+
+# 特性 (Features)
 
 ## 传输协议支持
 - TCP
@@ -26,20 +48,12 @@ cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
 - HTTP
 
-    侦听器的优雅重启, 支持json及form的收发及封装
+    侦听器的优雅重启, 支持json及form的收发及封装。编写游戏服务器时，不再需要配合第三方HTTP服务器做后台。
 
-- KCP
-
-    支持KCP over UDP
-
-## 编码（Codec）支持
+## 编码(Codec)
 
 * cellnet内建支持以下数据编码:
     - Google Protobuf (https://github.com/google/protobuf)
-
-    - 云风的sproto (https://github.com/cloudwu/sproto)
-
-        能方便lua的处理, 本身结构比protobuf解析更简单
 
     - json
         适合与第三方服务器通信
@@ -60,18 +74,32 @@ cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
     - 与web服务器使用json通信
 
-## 队列及IO
-  
-* 支持多个队列, 实现单线程/多线程收发处理消息
+    优点：
 
-* 发送时自动合并封包(性能效果决定于实际请求和发送比例)
+    - 享受不同通信协议格式的优点，避免缺点。如Protobuf适合服务器间的传输，封包小，适应面广。
 
-## RPC
+    - 私有的二进制协议方便加密和客户端处理，低GC和实现复杂度。
 
-* 异步/同步远程过程调用
+## 队列实现各种单线程/多线程，异步/同步业务处理模型
+
+  使用队列消息处理结构，方便实现以下效果：
+
+* 单线程异步逻辑，适用于MMORPG复杂交互，免加锁处理共享数据。
+
+* 多线程同步逻辑，适用于机器人逻辑，每个机器人使用独立的goroutine收发处理，机器人间互不干扰。
+
+* 多线程并发逻辑，适用于网关，消息转发，HTTP服务器，每条消息处理都会在完全并发下。
+
+## 远程过程调用（RPC）
+
+* 支持同步RPC，适用于后台服务器向其他服务器请求数据后再顺处理事务。
+
+* 支持异步RPC，适用于单线程服务器逻辑。
 
 ## 消息日志
 * 可以方便的通过日志查看收发消息的每一个字段消息
+
+![cellnetlogo](doc/chatlogger.png)
 
 # 第三方库依赖
 
@@ -79,16 +107,12 @@ cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
 * github.com/davyxu/goobjfmt
 
-# 编码包可选支持
-
-* github.com/golang/protobuf
-
-* github.com/davyxu/gosproto
+* github.com/golang/protobuf (选择pb编码时依赖)
 
 # 获取+编译
 
 ```
-	go get -u -v github.com/davyxu/cellnet
+	go get -v github.com/davyxu/cellnet
 
 ```
 
@@ -98,13 +122,20 @@ cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
 const peerAddress = "127.0.0.1:17701"
 
+// 服务器逻辑
 func server() {
+
+    // 创建服务器的事件队列，所有的消息，事件都会被投入这个队列处理
 	queue := cellnet.NewEventQueue()
 
+    // 创建一个服务器的接受器(Acceptor)，接受客户端的连接
 	peerIns := peer.NewGenericPeer("tcp.Acceptor", "server", peerAddress, queue)
 
+    // 将接受器Peer与tcp.ltv的处理器绑定，并设置事件处理回调
+    // tcp.ltv处理器负责处理消息收发，使用私有的封包格式以及日志，RPC等处理
 	proc.BindProcessorHandler(peerIns, "tcp.ltv", func(ev cellnet.Event) {
 
+        // 处理Peer收到的各种事件
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted: // 接受一个连接
 			fmt.Println("server accepted")
@@ -112,31 +143,39 @@ func server() {
 
 			fmt.Printf("server recv %+v\n", msg)
 
+            // 发送回应消息
 			ev.Session().Send(&TestEchoACK{
 				Msg:   msg.Msg,
 				Value: msg.Value,
 			})
 
-		case *cellnet.SessionClosed: // 连接断开
+		case *cellnet.SessionClosed: // 会话连接断开
 			fmt.Println("session closed: ", ev.Session().ID())
 		}
 
 	})
 
+    // 启动Peer，服务器开始侦听
 	peerIns.Start()
 
+    // 开启事件队列，开始处理事件，此函数不阻塞
 	queue.StartLoop()
 }
 
+// 模拟客户端逻辑
 func client() {
 
+    // 例子专用的完成标记
 	done := make(chan struct{})
 
+    // 创建客户端的事件处理队列
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewGenericPeer("tcp.Connector", "client", peerAddress, queue)
+    // 创建客户端的连接器
+	peerIns := peer.NewGenericPeer("tcp.Connector", "client", peerAddress, queue)
 
-	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
+    // 将客户端连接器Peer与tcp.ltv处理器绑定，并设置接收事件回调
+	proc.BindProcessorHandler(peerIns, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected: // 已经连接上
@@ -157,8 +196,10 @@ func client() {
 		}
 	})
 
-	p.Start()
+    // 开启客户端Peer
+	peerIns.Start()
 
+    // 开启客户端队列处理
 	queue.StartLoop()
 
 	// 等待客户端收到消息
@@ -182,7 +223,13 @@ codec               编码支持，以及编码注册
 
 examples            例子
 
-msglog              消息日志
+    chat            聊天
+
+    echo            回音服务器
+
+    fileserver      使用cellnet内建HTTP服务器支持文件服务
+
+msglog              消息日志处理
 
 peer                各种协议的端实现，以及端注册入口及复用组件
 
@@ -196,13 +243,13 @@ proc                各种处理器实现，以及处理器注册入口
 
     http            HTTP消息处理及文件服务实现
 
-    kcp             在UDP peer上构建的KCP协议支持
-
-    rpc             远程过程调用支持
-
     tcp             在TCP peer上构建的tcp处理器集合
 
     udp             在UDP peer上构建的udp处理器集合
+
+relay               接力消息封装
+
+rpc                 远程过程调用支持
 
 tests               测试用例
 
@@ -239,19 +286,23 @@ sid1 say: hello
 
 ```
 
-# 队列
+# 概念及说明
+
+通过下面的介绍，可以深入了解cellnet的组件及构成原理。阅读并理解这些文字，有助于完全上手cellnet的实际使用。
+
+## 队列
 
 队列在cellnet中使用cellnet.Queue接口, 底层由带缓冲的channel实现
 
-在cellnet中, 队列根据实际逻辑需要定制数量. 但一般情况下, 推荐使用1个队列（单线程）处理逻辑。
+在cellnet中, 队列根据实际逻辑需要定制数量. 但一般情况下, 推荐使用一个队列（单线程）处理逻辑。
 
-多线程处理逻辑并不会让逻辑处理更快，但会让并发竞态问题变的很严重。
+多线程处理逻辑并不会让逻辑处理更快，过多的同步锁反而会让并发竞态问题变的很严重，导致性能下降严重，同时逻辑编写难度上升。
 
-出现耗时任务时，应该使用生产者和消费者模型，而不是整个逻辑处于并发多线程环境下
+出现耗时任务时，应该使用生产者和消费者模型，生产者将任务通过channel投放给另外一个goroutine中的消费者处理。
 
-## 创建和开启队列
+### 创建和开启队列
 
-队列在多个goroutine中使用，使用.StartLoop()开启队列事件处理循环，所有投递到队列中的函数回调会在队列自由的goroutine中被调用，逻辑在此时被处理。
+队列使用NewEventQueue创建，使用.StartLoop()开启队列事件处理循环，所有投递到队列中的函数回调会在队列自由的goroutine中被调用，逻辑在此时被处理
 
 一般在main goroutine中调用queue.Wait阻塞等待队列结束。
 
@@ -268,7 +319,7 @@ sid1 say: hello
 ```
 
 
-## 往队列中投递回调
+### 往队列中投递回调
 队列中的每一个元素为回调，使用queue的Post方法将回调投递到队列中，回调在Post调用时不会马上被调用。
 
 ```golang
@@ -281,7 +332,7 @@ sid1 say: hello
 在cellnet正常使用中，Post方法会被封装到内部被调用。正常情况下，逻辑处理无需主动调用queue.Post方法。
 
 
-# 侦听和接受连接
+## 侦听和接受连接
 
 cellnet使用Acceptor接收多个连接，Acceptor是一种Peer（端），连接到Acceptor的Peer叫做Connector。
 
@@ -297,13 +348,11 @@ peer.NewGenericPeer创建好的Peer不会产生任何socket操作，对于Accept
     // NewGenericPeer参数依次是: peer类型, peer名称(日志中方便查看), 侦听地址，事件队列
     peerIns := peer.NewGenericPeer("tcp.Acceptor", "server", "127.0.0.1:8801", queue)
 
-    peerIns := socket.NewAcceptor(queue)
-
     peerIns.Start()
 ```
 
 
-# 创建并发起连接
+## 创建并发起连接
 
 Connector也是一种Peer，与Acceptor很很多类似的地方，因此创建过程也是类似的。
 
@@ -317,7 +366,7 @@ Connector也是一种Peer，与Acceptor很很多类似的地方，因此创建�
     peerIns.Start("127.0.0.1:8801")
 ```
 
-## 自动重连机制
+### 自动重连机制
 使用golang接口查询特性，可以在peerIns(Peer或GenericPeer接口类型)中查询TCPConnector接口。
 
 该接口可以使用TCPConnector的进一步功能，例如：自动重连。
@@ -332,7 +381,7 @@ Connector也是一种Peer，与Acceptor很很多类似的地方，因此创建�
 无需自动重连时，可以使用SetReconnectDuration(0)
 
 
-# 接收消息
+## 接收消息
 
 cellnet使用Processor处理消息的收发过程。
 
@@ -386,7 +435,7 @@ tcp.Acceptor | 接受新连接 | cellnet.SessionAccepted
 tcp.Acceptor/tcpConnector | 会话关闭 | cellnet.SessionClosed
 
 
-# 发送消息
+## 发送消息
 
 发送消息往往发生在收到消息或系统事件时，例如：连接上服务器时，发送消息；收到客户端的消息时发送消息。
 
@@ -401,10 +450,12 @@ peerIns.(cellnet.TCPConnector).Session().Send( &YourMsg{ ... } )
 cellnet.Event是消息处理的上下文, 可能在底层存在内存池及各种重用行为, 因此不要缓存Event
 
 
-# 定制自己的Codec
-cellnet内建提供基本的编码格式，如果有新的编码需要增加时，可以将这些编码注册到cellnet中
+## 定制自己的Codec
+cellnet内建提供基本的编码格式，如果有新的编码需要增加时，可以将这些编码注册到cellnet中。
 
-# 定制自己的Peer
+定制一个自己的Codec，可以直接参考codec/json包下的例子即可。
+
+## 定制自己的Peer
 cellnet内建提供的tcp/udp/http能满足90%的Peer需求，但在有些情况下，仍然需要定制新的Peer。
 
 **定制Peer的根本目的：让事件收发处理使用统一的接口和流程**
@@ -451,7 +502,7 @@ cellnet提供的Processor能满足基本的通信封包格式的处理，但在�
  
 - 编码层更换
    
-   从二进制编码更换为ProtocolBuffer编码，从JSON更换为二进制编码等。
+   从二进制编码更换为ProtocolBuffer编码，从JSON更换为二进制编码等。这种情况下直接使用codec编码包即可。
   
 - 具体的业务逻辑
 
@@ -459,9 +510,8 @@ cellnet提供的Processor能满足基本的通信封包格式的处理，但在�
 ## cellnet内建的Processor列表
 Processor类型 | 功能
 ---|---
-tcp.ltv | TCP协议，Length-Type-Value封包格式，带RPC
+tcp.ltv | TCP协议，Length-Type-Value封包格式，带RPC,Relay功能
 udp.ltv | UDP协议，Length-Type-Value封包格式
-udp.kcp.ltv | 基于UDP协议，KCP传输协议的，Length-Type-Value封包格式
 http | 基本HTTP处理
 
 
@@ -492,28 +542,17 @@ http | 基本HTTP处理
 
     cellnet专注于服务器底层.你可以根据自己需要编写网关及db支持
 
-* 怎样定制私有TCP封包?
-
 * 哪里有cellnet的完整例子?
 
     CellOrigin是基于cellnet开发的一套Unity3D客户端服务器框架
     https://github.com/davyxu/cellorigin
-
-# 版本历史
-2018.8  v4版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v4/CHANGES.md)
-
-2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
-
-2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v2/CHANGES.md)
-
-2015.8	v1版本
 
 
 # 贡献者
 
 按贡献时间排序，越靠前表示越新的贡献
 
-superikw(https://github.com/superikw), 在v3中测试出一个websocket接口并发发送问题
+superikw(https://github.com/superikw), 在v3中测试出一个websocket接口并发发送问题，wss支持，修复会话管理。
 
 bruce.hu(https://github.com/hxdhero), 在v3中测试出一个竞态冲突的bug
 
