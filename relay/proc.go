@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/codec"
 )
 
+// 处理入站的relay消息
 func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, handled bool) {
 
 	switch relayMsg := inputEvent.Message().(type) {
@@ -34,12 +35,11 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 				relayMsg.ContextID,
 			}
 
-			if bcFunc != nil {
-				// 转到对应线程中调用
-				cellnet.SessionQueuedCall(inputEvent.Session(), func() {
-					bcFunc(ev)
-				})
-			}
+			// 转到对应线程中调用
+			cellnet.SessionQueuedCall(inputEvent.Session(), func() {
+
+				broadcast(ev)
+			})
 
 			ouputEvent = ev
 			handled = true
@@ -51,26 +51,32 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 	return inputEvent, false
 }
 
+// 处理relay.Relay出站消息的日志
 func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool) {
 
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
 
-		userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
-		if err == nil {
+		if log.IsDebugEnabled() {
 
-			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+			userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
+			if err == nil {
 
-			log.Debugf("#relay.send(%s)@%d len: %d %s context: %v | %s",
-				peerInfo.Name(),
-				inputEvent.Session().ID(),
-				cellnet.MessageSize(userMsg),
-				cellnet.MessageToName(userMsg),
-				relayMsg.ContextID,
-				cellnet.MessageToString(userMsg))
+				peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			return true
+				log.Debugf("#relay.send(%s)@%d len: %d %s context: %v | %s",
+					peerInfo.Name(),
+					inputEvent.Session().ID(),
+					cellnet.MessageSize(userMsg),
+					cellnet.MessageToName(userMsg),
+					relayMsg.ContextID,
+					cellnet.MessageToString(userMsg))
+
+				return true
+			}
+
 		}
+
 	}
 
 	return
