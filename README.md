@@ -1,5 +1,3 @@
-# cellnet
-
 ![cellnetlogo](doc/logo.png)
 
  [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12] [![GoDoc][1]][2]
