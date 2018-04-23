@@ -112,11 +112,23 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 [Google Protobuf 编码安装](https://github.com/davyxu/cellnet/blob/master/doc/pbcodec.md)
 
 # 架构
+
+cellnet架构层次由如下图所示：
+
 ![architecture](doc/architecture.png)
+
+cellnet对Processor和Peer进行高度抽象，用户可以从这两个层面横向扩展以满足不同的网络封装需求
+
+红色框内的部分为cellnet实现部分
 
 # 消息处理流程
 
+cellnet的消息收发处理流程如下图所示：
+
 ![procflow](doc/procflow.png)
+
+本图对应的接口为cellnet/processor.go
+
 
 # 样例
 ```golang
