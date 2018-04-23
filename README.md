@@ -111,6 +111,13 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
 [Google Protobuf 编码安装](https://github.com/davyxu/cellnet/blob/master/doc/pbcodec.md)
 
+# 架构
+![architecture](doc/architecture.png)
+
+# 消息处理流程
+
+![procflow](doc/procflow.png)
+
 # 样例
 ```golang
 
