@@ -1,4 +1,7 @@
 # cellnet
+
+![cellnetlogo](doc/logo.png)
+
  [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12] [![GoDoc][1]][2]
 
 [1]: https://godoc.org/github.com/davyxu/cellnet?status.svg
@@ -12,7 +15,7 @@
 
 cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
-![cellnetlogo](doc/logo.png)
+
 
 # 版本历史
 2018.5  v4版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v4/CHANGES.md)
