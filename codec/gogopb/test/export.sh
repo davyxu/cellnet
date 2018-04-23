@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
+
+# 设置GOPATH
 CURR=`pwd`
 cd ../../../../../../..
 export GOPATH=`pwd`
 cd ${CURR}
 
-go build -v -o=protoc-gen-gogofaster github.com/gogo/protobuf/protoc-gen-gogofaster
+# 插件及protoc存放路径
+BIN_PATH=${GOPATH}/bin
 
-go build -v -o=protoc-gen-msg github.com/davyxu/cellnet/protoc-gen-msg
+# 错误时退出
+set -e
+
+go install -v github.com/gogo/protobuf/protoc-gen-gogofaster
+
+go install -v github.com/davyxu/cellnet/protoc-gen-msg
+
+# windows下时，添加后缀名
+if [ `go env GOHOSTOS` == "windows" ];then
+	EXESUFFIX=.exe
+fi
 
 # 生成协议
-./protoc --plugin=protoc-gen-gogofaster=protoc-gen-gogofaster --gogofaster_out=. --proto_path="." pb.proto
-if [ $? -ne 0 ] ; then read -rsp $'Errors occurred...\n' ; fi
+${BIN_PATH}/protoc --plugin=protoc-gen-gogofaster=${BIN_PATH}/protoc-gen-gogofaster${EXESUFFIX} --gogofaster_out=. --proto_path="." pb.proto
 
 # 生成cellnet 消息注册文件
-./protoc --plugin=protoc-gen-msg=protoc-gen-msg --msg_out=msgid.go:. --proto_path="." pb.proto
-if [ $? -ne 0 ] ; then read -rsp $'Errors occurred...\n' ; fi
+${BIN_PATH}/protoc --plugin=protoc-gen-msg=${BIN_PATH}/protoc-gen-msg${EXESUFFIX} --msg_out=msgid.go:. --proto_path="." pb.proto
