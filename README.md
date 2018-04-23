@@ -424,7 +424,9 @@ proc.BindProcessorHandler(peerIns, "tcp.ltv", func(ev cellnet.Event) {
 
 ## 接收系统事件
 
-cellnet将系统事件与收到的消息合并使用用户回调通知逻辑。
+cellnet将系统事件使用消息派发给用户，这种消息并不是由Socket接收，而是由cellnet内部生成的。
+
+例如：当TCP socket连接上服务器时，在回调中，将会收到一个*cellnet.SessionConnected的消息
 
 下面列出常用的系统事件, 在sysmsg.go文件中定义。
 
@@ -435,6 +437,11 @@ tcp.Connector | 连接错误 | cellnet.SessionConnectError
 tcp.Acceptor | 接受新连接 | cellnet.SessionAccepted
 tcp.Acceptor/tcpConnector | 会话关闭 | cellnet.SessionClosed
 
+这样设计的益处：
+
+- 无需为系统事件准备另外的一套处理回调
+
+- 系统事件对应的消息也可以使用Hooker处理或者过滤
 
 ## 发送消息
 
