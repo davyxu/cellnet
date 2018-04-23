@@ -13,17 +13,6 @@
 
 cellnet是一个组件化、高扩展性、高性能的开源服务器网络库
 
-
-
-# 版本历史
-2018.5  v4版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v4/CHANGES.md)
-
-2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
-
-2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v2/CHANGES.md)
-
-2015.8	v1版本
-
 # 使用领域
 
 cellnet经过多个版本的迭代，无论是作为初学者学习的范例，还是作为私用、商用项目的基础构建乃至核心技术层已经在业内广受了解及使用。
@@ -32,9 +21,15 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
 - 游戏服务器
 
-- ARM设备网络通讯
+  方便定制私有协议，快速构建逻辑服务器、网关服务器、服务器间互联互通、对接第三方SDK、转换编码协议等
 
-- 证券软件内部RPC
+- ARM设备
+
+  设备间网络通讯
+
+- 证券软件
+
+  内部RPC
 
 # 特性 (Features)
 
@@ -102,19 +97,14 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
 ![cellnetlogo](doc/chatlogger.png)
 
-# 第三方库依赖
-
-* github.com/davyxu/golog
-
-* github.com/davyxu/goobjfmt
-
-* github.com/golang/protobuf (选择pb编码时依赖)
-
 # 获取+编译
 
 ```
-	go get -v github.com/davyxu/cellnet
+  go get -v github.com/davyxu/cellnet
 
+  go get -v github.com/davyxu/golog
+
+  go get -v github.com/davyxu/goobjfmt
 ```
 
 
@@ -212,7 +202,7 @@ func client() {
 # 目录功能
 
 ```
-benchmark           性能测试用例
+benchmark           性能测试
 
 codec               编码支持，以及编码注册
 
@@ -548,7 +538,7 @@ http | 基本HTTP处理
 
 * cellnet有网关和db支持么?
 
-    cellnet专注于服务器底层.你可以根据自己需要编写网关及db支持
+    使用Peer/Processor可以将mysql,redis封装为标准统一的接口
 
 # 贡献者
 
@@ -567,6 +557,15 @@ Chris Lonng(https://github.com/lonnng), 在v3中提供一个最大封包约束�
 IronsDu(https://github.com/IronsDu), 在v2中大幅度性能优化
 
 viwii(viwii@sina.cn), 在v2中，提供一个可能造成死锁的bug
+
+# 版本历史
+2018.5  v4版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v4/CHANGES.md)
+
+2017.8  v3版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v3/CHANGES.md)
+
+2017.1  v2版本 [详细请查看](https://github.com/davyxu/cellnet/blob/v2/CHANGES.md)
+
+2015.8	v1版本
 
 
 # 备注
