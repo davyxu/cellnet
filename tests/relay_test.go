@@ -60,7 +60,7 @@ func relay_agent() {
 
 		backendSession = ev.Session()
 
-		log.Debugln("Backend registed", backendSession.ID())
+		log.Debugln("Backend registered", backendSession.ID())
 
 		wg.Done()
 

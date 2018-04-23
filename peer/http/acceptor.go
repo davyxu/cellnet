@@ -80,12 +80,12 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		goto OnError
 	}
 
-	if ses.responed {
+	if ses.respond {
 		return
 	}
 
 	// 处理静态文件
-	msg, err, fileHandled = self.ServeFileWithDir(res, req)
+	_, err, fileHandled = self.ServeFileWithDir(res, req)
 
 	if err != nil {
 

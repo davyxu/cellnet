@@ -34,7 +34,7 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 	self.conn, err = net.ListenUDP("udp", self.localAddr)
 
 	if err != nil {
-		log.Errorf("#udp.listen failed(%s) %s", err)
+		log.Errorf("#udp.listen failed(%s) %s", self.NameOrAddress(), err.Error())
 		self.SetRunning(false)
 		return self
 	}

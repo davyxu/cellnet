@@ -4,7 +4,7 @@
 
 [1]: https://godoc.org/github.com/davyxu/cellnet?status.svg
 [2]: https://godoc.org/github.com/davyxu/cellnet
-[3]: https://travis-ci.org/davyxu/cellnet.svg?branch=v4
+[3]: https://travis-ci.org/davyxu/cellnet.svg?branch=master
 [4]: https://travis-ci.org/davyxu/cellnet
 [5]: https://goreportcard.com/badge/github.com/davyxu/cellnet
 [6]: https://goreportcard.com/report/github.com/davyxu/cellnet

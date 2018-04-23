@@ -30,8 +30,8 @@ type httpSession struct {
 
 	t *template.Template
 
-	responed bool
-	err      error
+	respond bool
+	err     error
 }
 
 func (self *httpSession) Match(method, url string) bool {
@@ -70,7 +70,7 @@ func (self *httpSession) Send(raw interface{}) {
 
 	if proc, ok := raw.(RespondProc); ok {
 		self.err = proc.WriteRespond(self)
-		self.responed = true
+		self.respond = true
 	} else {
 		self.err = ErrUnknownOperation
 	}
