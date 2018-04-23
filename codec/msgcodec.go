@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+// 编码消息
 func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err error) {
 
 	// 获取消息元信息
@@ -26,6 +27,7 @@ func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err
 	return
 }
 
+// 解码消息
 func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, error) {
 
 	// 获取消息元信息

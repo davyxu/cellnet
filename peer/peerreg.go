@@ -9,6 +9,7 @@ type PeerCreateFunc func() cellnet.Peer
 
 var creatorByTypeName = map[string]PeerCreateFunc{}
 
+// 注册Peer创建器
 func RegisterPeerCreator(f PeerCreateFunc) {
 
 	// 临时实例化一个，获取类型
@@ -21,6 +22,7 @@ func RegisterPeerCreator(f PeerCreateFunc) {
 	creatorByTypeName[dummyPeer.TypeName()] = f
 }
 
+// Peer创建器列表
 func PeerCreatorList() (ret []string) {
 
 	for name := range creatorByTypeName {
@@ -31,6 +33,7 @@ func PeerCreatorList() (ret []string) {
 	return
 }
 
+// 创建一个Peer
 func NewPeer(peerType string) cellnet.Peer {
 	peerCreator := creatorByTypeName[peerType]
 	if peerCreator == nil {
@@ -40,6 +43,7 @@ func NewPeer(peerType string) cellnet.Peer {
 	return peerCreator()
 }
 
+// 创建Peer后，设置基本属性
 func NewGenericPeer(peerType, name, addr string, q cellnet.EventQueue) cellnet.GenericPeer {
 
 	p := NewPeer(peerType)

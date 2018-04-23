@@ -499,7 +499,7 @@ cellnet提供的Processor能满足基本的通信封包格式的处理，但在�
 
 - 消息收发量统计。
 
-- 使用nsq的Peer的基础上，还需要对用户消息进行二次封装，以实现扩展消息。
+- 使用nsq、mysql的Peer的基础上，还需要对用户消息进行二次封装，以实现扩展消息。
 
 ## 不需要使用Processor扩展的情况
  
@@ -544,12 +544,6 @@ http | 基本HTTP处理
 * cellnet有网关和db支持么?
 
     cellnet专注于服务器底层.你可以根据自己需要编写网关及db支持
-
-* 哪里有cellnet的完整例子?
-
-    CellOrigin是基于cellnet开发的一套Unity3D客户端服务器框架
-    https://github.com/davyxu/cellorigin
-
 
 # 贡献者
 

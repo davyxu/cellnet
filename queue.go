@@ -5,9 +5,13 @@ import (
 	"sync"
 )
 
+// 事件队列
 type EventQueue interface {
+
+	// 事件队列开始工作
 	StartLoop() EventQueue
 
+	// 停止事件队列
 	StopLoop() EventQueue
 
 	// 等待退出
@@ -103,6 +107,7 @@ func NewEventQueue() EventQueue {
 	}
 }
 
+// 在会话对应的Peer上的事件队列中执行callback，如果没有队列，则马上执行
 func SessionQueuedCall(ses Session, callback func()) {
 	if ses == nil {
 		return

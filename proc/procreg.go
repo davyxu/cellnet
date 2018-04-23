@@ -17,6 +17,7 @@ func RegisterProcessor(procName string, f ProcessorBinder) {
 	procByName[procName] = f
 }
 
+// 获取处理器列表
 func ProcessorList() (ret []string) {
 
 	for name := range procByName {
@@ -27,7 +28,7 @@ func ProcessorList() (ret []string) {
 	return
 }
 
-// 绑定固定回调处理器
+// 绑定固定回调处理器, procName来源于RegisterProcessor注册的处理器，形如: 'tcp.ltv'
 func BindProcessorHandler(peer cellnet.Peer, procName string, userCallback cellnet.EventCallback) {
 
 	if proc, ok := procByName[procName]; ok {

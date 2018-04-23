@@ -64,7 +64,22 @@ func client() {
 
 	begin := time.Now()
 
-	for time.Now().Sub(begin) < 10*time.Second {
+	var lastcheck time.Time
+
+	const total = 10 * time.Second
+
+	for {
+
+		now := time.Now()
+
+		if now.Sub(begin) >= total {
+			break
+		}
+
+		if now.Sub(lastcheck) >= time.Second {
+			fmt.Printf("progress: %d%%\n", now.Sub(begin)*100/total)
+			lastcheck = now
+		}
 
 		rv.Recv(func(ev cellnet.Event) {
 

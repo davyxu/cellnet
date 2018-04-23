@@ -4,11 +4,16 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
+// 处理器设置接口，由各Peer实现
 type ProcessorBundle interface {
+
+	// 设置 传输器，负责收发消息
 	SetTransmitter(v cellnet.MessageTransmitter)
 
+	// 设置 接收后，发送前的事件处理流程
 	SetHooker(v cellnet.EventHooker)
 
+	// 设置 接收后最终处理回调
 	SetCallback(v cellnet.EventCallback)
 }
 

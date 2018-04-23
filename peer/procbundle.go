@@ -5,7 +5,10 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
+// 手动投递消息， 兼容v2的设计
 type MessagePoster interface {
+
+	// 投递一个消息到Hooker之前
 	PostEvent(ev cellnet.Event)
 }
 

@@ -83,6 +83,7 @@ func (self *CoreSessionManager) CloseAllSession() {
 	})
 }
 
+// 活跃的会话数量
 func (self *CoreSessionManager) SessionCount() int {
 
 	v := atomic.LoadInt64(&self.count)

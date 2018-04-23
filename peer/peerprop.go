@@ -17,6 +17,8 @@ func (self *CorePeerProperty) Name() string {
 func (self *CorePeerProperty) Queue() cellnet.EventQueue {
 	return self.queue
 }
+
+// 获取SetAddress中的侦听或者连接地址
 func (self *CorePeerProperty) Address() string {
 
 	return self.addr
@@ -25,9 +27,11 @@ func (self *CorePeerProperty) Address() string {
 func (self *CorePeerProperty) SetName(v string) {
 	self.name = v
 }
+
 func (self *CorePeerProperty) SetQueue(v cellnet.EventQueue) {
 	self.queue = v
 }
+
 func (self *CorePeerProperty) SetAddress(v string) {
 	self.addr = v
 }
