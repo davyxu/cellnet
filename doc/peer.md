@@ -56,5 +56,6 @@ tcp.Connector | TCPConnector | tcp发起连接，自动重连
 tcp.Acceptor | TCPAcceptor | tcp接受连接，优雅重启
 http.Connector | HTTPConnector | http发起请求和接收解码回应
 http.Acceptor | HTTPAcceptor | http文件服务，消息收发
-udp.Connector | 没有特殊接口 | udp发起连接，无握手
+udp.Connector | UDPConnector | udp发起连接，无握手
 udp.Acceptor | 没有特殊接口 | udp连接管理
+gorillaws.Acceptor | WSAcceptor | websocket连接管理，加密连接

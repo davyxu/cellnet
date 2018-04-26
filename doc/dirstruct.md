@@ -19,6 +19,8 @@ examples            例子
 
     fileserver      使用cellnet内建HTTP服务器支持文件服务
 
+    websocket       WebSocket与网页js通信例子
+
 msglog              消息日志处理
 
 peer                各种协议的端实现，以及端注册入口及复用组件
@@ -29,6 +31,8 @@ peer                各种协议的端实现，以及端注册入口及复用组
 
     udp             UDP协议处理流程及端封装
 
+    gorillaws       WebSocket协议处理流程及端封装
+
 proc                各种处理器实现，以及处理器注册入口
 
     http            HTTP消息处理及文件服务实现
@@ -36,6 +40,8 @@ proc                各种处理器实现，以及处理器注册入口
     tcp             在TCP peer上构建的tcp处理器集合
 
     udp             在UDP peer上构建的udp处理器集合
+
+    gorillaws       WeboScket的协议处理
 
 relay               接力消息封装
 

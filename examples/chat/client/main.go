@@ -41,7 +41,7 @@ func main() {
 	queue := cellnet.NewEventQueue()
 
 	// 创建一个tcp的连接器，名称为client，连接地址为127.0.0.1:8801，将事件投递到queue队列,单线程的处理（收发封包过程是多线程）
-	p := peer.NewGenericPeer("tcp.Connector", "client", "127.0.0.1:8801", queue)
+	p := peer.NewGenericPeer("tcp.Connector", "client", "127.0.0.1:18801", queue)
 
 	// 设定封包收发处理的模式为tcp的ltv(Length-Type-Value), Length为封包大小，Type为消息ID，Value为消息内容
 	// 并使用switch处理收到的消息

@@ -46,6 +46,10 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
     侦听器的优雅重启, 支持json及form的收发及封装。编写游戏服务器时，不再需要配合第三方HTTP服务器做后台。
 
+- WebSocket
+
+    采用(github.com/gorilla/websocket)实现
+
 ## 编码(Codec)
 
 * cellnet内建支持以下数据编码:
@@ -107,9 +111,11 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
   go get -v github.com/davyxu/goobjfmt
 ```
 
-# 第三方编码安装
+# 第三方库
 
 [Google Protobuf 编码安装](https://github.com/davyxu/cellnet/blob/master/doc/pbcodec.md)
+
+[WebSocket实现](https://github.com/gorilla/websocket)
 
 # 架构
 

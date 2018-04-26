@@ -80,7 +80,7 @@ func (self *tcpAcceptor) accept() {
 
 func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
-	ses := newTCPSession(conn, self, nil)
+	ses := newSession(conn, self, nil)
 
 	ses.(interface {
 		Start()

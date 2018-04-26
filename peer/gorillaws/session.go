@@ -1,23 +1,23 @@
-package tcp
+package gorillaws
 
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/gorilla/websocket"
 	"io"
 	"net"
 	"sync"
 )
 
 // Socket会话
-type tcpSession struct {
+type wsSession struct {
 	peer.CoreContextSet
 	peer.CoreSessionIdentify
 	*peer.CoreProcBundle
 
 	pInterface cellnet.Peer
 
-	// Socket原始连接
-	conn net.Conn
+	conn *websocket.Conn
 
 	// 退出同步器
 	exitSync sync.WaitGroup
@@ -30,21 +30,21 @@ type tcpSession struct {
 	endNotify func()
 }
 
-func (self *tcpSession) Peer() cellnet.Peer {
+func (self *wsSession) Peer() cellnet.Peer {
 	return self.pInterface
 }
 
 // 取原始连接
-func (self *tcpSession) Raw() interface{} {
+func (self *wsSession) Raw() interface{} {
 	return self.conn
 }
 
-func (self *tcpSession) Close() {
+func (self *wsSession) Close() {
 	self.sendChan <- nil
 }
 
 // 发送封包
-func (self *tcpSession) Send(msg interface{}) {
+func (self *wsSession) Send(msg interface{}) {
 	self.sendChan <- msg
 }
 
@@ -57,7 +57,7 @@ func isEOFOrNetReadError(err error) bool {
 }
 
 // 接收循环
-func (self *tcpSession) recvLoop() {
+func (self *wsSession) recvLoop() {
 
 	for self.conn != nil {
 
@@ -79,7 +79,7 @@ func (self *tcpSession) recvLoop() {
 }
 
 // 发送循环
-func (self *tcpSession) sendLoop() {
+func (self *wsSession) sendLoop() {
 
 	// 遍历要发送的数据
 	for msg := range self.sendChan {
@@ -89,7 +89,6 @@ func (self *tcpSession) sendLoop() {
 			break
 		}
 
-		// TODO SendMsgEvent并不是很有意义
 		self.SendMessage(&cellnet.SendMsgEvent{self, msg})
 
 	}
@@ -98,7 +97,7 @@ func (self *tcpSession) sendLoop() {
 }
 
 // 清理资源
-func (self *tcpSession) cleanup() {
+func (self *wsSession) cleanup() {
 
 	self.cleanupGuard.Lock()
 
@@ -121,7 +120,7 @@ func (self *tcpSession) cleanup() {
 }
 
 // 启动会话的各种资源
-func (self *tcpSession) Start() {
+func (self *wsSession) Start() {
 
 	// 将会话添加到管理器
 	self.Peer().(peer.SessionManager).Add(self)
@@ -153,8 +152,8 @@ func (self *tcpSession) Start() {
 // 默认10个长度的发送队列
 const SendQueueLen = 100
 
-func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
-	self := &tcpSession{
+func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
+	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
 		sendChan:   make(chan interface{}, SendQueueLen),

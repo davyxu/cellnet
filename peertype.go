@@ -75,3 +75,13 @@ type UDPConnector interface {
 	// 默认会话
 	Session() Session
 }
+
+// Websocket接受器，具备会话访问
+type WSAcceptor interface {
+	GenericPeer
+
+	SetHttps(certfile, keyfile string)
+
+	// 访问会话
+	SessionAccessor
+}

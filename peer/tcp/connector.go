@@ -88,7 +88,7 @@ func (self *tcpConnector) connect(address string) {
 		// 尝试用Socket连接地址
 		conn, err := net.Dial("tcp", address)
 
-		ses := newTCPSession(conn, self, func() {
+		ses := newSession(conn, self, func() {
 			self.endSignal.Done()
 		})
 		self.defaultSes = ses

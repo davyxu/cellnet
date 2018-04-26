@@ -19,17 +19,17 @@ func main() {
 	queue := cellnet.NewEventQueue()
 
 	// 创建一个tcp的侦听器，名称为server，连接地址为127.0.0.1:8801，所有连接将事件投递到queue队列,单线程的处理（收发封包过程是多线程）
-	p := peer.NewGenericPeer("tcp.Acceptor", "server", "127.0.0.1:8801", queue)
+	p := peer.NewGenericPeer("tcp.Acceptor", "server", "127.0.0.1:18801", queue)
 
 	// 设定封包收发处理的模式为tcp的ltv(Length-Type-Value), Length为封包大小，Type为消息ID，Value为消息内容
 	// 每一个连接收到的所有消息事件(cellnet.Event)都被派发到用户回调, 用户使用switch判断消息类型，并做出不同的处理
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
-		// 有新的连接连到8801端口
+		// 有新的连接
 		case *cellnet.SessionAccepted:
 			log.Debugln("server accepted")
-		// 有连接从8801端口断开
+		// 有连接断开
 		case *cellnet.SessionClosed:
 			log.Debugln("session closed: ", ev.Session().ID())
 		// 收到某个连接的ChatREQ消息
