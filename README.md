@@ -233,6 +233,13 @@ func client() {
 
 # 运行聊天例子
 
+**确认GOPATH设置正确！！**
+
+假设 GOPATH设置为/home/you/go
+
+那么 cellnet结构位于 /home/you/go/src/github.com/davyxu/cellnet
+
+
 ## 运行 服务器
 
 ```bash

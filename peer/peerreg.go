@@ -37,7 +37,7 @@ func PeerCreatorList() (ret []string) {
 func NewPeer(peerType string) cellnet.Peer {
 	peerCreator := creatorByTypeName[peerType]
 	if peerCreator == nil {
-		panic("Peer name not found: " + peerType)
+		panic("Peer type not found: " + peerType)
 	}
 
 	return peerCreator()
