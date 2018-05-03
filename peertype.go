@@ -48,6 +48,8 @@ type TCPConnector interface {
 
 	SessionManagerSetter
 
+	TCPSocketOption
+
 	// 设置重连时间
 	SetReconnectDuration(time.Duration)
 
@@ -66,6 +68,8 @@ type TCPAcceptor interface {
 
 	// 访问会话
 	SessionAccessor
+
+	TCPSocketOption
 }
 
 // UDP连接器
@@ -84,4 +88,10 @@ type WSAcceptor interface {
 
 	// 访问会话
 	SessionAccessor
+}
+
+// TCP
+type TCPSocketOption interface {
+	// 收发缓冲大小，默认-1
+	SetSocketBuffer(readBufferSize, writeBufferSize int, noDelay bool)
 }

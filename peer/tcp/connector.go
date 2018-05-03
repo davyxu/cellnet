@@ -15,6 +15,7 @@ type tcpConnector struct {
 	peer.CoreContextSet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
+	peer.CoreTCPSocketOption
 
 	defaultSes cellnet.Session
 
@@ -122,6 +123,8 @@ func (self *tcpConnector) connect(address string) {
 
 		self.endSignal.Add(1)
 
+		self.ApplySocketOption(conn)
+
 		ses.(interface {
 			Start()
 		}).Start()
@@ -167,6 +170,8 @@ func init() {
 		p := &tcpConnector{
 			SessionManager: new(peer.CoreSessionManager),
 		}
+
+		p.CoreTCPSocketOption.Init()
 
 		return p
 	})

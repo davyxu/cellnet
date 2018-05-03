@@ -13,6 +13,7 @@ type tcpAcceptor struct {
 	peer.CoreContextSet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
+	peer.CoreTCPSocketOption
 
 	// 保存侦听器
 	listener net.Listener
@@ -80,6 +81,8 @@ func (self *tcpAcceptor) accept() {
 
 func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
+	self.ApplySocketOption(conn)
+
 	ses := newSession(conn, self, nil)
 
 	ses.(interface {
@@ -120,6 +123,8 @@ func init() {
 		p := &tcpAcceptor{
 			SessionManager: new(peer.CoreSessionManager),
 		}
+
+		p.CoreTCPSocketOption.Init()
 
 		return p
 	})
