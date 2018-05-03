@@ -93,23 +93,27 @@ func relay_agent() {
 
 	relay_ClientToAgentAcceptor.Start()
 
-	relay.BindBroadcaster(relay_ClientToAgentAcceptor, relay_BackendToAgentAcceptor, func(frontendPeer cellnet.Peer, ev *relay.RecvMsgEvent) {
+	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) {
 
-		// 广播器
-		sesAccessor := frontendPeer.(cellnet.SessionAccessor)
+		// 仅限于从后端来的Relay消息, 本Test中，因为3个进程逻辑混在一起，必须这样区分来源
+		if event.Ses.Peer() == relay_BackendToAgentAcceptor {
 
-		// 要广播的客户端列表
-		for _, maskedSessionID := range ev.ContextID {
+			// 广播器
+			sesAccessor := relay_ClientToAgentAcceptor.(cellnet.SessionAccessor)
 
-			// 去掉掩码
-			sesID := maskedSessionID - AgentSessionIDMask
-			ses := sesAccessor.GetSession(sesID)
-			if ses != nil {
+			// 要广播的客户端列表
+			for _, maskedSessionID := range event.ContextID {
 
-				log.Debugln("Broadcast to client", ev.Message(), sesID)
-				ses.Send(ev.Message())
+				// 去掉掩码
+				sesID := maskedSessionID - AgentSessionIDMask
+				ses := sesAccessor.GetSession(sesID)
+				if ses != nil {
+
+					log.Debugln("Broadcast to client", event.Message(), sesID)
+					ses.Send(event.Message())
+				}
+
 			}
-
 		}
 
 	})

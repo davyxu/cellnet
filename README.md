@@ -113,6 +113,7 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
 # 第三方库
 
+cellnet 使用Protobuf时，需要使用附带的pb插件生成一个绑定代码，下面的链接可以处理这个问题
 [Google Protobuf 编码安装](https://github.com/davyxu/cellnet/blob/master/doc/pbcodec.md)
 
 [WebSocket实现](https://github.com/gorilla/websocket)

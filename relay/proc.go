@@ -35,11 +35,12 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 				relayMsg.ContextID,
 			}
 
-			// 转到对应线程中调用
-			cellnet.SessionQueuedCall(inputEvent.Session(), func() {
-
-				broadcast(ev)
-			})
+			if bcFunc != nil {
+				// 转到对应线程中调用
+				cellnet.SessionQueuedCall(inputEvent.Session(), func() {
+					bcFunc(ev)
+				})
+			}
 
 			ouputEvent = ev
 			handled = true
