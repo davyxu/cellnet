@@ -68,6 +68,8 @@ func (self *tcpSession) recvLoop() {
 				log.Errorln("session closed:", err)
 			}
 
+			self.Send(nil)
+
 			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
 			break
 		}
