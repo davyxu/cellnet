@@ -26,10 +26,6 @@ type tcpConnector struct {
 	reconDur time.Duration
 }
 
-func (self *tcpConnector) SetSessionManager(raw interface{}) {
-	self.SessionManager = raw.(peer.SessionManager)
-}
-
 func (self *tcpConnector) Start() cellnet.Peer {
 
 	self.WaitStopFinished()
