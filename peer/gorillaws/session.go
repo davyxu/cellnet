@@ -2,7 +2,6 @@ package gorillaws
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/gorilla/websocket"
 	"io"
@@ -24,7 +23,7 @@ type wsSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *tcp.MsgQueue
+	sendQueue *peer.MsgQueue
 
 	cleanupGuard sync.Mutex
 
@@ -154,7 +153,7 @@ func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) cellnet.
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  tcp.NewMsgQueue(),
+		sendQueue:  peer.NewMsgQueue(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle

@@ -55,6 +55,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
+			log.Debugln(err)
 			return
 		}
 

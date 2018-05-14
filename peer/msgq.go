@@ -1,9 +1,10 @@
-package tcp
+package peer
 
 import (
 	"sync"
 )
 
+// 消息队列，用于避免固定大小的channel实现的队列发生阻塞情况
 type MsgQueue struct {
 	list      []interface{}
 	listGuard sync.Mutex
