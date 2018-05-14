@@ -2,6 +2,7 @@ package gorillaws
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/gorilla/websocket"
 	"io"
@@ -23,7 +24,7 @@ type wsSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendChan chan interface{}
+	sendQueue *tcp.MsgQueue
 
 	cleanupGuard sync.Mutex
 
@@ -40,12 +41,12 @@ func (self *wsSession) Raw() interface{} {
 }
 
 func (self *wsSession) Close() {
-	self.sendChan <- nil
+	self.sendQueue.Add(nil)
 }
 
 // 发送封包
 func (self *wsSession) Send(msg interface{}) {
-	self.sendChan <- msg
+	self.sendQueue.Add(msg)
 }
 
 func isEOFOrNetReadError(err error) bool {
@@ -81,16 +82,22 @@ func (self *wsSession) recvLoop() {
 // 发送循环
 func (self *wsSession) sendLoop() {
 
-	// 遍历要发送的数据
-	for msg := range self.sendChan {
+	var writeList []interface{}
 
-		// nil表示需要退出会话通讯
-		if msg == nil {
-			break
+	for {
+		writeList = writeList[0:0]
+		exit := self.sendQueue.Pick(&writeList)
+
+		// 遍历要发送的数据
+		for _, msg := range writeList {
+
+			// TODO SendMsgEvent并不是很有意义
+			self.SendMessage(&cellnet.SendMsgEvent{self, msg})
 		}
 
-		self.SendMessage(&cellnet.SendMsgEvent{self, msg})
-
+		if exit {
+			break
+		}
 	}
 
 	self.cleanup()
@@ -107,12 +114,6 @@ func (self *wsSession) cleanup() {
 	if self.conn != nil {
 		self.conn.Close()
 		self.conn = nil
-	}
-
-	// 关闭发送队列
-	if self.sendChan != nil {
-		close(self.sendChan)
-		self.sendChan = nil
 	}
 
 	// 通知完成
@@ -149,14 +150,11 @@ func (self *wsSession) Start() {
 	go self.sendLoop()
 }
 
-// 默认10个长度的发送队列
-const SendQueueLen = 100
-
 func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendChan:   make(chan interface{}, SendQueueLen),
+		sendQueue:  tcp.NewMsgQueue(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle
