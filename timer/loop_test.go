@@ -3,6 +3,7 @@ package timer
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"
 )
@@ -11,6 +12,8 @@ func TestLoopPanic(t *testing.T) {
 
 	q := cellnet.NewEventQueue()
 	q.EnableCapturePanic(true)
+
+	q.StartLoop()
 
 	var times = 3
 
@@ -28,7 +31,25 @@ func TestLoopPanic(t *testing.T) {
 
 	}, nil).Start()
 
+	q.Wait()
+}
+
+func TestNotifyStop(t *testing.T) {
+	q := cellnet.NewEventQueue()
+
+	signal := util.NewSignalTester(t)
+
 	q.StartLoop()
 
-	q.Wait()
+	NewLoop(q, time.Millisecond*100, func(loop *Loop) {
+
+		t.Log("tick")
+
+		signal.Done(1)
+
+		loop.Stop()
+
+	}, nil).Start()
+
+	signal.WaitAndExpect("time out", 1)
 }

@@ -38,10 +38,12 @@ func (self *Loop) rawPost() {
 		panic("seconds can be zero in loop")
 	}
 
-	After(self.Queue, self.Duration, func() {
+	if self.running {
+		After(self.Queue, self.Duration, func() {
 
-		tick(self, false)
-	}, nil)
+			tick(self, false)
+		}, nil)
+	}
 }
 
 func (self *Loop) NextLoop() {
