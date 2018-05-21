@@ -50,6 +50,9 @@ type TCPConnector interface {
 
 	// 默认会话
 	Session() Session
+
+	// 设置会话管理器 实现peer.SessionManager接口
+	SetSessionManager(raw interface{})
 }
 
 // TCP接受器，具备会话访问

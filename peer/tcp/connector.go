@@ -43,6 +43,10 @@ func (self *tcpConnector) Session() cellnet.Session {
 	return self.defaultSes
 }
 
+func (self *tcpConnector) SetSessionManager(raw interface{}) {
+	self.SessionManager = raw.(peer.SessionManager)
+}
+
 func (self *tcpConnector) Stop() {
 	if !self.IsRunning() {
 		return
