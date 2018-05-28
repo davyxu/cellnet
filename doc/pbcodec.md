@@ -37,7 +37,7 @@
 执行以下shell
 
 ```
-${GOPATH}/github.com/codec/gogopb/test/export.sh
+${GOPATH}/github.com/davyxu/cellnet/codec/gogopb/test/export.sh
 ```
 
 将使用protoc读取pb.proto并生成pb.pb.go和msgid.go两个文件

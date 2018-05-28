@@ -2,14 +2,13 @@ package codec
 
 import (
 	"github.com/davyxu/cellnet"
-	"reflect"
 )
 
 // 编码消息
 func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err error) {
 
 	// 获取消息元信息
-	meta = cellnet.MessageMetaByType(reflect.TypeOf(msg))
+	meta = cellnet.MessageMetaByMsg(msg)
 	if meta == nil {
 		return nil, nil, cellnet.NewErrorContext("msg not exists", msg)
 	}

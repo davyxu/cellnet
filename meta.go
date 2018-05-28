@@ -141,6 +141,16 @@ func MessageMetaByType(t reflect.Type) *MessageMeta {
 	return nil
 }
 
+// 根据消息对象获得消息元信息
+func MessageMetaByMsg(msg interface{}) *MessageMeta {
+
+	if msg == nil {
+		return nil
+	}
+
+	return MessageMetaByType(reflect.TypeOf(msg))
+}
+
 // 根据id查找消息元信息
 func MessageMetaByID(id int) *MessageMeta {
 	if v, ok := metaByID[id]; ok {
@@ -156,21 +166,12 @@ func MessageToName(msg interface{}) string {
 		return ""
 	}
 
-	meta := MessageMetaByType(indirectType(msg))
+	meta := MessageMetaByMsg(msg)
 	if meta == nil {
 		return ""
 	}
 
 	return meta.TypeName()
-}
-
-func indirectType(msg interface{}) reflect.Type {
-	t := reflect.TypeOf(msg)
-	if t.Kind() == reflect.Ptr {
-		return t.Elem()
-	}
-
-	return t
 }
 
 func MessageToID(msg interface{}) int {
@@ -179,9 +180,7 @@ func MessageToID(msg interface{}) int {
 		return 0
 	}
 
-	reflect.TypeOf(msg)
-
-	meta := MessageMetaByType(indirectType(msg))
+	meta := MessageMetaByMsg(msg)
 	if meta == nil {
 		return 0
 	}

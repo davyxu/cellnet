@@ -4,7 +4,7 @@ import "testing"
 
 func TestAllocator(t *testing.T) {
 
-	alloc := NewAllocator([...]int{5, 10, 20})
+	alloc := NewAllocator(3)
 	if cap(alloc.Alloc(1)) != 5 {
 		t.Log("level 1 alloc failed")
 		t.FailNow()
@@ -28,7 +28,7 @@ func TestAllocator(t *testing.T) {
 
 func BenchmarkAllocator(b *testing.B) {
 
-	alloc := NewAllocator([...]int{5, 10, 20})
+	alloc := NewAllocator(3)
 	for i := 0; i < b.N; i++ {
 
 		data := alloc.Alloc(11)
@@ -47,4 +47,8 @@ func BenchmarkAllocatorClassic(b *testing.B) {
 		data = data
 	}
 
+}
+
+func Test(t *testing.T) {
+	println(StringHash("FrameDataREQ"))
 }
