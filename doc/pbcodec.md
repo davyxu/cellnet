@@ -11,6 +11,10 @@
 
 * Linux 64位平台，选择 protoc-x.x.x-linux-x86_64.zip
 
+## protoc编译器
+
+确保pb编译器protoc的可执行文件放在GOPATH/bin下
+
 
 ## 安装protoc编译器插件(protoc-gen-gogofaster)
 
