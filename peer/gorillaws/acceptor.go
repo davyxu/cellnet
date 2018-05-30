@@ -39,19 +39,21 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	self.SetRunning(true)
 
-	url, err := url.Parse(self.Address())
+	urlObj, err := url.Parse(self.Address())
 
 	if err != nil {
 		log.Errorf("#websocket.urlparse failed(%s) %v", self.NameOrAddress(), err.Error())
 		return self
 	}
 
-	if url.Path == "" {
+	if urlObj.Path == "" {
 		log.Errorln("#websocket start failed, expect path in url to listen", self.NameOrAddress())
 		return self
 	}
 
-	http.HandleFunc(url.Path, func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc(urlObj.Path, func(w http.ResponseWriter, r *http.Request) {
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -76,10 +78,10 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 		log.Infof("#websocket.listen(%s) %s", self.Name(), self.Address())
 
-		if url.Scheme == "https" {
-			err = http.ListenAndServeTLS(url.Host, self.certfile, self.keyfile, nil)
+		if urlObj.Scheme == "https" {
+			err = http.ListenAndServeTLS(urlObj.Host, self.certfile, self.keyfile, mux)
 		} else {
-			err = http.ListenAndServe(url.Host, nil)
+			err = http.ListenAndServe(urlObj.Host, mux)
 		}
 
 		if err != nil {
