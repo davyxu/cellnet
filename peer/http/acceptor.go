@@ -32,7 +32,7 @@ var (
 
 func (self *httpAcceptor) Start() cellnet.Peer {
 
-	log.Infof("#http.listen(%s) %s", self.Name(), self.Address())
+	log.Infof("#http.listen(%s) http://%s", self.Name(), self.Address())
 
 	self.sv = &http.Server{Addr: self.Address(), Handler: self}
 
@@ -89,7 +89,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	if err != nil {
 
-		log.Warnf("#http.recv(%s) '%s' %s | [%d] File not found",
+		log.Warnf("#http.recv(%s) '%s' %s | [%d] Not found",
 			self.Name(),
 			req.Method,
 			req.URL.Path,

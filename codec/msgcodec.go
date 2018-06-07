@@ -4,8 +4,8 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-// 编码消息
-func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err error) {
+// 编码消息, 在使用了带内存池的codec中，可以传入session或peer的ContextSet，保存内存池上下文，默认ctx传nil
+func EncodeMessage(msg interface{}, ctx cellnet.ContextSet) (data []byte, meta *cellnet.MessageMeta, err error) {
 
 	// 获取消息元信息
 	meta = cellnet.MessageMetaByMsg(msg)
@@ -15,7 +15,7 @@ func EncodeMessage(msg interface{}) (data []byte, meta *cellnet.MessageMeta, err
 
 	// 将消息编码为字节数组
 	var raw interface{}
-	raw, err = meta.Codec.Encode(msg)
+	raw, err = meta.Codec.Encode(msg, ctx)
 
 	if err != nil {
 		return
@@ -48,4 +48,20 @@ func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, e
 	}
 
 	return msg, meta, nil
+}
+
+// Codec.Encode内分配的资源，在必要时可以回收，例如内存池对象
+type CodecRecycler interface {
+	Free(data interface{}, ctx cellnet.ContextSet)
+}
+
+func FreeCodecResource(codec cellnet.Codec, data interface{}, ctx cellnet.ContextSet) {
+
+	if codec == nil {
+		return
+	}
+
+	if recycler, ok := codec.(CodecRecycler); ok {
+		recycler.Free(data, ctx)
+	}
 }

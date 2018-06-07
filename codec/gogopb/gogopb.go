@@ -1,6 +1,7 @@
 package gogopb
 
 import (
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/gogo/protobuf/proto"
 )
@@ -17,7 +18,7 @@ func (self *gogopbCodec) MimeType() string {
 	return "application/x-protobuf"
 }
 
-func (self *gogopbCodec) Encode(msgObj interface{}) (data interface{}, err error) {
+func (self *gogopbCodec) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interface{}, err error) {
 
 	return proto.Marshal(msgObj.(proto.Message))
 

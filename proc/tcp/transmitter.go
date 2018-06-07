@@ -32,5 +32,5 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 		return nil
 	}
 
-	return util.SendLTVPacket(writer, msg)
+	return util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"net"
+	"time"
 )
 
 type DataReader interface {
@@ -17,14 +18,20 @@ type DataWriter interface {
 // Socket会话
 type udpSession struct {
 	*peer.CoreProcBundle
+	peer.CoreContextSet
 
 	pInterface cellnet.Peer
 
 	pkt []byte
 
 	// Socket原始连接
-	remote *net.UDPAddr
-	conn   *net.UDPConn
+	remote      *net.UDPAddr
+	conn        *net.UDPConn
+	timeOutTick time.Time
+}
+
+func (self *udpSession) IsAlive() bool {
+	return time.Now().Before(self.timeOutTick)
 }
 
 func (self *udpSession) ID() int64 {

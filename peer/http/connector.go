@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 )
@@ -25,25 +24,25 @@ func (self *httpConnector) Stop() {
 
 }
 
-func (self *httpConnector) Request(method string, raw interface{}) (interface{}, error) {
+func (self *httpConnector) Request(method, path string, raw interface{}) (interface{}, error) {
 
 	// 获取消息元信息
-	meta := cellnet.HttpMetaByRequestType(method, reflect.TypeOf(raw))
+	meta := cellnet.HttpMetaByMethodURL(method, path)
 	if meta == nil {
 		return nil, cellnet.NewErrorContext("msg not found", raw)
 	}
 
 	// 将消息编码为字节数组
-	data, err := meta.RequestCodec.Encode(raw)
+	data, err := meta.RequestCodec.Encode(raw, nil)
 
 	log.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
 		self.Name(),
 		meta.Method,
-		meta.URL,
+		meta.Path,
 		meta.RequestTypeName(),
 		cellnet.MessageToString(raw))
 
-	url := fmt.Sprintf("http://%s%s", self.Address(), meta.URL)
+	url := fmt.Sprintf("http://%s%s", self.Address(), meta.Path)
 
 	req, err := http.NewRequest(meta.Method, url, data.(io.Reader))
 
@@ -64,19 +63,14 @@ func (self *httpConnector) Request(method string, raw interface{}) (interface{},
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	msg := reflect.New(meta.ResponseType).Interface()
 
-	err = meta.ResponseCodec.Decode(body, msg)
+	err = meta.ResponseCodec.Decode(resp.Body, msg)
 
 	log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
 		self.Name(),
 		resp.Request.Method,
-		meta.URL,
+		meta.Path,
 		resp.StatusCode,
 		meta.ResponseTypeName(),
 		cellnet.MessageToString(msg))

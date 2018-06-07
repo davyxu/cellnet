@@ -1,6 +1,7 @@
 package httpform
 
 import (
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"net/http"
 	"net/url"
@@ -62,7 +63,7 @@ func structToUrlValues(obj interface{}) url.Values {
 	return formValues
 }
 
-func (self *httpFormCodec) Encode(msgObj interface{}) (data interface{}, err error) {
+func (self *httpFormCodec) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interface{}, err error) {
 
 	return strings.NewReader(structToUrlValues(msgObj).Encode()), err
 }

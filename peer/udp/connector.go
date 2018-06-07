@@ -51,20 +51,29 @@ func (self *udpConnector) connect() {
 
 	var running = true
 
-	ses := newUDPSession(nil, self.conn, self)
+	ses := &udpSession{
+		conn:           self.conn,
+		pInterface:     self,
+		CoreProcBundle: &self.CoreProcBundle,
+	}
+
 	self.defaultSes = ses
 
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
-	buff := make([]byte, MaxUDPRecvBuffer)
+	recvBuff := make([]byte, MaxUDPRecvBuffer)
+
 	for running {
 
-		n, _, err := self.conn.ReadFromUDP(buff)
+		n, _, err := self.conn.ReadFromUDP(recvBuff)
 		if err != nil {
 			break
 		}
 
-		ses.Recv(buff[:n])
+		if n > 0 {
+			ses.Recv(recvBuff[:n])
+		}
+
 	}
 }
 

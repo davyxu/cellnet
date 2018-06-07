@@ -27,7 +27,9 @@ func (self *RecvMsgEvent) Queue() cellnet.EventQueue {
 
 func (self *RecvMsgEvent) Reply(msg interface{}) {
 
-	data, meta, err := codec.EncodeMessage(msg)
+	ctx, _ := self.ses.(cellnet.ContextSet)
+
+	data, meta, err := codec.EncodeMessage(msg, ctx)
 
 	if err != nil {
 		log.Errorf("rpc reply message encode error: %s", err)
@@ -39,5 +41,7 @@ func (self *RecvMsgEvent) Reply(msg interface{}) {
 		Data:   data,
 		CallID: self.callid,
 	})
+
+	codec.FreeCodecResource(meta.Codec, data, ctx)
 
 }

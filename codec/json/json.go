@@ -2,6 +2,7 @@ package json
 
 import (
 	"encoding/json"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 )
 
@@ -18,7 +19,7 @@ func (self *jsonCodec) MimeType() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *jsonCodec) Encode(msgObj interface{}) (data interface{}, err error) {
+func (self *jsonCodec) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interface{}, err error) {
 
 	return json.Marshal(msgObj)
 

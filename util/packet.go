@@ -50,11 +50,13 @@ func RecvLTVPacket(reader io.Reader) (msg interface{}, err error) {
 }
 
 // 发送Length-Type-Value格式的封包流程
-func SendLTVPacket(writer io.Writer, data interface{}) error {
+func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) error {
 
 	// 取Socket连接
 	var msgData []byte
 	var msgID int
+
+	var meta *cellnet.MessageMeta
 
 	switch m := data.(type) {
 	case *cellnet.RawPacket: // 发裸包
@@ -62,9 +64,9 @@ func SendLTVPacket(writer io.Writer, data interface{}) error {
 		msgID = m.MsgID
 	default: // 发普通编码包
 		var err error
-		var meta *cellnet.MessageMeta
+
 		// 将用户数据转换为字节数组和消息ID
-		msgData, meta, err = codec.EncodeMessage(data)
+		msgData, meta, err = codec.EncodeMessage(data, ctx)
 
 		if err != nil {
 			return err
@@ -85,5 +87,12 @@ func SendLTVPacket(writer io.Writer, data interface{}) error {
 	copy(pkt[2+2:], msgData)
 
 	// 将数据写入Socket
-	return WriteFull(writer, pkt)
+	err := WriteFull(writer, pkt)
+
+	// Codec中使用内存池时的释放位置
+	if meta != nil {
+		codec.FreeCodecResource(meta.Codec, msgData, ctx)
+	}
+
+	return err
 }

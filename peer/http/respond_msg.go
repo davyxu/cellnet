@@ -3,17 +3,26 @@ package http
 import (
 	"errors"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
+	"io"
+	"io/ioutil"
 	"net/http"
-	"reflect"
 )
 
 type MessageRespond struct {
 	StatusCode int
 	Msg        interface{}
+	CodecName  string
 }
 
 func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+	codec := codec.GetCodec(self.CodecName)
+
+	if codec == nil {
+		return errors.New("ResponseCodec not found:" + self.CodecName)
+	}
 
 	msg := self.Msg
 
@@ -25,27 +34,23 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 		cellnet.MessageToName(msg),
 		cellnet.MessageToString(msg))
 
-	// 获取消息元信息
-	meta := cellnet.HttpMetaByResponseType(ses.req.Method, reflect.TypeOf(msg))
-	if meta == nil {
-		return errors.New("message not found:" + reflect.TypeOf(msg).Name())
-	}
-
-	if meta.ResponseCodec == nil {
-		return errors.New("ResponseCodec not found:" + reflect.TypeOf(msg).Name())
-	}
-
 	// 将消息编码为字节数组
 	var data interface{}
-	data, err := meta.ResponseCodec.Encode(msg)
+	data, err := codec.Encode(msg, nil)
 
 	if err != nil {
 		return err
 	}
 
-	ses.resp.Header().Set("Content-Type", meta.ResponseCodec.MimeType()+";charset=UTF-8")
+	ses.resp.Header().Set("Content-Type", codec.MimeType()+";charset=UTF-8")
 	ses.resp.WriteHeader(http.StatusOK)
-	ses.resp.Write(data.([]byte))
+
+	bodyData, err := ioutil.ReadAll(data.(io.Reader))
+	if err != nil {
+		return err
+	}
+
+	ses.resp.Write(bodyData)
 
 	return nil
 }

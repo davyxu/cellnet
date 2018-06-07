@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/httpform"
-	_ "github.com/davyxu/cellnet/codec/json"
+	_ "github.com/davyxu/cellnet/codec/httpjson"
 	"github.com/davyxu/cellnet/peer"
 	httppeer "github.com/davyxu/cellnet/peer/http"
 	"github.com/davyxu/cellnet/proc"
@@ -36,6 +36,7 @@ func TestHttp(t *testing.T) {
 					Status: 0,
 					Token:  "ok",
 				},
+				CodecName: "httpjson",
 			})
 
 		}
@@ -44,8 +45,14 @@ func TestHttp(t *testing.T) {
 
 	p.Start()
 
-	requestThenValid(t, &HttpEchoREQ{
-		UserName: "kitty",
+	requestThenValid(t, "GET", "/hello_form", &HttpEchoREQ{
+		UserName: "kitty_form",
+	}, &HttpEchoACK{
+		Token: "ok",
+	})
+
+	requestThenValid(t, "POST", "/hello_json", &HttpEchoREQ{
+		UserName: "kitty_json",
 	}, &HttpEchoACK{
 		Token: "ok",
 	})
@@ -55,11 +62,11 @@ func TestHttp(t *testing.T) {
 	//validPage(t, "http://127.0.0.1:8081", "")
 }
 
-func requestThenValid(t *testing.T, req, expectACK interface{}) {
+func requestThenValid(t *testing.T, method, path string, req, expectACK interface{}) {
 
 	p := peer.NewGenericPeer("http.Connector", "httpclient", httpTestAddr, nil).(cellnet.HTTPConnector)
 
-	ack, err := p.Request("GET", req)
+	ack, err := p.Request(method, path, req)
 
 	if err != nil {
 		t.Error(err)
@@ -141,22 +148,23 @@ func (self *HttpEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 func init() {
 	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
-		URL:          "/hello",
+		Path:         "/hello_form",
 		Method:       "GET",
 		RequestCodec: codec.MustGetCodec("httpform"),
 		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
 
-		ResponseCodec: codec.MustGetCodec("json"),
+		// 请求方约束
+		ResponseCodec: codec.MustGetCodec("httpjson"),
 		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
 	})
 
 	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
-		URL:          "/hello",
+		Path:         "/hello_json",
 		Method:       "POST",
-		RequestCodec: codec.MustGetCodec("httpform"),
+		RequestCodec: codec.MustGetCodec("httpjson"),
 		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
 
-		ResponseCodec: codec.MustGetCodec("json"),
+		ResponseCodec: codec.MustGetCodec("httpjson"),
 		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
 	})
 

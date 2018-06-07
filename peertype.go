@@ -2,6 +2,7 @@ package cellnet
 
 import (
 	"html/template"
+	"net/http"
 	"time"
 )
 
@@ -33,7 +34,11 @@ type HTTPAcceptor interface {
 // HTTP连接器接口
 type HTTPConnector interface {
 	GenericPeer
-	Request(method string, raw interface{}) (interface{}, error)
+	Request(method, path string, raw interface{}) (interface{}, error)
+}
+
+type HTTPSession interface {
+	Request() *http.Request
 }
 
 // TCP连接器
@@ -71,6 +76,13 @@ type UDPConnector interface {
 
 	// 默认会话
 	Session() Session
+}
+
+// UDP接受器
+type UDPAcceptor interface {
+
+	// 底层使用TTL做session生命期管理，超时时间越短，内存占用越低
+	SetSessionTTL(dur time.Duration)
 }
 
 // Websocket接受器，具备会话访问

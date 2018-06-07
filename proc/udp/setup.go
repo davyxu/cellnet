@@ -27,7 +27,7 @@ func (UDPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 
 	msglog.WriteSendLogger(log, "udp", ses, msg)
 
-	return sendPacket(writer, msg)
+	return sendPacket(writer, ses.(cellnet.ContextSet), msg)
 }
 
 func init() {

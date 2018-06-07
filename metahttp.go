@@ -18,7 +18,7 @@ import (
 
 // 消息元信息
 type HttpMeta struct {
-	URL    string // 相对路径
+	Path   string // 相对路径
 	Method string // 方式
 
 	RequestCodec Codec        // 请求消息编码
@@ -73,26 +73,26 @@ var (
 
 func RegisterHttpMeta(meta *HttpMeta) {
 
-	urlPair := methodURLPair{meta.Method, meta.URL}
+	urlPair := methodURLPair{meta.Method, meta.Path}
 
 	reqPair := methodTypePair{meta.Method, meta.RequestType}
 
 	respPair := methodTypePair{meta.Method, meta.ResponseType}
 
 	if _, ok := metaByHttpPair[urlPair]; ok {
-		panic("Duplicate message meta register by URL: " + meta.URL)
+		panic("Duplicate message meta register by URL: " + meta.Path)
 	} else {
 		metaByHttpPair[urlPair] = meta
 	}
 
 	if _, ok := metaByRequestType[reqPair]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by request type: %s", meta.URL))
+		panic(fmt.Sprintf("Duplicate message meta register by request type: %s", meta.Path))
 	} else {
 		metaByRequestType[reqPair] = meta
 	}
 
 	if _, ok := metaByResponseType[respPair]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by response type: %s", meta.URL))
+		panic(fmt.Sprintf("Duplicate message meta register by response type: %s", meta.Path))
 	} else {
 		metaByResponseType[respPair] = meta
 	}

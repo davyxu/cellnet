@@ -201,7 +201,7 @@ func MessageSize(msg interface{}) int {
 	}
 
 	// 将消息编码为字节数组
-	raw, err := meta.Codec.Encode(msg)
+	raw, err := meta.Codec.Encode(msg, nil)
 
 	if err != nil {
 		return 0

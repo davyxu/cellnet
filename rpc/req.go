@@ -27,7 +27,10 @@ func (self *request) RecvFeedback(msg interface{}) {
 }
 
 func (self *request) Send(ses cellnet.Session, msg interface{}) {
-	data, meta, err := codec.EncodeMessage(msg)
+
+	ctx, _ := ses.(cellnet.ContextSet)
+
+	data, meta, err := codec.EncodeMessage(msg, ctx)
 
 	if err != nil {
 		log.Errorf("rpc request message encode error: %s", err)
@@ -39,6 +42,8 @@ func (self *request) Send(ses cellnet.Session, msg interface{}) {
 		Data:   data,
 		CallID: self.id,
 	})
+
+	codec.FreeCodecResource(meta.Codec, data, ctx)
 }
 
 func createRequest(onRecv func(interface{})) *request {

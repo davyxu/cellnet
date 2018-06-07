@@ -19,7 +19,7 @@ func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
 		return err
 	}
 
-	data, meta, err := codec.EncodeMessage(msg)
+	data, meta, err := codec.EncodeMessage(msg, nil)
 
 	if err != nil {
 		log.Errorln("relay.Relay:", err)
@@ -28,7 +28,7 @@ func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
 
 	ses.Send(&RelayACK{
 		MsgID:     uint16(meta.ID),
-		Data:      data,
+		Data:      data, // 这里的data不能做内存池回收
 		ContextID: contextIDList,
 	})
 
