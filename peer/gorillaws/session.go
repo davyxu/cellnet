@@ -3,6 +3,7 @@ package gorillaws
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/util"
 	"github.com/gorilla/websocket"
 	"io"
 	"net"
@@ -48,14 +49,6 @@ func (self *wsSession) Send(msg interface{}) {
 	self.sendQueue.Add(msg)
 }
 
-func isEOFOrNetReadError(err error) bool {
-	if err == io.EOF {
-		return true
-	}
-	ne, ok := err.(*net.OpError)
-	return ok && ne.Op == "read"
-}
-
 // 接收循环
 func (self *wsSession) recvLoop() {
 
@@ -64,7 +57,7 @@ func (self *wsSession) recvLoop() {
 		msg, err := self.ReadMessage(self)
 
 		if err != nil {
-			if !isEOFOrNetReadError(err) {
+			if !util.IsEOFOrNetReadError(err) {
 				log.Errorln("session closed:", err)
 			}
 

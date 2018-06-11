@@ -8,12 +8,22 @@ type CoreTCPSocketOption struct {
 	readBufferSize  int
 	writeBufferSize int
 	noDelay         bool
+	maxPacketSize   int
 }
 
 func (self *CoreTCPSocketOption) SetSocketBuffer(readBufferSize, writeBufferSize int, noDelay bool) {
 	self.readBufferSize = readBufferSize
 	self.writeBufferSize = writeBufferSize
 	self.noDelay = noDelay
+}
+
+func (self *CoreTCPSocketOption) SetMaxPacketSize(maxSize int) {
+	self.maxPacketSize = maxSize
+}
+
+func (self *CoreTCPSocketOption) MaxPacketSize() int {
+
+	return self.maxPacketSize
 }
 
 func (self *CoreTCPSocketOption) ApplySocketOption(conn net.Conn) {

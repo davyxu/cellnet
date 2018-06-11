@@ -18,7 +18,9 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		return nil, nil
 	}
 
-	msg, err = util.RecvLTVPacket(reader)
+	msg, err = util.RecvLTVPacket(reader, ses.Peer().(interface {
+		MaxPacketSize() int
+	}).MaxPacketSize())
 
 	return
 }

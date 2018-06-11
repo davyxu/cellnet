@@ -2,13 +2,18 @@ package util
 
 import (
 	"encoding/binary"
+	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"io"
 )
 
+var (
+	ErrMaxPacket = errors.New("Invalid packet size")
+)
+
 // 接收Length-Type-Value格式的封包流程
-func RecvLTVPacket(reader io.Reader) (msg interface{}, err error) {
+func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err error) {
 
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, 2)
@@ -23,6 +28,10 @@ func RecvLTVPacket(reader io.Reader) (msg interface{}, err error) {
 
 	// 用小端格式读取Size
 	size := binary.LittleEndian.Uint16(sizeBuffer)
+
+	if maxPacketSize > 0 && size >= uint16(maxPacketSize) {
+		return nil, ErrMaxPacket
+	}
 
 	// 分配包体大小
 	body := make([]byte, size)
