@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"net"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -61,11 +60,6 @@ func (self *tcpConnector) Stop() {
 
 	// 通知发送关闭
 	self.defaultSes.Close()
-
-	// 等待session停止
-	for self.SessionCount() != 0 {
-		runtime.Gosched()
-	}
 
 	// 等待线程结束
 	self.WaitStopFinished()
@@ -173,8 +167,6 @@ func init() {
 
 		self.defaultSes = newSession(nil, self, func() {
 			self.sesEndSignal.Done()
-
-			log.Debugln(self.Name(), "ses end")
 		})
 
 		self.CoreTCPSocketOption.Init()
