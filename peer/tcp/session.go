@@ -40,11 +40,12 @@ func (self *tcpSession) Raw() interface{} {
 }
 
 func (self *tcpSession) Close() {
-	self.sendQueue.Add(nil)
+	self.Send(nil)
 }
 
 // 发送封包
 func (self *tcpSession) Send(msg interface{}) {
+
 	self.sendQueue.Add(msg)
 }
 
@@ -60,7 +61,7 @@ func (self *tcpSession) recvLoop() {
 				log.Errorln("session closed:", err)
 			}
 
-			self.Send(nil)
+			self.Close()
 
 			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
 			break
@@ -116,6 +117,9 @@ func (self *tcpSession) cleanup() {
 // 启动会话的各种资源
 func (self *tcpSession) Start() {
 
+	// connector复用session时，上一次发送队列未释放可能造成问题
+	self.sendQueue.Reset()
+
 	// 将会话添加到管理器
 	self.Peer().(peer.SessionManager).Add(self)
 
@@ -143,7 +147,7 @@ func (self *tcpSession) Start() {
 	go self.sendLoop()
 }
 
-func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
+func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	self := &tcpSession{
 		conn:       conn,
 		endNotify:  endNotify,

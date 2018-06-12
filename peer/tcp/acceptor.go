@@ -85,9 +85,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
 	ses := newSession(conn, self, nil)
 
-	ses.(interface {
-		Start()
-	}).Start()
+	ses.Start()
 
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 }

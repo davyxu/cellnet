@@ -3,7 +3,6 @@ package main
 import (
 	"io/ioutil"
 	"os"
-	"path"
 
 	"bytes"
 	"github.com/davyxu/golog"
@@ -74,12 +73,4 @@ func main() {
 		Content: proto.String(contenxt),
 	})
 
-}
-
-func changeExt(name string) string {
-	ext := path.Ext(name)
-	if ext == ".proto" {
-		name = name[0 : len(name)-len(ext)]
-	}
-	return name + ".msg.go"
 }

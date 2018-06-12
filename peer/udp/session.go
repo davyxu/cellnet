@@ -88,16 +88,3 @@ func (self *udpSession) Send(msg interface{}) {
 func (self *udpSession) Close() {
 
 }
-
-func newUDPSession(addr *net.UDPAddr, conn *net.UDPConn, p cellnet.Peer) *udpSession {
-	self := &udpSession{
-		conn:       conn,
-		remote:     addr,
-		pInterface: p,
-		CoreProcBundle: p.(interface {
-			GetBundle() *peer.CoreProcBundle
-		}).GetBundle(),
-	}
-
-	return self
-}
