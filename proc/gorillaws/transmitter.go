@@ -76,7 +76,7 @@ func (WSMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) 
 		return nil
 	}
 
-	data, meta, err := codec.EncodeMessage(msg)
+	data, meta, err := codec.EncodeMessage(msg, nil)
 	if err != nil {
 		return err
 	}

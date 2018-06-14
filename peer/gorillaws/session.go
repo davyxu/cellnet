@@ -5,8 +5,6 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
 	"github.com/gorilla/websocket"
-	"io"
-	"net"
 	"sync"
 )
 
