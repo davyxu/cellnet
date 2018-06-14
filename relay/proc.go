@@ -25,8 +25,6 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 					cellnet.MessageToName(userMsg),
 					relayMsg.ContextID,
 					cellnet.MessageToString(userMsg))
-			} else {
-				log.Errorln("relay.ResoleveInboundEvent:", err)
 			}
 
 			ev := &RecvMsgEvent{
