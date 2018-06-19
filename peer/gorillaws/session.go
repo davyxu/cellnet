@@ -140,7 +140,7 @@ func (self *wsSession) Start() {
 	go self.sendLoop()
 }
 
-func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) cellnet.Session {
+func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) *wsSession {
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,

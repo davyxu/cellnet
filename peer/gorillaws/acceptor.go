@@ -63,12 +63,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 		ses := newSession(c, self, nil)
 
-		// 添加到管理器
-		self.Add(ses)
-
-		ses.(interface {
-			Start()
-		}).Start()
+		ses.Start()
 
 		self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 
