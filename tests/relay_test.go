@@ -55,7 +55,7 @@ func relay_agent() {
 	wg.Add(1)
 	// 后端侦听
 	relay_BackendToAgentAcceptor = peer.NewGenericPeer("tcp.Acceptor", "backend->agent", relayBackendToAgent_Address, nil)
-	backendToAgentDispatcher := proc.NewMessageDispatcher(relay_BackendToAgentAcceptor, "tcp.ltv")
+	backendToAgentDispatcher := proc.NewMessageDispatcherBindPeer(relay_BackendToAgentAcceptor, "tcp.ltv")
 	backendToAgentDispatcher.RegisterMessage("cellnet.SessionAccepted", func(ev cellnet.Event) {
 
 		backendSession = ev.Session()
@@ -70,7 +70,7 @@ func relay_agent() {
 
 	// 前端侦听
 	relay_ClientToAgentAcceptor = peer.NewGenericPeer("tcp.Acceptor", "client->agent", relayClientToAgent_Address, nil)
-	ClientToAgentDispatcher := proc.NewMessageDispatcher(relay_ClientToAgentAcceptor, "tcp.ltv")
+	ClientToAgentDispatcher := proc.NewMessageDispatcherBindPeer(relay_ClientToAgentAcceptor, "tcp.ltv")
 	ClientToAgentDispatcher.RegisterMessage("tests.TestEchoACK", func(ev cellnet.Event) {
 
 		// 等待后台会话连接后，再转发消息给后台，本Test专用

@@ -13,7 +13,7 @@ func (self *Error) Error() string {
 		return self.s
 	}
 
-	return fmt.Sprintf("%s, context: '%v'", self.s, self.context)
+	return fmt.Sprintf("%s, '%v'", self.s, self.context)
 }
 
 func NewError(s string) error {

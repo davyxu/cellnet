@@ -16,6 +16,10 @@ func (self *MessageDispatcher) OnEvent(ev cellnet.Event) {
 
 	msgType := reflect.TypeOf(ev.Message())
 
+	if msgType == nil {
+		return
+	}
+
 	self.handlerByTypeGuard.RLock()
 	handlers, ok := self.handlerByType[msgType.Elem()]
 	self.handlerByTypeGuard.RUnlock()
@@ -28,6 +32,19 @@ func (self *MessageDispatcher) OnEvent(ev cellnet.Event) {
 		}
 
 	}
+}
+
+func (self *MessageDispatcher) Exists(msgName string) bool {
+	meta := cellnet.MessageMetaByFullName(msgName)
+	if meta == nil {
+		return false
+	}
+
+	self.handlerByTypeGuard.Lock()
+	defer self.handlerByTypeGuard.Unlock()
+
+	handlers, _ := self.handlerByType[meta.Type]
+	return len(handlers) > 0
 }
 
 func (self *MessageDispatcher) RegisterMessage(msgName string, userCallback cellnet.EventCallback) {
@@ -43,11 +60,16 @@ func (self *MessageDispatcher) RegisterMessage(msgName string, userCallback cell
 	self.handlerByTypeGuard.Unlock()
 }
 
-func NewMessageDispatcher(peer cellnet.Peer, processorName string) *MessageDispatcher {
+func NewMessageDispatcher() *MessageDispatcher {
 
-	self := &MessageDispatcher{
+	return &MessageDispatcher{
 		handlerByType: make(map[reflect.Type][]cellnet.EventCallback),
 	}
+}
+
+func NewMessageDispatcherBindPeer(peer cellnet.Peer, processorName string) *MessageDispatcher {
+
+	self := NewMessageDispatcher()
 
 	BindProcessorHandler(peer, processorName, self.OnEvent)
 

@@ -36,6 +36,10 @@ func (self *tcpSession) Peer() cellnet.Peer {
 
 // 取原始连接
 func (self *tcpSession) Raw() interface{} {
+	if self.conn == nil {
+		return nil
+	}
+
 	return self.conn
 }
 

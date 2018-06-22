@@ -14,9 +14,8 @@ type udpConnector struct {
 	peer.CoreProcBundle
 
 	remoteAddr *net.UDPAddr
-	conn       *net.UDPConn
 
-	defaultSes cellnet.Session
+	defaultSes *udpSession
 }
 
 func (self *udpConnector) Start() cellnet.Peer {
@@ -41,31 +40,26 @@ func (self *udpConnector) Session() cellnet.Session {
 
 func (self *udpConnector) connect() {
 
-	var err error
-	self.conn, err = net.DialUDP("udp", nil, self.remoteAddr)
+	conn, err := net.DialUDP("udp", nil, self.remoteAddr)
 	if err != nil {
 
 		log.Errorf("#udp.connect failed(%s) %v", self.NameOrAddress(), err.Error())
 		return
 	}
 
-	var running = true
+	self.defaultSes.conn = conn
 
-	ses := &udpSession{
-		conn:           self.conn,
-		pInterface:     self,
-		CoreProcBundle: &self.CoreProcBundle,
-	}
-
-	self.defaultSes = ses
+	ses := self.defaultSes
 
 	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
 
 	recvBuff := make([]byte, MaxUDPRecvBuffer)
 
-	for running {
+	self.SetRunning(true)
 
-		n, _, err := self.conn.ReadFromUDP(recvBuff)
+	for self.IsRunning() {
+
+		n, _, err := conn.ReadFromUDP(recvBuff)
 		if err != nil {
 			break
 		}
@@ -79,8 +73,10 @@ func (self *udpConnector) connect() {
 
 func (self *udpConnector) Stop() {
 
-	if self.conn != nil {
-		self.conn.Close()
+	self.SetRunning(false)
+
+	if self.defaultSes.conn != nil {
+		self.defaultSes.conn.Close()
 	}
 }
 
@@ -92,6 +88,11 @@ func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpConnector{}
+
+		p.defaultSes = &udpSession{
+			pInterface:     p,
+			CoreProcBundle: &p.CoreProcBundle,
+		}
 
 		return p
 	})

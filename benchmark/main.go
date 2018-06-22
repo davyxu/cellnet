@@ -24,7 +24,7 @@ func server() {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "server", "127.0.0.1:7701", queue)
 
-	dispatcher := proc.NewMessageDispatcher(p, "tcp.ltv")
+	dispatcher := proc.NewMessageDispatcherBindPeer(p, "tcp.ltv")
 
 	dispatcher.RegisterMessage("main.TestEchoACK", func(ev cellnet.Event) {
 

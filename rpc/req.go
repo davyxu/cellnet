@@ -18,7 +18,7 @@ type request struct {
 	onRecv func(interface{})
 }
 
-var ErrTimeout = errors.New("time out")
+var ErrTimeout = errors.New("RPC time out")
 
 func (self *request) RecvFeedback(msg interface{}) {
 

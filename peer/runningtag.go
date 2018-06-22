@@ -1,15 +1,14 @@
 package peer
 
 import (
-	"sync"
+	"sync/atomic"
 )
 
 // 通信通讯端共享的数据
 type CoreRunningTag struct {
 
 	// 运行状态
-	running      bool
-	runningGuard sync.RWMutex
+	running int64
 
 	// 停止过程同步
 	stopping chan bool
@@ -17,16 +16,17 @@ type CoreRunningTag struct {
 
 func (self *CoreRunningTag) IsRunning() bool {
 
-	self.runningGuard.RLock()
-	defer self.runningGuard.RUnlock()
-
-	return self.running
+	return atomic.LoadInt64(&self.running) != 0
 }
 
 func (self *CoreRunningTag) SetRunning(v bool) {
-	self.runningGuard.Lock()
-	self.running = v
-	self.runningGuard.Unlock()
+
+	if v {
+		atomic.StoreInt64(&self.running, 1)
+	} else {
+		atomic.StoreInt64(&self.running, 0)
+	}
+
 }
 
 func (self *CoreRunningTag) WaitStopFinished() {
