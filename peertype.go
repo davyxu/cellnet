@@ -102,4 +102,7 @@ type TCPSocketOption interface {
 
 	// 设置最大的封包大小
 	SetMaxPacketSize(maxSize int)
+
+	// 设置读写超时，默认0，不超时
+	SetSocketDeadline(read, write time.Duration)
 }

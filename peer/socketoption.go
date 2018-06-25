@@ -2,6 +2,7 @@ package peer
 
 import (
 	"net"
+	"time"
 )
 
 type CoreTCPSocketOption struct {
@@ -9,12 +10,21 @@ type CoreTCPSocketOption struct {
 	writeBufferSize int
 	noDelay         bool
 	maxPacketSize   int
+
+	readTimeout  time.Duration
+	writeTimeout time.Duration
 }
 
 func (self *CoreTCPSocketOption) SetSocketBuffer(readBufferSize, writeBufferSize int, noDelay bool) {
 	self.readBufferSize = readBufferSize
 	self.writeBufferSize = writeBufferSize
 	self.noDelay = noDelay
+}
+
+func (self *CoreTCPSocketOption) SetSocketDeadline(read, write time.Duration) {
+
+	self.readTimeout = read
+	self.writeTimeout = write
 }
 
 func (self *CoreTCPSocketOption) SetMaxPacketSize(maxSize int) {
@@ -41,6 +51,33 @@ func (self *CoreTCPSocketOption) ApplySocketOption(conn net.Conn) {
 		cc.SetNoDelay(self.noDelay)
 	}
 
+}
+
+func (self *CoreTCPSocketOption) ApplySocketReadTimeout(conn net.Conn, callback func()) {
+
+	if self.readTimeout > 0 {
+
+		// issue: http://blog.sina.com.cn/s/blog_9be3b8f10101lhiq.html
+		conn.SetReadDeadline(time.Now().Add(self.readTimeout))
+		callback()
+		conn.SetReadDeadline(time.Time{})
+
+	} else {
+		callback()
+	}
+}
+
+func (self *CoreTCPSocketOption) ApplySocketWriteTimeout(conn net.Conn, callback func()) {
+
+	if self.writeTimeout > 0 {
+
+		conn.SetWriteDeadline(time.Now().Add(self.writeTimeout))
+		callback()
+		conn.SetWriteDeadline(time.Time{})
+
+	} else {
+		callback()
+	}
 }
 
 func (self *CoreTCPSocketOption) Init() {

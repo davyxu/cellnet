@@ -4,9 +4,16 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
 	"io"
+	"net"
 )
 
 type TCPMessageTransmitter struct {
+}
+
+type socketOpt interface {
+	MaxPacketSize() int
+	ApplySocketReadTimeout(conn net.Conn, callback func())
+	ApplySocketWriteTimeout(conn net.Conn, callback func())
 }
 
 func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
@@ -18,14 +25,19 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		return nil, nil
 	}
 
-	msg, err = util.RecvLTVPacket(reader, ses.Peer().(interface {
-		MaxPacketSize() int
-	}).MaxPacketSize())
+	opt := ses.Peer().(socketOpt)
+
+	// 有读超时时，设置超时
+	opt.ApplySocketReadTimeout(ses.Raw().(net.Conn), func() {
+
+		msg, err = util.RecvLTVPacket(reader, opt.MaxPacketSize())
+
+	})
 
 	return
 }
 
-func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) error {
+func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) (err error) {
 
 	writer, ok := ses.Raw().(io.Writer)
 
@@ -34,5 +46,14 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 		return nil
 	}
 
-	return util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
+	opt := ses.Peer().(socketOpt)
+
+	// 有写超时时，设置超时
+	opt.ApplySocketWriteTimeout(ses.Raw().(net.Conn), func() {
+
+		err = util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
+
+	})
+
+	return
 }
