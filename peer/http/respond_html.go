@@ -100,7 +100,7 @@ func (self *HTMLRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-	log.Debugf("#http.recv(%s) '%s' %s | [%d] HTML %s",
+	log.Debugf("#http.send(%s) '%s' %s | [%d] HTML %s",
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,
@@ -122,6 +122,29 @@ func (self *HTMLRespond) WriteRespond(ses *httpSession) error {
 	ses.resp.Header().Set("Content-Type", "text/html")
 	ses.resp.WriteHeader(self.StatusCode)
 	io.Copy(ses.resp, bb)
+
+	return nil
+}
+
+type HTMLText struct {
+	StatusCode int
+	Text       string
+}
+
+func (self *HTMLText) WriteRespond(ses *httpSession) error {
+
+	peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+	log.Debugf("#http.send(%s) '%s' %s | [%d] HTML '%s'",
+		peerInfo.Name(),
+		ses.req.Method,
+		ses.req.URL.Path,
+		self.StatusCode,
+		self.Text)
+
+	ses.resp.Header().Set("Content-Type", "text/html;charset=utf-8")
+	ses.resp.WriteHeader(self.StatusCode)
+	ses.resp.Write([]byte(self.Text))
 
 	return nil
 }
