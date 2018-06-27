@@ -44,11 +44,16 @@ func (self *tcpSession) Raw() interface{} {
 }
 
 func (self *tcpSession) Close() {
-	self.Send(nil)
+	self.sendQueue.Add(nil)
 }
 
 // 发送封包
 func (self *tcpSession) Send(msg interface{}) {
+
+	// 只能通过Close关闭连接
+	if msg == nil {
+		return
+	}
 
 	self.sendQueue.Add(msg)
 }
