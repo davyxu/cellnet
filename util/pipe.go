@@ -1,17 +1,18 @@
-package peer
+package util
 
 import (
 	"sync"
 )
 
-// 消息队列，用于避免固定大小的channel实现的队列发生阻塞情况
-type MsgQueue struct {
+// 不限制大小，添加不发生阻塞，接收阻塞等待
+type Pipe struct {
 	list      []interface{}
 	listGuard sync.Mutex
 	listCond  *sync.Cond
 }
 
-func (self *MsgQueue) Add(msg interface{}) {
+// 添加时不会发送阻塞
+func (self *Pipe) Add(msg interface{}) {
 	self.listGuard.Lock()
 	self.list = append(self.list, msg)
 	self.listGuard.Unlock()
@@ -19,11 +20,12 @@ func (self *MsgQueue) Add(msg interface{}) {
 	self.listCond.Signal()
 }
 
-func (self *MsgQueue) Reset() {
+func (self *Pipe) Reset() {
 	self.list = self.list[0:0]
 }
 
-func (self *MsgQueue) Pick(retList *[]interface{}) (exit bool) {
+// 如果没有数据，发生阻塞
+func (self *Pipe) Pick(retList *[]interface{}) (exit bool) {
 
 	self.listGuard.Lock()
 
@@ -37,13 +39,13 @@ func (self *MsgQueue) Pick(retList *[]interface{}) (exit bool) {
 
 	// 复制出队列
 
-	for _, ev := range self.list {
+	for _, data := range self.list {
 
-		if ev == nil {
+		if data == nil {
 			exit = true
 			break
 		} else {
-			*retList = append(*retList, ev)
+			*retList = append(*retList, data)
 		}
 	}
 
@@ -53,8 +55,8 @@ func (self *MsgQueue) Pick(retList *[]interface{}) (exit bool) {
 	return
 }
 
-func NewMsgQueue() *MsgQueue {
-	self := &MsgQueue{}
+func NewPipe() *Pipe {
+	self := &Pipe{}
 	self.listCond = sync.NewCond(&self.listGuard)
 
 	return self
