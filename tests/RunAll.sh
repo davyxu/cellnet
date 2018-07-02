@@ -4,5 +4,15 @@ cd ../../../../..
 export GOPATH=`pwd`
 cd ${CURRDIR}
 
+set -e
+
 go test -v .
-if [ $? -ne 0 ] ; then read -rsp $'Errors occurred...\n' ; fi
+
+# 编译例子
+mkdir -p examplebin
+go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/echo
+go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/client
+go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/server
+go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/fileserver
+go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/websocket
+rm -rf examplebin
