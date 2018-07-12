@@ -15,4 +15,11 @@ go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/cl
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/server
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/fileserver
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/websocket
-rm -rf examplebin
+
+function Cleanup()
+{
+    echo "cleanup"
+    rm -rf examplebin
+}
+
+trap CleanUp EXIT

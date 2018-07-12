@@ -40,7 +40,7 @@ var (
 func echo_StartServer(context *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	context.Acceptor = peer.NewGenericPeer(context.Protocol+".Acceptor", "server", context.Address, queue)
+	context.Acceptor = peer.NewGenericPeer(context.Protocol+".Acceptor", context.Protocol+"server", context.Address, queue)
 
 	proc.BindProcessorHandler(context.Acceptor, context.Processor, func(ev cellnet.Event) {
 
@@ -70,7 +70,7 @@ func echo_StartServer(context *echoContext) {
 func echo_StartClient(echoContext *echoContext) {
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewGenericPeer(echoContext.Protocol+".Connector", "client", echoContext.Address, queue)
+	p := peer.NewGenericPeer(echoContext.Protocol+".Connector", echoContext.Protocol+"client", echoContext.Address, queue)
 
 	proc.BindProcessorHandler(p, echoContext.Processor, func(ev cellnet.Event) {
 
