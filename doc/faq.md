@@ -28,6 +28,8 @@
 
    golog.SetLevelByString(".", "info") // 将所有日志的级别提高到info级别，debug低于info级别所以不再显示
 
+   第一个参数支持正则表达式，"."表示所有日志。可以指定日志名关闭
+
 * cellnet能承受多少连接？
 
    承受连接数量和操作系统和硬件有关系，cellnet本身承载数受操作系统和硬件约束。
@@ -37,8 +39,6 @@
    这是架构设计的问题，和cellnet无关。
 
 * 为什么把客户端关掉，没有收到cellnet.SessionClosed事件，内存不降？
-
-   第一个参数支持正则表达式，"."表示所有日志。可以指定日志名关闭
 
    TCP挥手失败不会触发cellnet.SessionClosed，请通过修改peer上的TCPSocketOption接口的SetSocketDeadline，设置读超时避免这个问题。
 
