@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"net"
 	"sync"
+	"sync/atomic"
 )
 
 // Socket会话
@@ -28,6 +29,8 @@ type tcpSession struct {
 	cleanupGuard sync.Mutex
 
 	endNotify func()
+
+	manualClosed int64
 }
 
 func (self *tcpSession) Peer() cellnet.Peer {
@@ -44,6 +47,7 @@ func (self *tcpSession) Raw() interface{} {
 }
 
 func (self *tcpSession) Close() {
+	atomic.StoreInt64(&self.manualClosed, 1)
 	self.sendQueue.Add(nil)
 }
 
@@ -70,9 +74,17 @@ func (self *tcpSession) recvLoop() {
 				log.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
 			}
 
-			self.Close()
+			self.sendQueue.Add(nil)
 
-			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
+			manualClosed := atomic.LoadInt64(&self.manualClosed)
+
+			// 标记为手动关闭原因
+			closedMsg := &cellnet.SessionClosed{}
+			if manualClosed != 0 {
+				closedMsg.Reason = cellnet.CloseReason_Manual
+			}
+
+			self.PostEvent(&cellnet.RecvMsgEvent{self, closedMsg})
 			break
 		}
 
@@ -94,7 +106,6 @@ func (self *tcpSession) sendLoop() {
 		// 遍历要发送的数据
 		for _, msg := range writeList {
 
-			// TODO SendMsgEvent并不是很有意义
 			self.SendMessage(&cellnet.SendMsgEvent{self, msg})
 		}
 
@@ -125,6 +136,8 @@ func (self *tcpSession) cleanup() {
 
 // 启动会话的各种资源
 func (self *tcpSession) Start() {
+
+	atomic.StoreInt64(&self.manualClosed, 0)
 
 	// connector复用session时，上一次发送队列未释放可能造成问题
 	self.sendQueue.Reset()

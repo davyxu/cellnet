@@ -9,14 +9,20 @@ import (
 )
 
 var (
-	ErrMaxPacket = errors.New("Invalid packet size")
+	ErrMaxPacket  = errors.New("packet over size")
+	ErrMinPacket  = errors.New("packet short size")
+	ErrShortMsgID = errors.New("short msgid")
+)
+
+const (
+	packetSize = 2
 )
 
 // 接收Length-Type-Value格式的封包流程
 func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err error) {
 
 	// Size为uint16，占2字节
-	var sizeBuffer = make([]byte, 2)
+	var sizeBuffer = make([]byte, packetSize)
 
 	// 持续读取Size直到读到为止
 	_, err = io.ReadFull(reader, sizeBuffer)
@@ -24,6 +30,10 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 	// 发生错误时返回
 	if err != nil {
 		return
+	}
+
+	if len(sizeBuffer) < packetSize {
+		return nil, ErrMinPacket
 	}
 
 	// 用小端格式读取Size
@@ -42,6 +52,10 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 	// 发生错误时返回
 	if err != nil {
 		return
+	}
+
+	if len(sizeBuffer) < packetSize {
+		return nil, ErrShortMsgID
 	}
 
 	msgid := binary.LittleEndian.Uint16(body)

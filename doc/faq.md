@@ -22,10 +22,26 @@
 
 * cellnet有网关和db支持么?
 
-    使用Peer/Processor可以将mysql,redis封装为标准统一的接口
+   使用Peer/Processor可以将mysql,redis封装为标准统一的接口
 
 * 如何关闭调试消息日志?
 
-    golog.SetLevelByString(".", "info") // 将所有日志的级别提高到info级别，debug低于info级别所以不再显示
+   golog.SetLevelByString(".", "info") // 将所有日志的级别提高到info级别，debug低于info级别所以不再显示
 
-    第一个参数支持正则表达式，"."表示所有日志。可以指定日志名关闭
+* cellnet能承受多少连接？
+
+   承受连接数量和操作系统和硬件有关系，cellnet本身承载数受操作系统和硬件约束。
+
+* cellnet能做百万请求的服务器么？
+
+   这是架构设计的问题，和cellnet无关。
+
+* 为什么把客户端关掉，没有收到cellnet.SessionClosed事件，内存不降？
+
+   第一个参数支持正则表达式，"."表示所有日志。可以指定日志名关闭
+
+   TCP挥手失败不会触发cellnet.SessionClosed，请通过修改peer上的TCPSocketOption接口的SetSocketDeadline，设置读超时避免这个问题。
+
+* cellnet的http能做路由么？能做web服务器么？
+
+   v4版本中添加的http功能是为了方便用通用的方式接收http消息。如果需要专业的http路由，请使用成熟的http服务器，例如gin。
