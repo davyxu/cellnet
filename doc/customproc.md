@@ -47,7 +47,7 @@ https://github.com/davyxu/cellnet/blob/master/proc/tcp/transmitter.go
 
 功能 | 类型 | 备注
 ---|---|---
-包体大小 | uint16 | 只做UDP包完整性验证
+包体大小 | uint16 | 只做UDP包完整性验证,包含包体大小本身
 包体中的消息ID | uint16 | 包.消息名 的hash值(util.StringHash)
 包体中的用户消息数据 | []byte | 用户的消息大小，需要使用codec包解码
 

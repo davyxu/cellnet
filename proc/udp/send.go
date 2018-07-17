@@ -7,8 +7,6 @@ import (
 	"github.com/davyxu/cellnet/peer/udp"
 )
 
-const headerSize = 2 + 2
-
 func sendPacket(writer udp.DataWriter, ctx cellnet.ContextSet, msg interface{}) error {
 
 	// 将用户数据转换为字节数组和消息ID

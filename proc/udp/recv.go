@@ -5,12 +5,18 @@ import (
 	"github.com/davyxu/cellnet/codec"
 )
 
-const MTU = 1472
+const (
+	MTU       = 1472 // 最大传输单元
+	packetLen = 2    // 包体大小字段
+	msgIDLen  = 2    // 消息ID字段
+
+	headerSize = msgIDLen + msgIDLen // 整个UDP包头部分
+)
 
 func recvPacket(pktData []byte) (msg interface{}, err error) {
 
 	// 小于包头，使用nc指令测试时，为1
-	if len(pktData) < 2 {
+	if len(pktData) < packetLen {
 		return nil, nil
 	}
 
@@ -23,7 +29,7 @@ func recvPacket(pktData []byte) (msg interface{}, err error) {
 	}
 
 	// 读取消息ID
-	msgid := binary.LittleEndian.Uint16(pktData[2:])
+	msgid := binary.LittleEndian.Uint16(pktData[packetLen:])
 
 	msgData := pktData[headerSize:]
 

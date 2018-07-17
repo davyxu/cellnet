@@ -22,4 +22,4 @@ function Cleanup()
     rm -rf examplebin
 }
 
-trap CleanUp EXIT
+trap Cleanup EXIT
