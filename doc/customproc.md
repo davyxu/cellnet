@@ -27,3 +27,29 @@ cellnet提供的Processor能满足基本的通信封包格式的处理，但在�
 - 具体的业务逻辑
 
 
+## 内建处理器(tcp.ltv)封包格式
+
+tcp.ltv使用util/packet.go中的函数解析封包，同时处理粘包问题，封包格式如下：
+
+功能 | 类型 | 备注
+---|---|---
+包体大小 | uint16 | 不包含包大小自己，例如，本字段为10时，包体还需要读10字节
+包体中的消息ID | uint16 | 包.消息名 的hash值(util.StringHash)
+包体中的用户消息数据 | []byte | 用户的消息大小，需要使用codec包解码
+
+封包解析请参考:
+https://github.com/davyxu/cellnet/blob/master/proc/tcp/transmitter.go
+
+
+## 内建处理器(udp.ltv)封包格式
+
+注意UDP封包总长度不超过MTU
+
+功能 | 类型 | 备注
+---|---|---
+包体大小 | uint16 | 只做UDP包完整性验证
+包体中的消息ID | uint16 | 包.消息名 的hash值(util.StringHash)
+包体中的用户消息数据 | []byte | 用户的消息大小，需要使用codec包解码
+
+封包解析请参考:
+https://github.com/davyxu/cellnet/blob/master/proc/udp/recv.go
