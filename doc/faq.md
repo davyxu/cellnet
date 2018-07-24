@@ -44,6 +44,12 @@
 
    游戏服务器请自行实现心跳封包逻辑，以避免攻击者只连接不发包消耗服务器资源。
 
+   TCPSocketOption 接口被TCPAcceptor和TCPConnector实现，因此只要拥有这两种peer都可以直接进行设置，例如：
+
+   // 设置30秒读超时和5秒写超时
+   peer.(TCPSocketOption).SetSocketDeadline(time.Second * 30, time.Second * 5)
+
+
 * cellnet的http能做路由么？能做web服务器么？
 
    v4版本中添加的http功能是为了方便用通用的方式接收http消息。如果需要专业的http路由，请使用成熟的http服务器，例如gin。
