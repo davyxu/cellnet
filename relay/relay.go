@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrInvalidPeerSession = errors.New("relay: Require cellnet.Session")
+	ErrInvalidPeerSession = errors.New("Require valid cellnet.Session or cellnet.TCPConnector")
 )
 
 // sesDetector: 提供要发送到的目标session， 发送msg消息，并携带ContextID
