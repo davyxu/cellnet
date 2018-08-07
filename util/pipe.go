@@ -29,13 +29,9 @@ func (self *Pipe) Pick(retList *[]interface{}) (exit bool) {
 
 	self.listGuard.Lock()
 
-	for len(self.list) == 0 {
+	if len(self.list) == 0 {
 		self.listCond.Wait()
 	}
-
-	self.listGuard.Unlock()
-
-	self.listGuard.Lock()
 
 	// 复制出队列
 
