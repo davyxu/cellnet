@@ -8,12 +8,19 @@ import (
 	"strings"
 )
 
+type context struct {
+	name string
+	data interface{}
+}
+
 // 消息元信息
 type MessageMeta struct {
 	Codec Codec        // 消息用到的编码
 	Type  reflect.Type // 消息类型
 
 	ID int // 消息ID (二进制协议中使用)
+
+	ctxList []*context
 }
 
 func (self *MessageMeta) TypeName() string {
@@ -48,8 +55,40 @@ func (self *MessageMeta) FullName() string {
 	return sb.String()
 }
 
+// 创建meta类型的实例
 func (self *MessageMeta) NewType() interface{} {
 	return reflect.New(self.Type).Interface()
+}
+
+// 为meta对应的名字绑定上下文
+func (self *MessageMeta) SetContext(name string, data interface{}) *MessageMeta {
+	for _, ctx := range self.ctxList {
+
+		if ctx.name == name {
+			ctx.data = data
+			return self
+		}
+	}
+
+	self.ctxList = append(self.ctxList, &context{
+		name: name,
+		data: data,
+	})
+
+	return self
+}
+
+// 获取meta对应的名字绑定上下文
+func (self *MessageMeta) GetContext(name string) (interface{}, bool) {
+
+	for _, ctx := range self.ctxList {
+
+		if ctx.name == name {
+			return ctx.data, true
+		}
+	}
+
+	return nil, false
 }
 
 var (
@@ -71,7 +110,7 @@ Type -> Meta
 */
 
 // 注册消息元信息
-func RegisterMessageMeta(meta *MessageMeta) {
+func RegisterMessageMeta(meta *MessageMeta) *MessageMeta {
 
 	// 非http类,才需要包装Type必须唯一
 
@@ -97,6 +136,7 @@ func RegisterMessageMeta(meta *MessageMeta) {
 		metaByID[meta.ID] = meta
 	}
 
+	return meta
 }
 
 // 根据名字查找消息元信息
