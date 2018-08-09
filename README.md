@@ -282,16 +282,23 @@ sid1 say: hello
 
 若cellnet内建的Peer, Codec及Processor流程不能满足你的需求，可以阅读下面链接内容，添加并扩展cellnet功能
 
-* [定制Codec](https://github.com/davyxu/cellnet/blob/master/doc/customcodec.md)
+* [定制封包编码(Codec)](https://github.com/davyxu/cellnet/blob/master/doc/customcodec.md)
 
-* [定制Peer](https://github.com/davyxu/cellnet/blob/master/doc/custompeer.md)
+    封包编码可以是JSON，Protobuf等
 
-* [定制Processor](https://github.com/davyxu/cellnet/blob/master/doc/customproc.md)
+* [定制端(Peer)](https://github.com/davyxu/cellnet/blob/master/doc/custompeer.md)
+
+    新增Redis连接器，与cellnet自带的TCP/UDP的Peer都不同。
+
+* [定制处理器(Processor)](https://github.com/davyxu/cellnet/blob/master/doc/customproc.md)
+
+    需要在收发包时有统一的处理行为
 
 # FAQ
 
 [常见问题及回答](https://github.com/davyxu/cellnet/blob/master/doc/faq.md)
 
+这里应该有你想知道的答案
 
 # 贡献者
 

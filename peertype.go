@@ -68,6 +68,9 @@ type TCPAcceptor interface {
 	SessionAccessor
 
 	TCPSocketOption
+
+	// 查看当前侦听端口，使用host:0 作为Address时，socket底层自动分配侦听端口
+	ListenPort() int
 }
 
 // UDP连接器

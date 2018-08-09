@@ -1,5 +1,21 @@
 # FAQ
 
+* 报错panic: Peer type not found怎么办?
+    这是由于需要的peer没有找到或者没有注册，使用cellnet内建的peer请在main入口这样导入包
+```
+    import (
+        _ "github.com/davyxu/cellnet/peer/tcp"
+    )
+```
+
+* 报错panic: processor not found怎么办?
+    这是由于需要的processor没有找到或者没有注册，使用cellnet内建的processor请在main入口这样导入包
+```
+    import (
+        _ "github.com/davyxu/cellnet/proc/tcp"
+    )
+```
+
 * 这个代码的入口在哪里? 怎么编译为exe?
 
     本代码是一个网络库, 需要根据需求, 整合逻辑
@@ -42,6 +58,22 @@
 
    TCP挥手失败不会触发cellnet.SessionClosed，请通过修改peer上的TCPSocketOption接口的SetSocketDeadline，设置读超时避免这个问题。
 
+   游戏服务器请自行实现心跳封包逻辑，以避免攻击者只连接不发包消耗服务器资源。
+
+   TCPSocketOption 接口被TCPAcceptor和TCPConnector实现，因此只要拥有这两种peer都可以直接进行设置，例如：
+
+   // 设置30秒读超时和5秒写超时
+   peer.(TCPSocketOption).SetSocketDeadline(time.Second * 30, time.Second * 5)
+
+
 * cellnet的http能做路由么？能做web服务器么？
 
    v4版本中添加的http功能是为了方便用通用的方式接收http消息。如果需要专业的http路由，请使用成熟的http服务器，例如gin。
+
+* 为什么发送20k的TCP封包会断开？
+
+   TCP封包请在逻辑层约束到MTU(Maximum Transmission Unit)范围内,一般路由器设置为1500，考虑到包头损耗，一般用户数据大约在1400字节较为安全。
+
+   超过MTU后，在某些路由器将发生封包重传，导致传输性能下降，严重的导致丢包乃至连接断开。
+
+   cellnet底层没有拆分逻辑包的设计，请自行使用Processor扩展。

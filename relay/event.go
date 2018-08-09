@@ -28,7 +28,7 @@ func (self *RecvMsgEvent) Message() interface{} {
 }
 
 // 消息原路返回
-func (self *RecvMsgEvent) RelayBack(msg interface{}) {
+func (self *RecvMsgEvent) Reply(msg interface{}) {
 
 	Relay(self.Ses, msg, self.ContextID...)
 }

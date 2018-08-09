@@ -66,3 +66,11 @@ func TestCrackSizePacket(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestAutoAllocPort(t *testing.T) {
+
+	p := peer.NewGenericPeer("tcp.Acceptor", "autoacc", ":0", nil)
+	p.Start()
+
+	t.Log("auto alloc port:", p.(cellnet.TCPAcceptor).ListenPort())
+}

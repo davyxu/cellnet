@@ -1,8 +1,10 @@
 package tcp
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/util"
 	"net"
 )
 
@@ -17,6 +19,10 @@ type tcpAcceptor struct {
 
 	// 保存侦听器
 	listener net.Listener
+}
+
+func (self *tcpAcceptor) ListenPort() int {
+	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
 // 异步开始侦听
@@ -41,11 +47,21 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	self.listener = ln
 
-	log.Infof("#tcp.listen(%s) %s", self.Name(), self.Address())
+	log.Infof("#tcp.listen(%s) %s", self.Name(), self.ListenAddress())
 
 	go self.accept()
 
 	return self
+}
+
+func (self *tcpAcceptor) ListenAddress() string {
+
+	host, _, err := util.SpliteAddress(self.Address())
+	if err != nil {
+		return self.Address()
+	}
+
+	return fmt.Sprintf("%s:%d", host, self.ListenPort())
 }
 
 func (self *tcpAcceptor) accept() {

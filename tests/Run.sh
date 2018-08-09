@@ -9,6 +9,7 @@ set -e
 go test -v .
 
 # 编译例子
+trap 'rm -rf examplebin' EXIT
 mkdir -p examplebin
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/echo
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/client
@@ -16,10 +17,4 @@ go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/chat/se
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/fileserver
 go build -p 4 -v -o ./examplebin/echo github.com/davyxu/cellnet/examples/websocket
 
-function Cleanup()
-{
-    echo "cleanup"
-    rm -rf examplebin
-}
 
-trap CleanUp EXIT
