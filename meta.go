@@ -130,6 +130,10 @@ func MessageMetaVisit(nameRule string, callback func(meta *MessageMeta) bool) er
 // 根据类型查找消息元信息
 func MessageMetaByType(t reflect.Type) *MessageMeta {
 
+	if t == nil {
+		return nil
+	}
+
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
