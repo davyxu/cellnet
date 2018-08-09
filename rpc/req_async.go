@@ -23,7 +23,9 @@ func Call(sesOrPeer interface{}, reqMsg interface{}, timeout time.Duration, user
 
 	// 发送RPC请求
 	req := createRequest(func(raw interface{}) {
-		userCallback(raw)
+		cellnet.SessionQueuedCall(ses, func() {
+			userCallback(raw)
+		})
 	})
 
 	req.Send(ses, reqMsg)
