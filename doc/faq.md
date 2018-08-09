@@ -1,5 +1,21 @@
 # FAQ
 
+* 报错panic: Peer type not found怎么办?
+    这是由于需要的peer没有找到或者没有注册，使用cellnet内建的peer请在main入口这样导入包
+```
+    import (
+        _ "github.com/davyxu/cellnet/peer/tcp"
+    )
+```
+
+* 报错panic: processor not found怎么办?
+    这是由于需要的processor没有找到或者没有注册，使用cellnet内建的processor请在main入口这样导入包
+```
+    import (
+        _ "github.com/davyxu/cellnet/proc/tcp"
+    )
+```
+
 * 这个代码的入口在哪里? 怎么编译为exe?
 
     本代码是一个网络库, 需要根据需求, 整合逻辑
