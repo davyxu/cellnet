@@ -1,13 +1,13 @@
 package cellnet
 
 import (
+	"log"
 	"runtime/debug"
 	"sync"
 )
 
 // 事件队列
 type EventQueue interface {
-
 	// 事件队列开始工作
 	StartLoop() EventQueue
 
@@ -25,7 +25,7 @@ type EventQueue interface {
 }
 
 type eventQueue struct {
-	queue chan func()
+	*Pipe
 
 	endSignal sync.WaitGroup
 
@@ -44,7 +44,7 @@ func (self *eventQueue) Post(callback func()) {
 		return
 	}
 
-	self.queue <- callback
+	self.Add(callback)
 }
 
 // 保护调用用户函数
@@ -71,13 +71,27 @@ func (self *eventQueue) StartLoop() EventQueue {
 
 	go func() {
 
-		for callback := range self.queue {
+		var writeList []interface{}
 
-			if callback == nil {
-				break
+		for {
+			writeList = writeList[0:0]
+			exit := self.Pick(&writeList)
+
+			// 遍历要发送的数据
+			for _, msg := range writeList {
+				switch t := msg.(type) {
+				case func():
+					self.protectedCall(t)
+				case nil:
+					break
+				default:
+					log.Printf("unexpected type %T", t)
+				}
 			}
 
-			self.protectedCall(callback)
+			if exit {
+				break
+			}
 		}
 
 		self.endSignal.Done()
@@ -88,7 +102,7 @@ func (self *eventQueue) StartLoop() EventQueue {
 
 // 停止事件循环
 func (self *eventQueue) StopLoop() EventQueue {
-	self.queue <- nil
+	self.Add(nil)
 	return self
 }
 
@@ -97,13 +111,11 @@ func (self *eventQueue) Wait() {
 	self.endSignal.Wait()
 }
 
-const DefaultQueueSize = 100
-
 // 创建默认长度的队列
 func NewEventQueue() EventQueue {
 
 	return &eventQueue{
-		queue: make(chan func(), DefaultQueueSize),
+		Pipe: NewPipe(),
 	}
 }
 

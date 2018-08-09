@@ -24,7 +24,7 @@ type tcpSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *util.Pipe
+	sendQueue *cellnet.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -173,7 +173,7 @@ func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	self := &tcpSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  util.NewPipe(),
+		sendQueue:  cellnet.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle
