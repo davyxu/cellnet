@@ -22,7 +22,7 @@ type wsSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *util.Pipe
+	sendQueue *cellnet.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -148,7 +148,7 @@ func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) *wsSessi
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  util.NewPipe(),
+		sendQueue:  cellnet.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle
