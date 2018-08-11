@@ -17,7 +17,7 @@ type ProcessorBundle interface {
 	SetCallback(v cellnet.EventCallback)
 }
 
-// 放队列中回调
+// 让EventCallback保证放在ses的队列里，而不是并发的
 func NewQueuedEventCallback(callback cellnet.EventCallback) cellnet.EventCallback {
 
 	return func(ev cellnet.Event) {

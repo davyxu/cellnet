@@ -22,6 +22,10 @@ type tcpAcceptor struct {
 }
 
 func (self *tcpAcceptor) ListenPort() int {
+	if self.listener == nil {
+		return 0
+	}
+
 	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
