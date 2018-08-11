@@ -142,9 +142,6 @@ func (self *tcpSession) Start() {
 	// connector复用session时，上一次发送队列未释放可能造成问题
 	self.sendQueue.Reset()
 
-	// 将会话添加到管理器
-	self.Peer().(peer.SessionManager).Add(self)
-
 	// 需要接收和发送线程同时完成时才算真正的完成
 	self.exitSync.Add(2)
 
@@ -167,6 +164,9 @@ func (self *tcpSession) Start() {
 
 	// 启动并发发送goroutine
 	go self.sendLoop()
+
+	// 将会话添加到管理器
+	self.Peer().(peer.SessionManager).Add(self)
 }
 
 func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
