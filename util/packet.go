@@ -55,7 +55,7 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 		return
 	}
 
-	if len(sizeBuffer) < bodySize {
+	if len(body) < bodySize {
 		return nil, ErrShortMsgID
 	}
 
