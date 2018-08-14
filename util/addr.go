@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"net"
 	"strconv"
 )
@@ -22,4 +23,8 @@ func SpliteAddress(addr string) (host string, port int, err error) {
 	}
 
 	return
+}
+
+func JoinAddress(host string, port int) string {
+	return fmt.Sprintf("%s:%d", host, port)
 }
