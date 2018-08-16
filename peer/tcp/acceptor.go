@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
@@ -21,7 +20,7 @@ type tcpAcceptor struct {
 	listener net.Listener
 }
 
-func (self *tcpAcceptor) ListenPort() int {
+func (self *tcpAcceptor) Port() int {
 	if self.listener == nil {
 		return 0
 	}
@@ -65,7 +64,7 @@ func (self *tcpAcceptor) ListenAddress() string {
 		return self.Address()
 	}
 
-	return fmt.Sprintf("%s:%d", host, self.ListenPort())
+	return util.JoinAddress(host, self.Port())
 }
 
 func (self *tcpAcceptor) accept() {

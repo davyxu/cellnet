@@ -75,6 +75,14 @@ func (self *tcpConnector) SetReconnectDuration(v time.Duration) {
 	self.reconDur = v
 }
 
+func (self *tcpConnector) Port() int {
+	if self.defaultSes.conn == nil {
+		return 0
+	}
+
+	return self.defaultSes.conn.LocalAddr().(*net.TCPAddr).Port
+}
+
 const reportConnectFailedLimitTimes = 3
 
 // 连接器，传入连接地址和发送封包次数

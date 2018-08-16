@@ -58,6 +58,8 @@ type TCPConnector interface {
 
 	// 设置会话管理器 实现peer.SessionManager接口
 	SetSessionManager(raw interface{})
+
+	Port() int
 }
 
 // TCP接受器，具备会话访问
@@ -70,7 +72,7 @@ type TCPAcceptor interface {
 	TCPSocketOption
 
 	// 查看当前侦听端口，使用host:0 作为Address时，socket底层自动分配侦听端口
-	ListenPort() int
+	Port() int
 }
 
 // UDP连接器

@@ -18,6 +18,14 @@ type tcpSyncConnector struct {
 	defaultSes *tcpSession
 }
 
+func (self *tcpSyncConnector) Port() int {
+	if self.defaultSes.conn == nil {
+		return 0
+	}
+
+	return self.defaultSes.conn.LocalAddr().(*net.TCPAddr).Port
+}
+
 func (self *tcpSyncConnector) Start() cellnet.Peer {
 
 	// 尝试用Socket连接地址
