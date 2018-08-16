@@ -32,11 +32,11 @@ type PeerProperty interface {
 
 // 设置和获取自定义属性
 type ContextSet interface {
-	GetContext(key, valuePtr interface{}) bool
-
 	SetContext(key interface{}, v interface{})
 
-	RawGetContext(key interface{}) (interface{}, bool)
+	GetContext(key interface{}) (interface{}, bool)
+
+	FetchContext(key, valuePtr interface{}) bool
 }
 
 // 会话访问
