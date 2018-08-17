@@ -2,7 +2,6 @@ package relay
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 )
 
 // 处理入站的relay消息
@@ -11,7 +10,9 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
 
-		userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
+		var payload, passThrough interface{}
+		payload, passThrough, err = relayMsg.Decode()
+
 		if err != nil {
 			return inputEvent, false, err
 		}
@@ -20,19 +21,19 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.recv(%s)@%d len: %d %s context: %v | %s",
+			log.Debugf("#relay.recv(%s)@%d len: %d %s context: %+v | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
-				cellnet.MessageSize(userMsg),
-				cellnet.MessageToName(userMsg),
-				relayMsg.ContextID,
-				cellnet.MessageToString(userMsg))
+				cellnet.MessageSize(payload),
+				cellnet.MessageToName(payload),
+				passThrough,
+				cellnet.MessageToString(payload))
 		}
 
 		ev := &RecvMsgEvent{
-			inputEvent.Session(),
-			userMsg,
-			relayMsg.ContextID,
+			Ses:         inputEvent.Session(),
+			Msg:         payload,
+			PassThrough: passThrough,
 		}
 
 		if bcFunc != nil {
@@ -56,20 +57,22 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 		if log.IsDebugEnabled() {
 
-			userMsg, _, err := codec.DecodeMessage(int(relayMsg.MsgID), relayMsg.Data)
+			var payload, passThrough interface{}
+			payload, passThrough, err = relayMsg.Decode()
+
 			if err != nil {
 				return false, err
 			}
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.send(%s)@%d len: %d %s context: %v | %s",
+			log.Debugf("#relay.send(%s)@%d len: %d %s context: %+v | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
-				cellnet.MessageSize(userMsg),
-				cellnet.MessageToName(userMsg),
-				relayMsg.ContextID,
-				cellnet.MessageToString(userMsg))
+				cellnet.MessageSize(payload),
+				cellnet.MessageToName(payload),
+				passThrough,
+				cellnet.MessageToString(payload))
 
 			return true, nil
 

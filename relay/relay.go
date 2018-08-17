@@ -3,15 +3,14 @@ package relay
 import (
 	"errors"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 )
 
 var (
 	ErrInvalidPeerSession = errors.New("Require valid cellnet.Session or cellnet.TCPConnector")
 )
 
-// sesDetector: 提供要发送到的目标session， 发送msg消息，并携带ContextID
-func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
+// sesDetector: 提供要发送到的目标session， 传输msg消息，透传passThroughData
+func Relay(sesDetector, payload, passThrough interface{}) error {
 
 	ses, err := getSession(sesDetector)
 	if err != nil {
@@ -19,18 +18,13 @@ func Relay(sesDetector, msg interface{}, contextIDList ...int64) error {
 		return err
 	}
 
-	data, meta, err := codec.EncodeMessage(msg, nil)
-
-	if err != nil {
+	var ack RelayACK
+	if err = ack.Encode(payload, passThrough); err != nil {
 		log.Errorln("relay.Relay:", err)
 		return err
 	}
 
-	ses.Send(&RelayACK{
-		MsgID:     uint16(meta.ID),
-		Data:      data, // 这里的data不能做内存池回收
-		ContextID: contextIDList,
-	})
+	ses.Send(&ack)
 
 	return nil
 }
