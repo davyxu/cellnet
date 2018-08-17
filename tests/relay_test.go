@@ -102,7 +102,7 @@ func relay_agent() {
 			sesAccessor := relay_ClientToAgentAcceptor.(cellnet.SessionAccessor)
 
 			// 去掉掩码
-			sesID := event.OneContextID() - AgentSessionIDMask
+			sesID := event.PassThroughAsInt64() - AgentSessionIDMask
 			ses := sesAccessor.GetSession(sesID)
 			if ses != nil {
 

@@ -11,7 +11,7 @@ type RecvMsgEvent struct {
 	PassThrough interface{}
 }
 
-func (self *RecvMsgEvent) OneContextID() int64 {
+func (self *RecvMsgEvent) PassThroughAsInt64() int64 {
 
 	if v, ok := self.PassThrough.(int64); ok {
 		return v
