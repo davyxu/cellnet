@@ -21,7 +21,8 @@ type RelayACK struct {
 }
 
 var (
-	ErrRelayPacketCrack = errors.New("invalid relay packet format")
+	ErrRelayPacketCrack       = errors.New("invalid relay packet format")
+	ErrUnknownPassThroughKind = errors.New("Unknown PassThrough kind")
 )
 
 func (self *RelayACK) Decode() (payload, passThrough interface{}, err error) {
@@ -32,10 +33,23 @@ func (self *RelayACK) Decode() (payload, passThrough interface{}, err error) {
 	}
 
 	switch self.PassThroughKind {
-	case 1:
-		passThrough = int64(binary.LittleEndian.Uint64(self.PassThrough))
-	case 2:
+	case 0: // msg
 		passThrough, _, err = codec.DecodeMessage(int(self.PassThroughMsgID), self.PassThrough)
+	case 1: // int64
+		passThrough = int64(binary.LittleEndian.Uint64(self.PassThrough))
+	case 2: // []int64
+		dataLen := binary.LittleEndian.Uint16(self.PassThrough)
+		self.PassThrough = self.PassThrough[2:]
+
+		list := make([]int64, dataLen)
+
+		for i := uint16(0); i < dataLen; i++ {
+			list[i] = int64(binary.LittleEndian.Uint64(self.PassThrough))
+
+			self.PassThrough = self.PassThrough[8:]
+		}
+
+		passThrough = list
 
 	default:
 		err = ErrRelayPacketCrack
@@ -59,21 +73,41 @@ func (self *RelayACK) Encode(payload, passThrough interface{}) (err error) {
 
 	switch ptValue := passThrough.(type) {
 	case int64:
+		self.PassThroughKind = 1
 
 		self.PassThrough = make([]byte, 8)
 
 		binary.LittleEndian.PutUint64(self.PassThrough, uint64(ptValue))
-		self.PassThroughKind = 1
 
-	default:
-		self.PassThrough, passThroughMeta, err = codec.EncodeMessage(passThrough, nil)
+	case []int64:
+		self.PassThroughKind = 2
 
-		if err != nil {
-			return
+		self.PassThrough = make([]byte, 8*len(ptValue)+2)
+
+		binary.LittleEndian.PutUint16(self.PassThrough, uint16(len(ptValue)))
+
+		self.PassThrough = self.PassThrough[2:]
+
+		for _, v := range ptValue {
+			binary.LittleEndian.PutUint64(self.PassThrough, uint64(v))
+			self.PassThrough = self.PassThrough[8:]
 		}
 
-		self.PassThroughMsgID = uint16(passThroughMeta.ID)
-		self.PassThroughKind = 2
+	default:
+
+		ptType := reflect.TypeOf(passThrough)
+		if ptType.Kind() == reflect.Ptr && ptType.Elem().Kind() == reflect.Struct {
+			self.PassThrough, passThroughMeta, err = codec.EncodeMessage(passThrough, nil)
+
+			if err != nil {
+				return
+			}
+
+			self.PassThroughMsgID = uint16(passThroughMeta.ID)
+			self.PassThroughKind = 0
+		} else {
+			err = ErrUnknownPassThroughKind
+		}
 	}
 
 	return

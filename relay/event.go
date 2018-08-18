@@ -20,6 +20,15 @@ func (self *RecvMsgEvent) PassThroughAsInt64() int64 {
 	return 0
 }
 
+func (self *RecvMsgEvent) PassThroughAsInt64Slice() []int64 {
+
+	if v, ok := self.PassThrough.([]int64); ok {
+		return v
+	}
+
+	return nil
+}
+
 func (self *RecvMsgEvent) Session() cellnet.Session {
 	return self.Ses
 }
