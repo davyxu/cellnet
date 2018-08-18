@@ -50,6 +50,8 @@ func (self *RelayACK) Decode() (payload, passThrough interface{}, err error) {
 		}
 
 		passThrough = list
+	case 3:
+		passThrough = nil
 
 	default:
 		err = ErrRelayPacketCrack
@@ -92,6 +94,8 @@ func (self *RelayACK) Encode(payload, passThrough interface{}) (err error) {
 			binary.LittleEndian.PutUint64(self.PassThrough, uint64(v))
 			self.PassThrough = self.PassThrough[8:]
 		}
+	case nil:
+		self.PassThroughKind = 3
 
 	default:
 
