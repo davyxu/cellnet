@@ -24,7 +24,7 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 			log.Debugf("#relay.recv(%s)@%d len: %d %s passThrough: '%+v' | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
-				cellnet.MessageSize(payload),
+				cellnet.MessageSize(relayMsg),
 				cellnet.MessageToName(payload),
 				passThrough,
 				cellnet.MessageToString(payload))
@@ -69,7 +69,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 			log.Debugf("#relay.send(%s)@%d len: %d %s passThrough: '%+v' | %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
-				cellnet.MessageSize(payload),
+				cellnet.MessageSize(relayMsg),
 				cellnet.MessageToName(payload),
 				passThrough,
 				cellnet.MessageToString(payload))

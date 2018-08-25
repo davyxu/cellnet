@@ -38,18 +38,24 @@ func (self *RelayACK) Decode() (payload, passThrough interface{}, err error) {
 	case 1: // int64
 		passThrough = int64(binary.LittleEndian.Uint64(self.PassThrough))
 	case 2: // []int64
-		dataLen := binary.LittleEndian.Uint16(self.PassThrough)
-		self.PassThrough = self.PassThrough[2:]
+		if len(self.PassThrough) >= 2 {
+			ptr := self.PassThrough
+			dataLen := binary.LittleEndian.Uint16(ptr)
+			ptr = ptr[2:]
 
-		list := make([]int64, dataLen)
+			list := make([]int64, dataLen)
 
-		for i := uint16(0); i < dataLen; i++ {
-			list[i] = int64(binary.LittleEndian.Uint64(self.PassThrough))
+			for i := uint16(0); i < dataLen; i++ {
+				list[i] = int64(binary.LittleEndian.Uint64(ptr))
 
-			self.PassThrough = self.PassThrough[8:]
+				ptr = ptr[8:]
+			}
+
+			passThrough = list
+		} else {
+			passThrough = make([]int64, 0)
 		}
 
-		passThrough = list
 	case 3:
 		passThrough = nil
 
@@ -85,15 +91,17 @@ func (self *RelayACK) Encode(payload, passThrough interface{}) (err error) {
 		self.PassThroughKind = 2
 
 		self.PassThrough = make([]byte, 8*len(ptValue)+2)
+		ptr := self.PassThrough
 
-		binary.LittleEndian.PutUint16(self.PassThrough, uint16(len(ptValue)))
+		binary.LittleEndian.PutUint16(ptr, uint16(len(ptValue)))
 
-		self.PassThrough = self.PassThrough[2:]
+		ptr = ptr[2:]
 
 		for _, v := range ptValue {
-			binary.LittleEndian.PutUint64(self.PassThrough, uint64(v))
-			self.PassThrough = self.PassThrough[8:]
+			binary.LittleEndian.PutUint64(ptr, uint64(v))
+			ptr = ptr[8:]
 		}
+
 	case nil:
 		self.PassThroughKind = 3
 
