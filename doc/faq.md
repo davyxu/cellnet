@@ -77,3 +77,7 @@
    超过MTU后，在某些路由器将发生封包重传，导致传输性能下降，严重的导致丢包乃至连接断开。
 
    cellnet底层没有拆分逻辑包的设计，请自行使用Processor扩展。
+
+* 如何获取会话的远程IP?
+
+   util.GetRemoteAddrss获取到地址, util.SpliteAddress拆分出host部分就是ip
