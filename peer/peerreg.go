@@ -1,6 +1,7 @@
 package peer
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"sort"
 )
@@ -37,7 +38,7 @@ func PeerCreatorList() (ret []string) {
 func NewPeer(peerType string) cellnet.Peer {
 	peerCreator := creatorByTypeName[peerType]
 	if peerCreator == nil {
-		panic("Peer type not found: " + peerType)
+		panic(fmt.Sprintf("Peer type not found, name: '%s'", peerType))
 	}
 
 	return peerCreator()

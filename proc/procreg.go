@@ -1,6 +1,7 @@
 package proc
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"sort"
 )
@@ -38,6 +39,6 @@ func BindProcessorHandler(peer cellnet.Peer, procName string, userCallback celln
 		proc(bundle, userCallback)
 
 	} else {
-		panic("processor not found:" + procName)
+		panic(fmt.Sprintf("processor not found, name: '%s'", procName))
 	}
 }
