@@ -7,6 +7,7 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // Socket会话
@@ -30,7 +31,7 @@ type tcpSession struct {
 
 	endNotify func()
 
-	manualClosed int64
+	closing int64
 }
 
 func (self *tcpSession) Peer() cellnet.Peer {
@@ -39,16 +40,22 @@ func (self *tcpSession) Peer() cellnet.Peer {
 
 // 取原始连接
 func (self *tcpSession) Raw() interface{} {
-	if self.conn == nil {
-		return nil
-	}
-
 	return self.conn
 }
 
 func (self *tcpSession) Close() {
-	atomic.StoreInt64(&self.manualClosed, 1)
-	self.sendQueue.Add(nil)
+
+	closing := atomic.SwapInt64(&self.closing, 1)
+	if closing == 1 {
+		return
+	}
+
+	// 关闭读
+	con := self.conn.(*net.TCPConn)
+	// 关闭读
+	con.CloseRead()
+	// 手动读超时
+	con.SetReadDeadline(time.Now())
 }
 
 // 发送封包
@@ -56,6 +63,11 @@ func (self *tcpSession) Send(msg interface{}) {
 
 	// 只能通过Close关闭连接
 	if msg == nil {
+		return
+	}
+
+	// 已经关闭，不再发送
+	if atomic.LoadInt64(&self.closing) == 1 {
 		return
 	}
 
@@ -76,7 +88,7 @@ func (self *tcpSession) recvLoop() {
 
 			self.sendQueue.Add(nil)
 
-			manualClosed := atomic.LoadInt64(&self.manualClosed)
+			manualClosed := atomic.LoadInt64(&self.closing)
 
 			// 标记为手动关闭原因
 			closedMsg := &cellnet.SessionClosed{}
@@ -91,7 +103,8 @@ func (self *tcpSession) recvLoop() {
 		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
 
-	self.cleanup()
+	// 通知完成
+	self.exitSync.Done()
 }
 
 // 发送循环
@@ -114,21 +127,8 @@ func (self *tcpSession) sendLoop() {
 		}
 	}
 
-	self.cleanup()
-}
-
-// 清理资源
-func (self *tcpSession) cleanup() {
-
-	self.cleanupGuard.Lock()
-
-	defer self.cleanupGuard.Unlock()
-
-	// 关闭连接
-	if self.conn != nil {
-		self.conn.Close()
-		self.conn = nil
-	}
+	// 完整关闭
+	self.conn.Close()
 
 	// 通知完成
 	self.exitSync.Done()
@@ -137,7 +137,7 @@ func (self *tcpSession) cleanup() {
 // 启动会话的各种资源
 func (self *tcpSession) Start() {
 
-	atomic.StoreInt64(&self.manualClosed, 0)
+	atomic.StoreInt64(&self.closing, 0)
 
 	// connector复用session时，上一次发送队列未释放可能造成问题
 	self.sendQueue.Reset()

@@ -11,7 +11,7 @@ type CoreRunningTag struct {
 	running int64
 
 	// 停止过程同步
-	stopping chan bool
+	stopping chan struct{}
 }
 
 func (self *CoreRunningTag) IsRunning() bool {
@@ -42,12 +42,12 @@ func (self *CoreRunningTag) IsStopping() bool {
 }
 
 func (self *CoreRunningTag) StartStopping() {
-	self.stopping = make(chan bool)
+	self.stopping = make(chan struct{})
 }
 
 func (self *CoreRunningTag) EndStopping() {
 	select {
-	case self.stopping <- true:
+	case self.stopping <- struct{}{}:
 
 	default:
 		self.stopping = nil

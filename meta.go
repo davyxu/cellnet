@@ -57,6 +57,10 @@ func (self *MessageMeta) FullName() string {
 
 // 创建meta类型的实例
 func (self *MessageMeta) NewType() interface{} {
+	if self.Type == nil {
+		return nil
+	}
+
 	return reflect.New(self.Type).Interface()
 }
 
