@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
 	"net"
+	"strings"
 )
 
 // 接受器
@@ -37,7 +38,9 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	ln, err := net.Listen("tcp", self.Address())
+	ln, err := util.DetectPort(self.Address(), func(s string) (net.Listener, error) {
+		return net.Listen("tcp", s)
+	})
 
 	if err != nil {
 
@@ -59,10 +62,12 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 func (self *tcpAcceptor) ListenAddress() string {
 
-	host, _, err := util.SpliteAddress(self.Address())
-	if err != nil {
+	pos := strings.Index(self.Address(), ":")
+	if pos == -1 {
 		return self.Address()
 	}
+
+	host := self.Address()[:pos]
 
 	return util.JoinAddress(host, self.Port())
 }
