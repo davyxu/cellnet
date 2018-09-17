@@ -29,6 +29,11 @@ func (self *tcpAcceptor) Port() int {
 	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
+func (self *tcpAcceptor) IsReady() bool {
+
+	return self.IsRunning()
+}
+
 // 异步开始侦听
 func (self *tcpAcceptor) Start() cellnet.Peer {
 
