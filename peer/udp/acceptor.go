@@ -31,6 +31,19 @@ type udpAcceptor struct {
 	mtTotalRecvUDPPacket *expvar.Int
 }
 
+func (self *udpAcceptor) IsReady() bool {
+
+	return self.IsRunning()
+}
+
+func (self *udpAcceptor) Port() int {
+	if self.conn == nil {
+		return 0
+	}
+
+	return self.conn.LocalAddr().(*net.UDPAddr).Port
+}
+
 func (self *udpAcceptor) Start() cellnet.Peer {
 
 	if self.mtSesQueueCount == nil {
