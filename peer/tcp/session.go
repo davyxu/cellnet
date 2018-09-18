@@ -50,12 +50,14 @@ func (self *tcpSession) Close() {
 		return
 	}
 
-	// 关闭读
-	con := self.conn.(*net.TCPConn)
-	// 关闭读
-	con.CloseRead()
-	// 手动读超时
-	con.SetReadDeadline(time.Now())
+	if self.conn != nil {
+		// 关闭读
+		con := self.conn.(*net.TCPConn)
+		// 关闭读
+		con.CloseRead()
+		// 手动读超时
+		con.SetReadDeadline(time.Now())
+	}
 }
 
 // 发送封包
