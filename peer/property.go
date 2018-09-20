@@ -49,7 +49,13 @@ func (self *CoreContextSet) FetchContext(key, valuePtr interface{}) bool {
 	default:
 		v := reflect.Indirect(reflect.ValueOf(valuePtr))
 
-		v.Set(reflect.ValueOf(pv))
+		// 避免call of reflect.Value.Set on zero Value
+		if pv == nil {
+			v.Set(reflect.Zero(v.Type()))
+		} else {
+			v.Set(reflect.ValueOf(pv))
+		}
+
 	}
 
 	return true
