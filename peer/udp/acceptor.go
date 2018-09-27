@@ -19,8 +19,6 @@ type udpAcceptor struct {
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 
-	localAddr *net.UDPAddr
-
 	conn *net.UDPConn
 
 	sesQueue *util.Queue
@@ -54,8 +52,15 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		self.mtTotalRecvUDPPacket = expvar.NewInt(fmt.Sprintf("cellnet.Peer(%s).TotalRecvUDPPacket", self.Name()))
 	}
 
-	var err error
-	self.localAddr, err = net.ResolveUDPAddr("udp", self.Address())
+	ln, err := util.DetectPort(self.Address(), func(s string) (interface{}, error) {
+
+		addr, err := net.ResolveUDPAddr("udp", s)
+		if err != nil {
+			return nil, err
+		}
+
+		return net.ListenUDP("udp", addr)
+	})
 
 	if err != nil {
 
@@ -63,7 +68,7 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	self.conn, err = net.ListenUDP("udp", self.localAddr)
+	self.conn = ln.(*net.UDPConn)
 
 	if err != nil {
 		log.Errorf("#udp.listen failed(%s) %s", self.NameOrAddress(), err.Error())

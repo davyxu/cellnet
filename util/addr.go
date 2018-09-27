@@ -48,7 +48,7 @@ var (
 )
 
 // 在给定的端口范围内找到一个能用的端口 格式: localhost:5000~6000
-func DetectPort(addr string, fn func(string) (net.Listener, error)) (net.Listener, error) {
+func DetectPort(addr string, fn func(string) (interface{}, error)) (interface{}, error) {
 	// host:port 或 host:min~max
 	parts := strings.Split(addr, ":")
 
