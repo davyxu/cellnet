@@ -83,7 +83,6 @@ func (self *httpAcceptor) ServeFileWithDir(res http.ResponseWriter, req *http.Re
 	dir := self.GetDir()
 
 	if dir == "" {
-		log.Warnln("peer's 'HttpDir' 'HttpRoot' property not set")
 		return nil, errNotFound, false
 	}
 
