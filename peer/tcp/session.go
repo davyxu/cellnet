@@ -46,7 +46,7 @@ func (self *tcpSession) Raw() interface{} {
 func (self *tcpSession) Close() {
 
 	closing := atomic.SwapInt64(&self.closing, 1)
-	if closing == 1 {
+	if closing != 0 {
 		return
 	}
 
@@ -69,11 +69,15 @@ func (self *tcpSession) Send(msg interface{}) {
 	}
 
 	// 已经关闭，不再发送
-	if atomic.LoadInt64(&self.closing) == 1 {
+	if self.IsManualClosed() {
 		return
 	}
 
 	self.sendQueue.Add(msg)
+}
+
+func (self *tcpSession) IsManualClosed() bool {
+	return atomic.LoadInt64(&self.closing) != 0
 }
 
 // 接收循环
@@ -90,11 +94,9 @@ func (self *tcpSession) recvLoop() {
 
 			self.sendQueue.Add(nil)
 
-			manualClosed := atomic.LoadInt64(&self.closing)
-
 			// 标记为手动关闭原因
 			closedMsg := &cellnet.SessionClosed{}
-			if manualClosed != 0 {
+			if self.IsManualClosed() {
 				closedMsg.Reason = cellnet.CloseReason_Manual
 			}
 
