@@ -2,7 +2,10 @@ package util
 
 import (
 	"bufio"
+	"bytes"
+	"compress/zlib"
 	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -48,4 +51,31 @@ func ReadFileLines(filename string, callback func(line string) bool) error {
 	}
 
 	return nil
+}
+
+func CompressBytes(data []byte) ([]byte, error) {
+
+	var buf bytes.Buffer
+
+	writer := zlib.NewWriter(&buf)
+
+	_, err := writer.Write(data)
+	if err != nil {
+		return nil, err
+	}
+	writer.Close()
+
+	return buf.Bytes(), nil
+}
+
+func DecompressBytes(data []byte) ([]byte, error) {
+
+	reader, err := zlib.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	defer reader.Close()
+
+	return ioutil.ReadAll(reader)
 }
