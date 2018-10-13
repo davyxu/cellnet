@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/rpc"
-	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"
 )
@@ -13,8 +12,8 @@ import (
 const syncRPC_Address = "127.0.0.1:9201"
 
 var (
-	syncRPC_Signal  *util.SignalTester
-	asyncRPC_Signal *util.SignalTester
+	syncRPC_Signal  *SignalTester
+	asyncRPC_Signal *SignalTester
 
 	rpc_Acceptor cellnet.Peer
 )
@@ -116,7 +115,7 @@ func rpc_StartClient(eventFunc func(event cellnet.Event)) {
 
 func TestSyncRPC(t *testing.T) {
 
-	syncRPC_Signal = util.NewSignalTester(t)
+	syncRPC_Signal = NewSignalTester(t)
 
 	rpc_StartServer()
 
@@ -128,7 +127,7 @@ func TestSyncRPC(t *testing.T) {
 
 func TestASyncRPC(t *testing.T) {
 
-	asyncRPC_Signal = util.NewSignalTester(t)
+	asyncRPC_Signal = NewSignalTester(t)
 
 	rpc_StartServer()
 

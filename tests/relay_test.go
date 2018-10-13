@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/relay"
-	"github.com/davyxu/cellnet/util"
 	"reflect"
 	"sync"
 	"testing"
@@ -19,7 +18,7 @@ const (
 )
 
 var (
-	relay_Signal                  *util.SignalTester
+	relay_Signal                  *SignalTester
 	relay_ClientToAgentAcceptor   cellnet.Peer
 	relay_BackendToAgentConnector cellnet.Peer
 	relay_BackendToAgentAcceptor  cellnet.Peer
@@ -150,7 +149,7 @@ func relay_client() {
 
 func TestRelay(t *testing.T) {
 
-	relay_Signal = util.NewSignalTester(t)
+	relay_Signal = NewSignalTester(t)
 
 	relay_backend()
 

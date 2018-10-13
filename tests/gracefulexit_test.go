@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/util"
 	"sync"
 	"testing"
 	"time"
@@ -13,7 +12,7 @@ import (
 
 const recreateConn_Address = "127.0.0.1:7201"
 
-var recreateConn_Signal *util.SignalTester
+var recreateConn_Signal *SignalTester
 
 func recreateConn_StartServer() {
 	queue := cellnet.NewEventQueue()
@@ -75,7 +74,7 @@ func runConnClose() {
 
 func TestCreateDestroyConnector(t *testing.T) {
 
-	recreateConn_Signal = util.NewSignalTester(t)
+	recreateConn_Signal = NewSignalTester(t)
 
 	recreateConn_StartServer()
 

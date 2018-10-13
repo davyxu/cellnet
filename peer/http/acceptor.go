@@ -58,6 +58,10 @@ func (self *httpAcceptor) Port() int {
 	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
+func (self *httpAcceptor) IsReady() bool {
+	return self.Port() != 0
+}
+
 func (self *httpAcceptor) WANAddress() string {
 
 	pos := strings.Index(self.Address(), ":")

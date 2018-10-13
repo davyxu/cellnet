@@ -6,12 +6,11 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/timer"
-	"github.com/davyxu/cellnet/util"
 )
 
 func TestAfterTimer(t *testing.T) {
 
-	signal := util.NewSignalTester(t)
+	signal := NewSignalTester(t)
 
 	queue := cellnet.NewEventQueue()
 
@@ -41,7 +40,7 @@ func TestAfterTimer(t *testing.T) {
 
 func TestLoopTimer(t *testing.T) {
 
-	signal := util.NewSignalTester(t)
+	signal := NewSignalTester(t)
 	signal.SetTimeout(60 * time.Second)
 
 	queue := cellnet.NewEventQueue()

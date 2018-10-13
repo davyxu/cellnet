@@ -9,7 +9,6 @@ import (
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	_ "github.com/davyxu/cellnet/proc/udp"
-	"github.com/davyxu/cellnet/util"
 	"testing"
 	"time"
 )
@@ -18,7 +17,7 @@ type echoContext struct {
 	Address   string
 	Protocol  string
 	Processor string
-	Tester    *util.SignalTester
+	Tester    *SignalTester
 	Acceptor  cellnet.GenericPeer
 }
 
@@ -103,7 +102,7 @@ func runEcho(t *testing.T, index int) {
 
 	ctx := echoContexts[index]
 
-	ctx.Tester = util.NewSignalTester(t)
+	ctx.Tester = NewSignalTester(t)
 	ctx.Tester.SetTimeout(time.Hour)
 
 	echo_StartServer(ctx)
