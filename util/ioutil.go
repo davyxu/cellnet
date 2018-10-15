@@ -53,6 +53,23 @@ func ReadFileLines(filename string, callback func(line string) bool) error {
 	return nil
 }
 
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func FileSize(name string) int64 {
+	if info, err := os.Stat(name); err == nil {
+		return info.Size()
+	}
+
+	return 0
+}
+
 func CompressBytes(data []byte) ([]byte, error) {
 
 	var buf bytes.Buffer
