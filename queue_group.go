@@ -1,7 +1,6 @@
 package cellnet
 
 import (
-	"math"
 	"runtime"
 	"sync/atomic"
 )
@@ -67,14 +66,16 @@ func (self *eventQueueGroup) Wait() {
 }
 
 func (self *eventQueueGroup) GetQueue() EventQueue {
-	oldCounter := self.counter
-	newCounter := int32(math.Min(float64(self.size), float64(oldCounter+1)))
+	var oldCounter, newCounter int32
 	for {
+		oldCounter = self.counter
+		newCounter = oldCounter + 1
+		if newCounter >= self.size {
+			newCounter = 0
+		}
 		if atomic.CompareAndSwapInt32(&self.counter, oldCounter, newCounter) {
 			break
 		}
-		oldCounter = self.counter
-		newCounter = int32(math.Min(float64(self.size), float64(oldCounter+1)))
 	}
 
 	return self.list[int(newCounter)]
