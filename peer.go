@@ -28,6 +28,10 @@ type PeerProperty interface {
 
 	// 设置Peer挂接队列（可选）
 	SetQueue(v EventQueue)
+	
+	QueueGroup() EventQueueGroup
+	
+	SetQueueGroup(v EventQueueGroup)
 }
 
 // 设置和获取自定义属性

@@ -6,6 +6,7 @@ type CorePeerProperty struct {
 	name  string
 	queue cellnet.EventQueue
 	addr  string
+	queueGroup cellnet.EventQueueGroup
 }
 
 // 获取通讯端的名称
@@ -42,4 +43,12 @@ func (self *CorePeerProperty) NameOrAddress() string {
 	}
 
 	return self.addr
+}
+
+func (self *CorePeerProperty) SetQueueGroup(v cellnet.EventQueueGroup) {
+	self.queueGroup = v
+}
+
+func (self *CorePeerProperty) QueueGroup() cellnet.EventQueueGroup{
+	return self.queueGroup
 }

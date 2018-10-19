@@ -50,9 +50,12 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	ses.resp.Header().Set("Content-Type", httpCodec.MimeType()+";charset=UTF-8")
 	ses.resp.WriteHeader(http.StatusOK)
 
-	bodyData, err := ioutil.ReadAll(data.(io.Reader))
-	if err != nil {
-		return err
+	bodyData, ok := data.([]byte)
+	if !ok {
+		bodyData, err = ioutil.ReadAll(data.(io.Reader))
+		if err != nil {
+			return err
+		}
 	}
 
 	ses.resp.Write(bodyData)

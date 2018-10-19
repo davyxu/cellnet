@@ -18,7 +18,7 @@ func (self *RecvMsgEvent) Session() cellnet.Session {
 func (self *RecvMsgEvent) Message() interface{} {
 	return self.Msg
 }
-
+//TODO rpc事件队列组改造defer
 func (self *RecvMsgEvent) Queue() cellnet.EventQueue {
 	return self.ses.Peer().(interface {
 		Queue() cellnet.EventQueue

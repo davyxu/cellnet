@@ -32,6 +32,8 @@ type tcpSession struct {
 	endNotify func()
 
 	closing int64
+	
+	queue cellnet.EventQueue
 }
 
 func (self *tcpSession) Peer() cellnet.Peer {
@@ -185,4 +187,13 @@ func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	}
 
 	return self
+}
+
+func (self *tcpSession) Queue() cellnet.EventQueue {
+	return self.queue
+}
+
+// 绑定queue
+func (self *tcpSession) SetQueue(v cellnet.EventQueue) {
+	self.queue = v
 }

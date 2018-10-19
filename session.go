@@ -17,6 +17,10 @@ type Session interface {
 
 	// 标示ID
 	ID() int64
+	//绑定队列
+	Queue() EventQueue
+	
+	SetQueue(v EventQueue)
 }
 
 // 直接发送数据时，将*RawPacket作为Send参数

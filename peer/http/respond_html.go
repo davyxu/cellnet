@@ -69,6 +69,7 @@ func (self *httpAcceptor) Compile() *template.Template {
 				}
 
 				name := r[0 : len(r)-len(ext)]
+				log.Infoln(filepath.ToSlash(name))
 				tmpl := t.New(filepath.ToSlash(name))
 
 				// add our funcmaps

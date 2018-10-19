@@ -44,13 +44,16 @@ func NewPeer(peerType string) cellnet.Peer {
 	return peerCreator()
 }
 
-// 创建Peer后，设置基本属性
-func NewGenericPeer(peerType, name, addr string, q cellnet.EventQueue) cellnet.GenericPeer {
+// 创建Peer后，设置基本属性,eventGroup兼容旧版本
+func NewGenericPeer(peerType, name, addr string, q cellnet.EventQueue, qg ...cellnet.EventQueueGroup) cellnet.GenericPeer {
 
 	p := NewPeer(peerType)
 	gp := p.(cellnet.GenericPeer)
 	gp.SetName(name)
 	gp.SetAddress(addr)
 	gp.SetQueue(q)
+	if len(qg) > 0 {
+		gp.SetQueueGroup(qg[0])
+	}
 	return gp
 }

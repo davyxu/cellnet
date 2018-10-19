@@ -32,6 +32,7 @@ type httpSession struct {
 
 	respond bool
 	err     error
+	queue cellnet.EventQueue
 }
 
 func (self *httpSession) Match(method, url string) bool {
@@ -75,6 +76,15 @@ func (self *httpSession) Send(raw interface{}) {
 		self.err = ErrUnknownOperation
 	}
 
+}
+
+func (self *httpSession) Queue() cellnet.EventQueue {
+	return self.queue
+}
+
+// 绑定queue
+func (self *httpSession) SetQueue(v cellnet.EventQueue) {
+	self.queue = v
 }
 
 func newHttpSession(acc *httpAcceptor, req *http.Request, response http.ResponseWriter) *httpSession {

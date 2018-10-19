@@ -1,3 +1,8 @@
+#cool112 fork
+## 特性
+- 增加EventQueueGroup提高多核业务效率
+## 变化及修改
+- 修复http使用json msgRepond的bug
 # V4版本(v4分支)
 ## 版本特性
 
