@@ -124,22 +124,24 @@ func SessionQueuedCall(ses Session, callback func()) {
 	if ses == nil {
 		return
 	}
-	q :=ses.Queue()
-	if q == nil{
+	q := ses.Queue()
+	if q == nil {
 		q = ses.Peer().(interface {
 			Queue() EventQueue
 		}).Queue()
-	}
-	
-	if q == nil{
-		qg := ses.Peer().(interface {
-			QueueGroup() EventQueueGroup
-		}).QueueGroup()
-		if qg != nil{
-			q=qg.GetQueue()
+		if q == nil {//check eventGroup compatible with old version
+			qg := ses.Peer().(interface {
+				QueueGroup() EventQueueGroup
+			}).QueueGroup()
+			if qg != nil {
+				q = qg.GetQueue()
+			}
+		}
+		if q != nil {
+			ses.SetQueue(q)
 		}
 	}
-	ses.SetQueue(q)
+
 	QueuedCall(q, callback)
 }
 
