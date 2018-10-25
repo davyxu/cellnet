@@ -5,6 +5,12 @@ import (
 	"github.com/davyxu/cellnet/codec"
 )
 
+type PassthroughContent struct {
+	Int64      int64   // 透传int64
+	Int64Slice []int64 // 透传int64切片
+	Str        string
+}
+
 // 处理入站的relay消息
 func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, handled bool, err error) {
 
@@ -28,12 +34,12 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.recv(%s)@%d len: %d %s passThrough: '%+v' | %s",
+			log.Debugf("#relay.recv(%s)@%d len: %d %s <%s>| %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
 				cellnet.MessageSize(ev.Message()),
 				cellnet.MessageToName(ev.Message()),
-				relayMsg.PassThrough(),
+				cellnet.MessageToString(relayMsg),
 				cellnet.MessageToString(ev.Message()))
 		}
 
@@ -68,12 +74,12 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.send(%s)@%d len: %d %s passThrough: '%+v' | %s",
+			log.Debugf("#relay.send(%s)@%d len: %d %s <%s>| %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
 				cellnet.MessageSize(payload),
 				cellnet.MessageToName(payload),
-				relayMsg.PassThrough(),
+				cellnet.MessageToString(relayMsg),
 				cellnet.MessageToString(payload))
 
 			return true, nil

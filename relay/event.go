@@ -10,14 +10,6 @@ type RecvMsgEvent struct {
 	Msg interface{}
 }
 
-func (self *RecvMsgEvent) PassThrough() interface{} {
-	if self.ack == nil {
-		return nil
-	}
-
-	return self.ack.PassThrough()
-}
-
 func (self *RecvMsgEvent) PassThroughAsInt64() int64 {
 	if self.ack == nil {
 		return 0
@@ -34,6 +26,14 @@ func (self *RecvMsgEvent) PassThroughAsInt64Slice() []int64 {
 	return self.ack.Int64Slice
 }
 
+func (self *RecvMsgEvent) PassThroughAsString() string {
+	if self.ack == nil {
+		return ""
+	}
+
+	return self.ack.Str
+}
+
 func (self *RecvMsgEvent) Session() cellnet.Session {
 	return self.Ses
 }
@@ -45,6 +45,7 @@ func (self *RecvMsgEvent) Message() interface{} {
 // 消息原路返回
 func (self *RecvMsgEvent) Reply(msg interface{}) {
 
-	Relay(self.Ses, msg, self.ack.PassThrough())
+	// 没填的值不会被发送
+	Relay(self.Ses, msg, self.ack.Int64, self.ack.Int64Slice, self.ack.Str)
 
 }

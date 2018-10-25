@@ -10,8 +10,8 @@ var (
 	ErrInvalidPeerSession = errors.New("Require valid cellnet.Session or cellnet.TCPConnector")
 )
 
-// sesDetector: 提供要发送到的目标session， 传输msg消息，透传passThroughData
-func Relay(sesDetector interface{}, payloadList ...interface{}) error {
+// payload: msg/bytes   passthrough: int64, []int64, string
+func Relay(sesDetector interface{}, dataList ...interface{}) error {
 
 	ses, err := getSession(sesDetector)
 	if err != nil {
@@ -21,25 +21,31 @@ func Relay(sesDetector interface{}, payloadList ...interface{}) error {
 
 	var ack RelayACK
 
-	for _, payload := range payloadList {
+	for _, payload := range dataList {
 		switch value := payload.(type) {
 		case int64:
 			ack.Int64 = value
-			ack.Type = RelayPassThroughType_Int64
 		case []int64:
 			ack.Int64Slice = value
-			ack.Type = RelayPassThroughType_Int64Slice
-		case []byte:
+
+		case string:
+			ack.Str = value
+		case []byte: // 作为payload
 			ack.Bytes = value
 		default:
-			var meta *cellnet.MessageMeta
-			ack.Msg, meta, err = codec.EncodeMessage(payload, nil)
+			if ack.MsgID == 0 {
+				var meta *cellnet.MessageMeta
+				ack.Msg, meta, err = codec.EncodeMessage(payload, nil)
 
-			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+
+				ack.MsgID = uint32(meta.ID)
+			} else {
+				panic("Multi message relay not support")
 			}
 
-			ack.MsgID = uint32(meta.ID)
 		}
 	}
 	ses.Send(&ack)

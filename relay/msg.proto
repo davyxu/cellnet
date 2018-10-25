@@ -1,11 +1,4 @@
 
-enum RelayPassThroughType
-{
-    None = 0
-    Int64
-    Int64Slice
-}
-
 [AutoMsgID]
 struct RelayACK
 {
@@ -13,7 +6,7 @@ struct RelayACK
     MsgID       uint32         // 消息ID
     Bytes       bytes          // 数据bytes
 
-    Type RelayPassThroughType
     Int64       int64          // 透传int64
-    Int64Slice   []int64       // 透传int64切片
+    Int64Slice  []int64       // 透传int64切片
+    Str         string
 }

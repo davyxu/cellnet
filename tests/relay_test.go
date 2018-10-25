@@ -34,8 +34,8 @@ func relay_backend() {
 
 		if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {
 
-			log.Debugln("Relay to agent", relayEvent.Message(), relayEvent.PassThrough())
-			relay.Relay(relay_BackendToAgentConnector, relayEvent.Message(), relayEvent.PassThrough())
+			log.Debugln("Relay to agent", relayEvent.Message(), relayEvent.PassThroughAsInt64())
+			relay.Relay(relay_BackendToAgentConnector, relayEvent.Message(), relayEvent.PassThroughAsInt64())
 
 		}
 
