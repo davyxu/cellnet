@@ -1,0 +1,17 @@
+
+[AutoMsgID]
+struct RemoteCallREQ
+{
+    MsgID  uint32
+	Data   bytes
+	CallID int64
+}
+
+
+[AutoMsgID]
+struct RemoteCallACK
+{
+	MsgID  uint32
+	Data   bytes
+	CallID int64
+}

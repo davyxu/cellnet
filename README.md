@@ -62,6 +62,10 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
        内存流直接序列化, 适用于服务器内网传输
 
+    - ProtoPlus(https://github.com/davyxu/protoplus)
+
+       增加并优化过的Protobuf的编码格式
+
     可以通过codec包自行添加新的编码格式
 
 * 支持混合编码收发
@@ -111,6 +115,8 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
   go get -v github.com/davyxu/golog
 
   go get -v github.com/davyxu/goobjfmt
+
+  go get -v github.com/davyxu/protoplus
 ```
 
 # 第三方库
