@@ -3,11 +3,10 @@ package http
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"io"
-	"io/ioutil"
-	"net/http"
 )
 
 type MessageRespond struct {
@@ -49,13 +48,7 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 
 	ses.resp.Header().Set("Content-Type", httpCodec.MimeType()+";charset=UTF-8")
 	ses.resp.WriteHeader(http.StatusOK)
-
-	bodyData, err := ioutil.ReadAll(data.(io.Reader))
-	if err != nil {
-		return err
-	}
-
-	ses.resp.Write(bodyData)
+	ses.resp.Write(data)
 
 	return nil
 }
