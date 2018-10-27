@@ -48,7 +48,7 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 
 	ses.resp.Header().Set("Content-Type", httpCodec.MimeType()+";charset=UTF-8")
 	ses.resp.WriteHeader(http.StatusOK)
-	ses.resp.Write(data)
+	ses.resp.Write(data.([]byte))
 
 	return nil
 }
