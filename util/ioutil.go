@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"compress/zlib"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 // 完整发送所有封包
@@ -95,4 +98,16 @@ func DecompressBytes(data []byte) ([]byte, error) {
 	defer reader.Close()
 
 	return ioutil.ReadAll(reader)
+}
+
+// level=1表示调用GetStack的栈, 往上一层level++
+func StackToString(level int) string {
+
+	_, file, line, ok := runtime.Caller(level)
+
+	if !ok {
+		return "??"
+	}
+
+	return fmt.Sprintf("%s:%d", filepath.Base(file), line)
 }

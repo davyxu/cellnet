@@ -119,7 +119,7 @@ func RegisterMessageMeta(meta *MessageMeta) *MessageMeta {
 	// 非http类,才需要包装Type必须唯一
 
 	if _, ok := metaByType[meta.Type]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by type: %d", meta.ID))
+		panic(fmt.Sprintf("Duplicate message meta register by type: %d name: %s", meta.ID, meta.Type.Name()))
 	} else {
 		metaByType[meta.Type] = meta
 	}
