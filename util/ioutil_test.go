@@ -42,3 +42,7 @@ func TestCompressBytes(t *testing.T) {
 
 	t.Log(DecompressBytes(data))
 }
+
+func TestStackToString(t *testing.T) {
+	t.Log(StackToString(5))
+}

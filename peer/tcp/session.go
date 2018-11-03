@@ -111,7 +111,7 @@ func (self *tcpSession) recvLoop() {
 		var err error
 
 		if capturePanic {
-			self.protectedReadMessage()
+			msg, err = self.protectedReadMessage()
 		} else {
 			msg, err = self.ReadMessage(self)
 		}
