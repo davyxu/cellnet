@@ -9,7 +9,7 @@ import (
 type MessagePoster interface {
 
 	// 投递一个消息到Hooker之前
-	PostEvent(ev cellnet.Event)
+	ProcEvent(ev cellnet.Event)
 }
 
 type CoreProcBundle struct {
