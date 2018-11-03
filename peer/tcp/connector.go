@@ -110,11 +110,12 @@ func (self *tcpConnector) connect(address string) {
 			}
 
 			// 没重连就退出
-			if self.ReconnectDuration() == 0 {
+			if self.ReconnectDuration() == 0 || self.IsStopping() {
 
-				log.Debugf("#tcp.connect failed(%s)@%d address: %s", self.Name(), self.defaultSes.ID(), self.Address())
-
-				self.ProcEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnectError{}})
+				self.ProcEvent(&cellnet.RecvMsgEvent{
+					Ses: self.defaultSes,
+					Msg: &cellnet.SessionConnectError{},
+				})
 				break
 			}
 
@@ -133,7 +134,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnected{}})
+		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnected{}})
 
 		self.sesEndSignal.Wait()
 
