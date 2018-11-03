@@ -127,7 +127,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	}
 
 	// 处理消息及页面下发
-	self.PostEvent(&cellnet.RecvMsgEvent{ses, msg})
+	self.ProcEvent(&cellnet.RecvMsgEvent{ses, msg})
 
 	if ses.err != nil {
 		err = ses.err

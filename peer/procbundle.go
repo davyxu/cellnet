@@ -56,7 +56,7 @@ func (self *CoreProcBundle) SendMessage(ev cellnet.Event) {
 	}
 }
 
-func (self *CoreProcBundle) PostEvent(ev cellnet.Event) {
+func (self *CoreProcBundle) ProcEvent(ev cellnet.Event) {
 
 	if self.hooker != nil {
 		ev = self.hooker.OnInboundEvent(ev)

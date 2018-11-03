@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // 完整发送所有封包
@@ -100,14 +101,25 @@ func DecompressBytes(data []byte) ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-// level=1表示调用GetStack的栈, 往上一层level++
-func StackToString(level int) string {
+// 给定打印层数,一般3~5覆盖你的逻辑及封装代码范围
+func StackToString(count int) string {
 
-	_, file, line, ok := runtime.Caller(level)
+	const startStack = 2
 
-	if !ok {
-		return "??"
+	var sb strings.Builder
+	for i := startStack; i < startStack+count; i++ {
+		_, file, line, ok := runtime.Caller(i)
+
+		if i > startStack {
+			sb.WriteString(" -> ")
+		}
+
+		if ok {
+			sb.WriteString(fmt.Sprintf("%s:%d", filepath.Base(file), line))
+		} else {
+			sb.WriteString("??")
+		}
 	}
 
-	return fmt.Sprintf("%s:%d", filepath.Base(file), line)
+	return sb.String()
 }

@@ -18,6 +18,7 @@ type udpAcceptor struct {
 	peer.CoreContextSet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
+	peer.CoreCaptureIOPanic
 
 	conn *net.UDPConn
 
@@ -83,6 +84,19 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 	return self
 }
 
+func (self *udpAcceptor) protectedRecvPacket(ses *udpSession, data []byte) {
+	defer func() {
+
+		if err := recover(); err != nil {
+			log.Errorf("IO panic: %s", err)
+			self.conn.Close()
+		}
+
+	}()
+
+	ses.Recv(data)
+}
+
 func (self *udpAcceptor) accept() {
 
 	self.SetRunning(true)
@@ -100,7 +114,13 @@ func (self *udpAcceptor) accept() {
 			self.mtTotalRecvUDPPacket.Add(1)
 
 			ses := self.allocSession(remoteAddr)
-			ses.Recv(recvBuff[:n])
+
+			if self.CaptureIOPanic() {
+				self.protectedRecvPacket(ses, recvBuff[:n])
+			} else {
+				ses.Recv(recvBuff[:n])
+			}
+
 		}
 
 	}

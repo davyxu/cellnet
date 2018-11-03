@@ -16,6 +16,7 @@ type tcpAcceptor struct {
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 	peer.CoreTCPSocketOption
+	peer.CoreCaptureIOPanic
 
 	// 保存侦听器
 	listener net.Listener
@@ -116,7 +117,7 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
 	ses.Start()
 
-	self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
+	self.ProcEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 }
 
 // 停止侦听器

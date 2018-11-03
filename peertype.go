@@ -59,6 +59,7 @@ type TCPConnector interface {
 	// 设置会话管理器 实现peer.SessionManager接口
 	SetSessionManager(raw interface{})
 
+	// 查看当前连接使用的端口
 	Port() int
 }
 
@@ -110,4 +111,15 @@ type TCPSocketOption interface {
 
 	// 设置读写超时，默认0，不超时
 	SetSocketDeadline(read, write time.Duration)
+}
+
+// 检查Peer是否正常工作
+type PeerReadyChecker interface {
+	IsReady() bool
+}
+
+// 开启IO层异常捕获,在生产版本对外端口应该打开此设置
+type PeerCaptureIOPanic interface {
+	EnableCaptureIOPanic(v bool)
+	CaptureIOPanic() bool
 }
