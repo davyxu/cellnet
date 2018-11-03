@@ -129,11 +129,11 @@ func (self *tcpSession) recvLoop() {
 				closedMsg.Reason = cellnet.CloseReason_Manual
 			}
 
-			self.ProcEvent(&cellnet.RecvMsgEvent{self, closedMsg})
+			self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: closedMsg})
 			break
 		}
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
+		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: msg})
 	}
 
 	// 通知完成

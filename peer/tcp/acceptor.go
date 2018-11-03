@@ -117,7 +117,10 @@ func (self *tcpAcceptor) onNewSession(conn net.Conn) {
 
 	ses.Start()
 
-	self.ProcEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
+	self.ProcEvent(&cellnet.RecvMsgEvent{
+		Ses: ses,
+		Msg: &cellnet.SessionAccepted{},
+	})
 }
 
 // 停止侦听器

@@ -39,7 +39,7 @@ func (self *CoreSessionManager) Add(ses cellnet.Session) {
 
 	id := atomic.AddInt64(&self.sesIDGen, 1)
 
-	self.count = atomic.AddInt64(&self.count, 1)
+	atomic.AddInt64(&self.count, 1)
 
 	ses.(interface {
 		SetID(int64)
@@ -52,7 +52,7 @@ func (self *CoreSessionManager) Remove(ses cellnet.Session) {
 
 	self.sesById.Delete(ses.ID())
 
-	self.count = atomic.AddInt64(&self.count, -1)
+	atomic.AddInt64(&self.count, -1)
 }
 
 // 获得一个连接
