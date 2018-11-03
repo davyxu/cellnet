@@ -63,11 +63,11 @@ func (self *wsSession) recvLoop() {
 				log.Errorln("session closed:", err)
 			}
 
-			self.PostEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
+			self.ProcEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
 			break
 		}
 
-		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
+		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
 
 	self.cleanup()

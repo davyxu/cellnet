@@ -65,7 +65,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 		ses.Start()
 
-		self.PostEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
+		self.ProcEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
 
 	})
 

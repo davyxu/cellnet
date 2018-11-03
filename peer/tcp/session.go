@@ -80,12 +80,41 @@ func (self *tcpSession) IsManualClosed() bool {
 	return atomic.LoadInt64(&self.closing) != 0
 }
 
+func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
+
+	defer func() {
+
+		if err := recover(); err != nil {
+			log.Errorf("IO panic: %s", err)
+			self.conn.Close()
+		}
+
+	}()
+
+	msg, err = self.ReadMessage(self)
+
+	return
+}
+
 // 接收循环
 func (self *tcpSession) recvLoop() {
 
+	var capturePanic bool
+
+	if i, ok := self.Peer().(cellnet.PeerCaptureIOPanic); ok {
+		capturePanic = i.CaptureIOPanic()
+	}
+
 	for self.conn != nil {
 
-		msg, err := self.ReadMessage(self)
+		var msg interface{}
+		var err error
+
+		if capturePanic {
+			self.protectedReadMessage()
+		} else {
+			msg, err = self.ReadMessage(self)
+		}
 
 		if err != nil {
 			if !util.IsEOFOrNetReadError(err) {
@@ -100,11 +129,11 @@ func (self *tcpSession) recvLoop() {
 				closedMsg.Reason = cellnet.CloseReason_Manual
 			}
 
-			self.PostEvent(&cellnet.RecvMsgEvent{self, closedMsg})
+			self.ProcEvent(&cellnet.RecvMsgEvent{self, closedMsg})
 			break
 		}
 
-		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
+		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
 
 	// 通知完成

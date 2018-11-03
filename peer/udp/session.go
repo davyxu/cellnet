@@ -54,7 +54,7 @@ func (self *udpSession) Recv(data []byte) {
 	msg, err := self.ReadMessage(self)
 
 	if msg != nil && err == nil {
-		self.PostEvent(&cellnet.RecvMsgEvent{self, msg})
+		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
 	}
 }
 

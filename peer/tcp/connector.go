@@ -114,7 +114,7 @@ func (self *tcpConnector) connect(address string) {
 
 				log.Debugf("#tcp.connect failed(%s)@%d address: %s", self.Name(), self.defaultSes.ID(), self.Address())
 
-				self.PostEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnectError{}})
+				self.ProcEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnectError{}})
 				break
 			}
 
@@ -133,7 +133,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.PostEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnected{}})
+		self.ProcEvent(&cellnet.RecvMsgEvent{self.defaultSes, &cellnet.SessionConnected{}})
 
 		self.sesEndSignal.Wait()
 
