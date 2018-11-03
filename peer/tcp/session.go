@@ -178,6 +178,9 @@ func (self *tcpSession) Start() {
 	// 需要接收和发送线程同时完成时才算真正的完成
 	self.exitSync.Add(2)
 
+	// 将会话添加到管理器, 在线程处理前添加到管理器(分配id), 避免ID还未分配,就开始使用id的竞态问题
+	self.Peer().(peer.SessionManager).Add(self)
+
 	go func() {
 
 		// 等待2个任务结束
@@ -197,9 +200,6 @@ func (self *tcpSession) Start() {
 
 	// 启动并发发送goroutine
 	go self.sendLoop()
-
-	// 将会话添加到管理器
-	self.Peer().(peer.SessionManager).Add(self)
 }
 
 func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
