@@ -3,6 +3,7 @@ package relay
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/msglog"
 )
 
 type PassthroughContent struct {
@@ -30,7 +31,7 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 			}
 		}
 
-		if log.IsDebugEnabled() {
+		if log.IsDebugEnabled() && !msglog.IsBlockedMessageByID(int(relayMsg.MsgID)) {
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
@@ -61,7 +62,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
-		if log.IsDebugEnabled() {
+		if log.IsDebugEnabled() && !msglog.IsBlockedMessageByID(int(relayMsg.MsgID)) {
 
 			var payload interface{}
 			if relayMsg.MsgID != 0 {
@@ -81,10 +82,9 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 				cellnet.MessageToName(payload),
 				cellnet.MessageToString(relayMsg),
 				cellnet.MessageToString(payload))
-
-			return true, nil
-
 		}
+
+		return true, nil
 
 	}
 
