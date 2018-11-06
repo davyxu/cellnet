@@ -40,7 +40,7 @@ func main() {
 	// 创建一个事件处理队列，整个服务器只有这一个队列处理事件，服务器属于单线程服务器
 	queue := cellnet.NewEventQueue()
 
-	p := peer.NewGenericPeer("gorillaws.Acceptor", "server", "http://127.0.0.1:18802/echo", queue)
+	p := peer.NewGenericPeer("gorillaws.Acceptor", "server", "http://127.0.0.1:18802~18803/echo", queue)
 
 	proc.BindProcessorHandler(p, "gorillaws.ltv", func(ev cellnet.Event) {
 

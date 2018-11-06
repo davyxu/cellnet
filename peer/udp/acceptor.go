@@ -53,9 +53,9 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		self.mtTotalRecvUDPPacket = expvar.NewInt(fmt.Sprintf("cellnet.Peer(%s).TotalRecvUDPPacket", self.Name()))
 	}
 
-	ln, err := util.DetectPort(self.Address(), func(s string) (interface{}, error) {
+	ln, err := util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
 
-		addr, err := net.ResolveUDPAddr("udp", s)
+		addr, err := net.ResolveUDPAddr("udp", a.HostPort())
 		if err != nil {
 			return nil, err
 		}

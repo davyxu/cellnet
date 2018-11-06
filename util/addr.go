@@ -47,42 +47,95 @@ var (
 	ErrInvalidPortRange = errors.New("invalid port range")
 )
 
-// 在给定的端口范围内找到一个能用的端口 格式: localhost:5000~6000
-func DetectPort(addr string, fn func(string) (interface{}, error)) (interface{}, error) {
-	// host:port 或 host:min~max
-	parts := strings.Split(addr, ":")
+type Address struct {
+	Scheme string
+	Host   string
+	Port   int
+	Path   string
+}
 
-	// host:port格式
-	if len(parts) < 2 {
-		return fn(addr)
+func (self *Address) String() string {
+	if self.Scheme == "" {
+		return fmt.Sprintf("%s:%d", self.Host, self.Port)
 	}
 
-	// 间隔分割
-	ports := strings.Split(parts[len(parts)-1], "~")
+	return fmt.Sprintf("%s://%s:%d%s", self.Scheme, self.Host, self.Port, self.Path)
+}
 
-	// 单独的端口
-	if len(ports) < 2 {
-		return fn(addr)
+func (self *Address) HostPort() string {
+
+	return fmt.Sprintf("%s:%d", self.Host, self.Port)
+}
+
+// 在给定的端口范围内找到一个能用的端口 格式:
+// scheme://host:minPort~maxPort/path
+func DetectPort(addr string, fn func(*Address) (interface{}, error)) (interface{}, error) {
+
+	var addrObj Address
+	schemePos := strings.Index(addr, "://")
+
+	// 移除scheme部分
+	if schemePos != -1 {
+		addrObj.Scheme = addr[:schemePos]
+		addr = addr[schemePos+3:]
+	}
+
+	colonPos := strings.Index(addr, ":")
+
+	if colonPos != -1 {
+		addrObj.Host = addr[:colonPos]
+	}
+
+	addr = addr[colonPos+1:]
+
+	rangePos := strings.Index(addr, "~")
+
+	var minStr, maxStr string
+	if rangePos != -1 {
+		minStr = addr[:rangePos]
+
+		slashPos := strings.Index(addr, "/")
+
+		if slashPos != -1 {
+			maxStr = addr[rangePos+1 : slashPos]
+			addrObj.Path = addr[slashPos:]
+		} else {
+			maxStr = addr[rangePos:]
+		}
+	} else {
+		slashPos := strings.Index(addr, "/")
+
+		if slashPos != -1 {
+			addrObj.Path = addr[slashPos:]
+			minStr = addr[rangePos+1 : slashPos]
+		} else {
+			minStr = addr[rangePos+1:]
+		}
 	}
 
 	// extract min port
-	min, err := strconv.Atoi(ports[0])
+	min, err := strconv.Atoi(minStr)
 	if err != nil {
 		return nil, ErrInvalidPortRange
 	}
 
-	// extract max port
-	max, err := strconv.Atoi(ports[1])
-	if err != nil {
-		return nil, ErrInvalidPortRange
+	var max int
+	if maxStr != "" {
+		// extract max port
+		max, err = strconv.Atoi(maxStr)
+		if err != nil {
+			return nil, ErrInvalidPortRange
+		}
+	} else {
+		max = min
 	}
-
-	host := parts[0]
 
 	for port := min; port <= max; port++ {
 
+		addrObj.Port = port
+
 		// 使用回调侦听
-		ln, err := fn(fmt.Sprintf("%s:%d", host, port))
+		ln, err := fn(&addrObj)
 		if err == nil {
 			return ln, nil
 		}

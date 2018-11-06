@@ -5,10 +5,8 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"net"
 	"net/http"
-	"net/url"
 )
 
 type wsAcceptor struct {
@@ -53,21 +51,14 @@ func (self *wsAcceptor) SetHttps(certfile, keyfile string) {
 
 func (self *wsAcceptor) Start() cellnet.Peer {
 
-	var addrURL *url.URL
+	var addrObj *util.Address
 	var err error
 	var raw interface{}
-	raw, err = util.DetectPort(self.Address(), func(s string) (interface{}, error) {
+	raw, err = util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
 
-		addrURL, err = url.Parse(s)
+		addrObj = a
 
-		if err != nil {
-			return nil, err
-		}
-
-		if addrURL.Path == "" {
-			return nil, errors.New("expect path in url to listen")
-		}
-		return net.Listen("tcp", addrURL.Host)
+		return net.Listen("tcp", a.HostPort())
 	})
 
 	if err != nil {
@@ -79,7 +70,11 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(addrURL.Path, func(w http.ResponseWriter, r *http.Request) {
+	if addrObj.Path == "" {
+		addrObj.Path = "/"
+	}
+
+	mux.HandleFunc(addrObj.Path, func(w http.ResponseWriter, r *http.Request) {
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -95,11 +90,11 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	})
 
-	self.sv = &http.Server{Addr: addrURL.Host, Handler: mux}
+	self.sv = &http.Server{Addr: addrObj.HostPort(), Handler: mux}
 
 	go func() {
 
-		log.Infof("#websocket.listen(%s) %s", self.Name(), addrURL.String())
+		log.Infof("#websocket.listen(%s) %s", self.Name(), addrObj.String())
 
 		if self.certfile != "" && self.keyfile != "" {
 			err = self.sv.ServeTLS(self.listener, self.certfile, self.keyfile)
