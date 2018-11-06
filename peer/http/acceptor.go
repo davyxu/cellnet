@@ -94,7 +94,7 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 		err = self.sv.Serve(tcpKeepAliveListener{self.listener.(*net.TCPListener)})
 		if err != nil && err != http.ErrServerClosed {
-			log.Errorf("#http.listen failed(%s) %v", self.NameOrAddress(), err.Error())
+			log.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
 		}
 
 	}()
@@ -127,7 +127,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	}
 
 	// 处理消息及页面下发
-	self.ProcEvent(&cellnet.RecvMsgEvent{ses, msg})
+	self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: msg})
 
 	if ses.err != nil {
 		err = ses.err
@@ -185,7 +185,7 @@ OnError:
 func (self *httpAcceptor) Stop() {
 
 	if err := self.sv.Shutdown(nil); err != nil {
-		log.Errorf("#http.stop failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#http.stop failed(%s) %v", self.Name(), err.Error())
 	}
 }
 

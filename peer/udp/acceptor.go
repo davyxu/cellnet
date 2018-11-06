@@ -65,14 +65,14 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#udp.resolve failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#udp.resolve failed(%s) %v", self.Name(), err.Error())
 		return self
 	}
 
 	self.conn = ln.(*net.UDPConn)
 
 	if err != nil {
-		log.Errorf("#udp.listen failed(%s) %s", self.NameOrAddress(), err.Error())
+		log.Errorf("#udp.listen failed(%s) %s", self.Name(), err.Error())
 		self.SetRunning(false)
 		return self
 	}

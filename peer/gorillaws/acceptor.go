@@ -3,7 +3,10 @@ package gorillaws
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/util"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
+	"net"
 	"net/http"
 	"net/url"
 )
@@ -12,11 +15,15 @@ type wsAcceptor struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
 	peer.CoreContextSet
-	peer.CoreRunningTag
 	peer.CoreProcBundle
 
 	certfile string
 	keyfile  string
+
+	// 保存端口
+	listener net.Listener
+
+	sv *http.Server
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,6 +31,19 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 } // use default options
+
+func (self *wsAcceptor) Port() int {
+	if self.listener == nil {
+		return 0
+	}
+
+	return self.listener.Addr().(*net.TCPAddr).Port
+}
+
+func (self *wsAcceptor) IsReady() bool {
+
+	return self.Port() != 0
+}
 
 func (self *wsAcceptor) SetHttps(certfile, keyfile string) {
 
@@ -33,27 +53,33 @@ func (self *wsAcceptor) SetHttps(certfile, keyfile string) {
 
 func (self *wsAcceptor) Start() cellnet.Peer {
 
-	if self.IsRunning() {
-		return self
-	}
+	var addrURL *url.URL
+	var err error
+	var raw interface{}
+	raw, err = util.DetectPort(self.Address(), func(s string) (interface{}, error) {
 
-	self.SetRunning(true)
+		addrURL, err = url.Parse(s)
 
-	urlObj, err := url.Parse(self.Address())
+		if err != nil {
+			return nil, err
+		}
+
+		if addrURL.Path == "" {
+			return nil, errors.New("expect path in url to listen")
+		}
+		return net.Listen("tcp", addrURL.Host)
+	})
 
 	if err != nil {
-		log.Errorf("#websocket.urlparse failed(%s) %v", self.NameOrAddress(), err.Error())
+		log.Errorf("#websocket.Listen failed(%s) %v", self.Name(), err.Error())
 		return self
 	}
 
-	if urlObj.Path == "" {
-		log.Errorln("#websocket start failed, expect path in url to listen", self.NameOrAddress())
-		return self
-	}
+	self.listener = raw.(net.Listener)
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(urlObj.Path, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(addrURL.Path, func(w http.ResponseWriter, r *http.Request) {
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -65,25 +91,25 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 		ses.Start()
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionAccepted{}})
+		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: &cellnet.SessionAccepted{}})
 
 	})
 
+	self.sv = &http.Server{Addr: addrURL.Host, Handler: mux}
+
 	go func() {
 
-		log.Infof("#websocket.listen(%s) %s", self.Name(), self.Address())
+		log.Infof("#websocket.listen(%s) %s", self.Name(), addrURL.String())
 
-		if urlObj.Scheme == "https" {
-			err = http.ListenAndServeTLS(urlObj.Host, self.certfile, self.keyfile, mux)
+		if self.certfile != "" && self.keyfile != "" {
+			err = self.sv.ServeTLS(self.listener, self.certfile, self.keyfile)
 		} else {
-			err = http.ListenAndServe(urlObj.Host, mux)
+			err = self.sv.Serve(self.listener)
 		}
 
 		if err != nil {
-			log.Errorf("#websocket.listen. failed(%s) %v", self.NameOrAddress(), err.Error())
+			log.Errorf("#websocket.listen. failed(%s) %v", self.Name(), err.Error())
 		}
-
-		self.SetRunning(false)
 
 	}()
 

@@ -35,11 +35,3 @@ func (self *CorePeerProperty) SetQueue(v cellnet.EventQueue) {
 func (self *CorePeerProperty) SetAddress(v string) {
 	self.addr = v
 }
-
-func (self *CorePeerProperty) NameOrAddress() string {
-	if name := self.name; name != "" {
-		return name
-	}
-
-	return self.addr
-}
