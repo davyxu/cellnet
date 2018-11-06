@@ -100,7 +100,7 @@ func DetectPort(addr string, fn func(*Address) (interface{}, error)) (interface{
 			maxStr = addr[rangePos+1 : slashPos]
 			addrObj.Path = addr[slashPos:]
 		} else {
-			maxStr = addr[rangePos:]
+			maxStr = addr[rangePos+1:]
 		}
 	} else {
 		slashPos := strings.Index(addr, "/")

@@ -107,18 +107,31 @@ func StackToString(count int) string {
 	const startStack = 2
 
 	var sb strings.Builder
+
+	var lastStr string
+
 	for i := startStack; i < startStack+count; i++ {
 		_, file, line, ok := runtime.Caller(i)
 
-		if i > startStack {
-			sb.WriteString(" -> ")
-		}
+		var str string
 
 		if ok {
-			sb.WriteString(fmt.Sprintf("%s:%d", filepath.Base(file), line))
+			str = fmt.Sprintf("%s:%d", filepath.Base(file), line)
 		} else {
-			sb.WriteString("??")
+			str = "??"
 		}
+
+		// 折叠??
+		if lastStr != "??" || str != "??" {
+			if i > startStack {
+				sb.WriteString(" -> ")
+			}
+
+			sb.WriteString(str)
+		}
+
+		lastStr = str
+
 	}
 
 	return sb.String()
