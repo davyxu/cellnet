@@ -1,6 +1,7 @@
 package peer
 
 import (
+	"sync"
 	"sync/atomic"
 )
 
@@ -10,8 +11,8 @@ type CoreRunningTag struct {
 	// 运行状态
 	running int64
 
-	// 停止过程同步
-	stopping chan struct{}
+	stoppingWaitor sync.WaitGroup
+	stopping       int64
 }
 
 func (self *CoreRunningTag) IsRunning() bool {
@@ -31,25 +32,20 @@ func (self *CoreRunningTag) SetRunning(v bool) {
 
 func (self *CoreRunningTag) WaitStopFinished() {
 	// 如果正在停止时, 等待停止完成
-	if self.stopping != nil {
-		<-self.stopping
-		self.stopping = nil
-	}
+	self.stoppingWaitor.Wait()
 }
 
 func (self *CoreRunningTag) IsStopping() bool {
-	return self.stopping != nil
+	return atomic.LoadInt64(&self.stopping) != 0
 }
 
 func (self *CoreRunningTag) StartStopping() {
-	self.stopping = make(chan struct{})
+	self.stoppingWaitor.Add(1)
+	atomic.StoreInt64(&self.stopping, 1)
 }
 
 func (self *CoreRunningTag) EndStopping() {
-	select {
-	case self.stopping <- struct{}{}:
 
-	default:
-		self.stopping = nil
-	}
+	self.stoppingWaitor.Done()
+	atomic.StoreInt64(&self.stopping, 0)
 }
