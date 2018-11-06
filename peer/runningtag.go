@@ -46,6 +46,9 @@ func (self *CoreRunningTag) StartStopping() {
 
 func (self *CoreRunningTag) EndStopping() {
 
-	self.stoppingWaitor.Done()
-	atomic.StoreInt64(&self.stopping, 0)
+	if self.IsStopping() {
+		self.stoppingWaitor.Done()
+		atomic.StoreInt64(&self.stopping, 0)
+	}
+
 }
