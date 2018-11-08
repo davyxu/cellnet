@@ -30,6 +30,12 @@ type PeerProperty interface {
 	SetQueue(v EventQueue)
 }
 
+// 基本的通用Peer
+type GenericPeer interface {
+	Peer
+	PeerProperty
+}
+
 // 设置和获取自定义属性
 type ContextSet interface {
 	SetContext(key interface{}, v interface{})
@@ -53,4 +59,15 @@ type SessionAccessor interface {
 
 	// 关闭所有连接
 	CloseAllSession()
+}
+
+// 检查Peer是否正常工作
+type PeerReadyChecker interface {
+	IsReady() bool
+}
+
+// 开启IO层异常捕获,在生产版本对外端口应该打开此设置
+type PeerCaptureIOPanic interface {
+	EnableCaptureIOPanic(v bool)
+	CaptureIOPanic() bool
 }
