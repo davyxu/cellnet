@@ -7,13 +7,10 @@ import (
 
 func init() {
 
-	transmitter := new(TCPMessageTransmitter)
-	hooker := new(MsgHooker)
-
 	proc.RegisterProcessor("tcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(transmitter)
-		bundle.SetHooker(hooker)
+		bundle.SetTransmitter(new(TCPMessageTransmitter))
+		bundle.SetHooker(new(MsgHooker))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 
 	})

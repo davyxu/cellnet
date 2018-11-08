@@ -52,6 +52,10 @@ func (self MultiHooker) OnOutboundEvent(input cellnet.Event) (output cellnet.Eve
 	for _, h := range self {
 
 		input = h.OnOutboundEvent(input)
+
+		if input == nil {
+			break
+		}
 	}
 
 	return input

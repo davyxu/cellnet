@@ -6,7 +6,7 @@ cd ${CURRDIR}
 
 set -e
 
-go test -v .
+go test -race -v .
 
 # 编译例子
 trap 'rm -rf examplebin' EXIT

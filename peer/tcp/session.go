@@ -152,7 +152,7 @@ func (self *tcpSession) sendLoop() {
 		// 遍历要发送的数据
 		for _, msg := range writeList {
 
-			self.SendMessage(&cellnet.SendMsgEvent{self, msg})
+			self.SendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
 		}
 
 		if exit {

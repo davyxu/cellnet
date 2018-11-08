@@ -32,11 +32,9 @@ func (UDPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 
 func init() {
 
-	transmitter := new(UDPMessageTransmitter)
-
 	proc.RegisterProcessor("udp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(transmitter)
+		bundle.SetTransmitter(new(UDPMessageTransmitter))
 		bundle.SetCallback(userCallback)
 
 	})

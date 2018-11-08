@@ -25,7 +25,10 @@ const LogColorDefine = `
 		{"Text":"#rpc.send","Color":"Purple"},
 
 		{"Text":"#relay.recv","Color":"Blue"},
-		{"Text":"#relay.send","Color":"Purple"}
+		{"Text":"#relay.send","Color":"Purple"},
+
+		{"Text":"#agent.recv","Color":"Blue"},
+		{"Text":"#agent.send","Color":"Purple"}
 	]
 }
 `
