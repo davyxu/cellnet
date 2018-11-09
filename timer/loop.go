@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// 轻量级的持续Tick循环
 type Loop struct {
 	Context      interface{}
 	Duration     time.Duration
@@ -30,6 +31,7 @@ func (self *Loop) setRunning(v bool) {
 
 }
 
+// 开始Tick
 func (self *Loop) Start() bool {
 
 	if self.Running() {
@@ -69,6 +71,7 @@ func (self *Loop) Stop() {
 	self.setRunning(false)
 }
 
+// 马上调用一次用户回调
 func (self *Loop) Notify() *Loop {
 	self.userCallback(self)
 	return self
@@ -87,6 +90,8 @@ func tick(ctx interface{}, nextLoop bool) {
 	loop.Notify()
 }
 
+// 执行一个循环, 持续调用callback, 周期是duration
+// context: 将context上下文传递到带有context指针的函数回调中
 func NewLoop(q cellnet.EventQueue, duration time.Duration, callback func(*Loop), context interface{}) *Loop {
 
 	self := &Loop{

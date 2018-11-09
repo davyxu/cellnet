@@ -9,6 +9,7 @@ var (
 	blockedMsgByID sync.Map
 )
 
+// 当前的某个消息ID是否被屏蔽
 func IsBlockedMessageByID(msgid int) bool {
 
 	_, ok := blockedMsgByID.Load(msgid)
@@ -16,6 +17,7 @@ func IsBlockedMessageByID(msgid int) bool {
 	return ok
 }
 
+// 按指定规则(或消息名)屏蔽消息日志
 func BlockMessageLog(nameRule string) (err error, matchCount int) {
 
 	err = cellnet.MessageMetaVisit(nameRule, func(meta *cellnet.MessageMeta) bool {
