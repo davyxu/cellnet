@@ -76,11 +76,11 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 // 发送Length-Type-Value格式的封包流程
 func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) error {
 
-	// 取Socket连接
-	var msgData []byte
-	var msgID int
-
-	var meta *cellnet.MessageMeta
+	var (
+		msgData []byte
+		msgID   int
+		meta    *cellnet.MessageMeta
+	)
 
 	switch m := data.(type) {
 	case *cellnet.RawPacket: // 发裸包

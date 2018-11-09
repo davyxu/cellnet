@@ -1,35 +1,15 @@
 package gorillaws
 
 import (
-	"bytes"
+	"encoding/binary"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/gorilla/websocket"
 )
 
-func parsePacket(pkt []byte) (msgName string, data []byte) {
-
-	for index, d := range pkt {
-
-		if d == '\n' {
-			msgName = string(pkt[:index])
-			data = pkt[index+1:]
-			return
-		}
-	}
-
-	return
-}
-
-func composePacket(msgName string, data []byte) []byte {
-
-	var b bytes.Buffer
-	b.WriteString(msgName)
-	b.WriteString("\n")
-	b.Write(data)
-
-	return b.Bytes()
-}
+const (
+	MsgIDSize = 2 // uint16
+)
 
 type WSMessageTransmitter struct {
 }
@@ -43,25 +23,20 @@ func (WSMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{},
 		return nil, nil
 	}
 
-	t, raw, err := conn.ReadMessage()
+	var messageType int
+	var raw []byte
+	messageType, raw, err = conn.ReadMessage()
 
-	switch t {
-	case websocket.TextMessage:
-		msgName, userPacket := parsePacket(raw)
+	if err != nil {
+		return
+	}
 
-		if msgName != "" {
-
-			meta := cellnet.MessageMetaByFullName(msgName)
-
-			if meta == nil || meta.Codec == nil {
-				return nil, cellnet.NewErrorContext("codec error", msgName)
-			}
-
-			msg, _, err = codec.DecodeMessage(meta.ID, userPacket)
-		}
-
+	switch messageType {
 	case websocket.BinaryMessage:
-		// TODO 实现二进制
+		msgID := binary.LittleEndian.Uint16(raw)
+		msgData := raw[MsgIDSize:]
+
+		msg, _, err = codec.DecodeMessage(int(msgID), msgData)
 	}
 
 	return
@@ -76,15 +51,34 @@ func (WSMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) 
 		return nil
 	}
 
-	data, meta, err := codec.EncodeMessage(msg, nil)
-	if err != nil {
-		return err
+	var (
+		msgData []byte
+		msgID   int
+	)
+
+	switch m := msg.(type) {
+	case *cellnet.RawPacket: // 发裸包
+		msgData = m.MsgData
+		msgID = m.MsgID
+	default: // 发普通编码包
+		var err error
+		var meta *cellnet.MessageMeta
+
+		// 将用户数据转换为字节数组和消息ID
+		msgData, meta, err = codec.EncodeMessage(msg, nil)
+
+		if err != nil {
+			return err
+		}
+
+		msgID = meta.ID
 	}
 
-	// 组websocket包
-	raw := composePacket(meta.FullName(), data)
+	pkt := make([]byte, MsgIDSize+len(msgData))
+	binary.LittleEndian.PutUint16(pkt, uint16(msgID))
+	copy(pkt[MsgIDSize:], msgData)
 
-	conn.WriteMessage(websocket.TextMessage, raw)
+	conn.WriteMessage(websocket.BinaryMessage, pkt)
 
 	return nil
 }

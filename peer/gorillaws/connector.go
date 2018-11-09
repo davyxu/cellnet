@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -81,26 +82,30 @@ func (self *wsConnector) connect(address string) {
 	self.SetRunning(true)
 	for {
 		self.tryConnTimes++
+
 		dialer := websocket.Dialer{}
 		dialer.Proxy = http.ProxyFromEnvironment
 		dialer.HandshakeTimeout = 45 * time.Second
 
-		conn, _, err := dialer.Dial(address, nil)
-		self.defaultSes = newSession(conn, self, nil)
+		var finalAddress string
+		if !strings.HasPrefix(address, "ws://") {
+			finalAddress = "ws://" + address
+		}
+
+		conn, _, err := dialer.Dial(finalAddress, nil)
+		self.defaultSes.conn = conn
 
 		if err != nil {
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
 
-				log.Errorf("#ws.connect failed(%s) %v", self.Name(), reportConnectFailedLimitTimes)
+				log.Errorf("#ws.connect failed(%s) %v", self.Name(), err.Error())
 
 				if self.tryConnTimes == reportConnectFailedLimitTimes {
 					log.Errorf("(%s) continue reconnecting, but mute log", self.Name())
 				}
 
 				// 没重连就退出
-				if self.ReconnectDuration() == 0 {
-
-					log.Debugf("#ws.connect failed(%s)@%d address: %s", self.Name(), self.defaultSes.ID(), self.Address())
+				if self.ReconnectDuration() == 0 || self.IsStopping() {
 
 					self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnectError{}})
 					break
@@ -144,8 +149,12 @@ func (self *wsConnector) TypeName() string {
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &wsConnector{}
+		self := &wsConnector{}
 
-		return p
+		self.defaultSes = newSession(nil, self, func() {
+			self.sesEndSignal.Done()
+		})
+
+		return self
 	})
 }

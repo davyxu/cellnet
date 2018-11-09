@@ -62,7 +62,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 	})
 
 	if err != nil {
-		log.Errorf("#websocket.Listen failed(%s) %v", self.Name(), err.Error())
+		log.Errorf("#ws.listen failed(%s) %v", self.Name(), err.Error())
 		return self
 	}
 
@@ -92,9 +92,11 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	self.sv = &http.Server{Addr: addrObj.HostPort(), Handler: mux}
 
+	addrObj.Port = self.Port()
+
 	go func() {
 
-		log.Infof("#websocket.listen(%s) %s", self.Name(), addrObj.String())
+		log.Infof("#ws.listen(%s) %s", self.Name(), addrObj.String())
 
 		if self.certfile != "" && self.keyfile != "" {
 			err = self.sv.ServeTLS(self.listener, self.certfile, self.keyfile)
@@ -103,7 +105,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 		}
 
 		if err != nil {
-			log.Errorf("#websocket.listen. failed(%s) %v", self.Name(), err.Error())
+			log.Errorf("#ws.listen. failed(%s) %v", self.Name(), err.Error())
 		}
 
 	}()

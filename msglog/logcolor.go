@@ -17,6 +17,13 @@ const LogColorDefine = `
 		{"Text":"#tcp.send","Color":"Purple"},
 		{"Text":"#tcp.connected","Color":"Blue"},
 
+		{"Text":"#ws.listen","Color":"Blue"},
+		{"Text":"#ws.accepted","Color":"Blue"},
+		{"Text":"#ws.closed","Color":"Blue"},
+		{"Text":"#ws.recv","Color":"Blue"},
+		{"Text":"#ws.send","Color":"Purple"},
+		{"Text":"#ws.connected","Color":"Blue"},
+
 		{"Text":"#udp.listen","Color":"Blue"},
 		{"Text":"#udp.recv","Color":"Blue"},
 		{"Text":"#udp.send","Color":"Purple"},

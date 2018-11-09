@@ -63,11 +63,11 @@ func (self *wsSession) recvLoop() {
 				log.Errorln("session closed:", err)
 			}
 
-			self.ProcEvent(&cellnet.RecvMsgEvent{self, &cellnet.SessionClosed{}})
+			self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: &cellnet.SessionClosed{}})
 			break
 		}
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
+		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: msg})
 	}
 
 	self.cleanup()
@@ -86,7 +86,7 @@ func (self *wsSession) sendLoop() {
 		for _, msg := range writeList {
 
 			// TODO SendMsgEvent并不是很有意义
-			self.SendMessage(&cellnet.SendMsgEvent{self, msg})
+			self.SendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
 		}
 
 		if exit {
