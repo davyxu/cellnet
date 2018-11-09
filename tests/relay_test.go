@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 )
 
 const (
@@ -150,6 +151,7 @@ func relay_client() {
 func TestRelay(t *testing.T) {
 
 	relay_Signal = NewSignalTester(t)
+	relay_Signal.SetTimeout(time.Second * 5)
 
 	relay_backend()
 

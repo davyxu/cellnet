@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"github.com/mediocregopher/radix.v2/pool"
 	"github.com/mediocregopher/radix.v2/redis"
-	"sync/atomic"
+	"sync"
 	"time"
 )
 
@@ -15,43 +15,45 @@ type redisConnector struct {
 	peer.CoreContextSet
 	peer.CoreRedisParameter
 
-	*pool.Pool
-
-	readyValue int64
+	pool      *pool.Pool
+	poolGuard sync.RWMutex
 }
 
 func (self *redisConnector) IsReady() bool {
-	return atomic.LoadInt64(&self.readyValue) != 0
+	return self.Pool() != nil
 }
 
 func (self *redisConnector) TypeName() string {
 	return "redix.Connector"
 }
 
-func (self *redisConnector) Raw() interface{} {
-	return self.Pool
+func (self *redisConnector) Pool() *pool.Pool {
+	self.poolGuard.RLock()
+	defer self.poolGuard.RUnlock()
+
+	return self.pool
 }
 
 func (self *redisConnector) Operate(callback func(client interface{}) interface{}) interface{} {
 
-	c, err := self.Pool.Get()
+	pool := self.Pool()
+	c, err := pool.Get()
 	if err != nil {
 		log.Errorf("get client failed, %s", err)
 		return err
 	}
 
 	defer func() {
-		self.Pool.Put(c)
+		pool.Put(c)
 	}()
 
 	return callback(c)
 }
 
 func (self *redisConnector) tryConnect() {
-	var err error
 
 	for {
-		self.Pool, err = pool.NewCustom("tcp", self.Address(), self.PoolConnCount, func(network, addr string) (*redis.Client, error) {
+		pool, err := pool.NewCustom("tcp", self.Address(), self.PoolConnCount, func(network, addr string) (*redis.Client, error) {
 			client, err := redis.Dial(network, addr)
 			if err != nil {
 				return nil, err
@@ -80,10 +82,13 @@ func (self *redisConnector) tryConnect() {
 			continue
 		}
 
+		self.poolGuard.Lock()
+		self.pool = pool
+		self.poolGuard.Unlock()
+
 		break
 	}
 
-	atomic.StoreInt64(&self.readyValue, 1)
 }
 
 func (self *redisConnector) Start() cellnet.Peer {

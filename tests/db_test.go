@@ -14,13 +14,17 @@ func TestRedix(t *testing.T) {
 	peer := peer.NewGenericPeer("redix.Connector", "redis", "127.0.0.1:16379", nil)
 	peer.Start()
 
-	for {
+	for i := 0; i < 5; i++ {
 
 		if peer.(cellnet.PeerReadyChecker).IsReady() {
 			break
 		}
 
 		time.Sleep(time.Millisecond * 200)
+	}
+
+	if !peer.(cellnet.PeerReadyChecker).IsReady() {
+		t.FailNow()
 	}
 
 	op := peer.(cellnet.RedisPoolOperator)
