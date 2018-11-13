@@ -41,9 +41,9 @@ func (self *udpAcceptor) Port() int {
 func (self *udpAcceptor) Start() cellnet.Peer {
 
 	var finalAddr *util.Address
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
+	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
 
-		addr, err := net.ResolveUDPAddr("udp", a.HostPort())
+		addr, err := net.ResolveUDPAddr("udp", a.HostPortString(port))
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	log.Infof("#udp.listen(%s) %s", self.Name(), finalAddr.String())
+	log.Infof("#udp.listen(%s) %s", self.Name(), finalAddr.String(self.Port()))
 
 	go self.accept()
 

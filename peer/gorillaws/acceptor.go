@@ -51,14 +51,15 @@ func (self *wsAcceptor) SetHttps(certfile, keyfile string) {
 
 func (self *wsAcceptor) Start() cellnet.Peer {
 
-	var addrObj *util.Address
-	var err error
-	var raw interface{}
-	raw, err = util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
+	var (
+		addrObj *util.Address
+		err     error
+		raw     interface{}
+	)
 
+	raw, err = util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
 		addrObj = a
-
-		return net.Listen("tcp", a.HostPort())
+		return net.Listen("tcp", a.HostPortString(port))
 	})
 
 	if err != nil {
@@ -90,13 +91,11 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	})
 
-	self.sv = &http.Server{Addr: addrObj.HostPort(), Handler: mux}
-
-	addrObj.Port = self.Port()
+	self.sv = &http.Server{Addr: addrObj.HostPortString(self.Port()), Handler: mux}
 
 	go func() {
 
-		log.Infof("#ws.listen(%s) %s", self.Name(), addrObj.String())
+		log.Infof("#ws.listen(%s) %s", self.Name(), addrObj.String(self.Port()))
 
 		if self.certfile != "" && self.keyfile != "" {
 			err = self.sv.ServeTLS(self.listener, self.certfile, self.keyfile)

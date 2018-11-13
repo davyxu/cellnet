@@ -82,8 +82,8 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 	self.sv = &http.Server{Addr: self.Address(), Handler: self}
 
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
-		return net.Listen("tcp", a.HostPort())
+	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+		return net.Listen("tcp", a.HostPortString(port))
 	})
 
 	self.listener = ln.(net.Listener)

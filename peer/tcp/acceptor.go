@@ -44,8 +44,8 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
-		return net.Listen("tcp", a.HostPort())
+	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+		return net.Listen("tcp", a.HostPortString(port))
 	})
 
 	if err != nil {

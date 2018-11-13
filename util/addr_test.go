@@ -1,16 +1,15 @@
 package util
 
 import (
-	"errors"
 	"testing"
 )
 
 func TestDetectPort(t *testing.T) {
-	DetectPort("scheme://host:100~200/path", func(s string) (interface{}, error) {
-		if s != "host:100" {
+	DetectPort("scheme://host:100~200/path", func(a *Address, port int) (interface{}, error) {
+		if port != 100 {
 			t.FailNow()
 		}
 
-		return nil, errors.New("err")
+		return nil, nil
 	})
 }

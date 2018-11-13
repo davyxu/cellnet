@@ -47,31 +47,31 @@ var (
 	ErrInvalidPortRange = errors.New("invalid port range")
 )
 
+// 支持地址范围的格式
 type Address struct {
-	Scheme string
-	Host   string
-	Port   int
-	Path   string
+	Scheme  string
+	Host    string
+	MinPort int
+	MaxPort int
+	Path    string
 }
 
-func (self *Address) String() string {
+func (self *Address) HostPortString(port int) string {
+	return fmt.Sprintf("%s:%d", self.Host, port)
+}
+
+func (self *Address) String(port int) string {
 	if self.Scheme == "" {
-		return fmt.Sprintf("%s:%d", self.Host, self.Port)
+		return self.HostPortString(port)
 	}
 
-	return fmt.Sprintf("%s://%s:%d%s", self.Scheme, self.Host, self.Port, self.Path)
+	return fmt.Sprintf("%s://%s:%d%s", self.Scheme, self.Host, port, self.Path)
 }
 
-func (self *Address) HostPort() string {
+// 格式 scheme://host:minPort~maxPort/path
+func ParseAddress(addr string) (addrObj *Address, err error) {
+	addrObj = new(Address)
 
-	return fmt.Sprintf("%s:%d", self.Host, self.Port)
-}
-
-// 在给定的端口范围内找到一个能用的端口 格式:
-// scheme://host:minPort~maxPort/path
-func DetectPort(addr string, fn func(*Address) (interface{}, error)) (interface{}, error) {
-
-	var addrObj Address
 	schemePos := strings.Index(addr, "://")
 
 	// 移除scheme部分
@@ -114,34 +114,43 @@ func DetectPort(addr string, fn func(*Address) (interface{}, error)) (interface{
 	}
 
 	// extract min port
-	min, err := strconv.Atoi(minStr)
+	addrObj.MinPort, err = strconv.Atoi(minStr)
 	if err != nil {
 		return nil, ErrInvalidPortRange
 	}
 
-	var max int
 	if maxStr != "" {
 		// extract max port
-		max, err = strconv.Atoi(maxStr)
+		addrObj.MaxPort, err = strconv.Atoi(maxStr)
 		if err != nil {
 			return nil, ErrInvalidPortRange
 		}
 	} else {
-		max = min
+		addrObj.MaxPort = addrObj.MinPort
 	}
 
-	for port := min; port <= max; port++ {
+	return
+}
 
-		addrObj.Port = port
+// 在给定的端口范围内找到一个能用的端口 格式:
+
+func DetectPort(addr string, fn func(a *Address, port int) (interface{}, error)) (interface{}, error) {
+
+	addrObj, err := ParseAddress(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	for port := addrObj.MinPort; port <= addrObj.MaxPort; port++ {
 
 		// 使用回调侦听
-		ln, err := fn(&addrObj)
+		ln, err := fn(addrObj, port)
 		if err == nil {
 			return ln, nil
 		}
 
 		// hit max port
-		if port == max {
+		if port == addrObj.MaxPort {
 			return nil, err
 		}
 	}
