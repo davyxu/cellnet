@@ -1,8 +1,6 @@
 package udp
 
 import (
-	"expvar"
-	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
@@ -25,9 +23,6 @@ type udpAcceptor struct {
 	sesQueue *util.Queue
 
 	sesTimeout time.Duration
-
-	mtSesQueueCount      *expvar.Int
-	mtTotalRecvUDPPacket *expvar.Int
 }
 
 func (self *udpAcceptor) IsReady() bool {
@@ -45,20 +40,15 @@ func (self *udpAcceptor) Port() int {
 
 func (self *udpAcceptor) Start() cellnet.Peer {
 
-	if self.mtSesQueueCount == nil {
-		self.mtSesQueueCount = expvar.NewInt(fmt.Sprintf("cellnet.Peer(%s).SessionQueueCount", self.Name()))
-	}
-
-	if self.mtTotalRecvUDPPacket == nil {
-		self.mtTotalRecvUDPPacket = expvar.NewInt(fmt.Sprintf("cellnet.Peer(%s).TotalRecvUDPPacket", self.Name()))
-	}
-
+	var finalAddr *util.Address
 	ln, err := util.DetectPort(self.Address(), func(a *util.Address) (interface{}, error) {
 
 		addr, err := net.ResolveUDPAddr("udp", a.HostPort())
 		if err != nil {
 			return nil, err
 		}
+
+		finalAddr = a
 
 		return net.ListenUDP("udp", addr)
 	})
@@ -77,7 +67,7 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	log.Infof("#udp.listen(%s) %s", self.Name(), self.Address())
+	log.Infof("#udp.listen(%s) %s", self.Name(), finalAddr.String())
 
 	go self.accept()
 
@@ -111,7 +101,6 @@ func (self *udpAcceptor) accept() {
 		}
 
 		if n > 0 {
-			self.mtTotalRecvUDPPacket.Add(1)
 
 			ses := self.allocSession(remoteAddr)
 
@@ -150,8 +139,6 @@ func (self *udpAcceptor) allocSession(addr *net.UDPAddr) *udpSession {
 		ses = &udpSession{}
 		self.sesQueue.Enqueue(ses)
 	}
-
-	self.mtSesQueueCount.Set(int64(self.sesQueue.Count()))
 
 	ses.timeOutTick = time.Now().Add(self.sesTimeout)
 	ses.conn = self.conn
