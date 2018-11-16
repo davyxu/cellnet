@@ -25,8 +25,8 @@ type wsAcceptor struct {
 	sv *http.Server
 }
 
-func (self *wsAcceptor) SetUpgrader(upgrader websocket.Upgrader) {
-	self.upgrader = upgrader
+func (self *wsAcceptor) SetUpgrader(upgrader interface{}) {
+	self.upgrader = upgrader.(websocket.Upgrader)
 }
 func (self *wsAcceptor) Port() int {
 	if self.listener == nil {
@@ -122,7 +122,13 @@ func (self *wsAcceptor) TypeName() string {
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &wsAcceptor{}
+		p := &wsAcceptor{
+			upgrader: websocket.Upgrader{
+				CheckOrigin: func(r *http.Request) bool {
+					return true
+				},
+			},
+		}
 
 		return p
 	})

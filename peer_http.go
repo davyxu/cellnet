@@ -1,7 +1,6 @@
 package cellnet
 
 import (
-	"github.com/gorilla/websocket"
 	"html/template"
 	"net/http"
 )
@@ -11,7 +10,10 @@ type WSAcceptor interface {
 	GenericPeer
 
 	SetHttps(certfile, keyfile string)
-	SetUpgrader(upgrader websocket.Upgrader)
+
+	// 设置升级器
+	SetUpgrader(upgrader interface{})
+
 	// 访问会话
 	SessionAccessor
 }
