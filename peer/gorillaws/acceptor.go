@@ -18,18 +18,16 @@ type wsAcceptor struct {
 	certfile string
 	keyfile  string
 
+	upgrader websocket.Upgrader
 	// 保存端口
 	listener net.Listener
 
 	sv *http.Server
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-} // use default options
-
+func (self *wsAcceptor) SetUpgrader(upgrader websocket.Upgrader) {
+	self.upgrader = upgrader
+}
 func (self *wsAcceptor) Port() int {
 	if self.listener == nil {
 		return 0
@@ -77,7 +75,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 
 	mux.HandleFunc(addrObj.Path, func(w http.ResponseWriter, r *http.Request) {
 
-		c, err := upgrader.Upgrade(w, r, nil)
+		c, err := self.upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Debugln(err)
 			return
