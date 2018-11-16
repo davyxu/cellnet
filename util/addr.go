@@ -34,9 +34,14 @@ func JoinAddress(host string, port int) string {
 	return fmt.Sprintf("%s:%d", host, port)
 }
 
+//修复ws没有实现所有net.conn方法，导致无法获取客服端地址问题.
+type RemoteAddr interface {
+	RemoteAddr() net.Addr
+}
+
 // 获取session远程的地址
 func GetRemoteAddrss(ses cellnet.Session) (string, bool) {
-	if c, ok := ses.Raw().(net.Conn); ok {
+	if c, ok := ses.Raw().(RemoteAddr); ok {
 		return c.RemoteAddr().String(), true
 	}
 
