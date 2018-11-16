@@ -110,6 +110,9 @@ func (self *wsSession) cleanup() {
 		self.conn = nil
 	}
 
+	// pal301x: websocket 客服端关闭服务端无法释放 issue 60
+	self.Close()
+
 	// 通知完成
 	self.exitSync.Done()
 }
