@@ -11,15 +11,66 @@
         console.log("hello")
 
         var ws = new WebSocket("ws://127.0.0.1:18802/echo");
+        ws.binaryType = "arraybuffer";
 
         ws.onopen = function(evt) {
             console.log("Connection open ...");
-            ws.send('main.TestEchoACK\n{"Msg":"hello world" }');
+
+            var msgBody = {
+                Context: "hello",
+                Name: "bob",
+                Date: Date.now(),
+            }
+
+            // 消息体编码
+            var jsonBody = JSON.stringify(msgBody)
+
+            // TODO 实现消息ID与消息体绑定
+            var msgid = 1234
+
+            var pkt = new ArrayBuffer( 2+ jsonBody.length)
+            var dv = new DataView(pkt)
+
+            // 写入消息号
+            dv.setUint16(0, msgid, true)
+
+            // 这里body使用的是Json编码
+            for(var i = 0;i <jsonBody.length;i++){
+                dv.setUint8(2+i, jsonBody.charCodeAt(i))
+            }
+
+            // 发送
+            ws.send(pkt);
         };
 
         ws.onmessage = function(evt) {
-            console.log( "Received Message: " + evt.data);
-            //ws.close();
+
+            if (evt.data instanceof ArrayBuffer ){
+
+                var dv = new DataView(evt.data);
+
+                // TODO 消息号验证
+                var msgid = dv.getUint16(0, true)
+
+                // 包体
+                var msgBody = evt.data.slice(2)
+
+                // 这里使用Json的包体
+                var jsonBody = ""
+                for(var i = 0;i <msgBody.byteLength;i++){
+                    jsonBody += String.fromCharCode(dv.getUint8(i+2))
+                }
+
+                // 解码包体
+                var msgBody = JSON.parse(jsonBody)
+
+                console.log( "Received Message: " , msgBody);
+
+
+            }else{
+                console.log("Require array buffer format")
+            }
+
         };
 
         ws.onclose = function(evt) {

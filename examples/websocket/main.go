@@ -11,7 +11,6 @@ import (
 	_ "github.com/davyxu/cellnet/codec/json"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
 	_ "github.com/davyxu/cellnet/proc/gorillaws"
-	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -29,7 +28,7 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    int(util.StringHash("main.TestEchoACK")),
+		ID:    1234,
 	})
 }
 
