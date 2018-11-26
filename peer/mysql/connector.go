@@ -55,7 +55,6 @@ func (self *mysqlConnector) tryConnect() {
 		return
 	}
 
-	//db.SetConnMaxLifetime(time.Hour * 100000)
 	db.SetMaxOpenConns(int(self.PoolConnCount))
 	db.SetMaxIdleConns(int(self.PoolConnCount / 2))
 
