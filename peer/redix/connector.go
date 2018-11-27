@@ -54,18 +54,23 @@ func (self *redisConnector) tryConnect() {
 
 	for {
 		pool, err := pool.NewCustom("tcp", self.Address(), self.PoolConnCount, func(network, addr string) (*redis.Client, error) {
-			client, err := redis.Dial(network, addr)
+
+			client, err := redis.DialTimeout(network, addr, time.Second*5)
 			if err != nil {
+				log.Errorf("redis.Dial %s", err.Error())
 				return nil, err
 			}
+
 			if len(self.Password) > 0 {
 				if err = client.Cmd("AUTH", self.Password).Err; err != nil {
+					log.Errorf("redis.Auth %s", err.Error())
 					client.Close()
 					return nil, err
 				}
 			}
 			if self.DBIndex > 0 {
 				if err = client.Cmd("SELECT", self.DBIndex).Err; err != nil {
+					log.Errorf("redis.SELECT %s", err.Error())
 					client.Close()
 					return nil, err
 				}
