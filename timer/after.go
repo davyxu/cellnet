@@ -14,12 +14,7 @@ type AfterStopper interface {
 // context: 将context上下文传递到带有context指针的函数回调中
 func After(q cellnet.EventQueue, duration time.Duration, callbackObj interface{}, context interface{}) AfterStopper {
 
-	afterTimer := time.NewTimer(duration)
-
-	go func() {
-
-		<-afterTimer.C
-
+	return time.AfterFunc(duration, func() {
 		switch callback := callbackObj.(type) {
 		case func():
 			if callback != nil {
@@ -36,9 +31,6 @@ func After(q cellnet.EventQueue, duration time.Duration, callbackObj interface{}
 		default:
 			panic("timer.After: require func() or func(interface{})")
 		}
-
-	}()
-
-	return afterTimer
+	})
 
 }
