@@ -27,7 +27,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 
 	opt := ses.Peer().(socketOpt)
 
-	if conn, ok := ses.Raw().(net.Conn); ok {
+	if conn, ok := reader.(net.Conn); ok {
 
 		// 有读超时时，设置超时
 		opt.ApplySocketReadTimeout(conn, func() {
