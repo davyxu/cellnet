@@ -52,7 +52,7 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 	opt := ses.Peer().(socketOpt)
 
 	// 有写超时时，设置超时
-	opt.ApplySocketWriteTimeout(ses.Raw().(net.Conn), func() {
+	opt.ApplySocketWriteTimeout(writer.(net.Conn), func() {
 
 		err = util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
 
