@@ -1,6 +1,7 @@
 package cellnet
 
 import (
+	"fmt"
 	"log"
 	"runtime/debug"
 	"sync"
@@ -54,7 +55,7 @@ func (self *eventQueue) protectedCall(callback func()) {
 		defer func() {
 
 			if err := recover(); err != nil {
-
+				fmt.Println("[ERRO] panic captured!")
 				debug.PrintStack()
 			}
 

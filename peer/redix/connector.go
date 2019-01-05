@@ -34,6 +34,11 @@ func (self *redisConnector) Pool() *pool.Pool {
 	return self.pool
 }
 
+func (self *redisConnector) Raw() interface{} {
+
+	return self.Pool()
+}
+
 func (self *redisConnector) Operate(callback func(client interface{}) interface{}) interface{} {
 
 	pool := self.Pool()
