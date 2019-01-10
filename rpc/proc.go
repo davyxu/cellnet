@@ -3,6 +3,7 @@ package rpc
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/msglog"
 )
 
 type RemoteCallMsg interface {
@@ -30,14 +31,17 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 
 	if log.IsDebugEnabled() {
 
-		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+		if !msglog.IsBlockedMessageByID(int(rpcMsg.GetMsgID())) {
+			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
-			peerInfo.Name(),
-			inputEvent.Session().ID(),
-			cellnet.MessageSize(userMsg),
-			cellnet.MessageToName(userMsg),
-			cellnet.MessageToString(userMsg))
+			log.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
+				peerInfo.Name(),
+				inputEvent.Session().ID(),
+				cellnet.MessageSize(userMsg),
+				cellnet.MessageToName(userMsg),
+				cellnet.MessageToString(userMsg))
+		}
+
 	}
 
 	switch inputEvent.Message().(type) {
@@ -75,14 +79,17 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 	if log.IsDebugEnabled() {
 
-		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+		if !msglog.IsBlockedMessageByID(int(rpcMsg.GetMsgID())) {
+			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
-			peerInfo.Name(),
-			inputEvent.Session().ID(),
-			cellnet.MessageSize(userMsg),
-			cellnet.MessageToName(userMsg),
-			cellnet.MessageToString(userMsg))
+			log.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
+				peerInfo.Name(),
+				inputEvent.Session().ID(),
+				cellnet.MessageSize(userMsg),
+				cellnet.MessageToName(userMsg),
+				cellnet.MessageToString(userMsg))
+		}
+
 	}
 
 	// 避免后续环节处理
