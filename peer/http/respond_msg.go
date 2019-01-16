@@ -23,6 +23,13 @@ func (self *MessageRespond) String() string {
 func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
+	if self.CodecName == "" {
+		self.CodecName = "httpjson"
+	}
+	if self.StatusCode == 0 {
+		self.StatusCode = http.StatusOK
+	}
+
 	httpCodec := codec.GetCodec(self.CodecName)
 
 	if httpCodec == nil {
@@ -31,13 +38,15 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 
 	msg := self.Msg
 
-	log.Debugf("#http.send(%s) '%s' %s | [%d] Message(%s) %s",
-		peerInfo.Name(),
-		ses.req.Method,
-		ses.req.URL.Path,
-		self.StatusCode,
-		cellnet.MessageToName(msg),
-		cellnet.MessageToString(msg))
+	if log.IsDebugEnabled() {
+		log.Debugf("#http.send(%s) '%s' %s | [%d] Message(%s) %s",
+			peerInfo.Name(),
+			ses.req.Method,
+			ses.req.URL.Path,
+			self.StatusCode,
+			cellnet.MessageToName(msg),
+			cellnet.MessageToString(msg))
+	}
 
 	// 将消息编码为字节数组
 	var data interface{}
@@ -48,7 +57,7 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	}
 
 	ses.resp.Header().Set("Content-Type", httpCodec.MimeType()+";charset=UTF-8")
-	ses.resp.WriteHeader(http.StatusOK)
+	ses.resp.WriteHeader(self.StatusCode)
 
 	bodyData, err := ioutil.ReadAll(data.(io.Reader))
 	if err != nil {

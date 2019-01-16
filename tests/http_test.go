@@ -13,7 +13,6 @@ import (
 	_ "github.com/davyxu/cellnet/proc/http"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"reflect"
 	"testing"
 	"time"
@@ -26,6 +25,21 @@ func TestHttp(t *testing.T) {
 	p := peer.NewGenericPeer("http.Acceptor", "httpserver", httpTestAddr, nil)
 
 	proc.BindProcessorHandler(p, "http", func(raw cellnet.Event) {
+
+		// 不依赖httpmeta
+		if matcher, ok := raw.Session().(httppeer.RequestMatcher); ok {
+			switch {
+			case matcher.Match("POST", "/gm"):
+
+				// 默认返回json
+				raw.Session().Send(&httppeer.MessageRespond{
+					Msg: &HttpEchoACK{
+						Token: "ok",
+					},
+				})
+
+			}
+		}
 
 		switch raw.Message().(type) {
 		case *HttpEchoREQ:
@@ -54,6 +68,10 @@ func TestHttp(t *testing.T) {
 	requestThenValid(t, "POST", "/hello_json", &HttpEchoREQ{
 		UserName: "kitty_json",
 	}, &HttpEchoACK{
+		Token: "ok",
+	})
+
+	postCheckBody(t, "/gm", &HttpEchoACK{
 		Token: "ok",
 	})
 
@@ -105,9 +123,8 @@ func validPage(t *testing.T, url, expectAck string) {
 	}
 }
 
-func postForm(t *testing.T) {
-	resp, err := http.PostForm("http://127.0.0.1:8081/hello",
-		url.Values{"UserName": {"kitty"}})
+func postCheckBody(t *testing.T, path string, expectMsg interface{}) {
+	resp, err := http.Post("http://"+httpTestAddr+path, "application/json", nil)
 
 	if err != nil {
 		t.Log("http req failed", err)
@@ -121,13 +138,14 @@ func postForm(t *testing.T) {
 		t.FailNow()
 	}
 
-	var ack HttpEchoACK
-	if err := json.Unmarshal(body, &ack); err != nil {
+	msg := reflect.New(reflect.TypeOf(expectMsg).Elem()).Interface()
+
+	if err := json.Unmarshal(body, msg); err != nil {
 		t.Log("json unmarshal failed", err)
 		t.FailNow()
 	}
 
-	if ack.Token != "ok" {
+	if !reflect.DeepEqual(msg, expectMsg) {
 		t.Log("unexpect token result", err)
 		t.FailNow()
 	}
