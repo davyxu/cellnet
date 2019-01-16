@@ -18,10 +18,15 @@ type mysqlConnector struct {
 }
 
 func (self *mysqlConnector) IsReady() bool {
-	return self.Raw() != nil
+	return self.dbConn() != nil
 }
 
 func (self *mysqlConnector) Raw() interface{} {
+
+	return self.dbConn()
+}
+
+func (self *mysqlConnector) dbConn() *sql.DB {
 	self.dbGuard.RLock()
 	defer self.dbGuard.RUnlock()
 	return self.db
@@ -68,12 +73,18 @@ func (self *mysqlConnector) tryConnect() {
 	self.db = db
 	self.dbGuard.Unlock()
 
-	log.SetColor("green").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
+	if config != nil {
+		log.SetColor("green").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
+	}
 }
 
 func (self *mysqlConnector) Stop() {
 
-	self.db.Close()
+	db := self.dbConn()
+	if db != nil {
+		db.Close()
+	}
+
 }
 
 func init() {

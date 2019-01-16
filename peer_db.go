@@ -14,3 +14,11 @@ type RedisConnector interface {
 
 	SetConnectionCount(v int)
 }
+
+type MySQLConnector interface {
+	GenericPeer
+
+	SetPassword(v string)
+
+	SetConnectionCount(v int)
+}

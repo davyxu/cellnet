@@ -23,7 +23,7 @@ func (self *Wrapper) Query(query string, args ...interface{}) *Wrapper {
 	}
 
 	self.query = query
-	log.Infoln("[DB]", query, args)
+	log.Debugln("[DB]", query, args)
 
 	self.row, self.Err = self.drv.Query(query, args...)
 
@@ -41,7 +41,7 @@ func (self *Wrapper) Execute(query string, args ...interface{}) *Wrapper {
 	}
 
 	self.query = query
-	log.Infoln("[DB]", query, args)
+	log.Debugln("[DB]", query, args)
 
 	_, self.Err = self.drv.Exec(query, args...)
 
