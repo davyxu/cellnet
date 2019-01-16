@@ -33,7 +33,7 @@ func (self *mysqlConnector) TypeName() string {
 
 func (self *mysqlConnector) Start() cellnet.Peer {
 
-	go self.tryConnect()
+	self.tryConnect()
 
 	return self
 }
@@ -68,7 +68,7 @@ func (self *mysqlConnector) tryConnect() {
 	self.db = db
 	self.dbGuard.Unlock()
 
-	log.SetColor("blue").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
+	log.SetColor("green").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
 }
 
 func (self *mysqlConnector) Stop() {
