@@ -1,6 +1,9 @@
 package codec
 
-import "github.com/davyxu/cellnet"
+import (
+	"fmt"
+	"github.com/davyxu/cellnet"
+)
 
 var registedCodecs []cellnet.Codec
 
@@ -26,12 +29,32 @@ func GetCodec(name string) cellnet.Codec {
 	return nil
 }
 
+// cellnet自带的编码对应包
+func getPackageByCodecName(name string) string {
+	switch name {
+	case "binary":
+		return "github.com/davyxu/cellnet/codec/binary"
+	case "gogopb":
+		return "github.com/davyxu/cellnet/codec/gogopb"
+	case "httpjson":
+		return "github.com/davyxu/cellnet/codec/httpjson"
+	case "json":
+		return "github.com/davyxu/cellnet/codec/json"
+	case "protoplus":
+		return "github.com/davyxu/cellnet/codec/protoplus"
+	default:
+		return "package/to/your/codec"
+	}
+}
+
 // 指定编码器不存在时，报错
 func MustGetCodec(name string) cellnet.Codec {
 	codec := GetCodec(name)
 
 	if codec == nil {
-		panic("codec not register! " + name)
+		panic(fmt.Sprintf("codec not found '%s'\ntry to add code below:\nimport (\n  _ \"%s\"\n)\n\n",
+			name,
+			getPackageByCodecName(name)))
 	}
 
 	return codec
