@@ -1,6 +1,7 @@
 # FAQ
 
 * 报错panic: Peer type not found怎么办?
+    
     这是由于需要的peer没有找到或者没有注册，使用cellnet内建的peer请在main入口这样导入包
 ```
     import (
@@ -9,6 +10,7 @@
 ```
 
 * 报错panic: processor not found怎么办?
+
     这是由于需要的processor没有找到或者没有注册，使用cellnet内建的processor请在main入口这样导入包
 ```
     import (
@@ -38,7 +40,11 @@
 
 * cellnet有网关和db支持么?
 
-   使用Peer/Processor可以将mysql,redis封装为标准统一的接口
+   github.com/davyxu/cellnet/peer/mysql   MySQL支持
+   
+   github.com/davyxu/cellnet/peer/redis   Redis支持
+   
+   使用方法请参考tests
 
 * 如何关闭调试消息日志?
 
