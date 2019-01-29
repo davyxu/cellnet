@@ -86,6 +86,13 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 		return net.Listen("tcp", a.HostPortString(port))
 	})
 
+	if err != nil {
+
+		log.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
+
+		return self
+	}
+
 	self.listener = ln.(net.Listener)
 
 	log.Infof("#http.listen(%s) http://%s", self.Name(), self.WANAddress())
