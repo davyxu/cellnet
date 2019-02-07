@@ -88,7 +88,9 @@ func (self *wsConnector) connect(address string) {
 		dialer.HandshakeTimeout = 45 * time.Second
 
 		var finalAddress string
-		if !strings.HasPrefix(address, "ws://") {
+		if strings.HasPrefix(address, "ws://") {
+			finalAddress = address
+		} else {
 			finalAddress = "ws://" + address
 		}
 

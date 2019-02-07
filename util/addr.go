@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// 将地址拆分为ip和端口
+// 将普通地址格式(host:port)拆分
 func SpliteAddress(addr string) (host string, port int, err error) {
 
 	var portStr string
@@ -29,12 +29,12 @@ func SpliteAddress(addr string) (host string, port int, err error) {
 	return
 }
 
-// 将ip和端口合并为地址
+// 将host和端口合并为(host:port)格式的地址
 func JoinAddress(host string, port int) string {
 	return fmt.Sprintf("%s:%d", host, port)
 }
 
-//修复ws没有实现所有net.conn方法，导致无法获取客服端地址问题.
+// 修复ws没有实现所有net.conn方法，导致无法获取客服端地址问题.
 type RemoteAddr interface {
 	RemoteAddr() net.Addr
 }
@@ -61,10 +61,12 @@ type Address struct {
 	Path    string
 }
 
+// 返回(host:port)格式地址
 func (self *Address) HostPortString(port int) string {
 	return fmt.Sprintf("%s:%d", self.Host, port)
 }
 
+// 返回scheme://host:port/path 格式地址
 func (self *Address) String(port int) string {
 	if self.Scheme == "" {
 		return self.HostPortString(port)
@@ -73,7 +75,7 @@ func (self *Address) String(port int) string {
 	return fmt.Sprintf("%s://%s:%d%s", self.Scheme, self.Host, port, self.Path)
 }
 
-// 格式 scheme://host:minPort~maxPort/path
+// cellnet专有的地址格式 scheme://host:minPort~maxPort/path  提供地址范围扩展
 func ParseAddress(addr string) (addrObj *Address, err error) {
 	addrObj = new(Address)
 
@@ -137,8 +139,7 @@ func ParseAddress(addr string) (addrObj *Address, err error) {
 	return
 }
 
-// 在给定的端口范围内找到一个能用的端口 格式:
-
+// 在给定的端口范围内找到一个能用的端口 addr格式参考ParseAddress函数
 func DetectPort(addr string, fn func(a *Address, port int) (interface{}, error)) (interface{}, error) {
 
 	addrObj, err := ParseAddress(addr)
@@ -166,6 +167,7 @@ func DetectPort(addr string, fn func(a *Address, port int) (interface{}, error))
 // 获取本地IP地址，有多重IP时，默认取第一个
 func GetLocalIP() string {
 
+	// TODO 全面支持IPV6地址
 	list, err := GetPrivateIPv4()
 	if err != nil {
 		return ""
@@ -178,10 +180,7 @@ func GetLocalIP() string {
 	return list[0].String()
 }
 
-// from consul
-
-// GetPrivateIPv4 returns the list of private network IPv4 addresses on
-// all active interfaces.
+// 获得本机的IPV4的地址
 func GetPrivateIPv4() ([]*net.IPAddr, error) {
 	addresses, err := activeInterfaceAddresses()
 	if err != nil {
@@ -210,8 +209,7 @@ func GetPrivateIPv4() ([]*net.IPAddr, error) {
 	return addrs, nil
 }
 
-// GetPublicIPv6 returns the list of all public IPv6 addresses
-// on all active interfaces.
+// 获得本机的IPV6地址
 func GetPublicIPv6() ([]*net.IPAddr, error) {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
