@@ -72,11 +72,11 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
     无需改动代码，只需调整消息注册方式，即可达成运行期同时收发不同编码的封包
 
-    - 与Unity3D+Lua使用sproto通信
-
     - 与其他语言编写的服务器使用protobuf
 
     - 与web服务器使用json通信
+    
+    - 与Unity3D(C#)使用ProtoPlus(github.com/davyxu/protoplus)协议通信
 
     优点：
 
