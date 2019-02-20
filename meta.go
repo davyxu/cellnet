@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 type context struct {
@@ -20,7 +21,8 @@ type MessageMeta struct {
 
 	ID int // 消息ID (二进制协议中使用)
 
-	ctxList []*context
+	ctxListGuard sync.RWMutex
+	ctxList      []*context
 }
 
 func (self *MessageMeta) TypeName() string {
@@ -66,6 +68,10 @@ func (self *MessageMeta) NewType() interface{} {
 
 // 为meta对应的名字绑定上下文
 func (self *MessageMeta) SetContext(name string, data interface{}) *MessageMeta {
+
+	self.ctxListGuard.Lock()
+	defer self.ctxListGuard.Unlock()
+
 	for _, ctx := range self.ctxList {
 
 		if ctx.name == name {
@@ -83,16 +89,45 @@ func (self *MessageMeta) SetContext(name string, data interface{}) *MessageMeta 
 }
 
 // 获取meta对应的名字绑定上下文
-func (self *MessageMeta) GetContext(name string) (interface{}, bool) {
+func (self *MessageMeta) GetContext(key string) (interface{}, bool) {
+
+	self.ctxListGuard.RLock()
+	defer self.ctxListGuard.RUnlock()
 
 	for _, ctx := range self.ctxList {
 
-		if ctx.name == name {
+		if ctx.name == key {
 			return ctx.data, true
 		}
 	}
 
 	return nil, false
+}
+
+// 按字符串格式取context
+func (self *MessageMeta) GetContextAsString(key, defaultValue string) string {
+
+	if v, ok := self.GetContext(key); ok {
+
+		if str, ok := v.(string); ok {
+			return str
+		}
+	}
+
+	return defaultValue
+}
+
+// 按字符串格式取context
+func (self *MessageMeta) GetContextAsInt(name string, defaultValue int) int {
+
+	if v, ok := self.GetContext(name); ok {
+
+		if intV, ok := v.(int); ok {
+			return intV
+		}
+	}
+
+	return defaultValue
 }
 
 var (
