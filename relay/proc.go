@@ -35,7 +35,7 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.recv(%s)@%d len: %d %s <%s>| %s",
+			log.Debugf("#relay.recv(%s)@%d len: %d %s {%s}| %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
 				cellnet.MessageSize(ev.Message()),
@@ -75,7 +75,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#relay.send(%s)@%d len: %d %s <%s>| %s",
+			log.Debugf("#relay.send(%s)@%d len: %d %s {%s}| %s",
 				peerInfo.Name(),
 				inputEvent.Session().ID(),
 				cellnet.MessageSize(payload),
