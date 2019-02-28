@@ -28,7 +28,7 @@ func (self *Wrapper) Query(query string, args ...interface{}) *Wrapper {
 	self.row, self.Err = self.drv.Query(query, args...)
 
 	if self.Err != nil {
-		log.Errorln("[DB] ", self.Err.Error())
+		log.Errorln("[DB] ", self.query, self.Err.Error())
 	}
 
 	return self
@@ -46,7 +46,7 @@ func (self *Wrapper) Execute(query string, args ...interface{}) *Wrapper {
 	_, self.Err = self.drv.Exec(query, args...)
 
 	if self.Err != nil {
-		log.Errorln("[DB] ", self.Err.Error())
+		log.Errorln("[DB] ", self.query, self.Err.Error())
 	}
 
 	return self

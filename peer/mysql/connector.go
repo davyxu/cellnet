@@ -52,7 +52,7 @@ func (self *mysqlConnector) tryConnect() {
 		return
 	}
 
-	log.Infof("Connect to mysql database: %s/%s...", config.Addr, config.DBName)
+	log.Infof("Connecting to mysql %s/%s...", config.Addr, config.DBName)
 
 	db, err := sql.Open("mysql", self.Address())
 	if err != nil {

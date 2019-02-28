@@ -3,7 +3,6 @@ package redix
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/mediocregopher/radix.v2/pool"
 	"github.com/mediocregopher/radix.v2/redis"
 	"sync"
@@ -81,7 +80,7 @@ func (self *redisConnector) tryConnect() {
 				}
 			}
 
-			log.Infof("Create redis pool connection: %s | %s", addr, util.StackToString(10))
+			log.Infof("Create redis pool connection: %s", addr)
 
 			return client, nil
 		})
