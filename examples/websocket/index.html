@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body>
-<p>在Chrome浏览器中按F12打开调试窗口，Console中查看结果</p>
+<p>请将此文件拖拽到Chrome中打开，并按F12打开调试窗口，Console中查看结果</p>
 <script type="text/javascript">
 
     // js二进制操作可参考 https://my.oschina.net/appnet/blog/1647923
@@ -18,13 +19,14 @@
             console.log("Connection open ...");
 
             var msgBody = {
-                Context: "hello",
-                Name: "bob",
-                Date: Date.now(),
+                Msg: "鲍勃",
+                Value: 331,
             }
 
             // 消息体编码
-            var jsonBody = JSON.stringify(msgBody)
+            // 注意：需要对字符串做url编码， 否则中文乱码。该问题仅限于json传输模式
+            // cellnet接收时，必须使用wsjson编码处理
+            var jsonBody = encodeURI(JSON.stringify(msgBody),"utf-8")
 
             // TODO 实现消息ID与消息体绑定
             var msgid = 1234
