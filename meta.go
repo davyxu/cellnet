@@ -243,6 +243,7 @@ func MessageMetaByID(id int) *MessageMeta {
 	return nil
 }
 
+// 消息名（没有包，纯类型名）
 func MessageToName(msg interface{}) string {
 
 	if msg == nil {

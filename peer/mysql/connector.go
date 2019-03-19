@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/go-sql-driver/mysql"
 	"sync"
+	"time"
 )
 
 type mysqlConnector struct {
@@ -15,6 +16,8 @@ type mysqlConnector struct {
 
 	db      *sql.DB
 	dbGuard sync.RWMutex
+
+	reconDur time.Duration
 }
 
 func (self *mysqlConnector) IsReady() bool {
@@ -38,9 +41,27 @@ func (self *mysqlConnector) TypeName() string {
 
 func (self *mysqlConnector) Start() cellnet.Peer {
 
-	self.tryConnect()
+	for {
+
+		self.tryConnect()
+
+		if self.reconDur == 0 || self.IsReady() {
+			break
+		}
+
+		time.Sleep(self.reconDur)
+	}
 
 	return self
+}
+
+func (self *mysqlConnector) ReconnectDuration() time.Duration {
+
+	return self.reconDur
+}
+
+func (self *mysqlConnector) SetReconnectDuration(v time.Duration) {
+	self.reconDur = v
 }
 
 func (self *mysqlConnector) tryConnect() {
@@ -60,14 +81,14 @@ func (self *mysqlConnector) tryConnect() {
 		return
 	}
 
-	db.SetMaxOpenConns(int(self.PoolConnCount))
-	db.SetMaxIdleConns(int(self.PoolConnCount / 2))
-
 	err = db.Ping()
 	if err != nil {
 		log.Errorln(err)
 		return
 	}
+
+	db.SetMaxOpenConns(int(self.PoolConnCount))
+	db.SetMaxIdleConns(int(self.PoolConnCount / 2))
 
 	self.dbGuard.Lock()
 	self.db = db
