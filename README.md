@@ -110,13 +110,13 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 编译和使用cellnet，请下载Go1.10以上版本
 
 ```
-  go get -v github.com/davyxu/cellnet
+  go get -u -v github.com/davyxu/cellnet
 
-  go get -v github.com/davyxu/golog
+  go get -u -v github.com/davyxu/golog
 
-  go get -v github.com/davyxu/goobjfmt
+  go get -u -v github.com/davyxu/goobjfmt
 
-  go get -v github.com/davyxu/protoplus
+  go get -u -v github.com/davyxu/protoplus
 ```
 
 # 第三方库

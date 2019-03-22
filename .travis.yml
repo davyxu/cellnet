@@ -1,8 +1,8 @@
 language: go
 
 install:
-  - go get -v github.com/davyxu/golog
-  - go get -v github.com/davyxu/goobjfmt
+  - go get -u -v github.com/davyxu/golog
+  - go get -u -v github.com/davyxu/goobjfmt
 
 go:
   - 1.10.x
