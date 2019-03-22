@@ -7,6 +7,7 @@ git:
 install:
   - go get -u -v github.com/davyxu/golog
   - go get -u -v github.com/davyxu/goobjfmt
+  - go get -u -v github.com/davyxu/protoplus/proto
   - go get -u -v github.com/gorilla/websocket
   - go get -u -v github.com/go-sql-driver/mysql
   - go get -u -v github.com/mediocregopher/radix.v2
@@ -15,7 +16,7 @@ go:
   - 1.11.x
 
 script:
-  - go test -v github.com/davyxu/cellnet/tests
+  - go test -v -test.run TestEchoTCP github.com/davyxu/cellnet/tests
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
