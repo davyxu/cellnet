@@ -28,6 +28,7 @@ type udpSession struct {
 	remote      *net.UDPAddr
 	conn        *net.UDPConn
 	timeOutTick time.Time
+	key         *connTrackKey
 }
 
 func (self *udpSession) IsAlive() bool {
@@ -36,6 +37,10 @@ func (self *udpSession) IsAlive() bool {
 
 func (self *udpSession) ID() int64 {
 	return 0
+}
+
+func (self *udpSession) LocalAddress() net.Addr {
+	return self.conn.LocalAddr()
 }
 
 func (self *udpSession) Peer() cellnet.Peer {

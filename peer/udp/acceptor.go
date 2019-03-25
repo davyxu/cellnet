@@ -20,9 +20,10 @@ type udpAcceptor struct {
 
 	conn *net.UDPConn
 
-	sesQueue *util.Queue
+	sesTimeout         time.Duration
+	sessionGCThreshold int
 
-	sesTimeout time.Duration
+	sesByConnTrack map[connTrackKey]*udpSession
 }
 
 func (self *udpAcceptor) IsReady() bool {
@@ -102,7 +103,7 @@ func (self *udpAcceptor) accept() {
 
 		if n > 0 {
 
-			ses := self.allocSession(remoteAddr)
+			ses := self.getSession(remoteAddr)
 
 			if self.CaptureIOPanic() {
 				self.protectedRecvPacket(ses, recvBuff[:n])
@@ -118,39 +119,53 @@ func (self *udpAcceptor) accept() {
 
 }
 
-func (self *udpAcceptor) allocSession(addr *net.UDPAddr) *udpSession {
+func (self *udpAcceptor) getSession(addr *net.UDPAddr) *udpSession {
 
-	var ses *udpSession
-
-	if self.sesQueue.Count() > 0 {
-		ses = self.sesQueue.Peek().(*udpSession)
-
-		// 这个session还能用，需要重新new
-		if ses.IsAlive() {
-			ses = nil
-		} else {
-			// 可以复用
-			ses = self.sesQueue.Dequeue().(*udpSession)
-		}
-
+	// 会话量超过阈值时，释放内存
+	if len(self.sesByConnTrack) > self.sessionGCThreshold {
+		self.removeTimeoutSession()
 	}
+
+	key := newConnTrackKey(addr)
+
+	ses := self.sesByConnTrack[*key]
 
 	if ses == nil {
 		ses = &udpSession{}
-		self.sesQueue.Enqueue(ses)
+		ses.conn = self.conn
+		ses.remote = addr
+		ses.pInterface = self
+		ses.CoreProcBundle = &self.CoreProcBundle
+		ses.key = key
+		self.sesByConnTrack[*key] = ses
 	}
 
+	// 续租
 	ses.timeOutTick = time.Now().Add(self.sesTimeout)
-	ses.conn = self.conn
-	ses.remote = addr
-	ses.pInterface = self
-	ses.CoreProcBundle = &self.CoreProcBundle
 
 	return ses
 }
 
+func (self *udpAcceptor) removeTimeoutSession() {
+
+	sesToDelete := make([]*udpSession, 0, 10)
+	for _, ses := range self.sesByConnTrack {
+		if !ses.IsAlive() {
+			sesToDelete = append(sesToDelete, ses)
+		}
+	}
+
+	for _, ses := range sesToDelete {
+		delete(self.sesByConnTrack, *ses.key)
+	}
+}
+
 func (self *udpAcceptor) SetSessionTTL(dur time.Duration) {
 	self.sesTimeout = dur
+}
+
+func (self *udpAcceptor) SetSessionGCThreshold(maxCount int) {
+	self.sessionGCThreshold = maxCount
 }
 
 func (self *udpAcceptor) Stop() {
@@ -171,8 +186,9 @@ func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpAcceptor{
-			sesQueue:   util.NewQueue(64),
-			sesTimeout: time.Second,
+			sesTimeout:         time.Minute,
+			sessionGCThreshold: 100,
+			sesByConnTrack:     make(map[connTrackKey]*udpSession),
 		}
 
 		return p

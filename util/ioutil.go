@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"compress/zlib"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -99,6 +101,12 @@ func DecompressBytes(data []byte) ([]byte, error) {
 	defer reader.Close()
 
 	return ioutil.ReadAll(reader)
+}
+
+func CalcBytesMD5(data []byte) string {
+	m := md5.New()
+	m.Write(data)
+	return hex.EncodeToString(m.Sum(nil))
 }
 
 // 给定打印层数,一般3~5覆盖你的逻辑及封装代码范围
