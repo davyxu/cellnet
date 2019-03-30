@@ -1,4 +1,4 @@
-package tests
+package db
 
 import (
 	"github.com/davyxu/cellnet"

@@ -105,20 +105,24 @@ func (self *wsConnector) connect(address string) {
 				if self.tryConnTimes == reportConnectFailedLimitTimes {
 					log.Errorf("(%s) continue reconnecting, but mute log", self.Name())
 				}
-
-				// 没重连就退出
-				if self.ReconnectDuration() == 0 || self.IsStopping() {
-
-					self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnectError{}})
-					break
-				}
-
-				// 有重连就等待
-				time.Sleep(self.ReconnectDuration())
-
-				// 继续连接
-				continue
 			}
+
+			// 没重连就退出
+			if self.ReconnectDuration() == 0 || self.IsStopping() {
+
+				self.ProcEvent(&cellnet.RecvMsgEvent{
+					Ses: self.defaultSes,
+					Msg: &cellnet.SessionConnectError{},
+				})
+				break
+			}
+
+			// 有重连就等待
+			time.Sleep(self.ReconnectDuration())
+
+			// 继续连接
+			continue
+
 		}
 
 		self.sesEndSignal.Add(1)
@@ -141,6 +145,9 @@ func (self *wsConnector) connect(address string) {
 		// 有重连就等待
 		time.Sleep(self.ReconnectDuration())
 	}
+
+	self.SetRunning(false)
+	self.EndStopping()
 
 }
 

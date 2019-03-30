@@ -153,9 +153,9 @@ func TestRelay(t *testing.T) {
 	relay_Signal = NewSignalTester(t)
 	relay_Signal.SetTimeout(time.Second * 5)
 
-	relay_backend()
-
 	relay_agent()
+
+	relay_backend()
 
 	relay_client()
 
