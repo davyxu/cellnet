@@ -2,18 +2,17 @@ package main
 
 import (
 	"flag"
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/golog"
-	"time"
-
 	"fmt"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/json"
+	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
+	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/gorillaws"
+	"github.com/davyxu/golog"
 	"reflect"
+	"time"
 )
 
 var log = golog.New("websocket_server")
@@ -33,10 +32,6 @@ func init() {
 		ID:    1234,
 	})
 }
-
-// 运行服务器, 在浏览器(Chrome)中打开index.html, F12打开调试窗口->Console标签 查看命令行输出
-// 注意：日志中的http://127.0.0.1:18802/echo链接是api地址，不是网页地址，直接打开无法正常工作
-// 注意：如果http代理/VPN在运行时可能会导致无法连接, 请关闭
 
 var (
 	flagClient = flag.Bool("client", false, "client mode")
@@ -122,6 +117,11 @@ func server() {
 
 }
 
+// 默认启动服务器端
+// 网页连接服务器： 在浏览器(Chrome)中打开index.html, F12打开调试窗口->Console标签 查看命令行输出
+// 	注意：日志中的http://127.0.0.1:18802/echo链接是api地址，不是网页地址，直接打开无法正常工作
+// 	注意：如果http代理/VPN在运行时可能会导致无法连接, 请关闭
+// 客户端连接服务器：命令行模式中添加-client
 func main() {
 
 	flag.Parse()
