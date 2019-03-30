@@ -12,13 +12,13 @@
 
         console.log("hello")
 
-        var ws = new WebSocket("ws://127.0.0.1:18802/echo");
+        let ws = new WebSocket("ws://127.0.0.1:18802/echo");
         ws.binaryType = "arraybuffer";
 
         ws.onopen = function(evt) {
             console.log("Connection open ...");
 
-            var msgBody = {
+            let msgBody = {
                 Msg: "鲍勃",
                 Value: 331,
             }
@@ -26,20 +26,23 @@
             // 消息体编码
             // 注意：需要对字符串做url编码， 否则中文乱码。该问题仅限于json传输模式
             // cellnet接收时，必须使用wsjson编码处理
-            var jsonBody = encodeURI(JSON.stringify(msgBody),"utf-8")
+            let msgData = JSON.stringify(msgBody)
+
+            let encoder = new TextEncoder('utf8')
+            let jsonBody= encoder.encode( msgData)
 
             // TODO 实现消息ID与消息体绑定
-            var msgid = 1234
+            let msgid = 1234
 
-            var pkt = new ArrayBuffer( 2+ jsonBody.length)
-            var dv = new DataView(pkt)
+            let pkt = new ArrayBuffer( 2+ jsonBody.length)
+            let dv = new DataView(pkt)
 
             // 写入消息号
             dv.setUint16(0, msgid, true)
 
             // 这里body使用的是Json编码
-            for(var i = 0;i <jsonBody.length;i++){
-                dv.setUint8(2+i, jsonBody.charCodeAt(i))
+            for(let i = 0;i <jsonBody.length;i++){
+                dv.setUint8(2+i, jsonBody[i])
             }
 
             // 发送
@@ -50,24 +53,21 @@
 
             if (evt.data instanceof ArrayBuffer ){
 
-                var dv = new DataView(evt.data);
+                let dv = new DataView(evt.data);
 
                 // TODO 消息号验证
-                var msgid = dv.getUint16(0, true)
+                let msgid = dv.getUint16(0, true)
 
                 // 包体
-                var msgBody = evt.data.slice(2)
+                let msgBody = evt.data.slice(2)
 
-                // 这里使用Json的包体
-                var jsonBody = ""
-                for(var i = 0;i <msgBody.byteLength;i++){
-                    jsonBody += String.fromCharCode(dv.getUint8(i+2))
-                }
+                let decoder = new TextDecoder('utf8')
+                let jsonBody = decoder.decode(msgBody)
 
                 // 解码包体
-                var msgBody = JSON.parse(jsonBody)
+                let msg = JSON.parse(jsonBody)
 
-                console.log( "Received Message: " , msgBody);
+                console.log( "Received Message: " , msg);
 
 
             }else{

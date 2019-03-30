@@ -5,19 +5,6 @@ import (
 	"net/http"
 )
 
-// Websocket接受器，具备会话访问
-type WSAcceptor interface {
-	GenericPeer
-
-	SetHttps(certfile, keyfile string)
-
-	// 设置升级器
-	SetUpgrader(upgrader interface{})
-
-	// 访问会话
-	SessionAccessor
-}
-
 type HTTPAcceptor interface {
 	GenericPeer
 

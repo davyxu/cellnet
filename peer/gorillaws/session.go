@@ -59,6 +59,9 @@ func (self *wsSession) recvLoop() {
 		msg, err := self.ReadMessage(self)
 
 		if err != nil {
+
+			log.Debugln(err)
+
 			if !util.IsEOFOrNetReadError(err) {
 				log.Errorln("session closed:", err)
 			}
@@ -70,7 +73,10 @@ func (self *wsSession) recvLoop() {
 		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: msg})
 	}
 
-	self.cleanup()
+	self.Close()
+
+	// 通知完成
+	self.exitSync.Done()
 }
 
 // 发送循环
@@ -94,24 +100,11 @@ func (self *wsSession) sendLoop() {
 		}
 	}
 
-	self.cleanup()
-}
-
-// 清理资源
-func (self *wsSession) cleanup() {
-
-	self.cleanupGuard.Lock()
-
-	defer self.cleanupGuard.Unlock()
-
 	// 关闭连接
 	if self.conn != nil {
 		self.conn.Close()
 		self.conn = nil
 	}
-
-	// pal301x: websocket 客服端关闭服务端无法释放 issue 60
-	self.Close()
 
 	// 通知完成
 	self.exitSync.Done()
@@ -127,7 +120,6 @@ func (self *wsSession) Start() {
 	self.exitSync.Add(2)
 
 	go func() {
-
 		// 等待2个任务结束
 		self.exitSync.Wait()
 

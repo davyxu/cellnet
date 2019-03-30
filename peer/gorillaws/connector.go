@@ -1,11 +1,13 @@
 package gorillaws
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/util"
 	"github.com/gorilla/websocket"
+	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 )
@@ -44,6 +46,14 @@ func (self *wsConnector) Session() cellnet.Session {
 	return self.defaultSes
 }
 
+func (self *wsConnector) Port() int {
+	if self.defaultSes.conn == nil {
+		return 0
+	}
+
+	return self.defaultSes.conn.LocalAddr().(*net.TCPAddr).Port
+}
+
 func (self *wsConnector) SetSessionManager(raw interface{}) {
 	self.CoreSessionManager = raw.(peer.CoreSessionManager)
 }
@@ -79,7 +89,9 @@ func (self *wsConnector) SetReconnectDuration(v time.Duration) {
 const reportConnectFailedLimitTimes = 3
 
 func (self *wsConnector) connect(address string) {
+
 	self.SetRunning(true)
+
 	for {
 		self.tryConnTimes++
 
@@ -87,11 +99,18 @@ func (self *wsConnector) connect(address string) {
 		dialer.Proxy = http.ProxyFromEnvironment
 		dialer.HandshakeTimeout = 45 * time.Second
 
+		addrObj, err := util.ParseAddress(address)
+		if err != nil {
+			log.Errorf("invalid address: %s", address)
+			break
+		}
+
+		// 处理非法路径问题
 		var finalAddress string
-		if strings.HasPrefix(address, "ws://") {
+		if addrObj.Scheme == "ws" || addrObj.Scheme == "wss" {
 			finalAddress = address
 		} else {
-			finalAddress = "ws://" + address
+			finalAddress = "ws://" + fmt.Sprintf("%s:%d%s", addrObj.Host, addrObj.MinPort, addrObj.Path)
 		}
 
 		conn, _, err := dialer.Dial(finalAddress, nil)
