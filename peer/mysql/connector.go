@@ -29,6 +29,11 @@ func (self *mysqlConnector) Raw() interface{} {
 	return self.dbConn()
 }
 
+func (self *mysqlConnector) Operate(callback func(client interface{}) interface{}) interface{} {
+
+	return callback(self.dbConn())
+}
+
 func (self *mysqlConnector) dbConn() *sql.DB {
 	self.dbGuard.RLock()
 	defer self.dbGuard.RUnlock()

@@ -20,6 +20,10 @@ type RedisConnector interface {
 	SetDBIndex(v int)
 }
 
+type MySQLOperator interface {
+	Operate(callback func(rawClient interface{}) interface{}) interface{}
+}
+
 type MySQLConnector interface {
 	GenericPeer
 
