@@ -17,7 +17,7 @@ func IsBlockedMessageByID(msgid int) bool {
 	return ok
 }
 
-// 按指定规则(或消息名)屏蔽消息日志
+// 按指定规则(或消息名)屏蔽消息日志, 需要使用完整消息名 例如 proto.MsgName
 func BlockMessageLog(nameRule string) (err error, matchCount int) {
 
 	err = cellnet.MessageMetaVisit(nameRule, func(meta *cellnet.MessageMeta) bool {
@@ -29,4 +29,29 @@ func BlockMessageLog(nameRule string) (err error, matchCount int) {
 	})
 
 	return
+}
+
+// 移除被屏蔽的消息
+func RemoveBlockedMessage(nameRule string) (err error, matchCount int) {
+
+	err = cellnet.MessageMetaVisit(nameRule, func(meta *cellnet.MessageMeta) bool {
+
+		blockedMsgByID.Delete(int(meta.ID))
+		matchCount++
+
+		return true
+	})
+
+	return
+}
+
+// 遍历被屏蔽的消息
+func VisitBlockedMessage(callback func(*cellnet.MessageMeta) bool) {
+
+	blockedMsgByID.Range(func(key, value interface{}) bool {
+		meta := value.(*cellnet.MessageMeta)
+
+		return callback(meta)
+	})
+
 }
