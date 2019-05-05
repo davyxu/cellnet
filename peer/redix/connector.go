@@ -80,7 +80,7 @@ func (self *redisConnector) tryConnect() {
 				}
 			}
 
-			log.Infof("Create redis pool connection: %s", addr)
+			log.Infof("Create redis pool connection: %s name: %s index: %d", addr, self.Name(), self.DBIndex)
 
 			return client, nil
 		})

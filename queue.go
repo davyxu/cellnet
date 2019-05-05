@@ -25,17 +25,26 @@ type EventQueue interface {
 	EnableCapturePanic(v bool)
 }
 
+type CapturePanicNotifyFunc func(interface{}, EventQueue)
+
 type eventQueue struct {
 	*Pipe
 
 	endSignal sync.WaitGroup
 
 	capturePanic bool
+
+	onPanic CapturePanicNotifyFunc
 }
 
 // 启动崩溃捕获
 func (self *eventQueue) EnableCapturePanic(v bool) {
 	self.capturePanic = v
+}
+
+// 设置捕获崩溃通知
+func (self *eventQueue) SetCapturePanicNotify(callback CapturePanicNotifyFunc) {
+	self.onPanic = callback
 }
 
 // 派发事件处理回调到队列中
@@ -55,8 +64,7 @@ func (self *eventQueue) protectedCall(callback func()) {
 		defer func() {
 
 			if err := recover(); err != nil {
-				fmt.Println("[ERRO] panic captured!")
-				debug.PrintStack()
+				self.onPanic(err, self)
 			}
 
 		}()
@@ -117,6 +125,13 @@ func NewEventQueue() EventQueue {
 
 	return &eventQueue{
 		Pipe: NewPipe(),
+
+		// 默认的崩溃捕获打印
+		onPanic: func(raw interface{}, queue EventQueue) {
+
+			fmt.Printf("%v \n%s\n", raw, string(debug.Stack()))
+			debug.PrintStack()
+		},
 	}
 }
 
