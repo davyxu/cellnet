@@ -1,18 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/codec/json"
-	"github.com/davyxu/cellnet/peer"
-	_ "github.com/davyxu/cellnet/peer/gorillaws"
-	"github.com/davyxu/cellnet/proc"
-	_ "github.com/davyxu/cellnet/proc/gorillaws"
-	"github.com/davyxu/golog"
+	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/golog"
+
+	_ "github.com/davyxu/cellnet/codec/json"
+	_ "github.com/davyxu/cellnet/peer/gorillaws"
+	_ "github.com/davyxu/cellnet/proc/gorillaws"
 )
 
 var log = golog.New("websocket_server")
@@ -98,6 +102,14 @@ func server() {
 		case *TestEchoACK:
 
 			log.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
+
+			val, exist := ev.Session().(cellnet.ContextSet).GetContext("request")
+			if exist {
+				if req, ok := val.(*http.Request); ok {
+					raw, _ := json.Marshal(req.Header)
+					log.Debugf("origin request header: %s", string(raw))
+				}
+			}
 
 			ev.Session().Send(&TestEchoACK{
 				Msg:   "中文",
