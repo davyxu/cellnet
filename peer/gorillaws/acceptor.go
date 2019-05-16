@@ -82,7 +82,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 		}
 
 		ses := newSession(c, self, nil)
-
+		ses.SetContext("request", r)
 		ses.Start()
 
 		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: &cellnet.SessionAccepted{}})
