@@ -18,19 +18,18 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 			msg = peeker.Message()
 		}
 
-		if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
-			return
+		if IsMsgLogValid(cellnet.MessageToID(msg)) {
+			peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+			log.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
+				protocol,
+				peerInfo.Name(),
+				ses.ID(),
+				cellnet.MessageSize(msg),
+				cellnet.MessageToName(msg),
+				cellnet.MessageToString(msg))
 		}
 
-		peerInfo := ses.Peer().(cellnet.PeerProperty)
-
-		log.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
-			protocol,
-			peerInfo.Name(),
-			ses.ID(),
-			cellnet.MessageSize(msg),
-			cellnet.MessageToName(msg),
-			cellnet.MessageToString(msg))
 	}
 }
 
@@ -42,19 +41,18 @@ func WriteSendLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 			msg = peeker.Message()
 		}
 
-		if IsBlockedMessageByID(cellnet.MessageToID(msg)) {
-			return
+		if IsMsgLogValid(cellnet.MessageToID(msg)) {
+			peerInfo := ses.Peer().(cellnet.PeerProperty)
+
+			log.Debugf("#%s.send(%s)@%d len: %d %s | %s",
+				protocol,
+				peerInfo.Name(),
+				ses.ID(),
+				cellnet.MessageSize(msg),
+				cellnet.MessageToName(msg),
+				cellnet.MessageToString(msg))
 		}
 
-		peerInfo := ses.Peer().(cellnet.PeerProperty)
-
-		log.Debugf("#%s.send(%s)@%d len: %d %s | %s",
-			protocol,
-			peerInfo.Name(),
-			ses.ID(),
-			cellnet.MessageSize(msg),
-			cellnet.MessageToName(msg),
-			cellnet.MessageToString(msg))
 	}
 
 }

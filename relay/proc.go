@@ -31,7 +31,7 @@ func ResoleveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, h
 			}
 		}
 
-		if log.IsDebugEnabled() && !msglog.IsBlockedMessageByID(int(relayMsg.MsgID)) {
+		if msglog.IsMsgLogValid(int(relayMsg.MsgID)) {
 
 			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
@@ -62,7 +62,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 
 	switch relayMsg := inputEvent.Message().(type) {
 	case *RelayACK:
-		if log.IsDebugEnabled() && !msglog.IsBlockedMessageByID(int(relayMsg.MsgID)) {
+		if msglog.IsMsgLogValid(int(relayMsg.MsgID)) {
 
 			var payload interface{}
 			if relayMsg.MsgID != 0 {
