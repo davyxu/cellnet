@@ -42,23 +42,24 @@ func TestMySQL(t *testing.T) {
 
 func TestRedix(t *testing.T) {
 
-	peer := peer.NewGenericPeer("redix.Connector", "redis", "127.0.0.1:6379", nil)
-	peer.Start()
+	p := peer.NewGenericPeer("redix.Connector", "redis", "127.0.0.1:6379", nil)
+	p.(cellnet.RedisConnector).SetConnectionCount(1)
+	p.Start()
 
 	for i := 0; i < 5; i++ {
 
-		if peer.(cellnet.PeerReadyChecker).IsReady() {
+		if p.(cellnet.PeerReadyChecker).IsReady() {
 			break
 		}
 
 		time.Sleep(time.Millisecond * 200)
 	}
 
-	if !peer.(cellnet.PeerReadyChecker).IsReady() {
+	if !p.(cellnet.PeerReadyChecker).IsReady() {
 		t.FailNow()
 	}
 
-	op := peer.(cellnet.RedisPoolOperator)
+	op := p.(cellnet.RedisPoolOperator)
 
 	op.Operate(func(rawClient interface{}) interface{} {
 

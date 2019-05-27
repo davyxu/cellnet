@@ -95,7 +95,7 @@ func (self *tcpAcceptor) accept() {
 				log.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
 			}
 
-			break
+			continue
 		}
 
 		// 处理连接进入独立线程, 防止accept无法响应
