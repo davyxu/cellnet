@@ -46,6 +46,8 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 
     侦听器的优雅重启, 支持json及form的收发及封装。编写游戏服务器时，不再需要使用第三方HTTP服务器对接SDK。
 
+    注: 如需要对接大规模网页, 请使用第三方专业网络库,如(https://github.com/gin-gonic/gin), cellnet的http支持主要目的在用统一的地址及peer管理
+
 - WebSocket
 
     采用(github.com/gorilla/websocket)实现
