@@ -9,7 +9,7 @@ import (
 var (
 	whiteListByMsgID sync.Map
 	blackListByMsgID sync.Map
-	currMsgLogMode   = MsgLogMode_ShowAll
+	currMsgLogMode   = MsgLogMode_BlackList
 )
 
 type MsgLogRule int
