@@ -76,11 +76,14 @@ func (self *tcpConnector) SetReconnectDuration(v time.Duration) {
 }
 
 func (self *tcpConnector) Port() int {
-	if self.defaultSes.conn == nil {
+
+	conn := self.defaultSes.Conn()
+
+	if conn == nil {
 		return 0
 	}
 
-	return self.defaultSes.conn.LocalAddr().(*net.TCPAddr).Port
+	return conn.LocalAddr().(*net.TCPAddr).Port
 }
 
 const reportConnectFailedLimitTimes = 3
@@ -96,7 +99,7 @@ func (self *tcpConnector) connect(address string) {
 		// 尝试用Socket连接地址
 		conn, err := net.Dial("tcp", address)
 
-		self.defaultSes.conn = conn
+		self.defaultSes.setConn(conn)
 
 		// 发生错误时退出
 		if err != nil {
@@ -138,7 +141,7 @@ func (self *tcpConnector) connect(address string) {
 
 		self.sesEndSignal.Wait()
 
-		self.defaultSes.conn = nil
+		self.defaultSes.setConn(nil)
 
 		// 没重连就退出/主动退出
 		if self.IsStopping() || self.ReconnectDuration() == 0 {

@@ -19,7 +19,8 @@ type tcpSession struct {
 	pInterface cellnet.Peer
 
 	// Socket原始连接
-	conn net.Conn
+	conn      net.Conn
+	connGuard sync.RWMutex
 
 	// 退出同步器
 	exitSync sync.WaitGroup
@@ -34,13 +35,25 @@ type tcpSession struct {
 	closing int64
 }
 
+func (self *tcpSession) setConn(conn net.Conn) {
+	self.connGuard.Lock()
+	self.conn = conn
+	self.connGuard.Unlock()
+}
+
+func (self *tcpSession) Conn() net.Conn {
+	self.connGuard.RLock()
+	defer self.connGuard.RUnlock()
+	return self.conn
+}
+
 func (self *tcpSession) Peer() cellnet.Peer {
 	return self.pInterface
 }
 
 // 取原始连接
 func (self *tcpSession) Raw() interface{} {
-	return self.conn
+	return self.Conn()
 }
 
 func (self *tcpSession) Close() {
@@ -50,13 +63,15 @@ func (self *tcpSession) Close() {
 		return
 	}
 
-	if self.conn != nil {
+	conn := self.Conn()
+
+	if conn != nil {
 		// 关闭读
-		con := self.conn.(*net.TCPConn)
+		tcpConn := conn.(*net.TCPConn)
 		// 关闭读
-		con.CloseRead()
+		tcpConn.CloseRead()
 		// 手动读超时
-		con.SetReadDeadline(time.Now())
+		tcpConn.SetReadDeadline(time.Now())
 	}
 }
 
@@ -86,7 +101,7 @@ func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
 
 		if err := recover(); err != nil {
 			log.Errorf("IO panic: %s", err)
-			self.conn.Close()
+			self.Conn().Close()
 		}
 
 	}()
@@ -105,7 +120,7 @@ func (self *tcpSession) recvLoop() {
 		capturePanic = i.CaptureIOPanic()
 	}
 
-	for self.conn != nil {
+	for self.Conn() != nil {
 
 		var msg interface{}
 		var err error
@@ -161,7 +176,10 @@ func (self *tcpSession) sendLoop() {
 	}
 
 	// 完整关闭
-	self.conn.Close()
+	conn := self.Conn()
+	if conn != nil {
+		conn.Close()
+	}
 
 	// 通知完成
 	self.exitSync.Done()

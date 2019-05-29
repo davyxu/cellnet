@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
 	"io"
 	"net/http"
@@ -24,33 +25,47 @@ func (self *httpConnector) Stop() {
 
 }
 
-func (self *httpConnector) Request(method, path string, raw interface{}) (interface{}, error) {
+func getCodec(codecName string) cellnet.Codec {
 
-	// 获取消息元信息
-	meta := cellnet.HttpMetaByMethodURL(method, path)
-	if meta == nil {
-		return nil, cellnet.NewErrorContext("msg not found", raw)
+	if codecName == "" {
+		codecName = "httpjson"
 	}
+
+	return codec.MustGetCodec(codecName)
+}
+
+func getTypeName(msg interface{}) string {
+	if msg == nil {
+		return ""
+	}
+
+	return reflect.TypeOf(msg).Elem().Name()
+}
+
+func (self *httpConnector) Request(method, path string, param *cellnet.HTTPRequest) error {
 
 	// 将消息编码为字节数组
-	data, err := meta.RequestCodec.Encode(raw, nil)
+	reqCodec := getCodec(param.REQCodecName)
+	data, err := reqCodec.Encode(param.REQMsg, nil)
 
-	log.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
-		self.Name(),
-		meta.Method,
-		meta.Path,
-		meta.RequestTypeName(),
-		cellnet.MessageToString(raw))
-
-	url := fmt.Sprintf("http://%s%s", self.Address(), meta.Path)
-
-	req, err := http.NewRequest(meta.Method, url, data.(io.Reader))
-
-	if err != nil {
-		return nil, err
+	if log.IsDebugEnabled() {
+		log.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
+			self.Name(),
+			method,
+			path,
+			getTypeName(param.REQMsg),
+			cellnet.MessageToString(param.REQMsg))
 	}
 
-	mimeType := meta.RequestCodec.(interface {
+	url := fmt.Sprintf("http://%s%s", self.Address(), path)
+
+	req, err := http.NewRequest(method, url, data.(io.Reader))
+
+	if err != nil {
+		return err
+	}
+
+	mimeType := reqCodec.(interface {
 		MimeType() string
 	}).MimeType()
 
@@ -58,24 +73,24 @@ func (self *httpConnector) Request(method, path string, raw interface{}) (interf
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer resp.Body.Close()
 
-	msg := reflect.New(meta.ResponseType).Interface()
+	err = getCodec(param.ACKCodecName).Decode(resp.Body, param.ACKMsg)
 
-	err = meta.ResponseCodec.Decode(resp.Body, msg)
+	if log.IsDebugEnabled() {
+		log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
+			self.Name(),
+			resp.Request.Method,
+			path,
+			resp.StatusCode,
+			getTypeName(param.ACKMsg),
+			cellnet.MessageToString(param.ACKMsg))
+	}
 
-	log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
-		self.Name(),
-		resp.Request.Method,
-		meta.Path,
-		resp.StatusCode,
-		meta.ResponseTypeName(),
-		cellnet.MessageToString(msg))
-
-	return msg, err
+	return err
 }
 
 func (self *httpConnector) TypeName() string {

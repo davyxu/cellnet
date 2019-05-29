@@ -1,21 +1,16 @@
 package tests
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/httpform"
 	_ "github.com/davyxu/cellnet/codec/httpjson"
 	"github.com/davyxu/cellnet/peer"
 	httppeer "github.com/davyxu/cellnet/peer/http"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/http"
-	"io/ioutil"
-	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 const httpTestAddr = "127.0.0.1:8081"
@@ -26,126 +21,64 @@ func TestHttp(t *testing.T) {
 
 	proc.BindProcessorHandler(p, "http", func(raw cellnet.Event) {
 
-		// 不依赖httpmeta
 		if matcher, ok := raw.Session().(httppeer.RequestMatcher); ok {
 			switch {
-			case matcher.Match("POST", "/gm"):
+			case matcher.Match("GET", "/hello_get"):
 
 				// 默认返回json
 				raw.Session().Send(&httppeer.MessageRespond{
 					Msg: &HttpEchoACK{
-						Token: "ok",
+						Token: "get",
+					},
+				})
+			case matcher.Match("POST", "/hello_post"):
+
+				// 默认返回json
+				raw.Session().Send(&httppeer.MessageRespond{
+					Msg: &HttpEchoACK{
+						Token: "post",
 					},
 				})
 
 			}
 		}
 
-		switch raw.Message().(type) {
-		case *HttpEchoREQ:
-
-			raw.Session().Send(&httppeer.MessageRespond{
-				StatusCode: http.StatusOK,
-				Msg: &HttpEchoACK{
-					Status: 0,
-					Token:  "ok",
-				},
-				CodecName: "httpjson",
-			})
-
-		}
-
 	})
 
 	p.Start()
 
-	requestThenValid(t, "GET", "/hello_form", &HttpEchoREQ{
-		UserName: "kitty_form",
+	requestThenValid(t, "GET", "/hello_get", &HttpEchoREQ{
+		UserName: "kitty_get",
 	}, &HttpEchoACK{
-		Token: "ok",
+		Token: "get",
 	})
 
-	requestThenValid(t, "POST", "/hello_json", &HttpEchoREQ{
-		UserName: "kitty_json",
+	requestThenValid(t, "POST", "/hello_post", &HttpEchoREQ{
+		UserName: "kitty_post",
 	}, &HttpEchoACK{
-		Token: "ok",
-	})
-
-	postCheckBody(t, "/gm", &HttpEchoACK{
-		Token: "ok",
+		Token: "post",
 	})
 
 	p.Stop()
-
-	//validPage(t, "http://127.0.0.1:8081", "")
 }
 
 func requestThenValid(t *testing.T, method, path string, req, expectACK interface{}) {
 
 	p := peer.NewGenericPeer("http.Connector", "httpclient", httpTestAddr, nil).(cellnet.HTTPConnector)
 
-	ack, err := p.Request(method, path, req)
+	ackMsg := reflect.New(reflect.TypeOf(expectACK).Elem()).Interface()
+
+	err := p.Request(method, path, &cellnet.HTTPRequest{
+		REQMsg: req,
+		ACKMsg: ackMsg,
+	})
 
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 
-	if !reflect.DeepEqual(ack, expectACK) {
-		t.Log("unexpect token result", err)
-		t.FailNow()
-	}
-
-}
-
-func validPage(t *testing.T, url, expectAck string) {
-	c := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	resp, err := c.Get(url)
-	if err != nil {
-		t.Log("http req failed", err)
-		t.FailNow()
-	}
-
-	defer resp.Body.Close()
-	bodyData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Log("http response failed", err)
-		t.FailNow()
-	}
-
-	body := string(bodyData)
-
-	if body != expectAck {
-		t.Log("unexpect result", err, body)
-		t.FailNow()
-	}
-}
-
-func postCheckBody(t *testing.T, path string, expectMsg interface{}) {
-	resp, err := http.Post("http://"+httpTestAddr+path, "application/json", nil)
-
-	if err != nil {
-		t.Log("http req failed", err)
-		t.FailNow()
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Log("http response failed", err)
-		t.FailNow()
-	}
-
-	msg := reflect.New(reflect.TypeOf(expectMsg).Elem()).Interface()
-
-	if err := json.Unmarshal(body, msg); err != nil {
-		t.Log("json unmarshal failed", err)
-		t.FailNow()
-	}
-
-	if !reflect.DeepEqual(msg, expectMsg) {
+	if !reflect.DeepEqual(ackMsg, expectACK) {
 		t.Log("unexpect token result", err)
 		t.FailNow()
 	}
@@ -163,27 +96,3 @@ type HttpEchoACK struct {
 
 func (self *HttpEchoREQ) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *HttpEchoACK) String() string { return fmt.Sprintf("%+v", *self) }
-
-func init() {
-	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
-		Path:         "/hello_form",
-		Method:       "GET",
-		RequestCodec: codec.MustGetCodec("httpform"),
-		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
-
-		// 请求方约束
-		ResponseCodec: codec.MustGetCodec("httpjson"),
-		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
-	})
-
-	cellnet.RegisterHttpMeta(&cellnet.HttpMeta{
-		Path:         "/hello_json",
-		Method:       "POST",
-		RequestCodec: codec.MustGetCodec("httpjson"),
-		RequestType:  reflect.TypeOf((*HttpEchoREQ)(nil)).Elem(),
-
-		ResponseCodec: codec.MustGetCodec("httpjson"),
-		ResponseType:  reflect.TypeOf((*HttpEchoACK)(nil)).Elem(),
-	})
-
-}

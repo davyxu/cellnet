@@ -19,11 +19,13 @@ type tcpSyncConnector struct {
 }
 
 func (self *tcpSyncConnector) Port() int {
-	if self.defaultSes.conn == nil {
+	conn := self.defaultSes.Conn()
+
+	if conn == nil {
 		return 0
 	}
 
-	return self.defaultSes.conn.LocalAddr().(*net.TCPAddr).Port
+	return conn.LocalAddr().(*net.TCPAddr).Port
 }
 
 func (self *tcpSyncConnector) Start() cellnet.Peer {
@@ -40,7 +42,7 @@ func (self *tcpSyncConnector) Start() cellnet.Peer {
 		return self
 	}
 
-	self.defaultSes.conn = conn
+	self.defaultSes.setConn(conn)
 
 	self.ApplySocketOption(conn)
 

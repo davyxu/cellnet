@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -116,18 +115,6 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	var msg interface{}
 	var err error
 	var fileHandled bool
-
-	// 请求转消息，文件处理
-	meta := cellnet.HttpMetaByMethodURL(req.Method, req.URL.Path)
-	if meta != nil {
-
-		// 直接打开页面时，无需创建消息
-		if meta.RequestType != nil {
-			msg = reflect.New(meta.RequestType).Interface()
-
-			err = meta.RequestCodec.Decode(req, msg)
-		}
-	}
 
 	if err != nil {
 		goto OnError
