@@ -17,7 +17,7 @@ type context struct {
 // 消息元信息
 type MessageMeta struct {
 	Codec Codec        // 消息用到的编码
-	Type  reflect.Type // 消息类型
+	Type  reflect.Type // 消息类型, 注册时使用指针类型
 
 	ID int // 消息ID (二进制协议中使用)
 
@@ -31,10 +31,6 @@ func (self *MessageMeta) TypeName() string {
 		return ""
 	}
 
-	if self.Type.Kind() == reflect.Ptr {
-		return self.Type.Elem().Name()
-	}
-
 	return self.Type.Name()
 }
 
@@ -44,15 +40,10 @@ func (self *MessageMeta) FullName() string {
 		return ""
 	}
 
-	rtype := self.Type
-	if rtype.Kind() == reflect.Ptr {
-		rtype = rtype.Elem()
-	}
-
 	var sb strings.Builder
-	sb.WriteString(path.Base(rtype.PkgPath()))
+	sb.WriteString(path.Base(self.Type.PkgPath()))
 	sb.WriteString(".")
-	sb.WriteString(rtype.Name())
+	sb.WriteString(self.Type.Name())
 
 	return sb.String()
 }
@@ -151,7 +142,10 @@ Type -> Meta
 // 注册消息元信息
 func RegisterMessageMeta(meta *MessageMeta) *MessageMeta {
 
-	// 非http类,才需要包装Type必须唯一
+	// 注册时, 统一为非指针类型
+	if meta.Type.Kind() == reflect.Ptr {
+		meta.Type = meta.Type.Elem()
+	}
 
 	if _, ok := metaByType[meta.Type]; ok {
 		panic(fmt.Sprintf("Duplicate message meta register by type: %d name: %s", meta.ID, meta.Type.Name()))
