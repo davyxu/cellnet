@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	whiteListByMsgID sync.Map
-	blackListByMsgID sync.Map
-	currMsgLogMode   = MsgLogMode_BlackList
+	whiteListByMsgID    sync.Map
+	blackListByMsgID    sync.Map
+	currMsgLogMode      = MsgLogMode_BlackList
+	currMsgLogModeGuard sync.RWMutex
 )
 
 type MsgLogRule int
@@ -43,11 +44,15 @@ const (
 
 // 设置当前的消息日志处理模式
 func SetCurrMsgLogMode(mode MsgLogMode) {
+	currMsgLogModeGuard.Lock()
 	currMsgLogMode = mode
+	currMsgLogModeGuard.Unlock()
 }
 
 // 获取当前的消息日志处理模式
 func GetCurrMsgLogMode() MsgLogMode {
+	currMsgLogModeGuard.RLock()
+	defer currMsgLogModeGuard.RUnlock()
 	return currMsgLogMode
 }
 
@@ -74,7 +79,7 @@ func SetMsgLogRule(name string, rule MsgLogRule) error {
 
 // 能否显示消息日志
 func IsMsgLogValid(msgid int) bool {
-	switch currMsgLogMode {
+	switch GetCurrMsgLogMode() {
 	case MsgLogMode_BlackList: // 黑名单里不显示
 		if _, ok := blackListByMsgID.Load(msgid); ok {
 			return false
