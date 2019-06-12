@@ -37,8 +37,6 @@ func (self *SignalTester) WaitAndExpect(msg string, values ...interface{}) bool 
 
 		if _, ok := recvValues[value]; !ok {
 			self.FailNow()
-			self.Errorf("%s\n", msg)
-
 		}
 
 	}

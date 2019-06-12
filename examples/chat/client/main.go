@@ -62,6 +62,8 @@ func main() {
 	// 事件队列开始循环
 	queue.StartLoop()
 
+	log.Debugln("Ready to chat!")
+
 	// 阻塞的从命令行获取聊天输入
 	ReadConsole(func(str string) {
 
