@@ -42,9 +42,9 @@ func getPackageByPeerName(name string) string {
 	case "udp.Connector", "udp.Acceptor":
 		return "github.com/davyxu/cellnet/peer/udp"
 	case "gorillaws.Acceptor", "gorillaws.Connector", "gorillaws.SyncConnector":
-		return "github.com/davyxu/cellnet/peer/udp"
+		return "github.com/davyxu/cellnet/peer/gorillaws"
 	case "http.Connector", "http.Acceptor":
-		return "github.com/davyxu/cellnet/peer/tcp"
+		return "github.com/davyxu/cellnet/peer/http"
 	case "redix.Connector":
 		return "github.com/davyxu/cellnet/peer/redix"
 	case "mysql.Connector":
