@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-type ProcessorBinder func(bundle ProcessorBundle, userCallback cellnet.EventCallback)
+type ProcessorBinder func(bundle ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{})
 
 var (
 	procByName = map[string]ProcessorBinder{}
@@ -49,13 +49,13 @@ func getPackageByCodecName(name string) string {
 }
 
 // 绑定固定回调处理器, procName来源于RegisterProcessor注册的处理器，形如: 'tcp.ltv'
-func BindProcessorHandler(peer cellnet.Peer, procName string, userCallback cellnet.EventCallback) {
+func BindProcessorHandler(peer cellnet.Peer, procName string, userCallback cellnet.EventCallback, args ...interface{}) {
 
 	if proc, ok := procByName[procName]; ok {
 
 		bundle := peer.(ProcessorBundle)
 
-		proc(bundle, userCallback)
+		proc(bundle, userCallback, args...)
 
 	} else {
 		panic(fmt.Sprintf("processor not found '%s'\ntry to add code below:\nimport (\n  _ \"%s\"\n)\n\n",

@@ -14,8 +14,6 @@ func StackToString(count int) string {
 
 	var sb strings.Builder
 
-	var lastStr string
-
 	for i := startStack; i < startStack+count; i++ {
 		_, file, line, ok := runtime.Caller(i)
 
@@ -28,15 +26,15 @@ func StackToString(count int) string {
 		}
 
 		// 折叠??
-		if lastStr != "??" || str != "??" {
+		if str != "??" {
 			if i > startStack {
 				sb.WriteString(" -> ")
 			}
 
 			sb.WriteString(str)
+		} else {
+			break
 		}
-
-		lastStr = str
 
 	}
 
