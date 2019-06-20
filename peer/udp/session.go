@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -27,8 +28,21 @@ type udpSession struct {
 	// Socket原始连接
 	remote      *net.UDPAddr
 	conn        *net.UDPConn
+	connGuard   sync.RWMutex
 	timeOutTick time.Time
 	key         *connTrackKey
+}
+
+func (self *udpSession) setConn(conn *net.UDPConn) {
+	self.connGuard.Lock()
+	self.conn = conn
+	self.connGuard.Unlock()
+}
+
+func (self *udpSession) Conn() *net.UDPConn {
+	self.connGuard.RLock()
+	defer self.connGuard.RUnlock()
+	return self.conn
 }
 
 func (self *udpSession) IsAlive() bool {
@@ -40,7 +54,7 @@ func (self *udpSession) ID() int64 {
 }
 
 func (self *udpSession) LocalAddress() net.Addr {
-	return self.conn.LocalAddr()
+	return self.Conn().LocalAddr()
 }
 
 func (self *udpSession) Peer() cellnet.Peer {
@@ -69,18 +83,19 @@ func (self *udpSession) ReadData() []byte {
 
 func (self *udpSession) WriteData(data []byte) {
 
-	if self.conn == nil {
+	c := self.Conn()
+	if c == nil {
 		return
 	}
 
 	// Connector中的Session
 	if self.remote == nil {
 
-		self.conn.Write(data)
+		c.Write(data)
 
 		// Acceptor中的Session
 	} else {
-		self.conn.WriteToUDP(data, self.remote)
+		c.WriteToUDP(data, self.remote)
 	}
 }
 

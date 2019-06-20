@@ -38,6 +38,11 @@ func (self *udpConnector) Session() cellnet.Session {
 	return self.defaultSes
 }
 
+func (self *udpConnector) IsReady() bool {
+
+	return self.defaultSes.Conn() != nil
+}
+
 func (self *udpConnector) connect() {
 
 	conn, err := net.DialUDP("udp", nil, self.remoteAddr)
@@ -47,7 +52,7 @@ func (self *udpConnector) connect() {
 		return
 	}
 
-	self.defaultSes.conn = conn
+	self.defaultSes.setConn(conn)
 
 	ses := self.defaultSes
 
@@ -75,8 +80,8 @@ func (self *udpConnector) Stop() {
 
 	self.SetRunning(false)
 
-	if self.defaultSes.conn != nil {
-		self.defaultSes.conn.Close()
+	if c := self.defaultSes.Conn(); c != nil {
+		c.Close()
 	}
 }
 
