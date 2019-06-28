@@ -30,6 +30,10 @@ func (self *Queue) Dequeue() (ret interface{}) {
 	return
 }
 
+func (self *Queue) Clear() {
+	self.list = self.list[0:0]
+}
+
 func NewQueue(size int) *Queue {
 
 	return &Queue{
