@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"net"
 	"strings"
+	"time"
 )
 
 // 接受器
@@ -88,19 +89,21 @@ func (self *tcpAcceptor) accept() {
 			break
 		}
 
-		if err != nil {
+		if err == nil {
+			// 处理连接进入独立线程, 防止accept无法响应
+			go self.onNewSession(conn)
 
-			// 调试状态时, 才打出accept的具体错误
-			if log.IsDebugEnabled() {
-				log.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
+		}else{
+
+			if nerr, ok := err.(net.Error); ok && nerr.Temporary(){
+				time.Sleep(time.Millisecond)
+				continue
 			}
 
-			continue
+			// 调试状态时, 才打出accept的具体错误
+			log.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
+			break
 		}
-
-		// 处理连接进入独立线程, 防止accept无法响应
-		go self.onNewSession(conn)
-
 	}
 
 	self.SetRunning(false)
