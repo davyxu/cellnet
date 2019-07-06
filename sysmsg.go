@@ -47,10 +47,15 @@ func (self *SessionConnectError) String() string { return fmt.Sprintf("%+v", *se
 func (self *SessionClosed) String() string       { return fmt.Sprintf("%+v", *self) }
 func (self *SessionCloseNotify) String() string  { return fmt.Sprintf("%+v", *self) }
 
-// 使用类型断言判断是否为系统消息
+// 标记系统消息
 func (self *SessionInit) SystemMessage()         {}
 func (self *SessionAccepted) SystemMessage()     {}
 func (self *SessionConnected) SystemMessage()    {}
 func (self *SessionConnectError) SystemMessage() {}
 func (self *SessionClosed) SystemMessage()       {}
 func (self *SessionCloseNotify) SystemMessage()  {}
+
+// 使用类型断言判断是否为系统消息
+type SystemMessageIdentifier interface {
+	SystemMessage()
+}

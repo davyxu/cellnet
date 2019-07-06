@@ -36,3 +36,8 @@ func (self *SendMsgEvent) Message() interface{} {
 func (self *SendMsgEvent) Session() Session {
 	return self.Ses
 }
+
+// rpc, relay, 普通消息
+type ReplyEvent interface {
+	Reply(msg interface{})
+}
