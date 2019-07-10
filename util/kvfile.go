@@ -18,16 +18,21 @@ func ReadKVFile(filename string, callback func(k, v string) bool) (ret error) {
 
 		// 等号切分KV
 		pairs := strings.Split(line, "=")
-		if len(pairs) == 2 {
 
+		switch len(pairs) {
+		case 1:
+			value := strings.TrimSpace(pairs[0])
+			return callback("", value)
+		case 2:
 			key := strings.TrimSpace(pairs[0])
 			value := strings.TrimSpace(pairs[1])
 
 			return callback(key, value)
+		default:
+			ret = errors.New("Require '=' splite key and value")
+			return false
 		}
 
-		ret = errors.New("Require '=' splite key and value")
-		return false
 	})
 
 	if readErr != nil {
