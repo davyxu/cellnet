@@ -33,3 +33,15 @@ func CallSync(ud interface{}, reqMsg interface{}, timeout time.Duration) (interf
 		return nil, ErrTimeout
 	}
 }
+
+func CallSyncEntry(ud interface{}, reqMsg interface{}, timeout time.Duration, userCallback func(raw interface{})) {
+
+	raw, err := CallSync(ud, reqMsg, timeout)
+	if err != nil {
+		userCallback(err)
+		return
+	}
+
+	userCallback(raw)
+	return
+}
