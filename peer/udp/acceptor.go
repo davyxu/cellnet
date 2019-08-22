@@ -20,8 +20,9 @@ type udpAcceptor struct {
 
 	conn *net.UDPConn
 
-	sesTimeout         time.Duration
-	sessionGCThreshold int
+	sesTimeout       time.Duration
+	sesCleanTimeout  time.Duration
+	sesCleanLastTime time.Time
 
 	sesByConnTrack map[connTrackKey]*udpSession
 }
@@ -56,17 +57,11 @@ func (self *udpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#udp.resolve failed(%s) %v", self.Name(), err.Error())
+		log.Errorf("#udp.listen failed(%s) %v", self.Name(), err.Error())
 		return self
 	}
 
 	self.conn = ln.(*net.UDPConn)
-
-	if err != nil {
-		log.Errorf("#udp.listen failed(%s) %s", self.Name(), err.Error())
-		self.SetRunning(false)
-		return self
-	}
 
 	log.Infof("#udp.listen(%s) %s", self.Name(), finalAddr.String(self.Port()))
 
@@ -101,6 +96,8 @@ func (self *udpAcceptor) accept() {
 			break
 		}
 
+		self.checkTimeoutSession()
+
 		if n > 0 {
 
 			ses := self.getSession(remoteAddr)
@@ -119,12 +116,28 @@ func (self *udpAcceptor) accept() {
 
 }
 
-func (self *udpAcceptor) getSession(addr *net.UDPAddr) *udpSession {
+// 检查超时session
+func (self *udpAcceptor) checkTimeoutSession() {
+	now := time.Now()
 
-	// 会话量超过阈值时，释放内存
-	if len(self.sesByConnTrack) > self.sessionGCThreshold {
-		self.removeTimeoutSession()
+	// 定时清理超时的session
+	if now.After(self.sesCleanLastTime.Add(self.sesCleanTimeout)) {
+		sesToDelete := make([]*udpSession, 0, 10)
+		for _, ses := range self.sesByConnTrack {
+			if !ses.IsAlive() {
+				sesToDelete = append(sesToDelete, ses)
+			}
+		}
+
+		for _, ses := range sesToDelete {
+			delete(self.sesByConnTrack, *ses.key)
+		}
+
+		self.sesCleanLastTime = now
 	}
+}
+
+func (self *udpAcceptor) getSession(addr *net.UDPAddr) *udpSession {
 
 	key := newConnTrackKey(addr)
 
@@ -146,26 +159,12 @@ func (self *udpAcceptor) getSession(addr *net.UDPAddr) *udpSession {
 	return ses
 }
 
-func (self *udpAcceptor) removeTimeoutSession() {
-
-	sesToDelete := make([]*udpSession, 0, 10)
-	for _, ses := range self.sesByConnTrack {
-		if !ses.IsAlive() {
-			sesToDelete = append(sesToDelete, ses)
-		}
-	}
-
-	for _, ses := range sesToDelete {
-		delete(self.sesByConnTrack, *ses.key)
-	}
-}
-
 func (self *udpAcceptor) SetSessionTTL(dur time.Duration) {
 	self.sesTimeout = dur
 }
 
-func (self *udpAcceptor) SetSessionGCThreshold(maxCount int) {
-	self.sessionGCThreshold = maxCount
+func (self *udpAcceptor) SetSessionCleanTimeout(dur time.Duration) {
+	self.sesCleanTimeout = dur
 }
 
 func (self *udpAcceptor) Stop() {
@@ -186,9 +185,10 @@ func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		p := &udpAcceptor{
-			sesTimeout:         time.Minute,
-			sessionGCThreshold: 100,
-			sesByConnTrack:     make(map[connTrackKey]*udpSession),
+			sesTimeout:       time.Minute,
+			sesCleanTimeout:  time.Minute,
+			sesCleanLastTime: time.Now(),
+			sesByConnTrack:   make(map[connTrackKey]*udpSession),
 		}
 
 		return p

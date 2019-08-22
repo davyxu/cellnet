@@ -14,7 +14,7 @@ func (UDPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 
 	data := ses.Raw().(udp.DataReader).ReadData()
 
-	msg, err = recvPacket(data)
+	msg, err = RecvPacket(data)
 
 	msglog.WriteRecvLogger(log, "udp", ses, msg)
 
@@ -27,8 +27,8 @@ func (UDPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 
 	msglog.WriteSendLogger(log, "udp", ses, msg)
 
-	// 由于UDP session会被重用，这里使用peer的ContextSet为内存池分配
-	return sendPacket(writer, ses.Peer().(cellnet.ContextSet), msg)
+	// ses不再被复用, 所以使用session自己的contextset做内存池, 避免串台
+	return sendPacket(writer, ses.(cellnet.ContextSet), msg)
 }
 
 func init() {

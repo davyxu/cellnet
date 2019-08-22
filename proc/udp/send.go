@@ -17,16 +17,16 @@ func sendPacket(writer udp.DataWriter, ctx cellnet.ContextSet, msg interface{}) 
 		return err
 	}
 
-	pktData := make([]byte, headerSize+len(msgData))
+	pktData := make([]byte, HeaderSize+len(msgData))
 
 	// 写入消息长度做验证
-	binary.LittleEndian.PutUint16(pktData, uint16(headerSize+len(msgData)))
+	binary.LittleEndian.PutUint16(pktData, uint16(HeaderSize+len(msgData)))
 
 	// Type
 	binary.LittleEndian.PutUint16(pktData[2:], uint16(meta.ID))
 
 	// Value
-	copy(pktData[headerSize:], msgData)
+	copy(pktData[HeaderSize:], msgData)
 
 	writer.WriteData(pktData)
 
