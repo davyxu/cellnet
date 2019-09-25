@@ -116,10 +116,6 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	var err error
 	var fileHandled bool
 
-	if err != nil {
-		goto OnError
-	}
-
 	// 处理消息及页面下发
 	self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: msg})
 

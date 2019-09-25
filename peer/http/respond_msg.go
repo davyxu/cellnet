@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	_ "github.com/davyxu/cellnet/codec/httpjson"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -38,16 +39,6 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 
 	msg := self.Msg
 
-	if log.IsDebugEnabled() {
-		log.Debugf("#http.send(%s) '%s' %s | [%d] Message(%s) %s",
-			peerInfo.Name(),
-			ses.req.Method,
-			ses.req.URL.Path,
-			self.StatusCode,
-			cellnet.MessageToName(msg),
-			cellnet.MessageToString(msg))
-	}
-
 	// 将消息编码为字节数组
 	var data interface{}
 	data, err := httpCodec.Encode(msg, nil)
@@ -62,6 +53,15 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 	bodyData, err := ioutil.ReadAll(data.(io.Reader))
 	if err != nil {
 		return err
+	}
+
+	if log.IsDebugEnabled() {
+		log.Debugf("#http.send(%s) '%s' %s | [%d] %s",
+			peerInfo.Name(),
+			ses.req.Method,
+			ses.req.URL.Path,
+			self.StatusCode,
+			string(bodyData))
 	}
 
 	ses.resp.Write(bodyData)
