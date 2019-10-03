@@ -5,14 +5,13 @@ import (
 	"time"
 )
 
+// 异步RPC请求
 // ud: peer/session,   reqMsg:请求用的消息, userCallback: 返回消息类型回调 func( ackMsg *ackMsgType)
 func Call(sesOrPeer interface{}, reqMsg interface{}, timeout time.Duration, userCallback func(raw interface{})) {
 
 	ses, err := getPeerSession(sesOrPeer)
 
 	if err != nil {
-
-		log.Errorln("Remote call failed, ", err)
 
 		cellnet.SessionQueuedCall(ses, func() {
 			userCallback(err)
