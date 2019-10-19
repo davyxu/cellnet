@@ -133,6 +133,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 
 	if err != nil {
 
+		// 或者是普通消息没有Handled
 		log.Warnf("#http.recv(%s) '%s' %s | [%d] Not found",
 			self.Name(),
 			req.Method,
