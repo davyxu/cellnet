@@ -8,9 +8,9 @@ import (
 
 // 轻量级的持续Tick循环
 type Loop struct {
-	Context      interface{}
-	Duration     time.Duration
-	userCallback func(*Loop)
+	Context        interface{}
+	Duration       time.Duration
+	notifyCallback func(*Loop)
 
 	running int64
 
@@ -71,10 +71,24 @@ func (self *Loop) Stop() {
 	self.setRunning(false)
 }
 
+func (self *Loop) Resume() {
+
+	self.setRunning(true)
+}
+
 // 马上调用一次用户回调
 func (self *Loop) Notify() *Loop {
-	self.userCallback(self)
+	self.notifyCallback(self)
 	return self
+}
+
+func (self *Loop) SetNotifyFunc(notifyCallback func(*Loop)) *Loop {
+	self.notifyCallback = notifyCallback
+	return self
+}
+
+func (self *Loop) NotifyFunc() func(*Loop) {
+	return self.notifyCallback
 }
 
 func tick(ctx interface{}, nextLoop bool) {
@@ -92,13 +106,13 @@ func tick(ctx interface{}, nextLoop bool) {
 
 // 执行一个循环, 持续调用callback, 周期是duration
 // context: 将context上下文传递到带有context指针的函数回调中
-func NewLoop(q cellnet.EventQueue, duration time.Duration, callback func(*Loop), context interface{}) *Loop {
+func NewLoop(q cellnet.EventQueue, duration time.Duration, notifyCallback func(*Loop), context interface{}) *Loop {
 
 	self := &Loop{
-		Context:      context,
-		Duration:     duration,
-		userCallback: callback,
-		Queue:        q,
+		Context:        context,
+		Duration:       duration,
+		notifyCallback: notifyCallback,
+		Queue:          q,
 	}
 
 	return self
