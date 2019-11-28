@@ -5,6 +5,7 @@ import (
 	"log"
 	"runtime/debug"
 	"sync"
+	"time"
 )
 
 // 事件队列
@@ -129,7 +130,7 @@ func NewEventQueue() EventQueue {
 		// 默认的崩溃捕获打印
 		onPanic: func(raw interface{}, queue EventQueue) {
 
-			fmt.Printf("%v \n%s\n", raw, string(debug.Stack()))
+			fmt.Printf("%s: %v \n%s\n", time.Now().Format("2006-01-02 15:04:05"), raw, string(debug.Stack()))
 			debug.PrintStack()
 		},
 	}
