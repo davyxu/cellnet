@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/cellnet/rpc"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ const syncRPC_Address = "127.0.0.1:9201"
 var (
 	syncRPC_Signal  *SignalTester
 	asyncRPC_Signal *SignalTester
+	typeRPC_Signal  *SignalTester
 
 	rpc_Acceptor cellnet.Peer
 )
@@ -100,13 +102,40 @@ func asyncRPC_OnClientEvent(ev cellnet.Event) {
 	}
 }
 
+func typeRPC_OnClientEvent(ev cellnet.Event) {
+
+	switch ev.Message().(type) {
+	case *cellnet.SessionConnected:
+		for i := 0; i < 2; i++ {
+
+			copy := i + 1
+
+			// 注意, 这里不能使用CallType, 异步第一次回来后, 就将rpc上下文清楚,导致第二次之后的回调无法触发, 不属于bug
+			rpc.CallSyncType(ev.Session(), &TestEchoACK{
+				Msg:   "type",
+				Value: 1234,
+			}, time.Second*5, func(ack *TestEchoACK, err error) {
+
+				if err != nil {
+					panic(err)
+				}
+
+				log.Debugln("client type sync recv:", ack)
+				typeRPC_Signal.Done(copy)
+
+			})
+
+		}
+	}
+}
+
 func rpc_StartClient(eventFunc func(event cellnet.Event)) {
 
 	queue := cellnet.NewEventQueue()
 
 	p := peer.NewGenericPeer("tcp.Connector", "client", syncRPC_Address, queue)
 
-	proc.BindProcessorHandler(p, "tcp.ltv", eventFunc)
+	proc.BindProcessorHandler(p, "tcp.ltv.type", eventFunc)
 
 	p.Start()
 
@@ -135,4 +164,27 @@ func TestASyncRPC(t *testing.T) {
 	asyncRPC_Signal.WaitAndExpect("async not recv data ", 1, 2)
 
 	rpc_Acceptor.Stop()
+}
+
+func TestTypeRPC(t *testing.T) {
+
+	typeRPC_Signal = NewSignalTester(t)
+
+	rpc_StartServer()
+
+	rpc_StartClient(typeRPC_OnClientEvent)
+	typeRPC_Signal.WaitAndExpect("type rpc not recv data ", 1, 2)
+
+	rpc_Acceptor.Stop()
+}
+
+func init() {
+	// 对TypeRPC增强
+	proc.RegisterProcessor("tcp.ltv.type", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
+
+		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(rpc.TypeRPCHooker)))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
+
 }

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// 发出请求, 接收到服务器返回后才返回, ud: peer/session,   reqMsg:请求用的消息, 返回消息为返回值
+// 同步RPC请求, ud: peer/session,   reqMsg:请求用的消息, 返回消息为返回值
 func CallSync(ud interface{}, reqMsg interface{}, timeout time.Duration) (interface{}, error) {
 
 	ses, err := getPeerSession(ud)
@@ -32,16 +32,4 @@ func CallSync(ud interface{}, reqMsg interface{}, timeout time.Duration) (interf
 
 		return nil, ErrTimeout
 	}
-}
-
-func CallSyncEntry(ud interface{}, reqMsg interface{}, timeout time.Duration, userCallback func(raw interface{})) {
-
-	raw, err := CallSync(ud, reqMsg, timeout)
-	if err != nil {
-		userCallback(err)
-		return
-	}
-
-	userCallback(raw)
-	return
 }
