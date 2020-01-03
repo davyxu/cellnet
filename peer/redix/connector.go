@@ -67,14 +67,14 @@ func (self *redisConnector) tryConnect() {
 
 			if len(self.Password) > 0 {
 				if err = client.Cmd("AUTH", self.Password).Err; err != nil {
-					log.Errorf("redis.Auth %s", err.Error())
+					log.Errorf("redis.Auth %s %s", self.Password, err.Error())
 					client.Close()
 					return nil, err
 				}
 			}
 			if self.DBIndex > 0 {
 				if err = client.Cmd("SELECT", self.DBIndex).Err; err != nil {
-					log.Errorf("redis.SELECT %s", err.Error())
+					log.Errorf("redis.SELECT %d %s", self.DBIndex, err.Error())
 					client.Close()
 					return nil, err
 				}

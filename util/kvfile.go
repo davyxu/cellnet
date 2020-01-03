@@ -22,10 +22,19 @@ func ReadKVFile(filename string, callback func(k, v string) bool) (ret error) {
 		switch len(pairs) {
 		case 1:
 			value := strings.TrimSpace(pairs[0])
+
+			if value == "" {
+				return true
+			}
+
 			return callback("", value)
 		case 2:
 			key := strings.TrimSpace(pairs[0])
 			value := strings.TrimSpace(pairs[1])
+
+			if key == "" {
+				return true
+			}
 
 			return callback(key, value)
 		default:
