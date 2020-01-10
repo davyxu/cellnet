@@ -49,7 +49,8 @@ func GetRemoteAddrss(ses cellnet.Session) (string, bool) {
 }
 
 var (
-	ErrInvalidPortRange = errors.New("invalid port range")
+	ErrInvalidPortRange     = errors.New("invalid port range")
+	ErrInvalidAddressFormat = errors.New("invalid address format")
 )
 
 // 支持地址范围的格式
@@ -87,13 +88,15 @@ func ParseAddress(addr string) (addrObj *Address, err error) {
 		addr = addr[schemePos+3:]
 	}
 
+	// 冒号不可选
 	colonPos := strings.Index(addr, ":")
 
 	if colonPos != -1 {
 		addrObj.Host = addr[:colonPos]
+		addr = addr[colonPos+1:]
+	} else {
+		return nil, ErrInvalidAddressFormat
 	}
-
-	addr = addr[colonPos+1:]
 
 	rangePos := strings.Index(addr, "~")
 
