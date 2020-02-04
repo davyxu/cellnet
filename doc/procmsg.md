@@ -14,10 +14,10 @@ proc.BindProcessorHandler(peerIns, "tcp.ltv", func(ev cellnet.Event) {
 	switch msg := ev.Message().(type) {
 	// 有新的连接连到8801端口
 	case *cellnet.SessionAccepted:
-		log.Debugln("server accepted")
+		ulog.Debugln("server accepted")
 	// 有连接从8801端口断开
 	case *cellnet.SessionClosed:
-		log.Debugln("session closed: ", ev.Session().ID())
+		ulog.Debugln("session closed: ", ev.Session().ID())
 	// 收到某个连接的ChatREQ消息
 	case *proto.ChatREQ:
 

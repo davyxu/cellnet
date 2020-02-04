@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/ulog"
 	"github.com/go-sql-driver/mysql"
 	"sync"
 	"time"
@@ -74,21 +75,21 @@ func (self *mysqlConnector) tryConnect() {
 	config, err := mysql.ParseDSN(self.Address())
 
 	if err != nil {
-		log.Errorf("Invalid mysql DSN: %s, %s\n", self.Address(), err.Error())
+		ulog.Errorf("Invalid mysql DSN: %s, %s\n", self.Address(), err.Error())
 		return
 	}
 
-	log.Infof("Connecting to mysql (%s) %s/%s...", self.Name(), config.Addr, config.DBName)
+	ulog.Infof("Connecting to mysql (%s) %s/%s...", self.Name(), config.Addr, config.DBName)
 
 	db, err := sql.Open("mysql", self.Address())
 	if err != nil {
-		log.Errorf("Open mysql database error: %s\n", err)
+		ulog.Errorf("Open mysql database error: %s\n", err)
 		return
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Errorln(err)
+		ulog.Errorln(err)
 		return
 	}
 
@@ -100,7 +101,7 @@ func (self *mysqlConnector) tryConnect() {
 	self.dbGuard.Unlock()
 
 	if config != nil {
-		log.SetColor("green").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
+		ulog.WithColorName("green").Infof("Connected to mysql %s/%s", config.Addr, config.DBName)
 	}
 }
 

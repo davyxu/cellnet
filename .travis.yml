@@ -5,7 +5,6 @@ git:
   quiet: true
 
 install:
-  - go get -u -v github.com/davyxu/golog
   - go get -u -v github.com/davyxu/goobjfmt
   - go get -u -v github.com/davyxu/protoplus/proto
   - go get -u -v github.com/gorilla/websocket

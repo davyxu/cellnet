@@ -2,7 +2,7 @@ package msglog
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/ulog"
 )
 
 // 萃取消息中的消息
@@ -10,9 +10,9 @@ type PacketMessagePeeker interface {
 	Message() interface{}
 }
 
-func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, msg interface{}) {
+func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
-	if log.IsDebugEnabled() {
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
@@ -21,7 +21,7 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 		if IsMsgLogValid(cellnet.MessageToID(msg)) {
 			peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
+			ulog.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
 				protocol,
 				peerInfo.Name(),
 				ses.ID(),
@@ -33,9 +33,9 @@ func WriteRecvLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 	}
 }
 
-func WriteSendLogger(log *golog.Logger, protocol string, ses cellnet.Session, msg interface{}) {
+func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
-	if log.IsDebugEnabled() {
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
@@ -44,7 +44,7 @@ func WriteSendLogger(log *golog.Logger, protocol string, ses cellnet.Session, ms
 		if IsMsgLogValid(cellnet.MessageToID(msg)) {
 			peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-			log.Debugf("#%s.send(%s)@%d len: %d %s | %s",
+			ulog.Debugf("#%s.send(%s)@%d len: %d %s | %s",
 				protocol,
 				peerInfo.Name(),
 				ses.ID(),

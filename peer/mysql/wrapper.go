@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"errors"
+	"github.com/davyxu/ulog"
 )
 
 type Wrapper struct {
@@ -23,12 +24,12 @@ func (self *Wrapper) Query(query string, args ...interface{}) *Wrapper {
 	}
 
 	self.query = query
-	log.Debugln("[DB]", query, args)
+	ulog.Debugln("[DB]", query, args)
 
 	self.row, self.Err = self.drv.Query(query, args...)
 
 	if self.Err != nil {
-		log.Errorln("[DB] ", self.query, self.Err.Error())
+		ulog.Errorln("[DB] ", self.query, self.Err.Error())
 	}
 
 	return self
@@ -41,12 +42,12 @@ func (self *Wrapper) Execute(query string, args ...interface{}) *Wrapper {
 	}
 
 	self.query = query
-	log.Debugln("[DB]", query, args)
+	ulog.Debugln("[DB]", query, args)
 
 	_, self.Err = self.drv.Exec(query, args...)
 
 	if self.Err != nil {
-		log.Errorln("[DB] ", self.query, self.Err.Error())
+		ulog.Errorln("[DB] ", self.query, self.Err.Error())
 	}
 
 	return self
@@ -70,7 +71,7 @@ func (self *Wrapper) One(data ...interface{}) *Wrapper {
 	self.Err = self.row.Scan(data...)
 
 	if self.Err != nil {
-		log.Errorln("One.Row.Scan failed", self.query, self.Err)
+		ulog.Errorln("One.Row.Scan failed", self.query, self.Err)
 	}
 
 	self.row.Close()
@@ -84,7 +85,7 @@ func (self *Wrapper) Scan(dest ...interface{}) {
 	self.Err = self.row.Scan(dest...)
 
 	if self.Err != nil {
-		log.Errorln("Scan.Scan failed", self.query, self.Err)
+		ulog.Errorln("Scan.Scan failed", self.query, self.Err)
 	}
 
 }

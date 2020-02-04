@@ -11,14 +11,14 @@ type MsgHooker struct {
 
 func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msglog.WriteRecvLogger(log, "ws", inputEvent.Session(), inputEvent.Message())
+	msglog.WriteRecvLogger("ws", inputEvent.Session(), inputEvent.Message())
 
 	return inputEvent
 }
 
 func (self MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msglog.WriteSendLogger(log, "ws", inputEvent.Session(), inputEvent.Message())
+	msglog.WriteSendLogger("ws", inputEvent.Session(), inputEvent.Message())
 
 	return inputEvent
 }

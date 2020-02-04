@@ -2,7 +2,7 @@ package cellnet
 
 import (
 	"fmt"
-	"log"
+	"github.com/davyxu/ulog"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -95,7 +95,7 @@ func (self *eventQueue) StartLoop() EventQueue {
 				case nil:
 					break
 				default:
-					log.Printf("unexpected type %T", t)
+					ulog.Errorf("unexpected type %T", t)
 				}
 			}
 

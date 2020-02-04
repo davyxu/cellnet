@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/ulog"
 )
 
 var (
@@ -15,7 +16,7 @@ func Relay(sesDetector interface{}, dataList ...interface{}) error {
 
 	ses, err := getSession(sesDetector)
 	if err != nil {
-		log.Errorln("relay.Relay:", err)
+		ulog.Errorln("relay.Relay:", err)
 		return err
 	}
 

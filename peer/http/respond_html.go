@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -100,7 +101,7 @@ func (self *HTMLRespond) WriteRespond(ses *httpSession) error {
 
 	peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-	log.Debugf("#http.send(%s) '%s' %s | [%d] HTML %s",
+	ulog.Debugf("#http.send(%s) '%s' %s | [%d] HTML %s",
 		peerInfo.Name(),
 		ses.req.Method,
 		ses.req.URL.Path,
@@ -133,10 +134,10 @@ type TextRespond struct {
 
 func (self *TextRespond) WriteRespond(ses *httpSession) error {
 
-	if log.IsDebugEnabled() {
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
 		peerInfo := ses.Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#http.send(%s) '%s' %s | [%d] HTML '%s'",
+		ulog.Debugf("#http.send(%s) '%s' %s | [%d] HTML '%s'",
 			peerInfo.Name(),
 			ses.req.Method,
 			ses.req.URL.Path,

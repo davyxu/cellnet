@@ -23,7 +23,7 @@ func (self *httpAcceptor) GetDir() http.Dir {
 	}
 
 	//workDir, _ := os.Getwd()
-	//log.Debugf("Http serve file: %s (%s)", self.dir, workDir)
+	//ulog.Debugf("Http serve file: %s (%s)", self.dir, workDir)
 }
 
 func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, dir http.Dir) (error, bool) {
@@ -35,10 +35,7 @@ func (self *httpAcceptor) ServeFile(res http.ResponseWriter, req *http.Request, 
 
 	f, err := dir.Open(file)
 	if err != nil {
-
-		if err != nil {
-			return errNotFound, false
-		}
+		return errNotFound, false
 	}
 	defer f.Close()
 

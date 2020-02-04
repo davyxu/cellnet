@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -100,7 +101,7 @@ func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
 	defer func() {
 
 		if err := recover(); err != nil {
-			log.Errorf("IO panic: %s", err)
+			ulog.Errorf("IO panic: %s", err)
 			self.Conn().Close()
 		}
 
@@ -133,7 +134,7 @@ func (self *tcpSession) recvLoop() {
 
 		if err != nil {
 			if !util.IsEOFOrNetReadError(err) {
-				log.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
+				ulog.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
 			}
 
 			self.sendQueue.Add(nil)

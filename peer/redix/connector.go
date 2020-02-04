@@ -3,6 +3,7 @@ package redix
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/ulog"
 	"github.com/mediocregopher/radix.v2/pool"
 	"github.com/mediocregopher/radix.v2/redis"
 	"sync"
@@ -43,7 +44,7 @@ func (self *redisConnector) Operate(callback func(client interface{}) interface{
 	pool := self.Pool()
 	c, err := pool.Get()
 	if err != nil {
-		log.Errorf("get client failed, %s", err)
+		ulog.Errorf("get client failed, %s", err)
 		return err
 	}
 
@@ -61,32 +62,32 @@ func (self *redisConnector) tryConnect() {
 
 			client, err := redis.DialTimeout(network, addr, time.Second*5)
 			if err != nil {
-				log.Errorf("redis.Dial %s", err.Error())
+				ulog.Errorf("redis.Dial %s", err.Error())
 				return nil, err
 			}
 
 			if len(self.Password) > 0 {
 				if err = client.Cmd("AUTH", self.Password).Err; err != nil {
-					log.Errorf("redis.Auth %s %s", self.Password, err.Error())
+					ulog.Errorf("redis.Auth %s %s", self.Password, err.Error())
 					client.Close()
 					return nil, err
 				}
 			}
 			if self.DBIndex > 0 {
 				if err = client.Cmd("SELECT", self.DBIndex).Err; err != nil {
-					log.Errorf("redis.SELECT %d %s", self.DBIndex, err.Error())
+					ulog.Errorf("redis.SELECT %d %s", self.DBIndex, err.Error())
 					client.Close()
 					return nil, err
 				}
 			}
 
-			log.Infof("Create redis pool connection: %s name: %s index: %d", addr, self.Name(), self.DBIndex)
+			ulog.Infof("Create redis pool connection: %s name: %s index: %d", addr, self.Name(), self.DBIndex)
 
 			return client, nil
 		})
 
 		if err != nil {
-			log.Errorln("Redis connect failed:", err)
+			ulog.Errorln("Redis connect failed:", err)
 			time.Sleep(3 * time.Second)
 			continue
 		}

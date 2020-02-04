@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"net"
 	"strings"
 	"time"
@@ -51,7 +52,7 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#tcp.listen failed(%s) %v", self.Name(), err.Error())
+		ulog.Errorf("#tcp.listen failed(%s) %v", self.Name(), err.Error())
 
 		self.SetRunning(false)
 
@@ -60,7 +61,7 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 
 	self.listener = ln.(net.Listener)
 
-	log.Infof("#tcp.listen(%s) %s", self.Name(), self.ListenAddress())
+	ulog.Infof("#tcp.listen(%s) %s", self.Name(), self.ListenAddress())
 
 	go self.accept()
 
@@ -93,15 +94,15 @@ func (self *tcpAcceptor) accept() {
 			// 处理连接进入独立线程, 防止accept无法响应
 			go self.onNewSession(conn)
 
-		}else{
+		} else {
 
-			if nerr, ok := err.(net.Error); ok && nerr.Temporary(){
+			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
 				time.Sleep(time.Millisecond)
 				continue
 			}
 
 			// 调试状态时, 才打出accept的具体错误
-			log.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
+			ulog.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
 			break
 		}
 	}

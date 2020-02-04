@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"html/template"
 	"net"
 	"net/http"
@@ -87,20 +88,20 @@ func (self *httpAcceptor) Start() cellnet.Peer {
 
 	if err != nil {
 
-		log.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
+		ulog.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
 
 		return self
 	}
 
 	self.listener = ln.(net.Listener)
 
-	log.Infof("#http.listen(%s) http://%s", self.Name(), self.WANAddress())
+	ulog.Infof("#http.listen(%s) http://%s", self.Name(), self.WANAddress())
 
 	go func() {
 
 		err = self.sv.Serve(tcpKeepAliveListener{self.listener.(*net.TCPListener)})
 		if err != nil && err != http.ErrServerClosed {
-			log.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
+			ulog.Errorf("#http.listen failed(%s) %v", self.Name(), err.Error())
 		}
 
 	}()
@@ -134,7 +135,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	if err != nil {
 
 		// 或者是普通消息没有Handled
-		log.Warnf("#http.recv(%s) '%s' %s | [%d] Not found",
+		ulog.Warnf("#http.recv(%s) '%s' %s | [%d] Not found",
 			self.Name(),
 			req.Method,
 			req.URL.Path,
@@ -147,7 +148,7 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 	}
 
 	if fileHandled {
-		log.Debugf("#http.recv(%s) '%s' %s | [%d] File",
+		ulog.Debugf("#http.recv(%s) '%s' %s | [%d] File",
 			self.Name(),
 			req.Method,
 			req.URL.Path,
@@ -155,14 +156,14 @@ func (self *httpAcceptor) ServeHTTP(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	log.Warnf("#http.recv(%s) '%s' %s | Unhandled",
+	ulog.Warnf("#http.recv(%s) '%s' %s | Unhandled",
 		self.Name(),
 		req.Method,
 		req.URL.Path)
 
 	return
 OnError:
-	log.Errorf("#http.recv(%s) '%s' %s | [%d] %s",
+	ulog.Errorf("#http.recv(%s) '%s' %s | [%d] %s",
 		self.Name(),
 		req.Method,
 		req.URL.Path,
@@ -176,7 +177,7 @@ OnError:
 func (self *httpAcceptor) Stop() {
 
 	if err := self.sv.Shutdown(nil); err != nil {
-		log.Errorf("#http.stop failed(%s) %v", self.Name(), err.Error())
+		ulog.Errorf("#http.stop failed(%s) %v", self.Name(), err.Error())
 	}
 }
 

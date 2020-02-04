@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/ulog"
 	"sync"
 	"testing"
 	"time"
@@ -106,30 +107,30 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 
 	queue.StartLoop()
 
-	log.Debugln("Start connecting...")
+	ulog.Debugln("Start connecting...")
 	allAccepted.Add(recreateAcc_clientConnection)
 	runMultiConnection()
 
-	log.Debugln("Wait all accept...")
+	ulog.Debugln("Wait all accept...")
 	allAccepted.Wait()
 
-	log.Debugln("Close acceptor...")
+	ulog.Debugln("Close acceptor...")
 	p.Stop()
 
 	// 确认所有连接已经断开
 	time.Sleep(time.Second)
 
-	log.Debugln("Session count:", p.(cellnet.SessionAccessor).SessionCount())
+	ulog.Debugln("Session count:", p.(cellnet.SessionAccessor).SessionCount())
 
 	p.Start()
-	log.Debugln("Start connecting...")
+	ulog.Debugln("Start connecting...")
 	allAccepted.Add(recreateAcc_clientConnection)
 	runMultiConnection()
 
-	log.Debugln("Wait all accept...")
+	ulog.Debugln("Wait all accept...")
 	allAccepted.Wait()
 
-	log.Debugln("All done")
+	ulog.Debugln("All done")
 }
 
 func runMultiConnection() {

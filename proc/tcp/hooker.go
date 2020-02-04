@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/relay"
 	"github.com/davyxu/cellnet/rpc"
+	"github.com/davyxu/ulog"
 )
 
 // 带有RPC和relay功能
@@ -19,7 +20,7 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	inputEvent, handled, err = rpc.ResolveInboundEvent(inputEvent)
 
 	if err != nil {
-		log.Errorln("rpc.ResolveInboundEvent:", err)
+		ulog.Errorln("rpc.ResolveInboundEvent:", err)
 		return
 	}
 
@@ -28,12 +29,12 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		inputEvent, handled, err = relay.ResoleveInboundEvent(inputEvent)
 
 		if err != nil {
-			log.Errorln("relay.ResoleveInboundEvent:", err)
+			ulog.Errorln("relay.ResoleveInboundEvent:", err)
 			return
 		}
 
 		if !handled {
-			msglog.WriteRecvLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+			msglog.WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
 		}
 	}
 
@@ -45,7 +46,7 @@ func (self MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cel
 	handled, err := rpc.ResolveOutboundEvent(inputEvent)
 
 	if err != nil {
-		log.Errorln("rpc.ResolveOutboundEvent:", err)
+		ulog.Errorln("rpc.ResolveOutboundEvent:", err)
 		return nil
 	}
 
@@ -54,12 +55,12 @@ func (self MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cel
 		handled, err = relay.ResolveOutboundEvent(inputEvent)
 
 		if err != nil {
-			log.Errorln("relay.ResolveOutboundEvent:", err)
+			ulog.Errorln("relay.ResolveOutboundEvent:", err)
 			return nil
 		}
 
 		if !handled {
-			msglog.WriteSendLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+			msglog.WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
 		}
 	}
 

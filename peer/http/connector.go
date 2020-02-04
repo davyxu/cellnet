@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/ulog"
 	"io"
 	"net/http"
 	"reflect"
@@ -48,8 +49,8 @@ func (self *httpConnector) Request(method, path string, param *cellnet.HTTPReque
 	reqCodec := getCodec(param.REQCodecName)
 	data, err := reqCodec.Encode(param.REQMsg, nil)
 
-	if log.IsDebugEnabled() {
-		log.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+		ulog.Debugf("#http.send(%s) '%s' %s | Message(%s) %s",
 			self.Name(),
 			method,
 			path,
@@ -80,8 +81,8 @@ func (self *httpConnector) Request(method, path string, param *cellnet.HTTPReque
 
 	err = getCodec(param.ACKCodecName).Decode(resp.Body, param.ACKMsg)
 
-	if log.IsDebugEnabled() {
-		log.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+		ulog.Debugf("#http.recv(%s) '%s' %s | [%d] Message(%s) %s",
 			self.Name(),
 			resp.Request.Method,
 			path,

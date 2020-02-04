@@ -5,13 +5,11 @@ import (
 	"github.com/davyxu/cellnet/examples/chat/proto"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/ulog"
 
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 )
-
-var log = golog.New("server")
 
 func main() {
 
@@ -28,10 +26,10 @@ func main() {
 		switch msg := ev.Message().(type) {
 		// 有新的连接
 		case *cellnet.SessionAccepted:
-			log.Debugln("server accepted")
+			ulog.Debugln("server accepted")
 		// 有连接断开
 		case *cellnet.SessionClosed:
-			log.Debugln("session closed: ", ev.Session().ID())
+			ulog.Debugln("session closed: ", ev.Session().ID())
 		// 收到某个连接的ChatREQ消息
 		case *proto.ChatREQ:
 

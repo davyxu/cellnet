@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/httpjson"
+	"github.com/davyxu/ulog"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -55,8 +56,8 @@ func (self *MessageRespond) WriteRespond(ses *httpSession) error {
 		return err
 	}
 
-	if log.IsDebugEnabled() {
-		log.Debugf("#http.send(%s) '%s' %s | [%d] %s",
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+		ulog.Debugf("#http.send(%s) '%s' %s | [%d] %s",
 			peerInfo.Name(),
 			ses.req.Method,
 			ses.req.URL.Path,

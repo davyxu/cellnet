@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -60,10 +61,10 @@ func (self *wsSession) recvLoop() {
 
 		if err != nil {
 
-			log.Debugln(err)
+			ulog.Debugln(err)
 
 			if !util.IsEOFOrNetReadError(err) {
-				log.Errorln("session closed:", err)
+				ulog.Errorln("session closed:", err)
 			}
 
 			self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: &cellnet.SessionClosed{}})

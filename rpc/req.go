@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/ulog"
 	"sync"
 	"sync/atomic"
 )
@@ -33,7 +34,7 @@ func (self *request) Send(ses cellnet.Session, msg interface{}) {
 	data, meta, err := codec.EncodeMessage(msg, nil)
 
 	if err != nil {
-		log.Errorf("rpc request message encode error: %s", err)
+		ulog.Errorf("rpc request message encode error: %s", err)
 		return
 	}
 

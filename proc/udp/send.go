@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer/udp"
+	"github.com/davyxu/ulog"
 )
 
 func sendPacket(writer udp.DataWriter, ctx cellnet.ContextSet, msg interface{}) error {
@@ -13,7 +14,7 @@ func sendPacket(writer udp.DataWriter, ctx cellnet.ContextSet, msg interface{}) 
 	msgData, meta, err := codec.EncodeMessage(msg, ctx)
 
 	if err != nil {
-		log.Errorf("send message encode error: %s", err)
+		ulog.Errorf("send message encode error: %s", err)
 		return err
 	}
 

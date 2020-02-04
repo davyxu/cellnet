@@ -4,22 +4,19 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/davyxu/ulog"
 	"net/http"
 	"reflect"
 	"time"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/golog"
-
 	_ "github.com/davyxu/cellnet/codec/json"
+	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
+	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/gorillaws"
 )
-
-var log = golog.New("websocket_server")
 
 type TestEchoACK struct {
 	Msg   string
@@ -57,7 +54,7 @@ func client() {
 		switch msg := ev.Message().(type) {
 
 		case *cellnet.SessionConnected:
-			log.Debugln("server connected")
+			ulog.Debugln("server connected")
 
 			ev.Session().Send(&TestEchoACK{
 				Msg:   "鲍勃",
@@ -65,10 +62,10 @@ func client() {
 			})
 			// 有连接断开
 		case *cellnet.SessionClosed:
-			log.Debugln("session closed: ", ev.Session().ID())
+			ulog.Debugln("session closed: ", ev.Session().ID())
 		case *TestEchoACK:
 
-			log.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
+			ulog.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
 
 		}
 	})
@@ -95,19 +92,19 @@ func server() {
 		switch msg := ev.Message().(type) {
 
 		case *cellnet.SessionAccepted:
-			log.Debugln("server accepted")
+			ulog.Debugln("server accepted")
 			// 有连接断开
 		case *cellnet.SessionClosed:
-			log.Debugln("session closed: ", ev.Session().ID())
+			ulog.Debugln("session closed: ", ev.Session().ID())
 		case *TestEchoACK:
 
-			log.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
+			ulog.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
 
 			val, exist := ev.Session().(cellnet.ContextSet).GetContext("request")
 			if exist {
 				if req, ok := val.(*http.Request); ok {
 					raw, _ := json.Marshal(req.Header)
-					log.Debugf("origin request header: %s", string(raw))
+					ulog.Debugf("origin request header: %s", string(raw))
 				}
 			}
 

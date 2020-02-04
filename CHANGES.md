@@ -1,3 +1,11 @@
+# V5版本(v5分支)
+## 版本特性
+
+- 使用github/davyxu/ulog替换github/davyxu/golog实现
+
+- 移除Protobuf支持
+
+
 # V4版本(v4分支)
 ## 版本特性
 

@@ -11,8 +11,7 @@ import (
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
-	"log"
+	"github.com/davyxu/ulog"
 	"os"
 	"reflect"
 	"runtime/pprof"
@@ -119,10 +118,8 @@ func main() {
 
 	f, err := os.Create(*profile)
 	if err != nil {
-		log.Println(*profile)
+		ulog.Infoln(*profile)
 	}
-
-	golog.SetLevelByString("tcpproc", "info")
 
 	server()
 

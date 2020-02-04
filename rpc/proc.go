@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/msglog"
+	"github.com/davyxu/ulog"
 )
 
 type RemoteCallMsg interface {
@@ -32,7 +33,7 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 	if msglog.IsMsgLogValid(int(rpcMsg.GetMsgID())) {
 		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
+		ulog.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
 			peerInfo.Name(),
 			inputEvent.Session().ID(),
 			cellnet.MessageSize(userMsg),
@@ -76,7 +77,7 @@ func ResolveOutboundEvent(inputEvent cellnet.Event) (handled bool, err error) {
 	if msglog.IsMsgLogValid(int(rpcMsg.GetMsgID())) {
 		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
-		log.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
+		ulog.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
 			peerInfo.Name(),
 			inputEvent.Session().ID(),
 			cellnet.MessageSize(userMsg),

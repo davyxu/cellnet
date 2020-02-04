@@ -114,7 +114,7 @@ cellnet经过多个版本的迭代，无论是作为初学者学习的范例，�
 ```
   go get -u -v github.com/davyxu/cellnet
 
-  go get -u -v github.com/davyxu/golog
+  go get -u -v github.com/davyxu/ulog
 
   go get -u -v github.com/davyxu/goobjfmt
 

@@ -3,6 +3,7 @@ package tcp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/ulog"
 	"net"
 	"sync"
 	"time"
@@ -105,10 +106,10 @@ func (self *tcpConnector) connect(address string) {
 		if err != nil {
 
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
-				log.Errorf("#tcp.connect failed(%s) %v", self.Name(), err.Error())
+				ulog.Errorf("#tcp.connect failed(%s) %v", self.Name(), err.Error())
 
 				if self.tryConnTimes == reportConnectFailedLimitTimes {
-					log.Errorf("(%s) continue reconnecting, but mute log", self.Name())
+					ulog.Errorf("(%s) continue reconnecting, but mute log", self.Name())
 				}
 			}
 

@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
@@ -101,7 +102,7 @@ func (self *wsConnector) connect(address string) {
 
 		addrObj, err := util.ParseAddress(address)
 		if err != nil {
-			log.Errorf("invalid address: %s", address)
+			ulog.Errorf("invalid address: %s", address)
 			break
 		}
 
@@ -119,10 +120,10 @@ func (self *wsConnector) connect(address string) {
 		if err != nil {
 			if self.tryConnTimes <= reportConnectFailedLimitTimes {
 
-				log.Errorf("#ws.connect failed(%s) %v", self.Name(), err.Error())
+				ulog.Errorf("#ws.connect failed(%s) %v", self.Name(), err.Error())
 
 				if self.tryConnTimes == reportConnectFailedLimitTimes {
-					log.Errorf("(%s) continue reconnecting, but mute log", self.Name())
+					ulog.Errorf("(%s) continue reconnecting, but mute log", self.Name())
 				}
 			}
 

@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/relay"
+	"github.com/davyxu/ulog"
 	"reflect"
 	"sync"
 	"testing"
@@ -35,7 +36,7 @@ func relay_backend() {
 
 		if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {
 
-			log.Debugln("Relay to agent", relayEvent.Message(), relayEvent.PassThroughAsInt64())
+			ulog.Debugln("Relay to agent", relayEvent.Message(), relayEvent.PassThroughAsInt64())
 			relay.Relay(relay_BackendToAgentConnector, relayEvent.Message(), relayEvent.PassThroughAsInt64())
 
 		}
@@ -60,7 +61,7 @@ func relay_agent() {
 
 		backendSession = ev.Session()
 
-		log.Debugln("Backend registered", backendSession.ID())
+		ulog.Debugln("Backend registered", backendSession.ID())
 
 		wg.Done()
 
@@ -82,7 +83,7 @@ func relay_agent() {
 			// 添加掩码的sesid
 			maskedSessionID := ev.Session().ID() + AgentSessionIDMask
 
-			log.Debugln("Relay to backend", ev.Message(), ev.Session().ID())
+			ulog.Debugln("Relay to backend", ev.Message(), ev.Session().ID())
 			// 路由到后台
 			relay.Relay(backendSession, ev.Message(), maskedSessionID)
 		} else {
@@ -106,7 +107,7 @@ func relay_agent() {
 			ses := sesAccessor.GetSession(sesID)
 			if ses != nil {
 
-				log.Debugln("Broadcast to client", event.Message(), sesID)
+				ulog.Debugln("Broadcast to client", event.Message(), sesID)
 				ses.Send(event.Message())
 			}
 		}
@@ -130,13 +131,13 @@ func relay_client() {
 
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected:
-			log.Debugln("send data")
+			ulog.Debugln("send data")
 			ev.Session().Send(&dataMsg)
 
 		case *TestEchoACK:
 			if reflect.DeepEqual(dataMsg, *msg) {
 				relay_Signal.Done(1)
-				log.Debugln("data done")
+				ulog.Debugln("data done")
 			}
 		}
 
