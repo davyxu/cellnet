@@ -12,7 +12,7 @@ install:
   - go get -u -v github.com/mediocregopher/radix.v2
 
 go:
-  - 1.11.x
+  - 1.13.x
 
 script:
   - go test -v -test.run TestEchoTCP github.com/davyxu/cellnet/tests
