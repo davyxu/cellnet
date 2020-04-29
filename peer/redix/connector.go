@@ -56,6 +56,8 @@ func (self *redisConnector) Operate(callback func(client interface{}) interface{
 
 func (self *redisConnector) tryConnect() {
 
+	var faildWaitSec = 2
+
 	for {
 		pool, err := pool.NewCustom("tcp", self.Address(), self.PoolConnCount, func(network, addr string) (*redis.Client, error) {
 
@@ -86,8 +88,14 @@ func (self *redisConnector) tryConnect() {
 		})
 
 		if err != nil {
-			log.Errorln("Redis connect failed:", err)
-			time.Sleep(3 * time.Second)
+			log.Errorf("Redis connect failed: %s, wait %d secods retry...", err, faildWaitSec)
+
+			time.Sleep(time.Duration(faildWaitSec) * time.Second)
+
+			if faildWaitSec < 10 {
+				faildWaitSec += 2
+			}
+
 			continue
 		}
 
