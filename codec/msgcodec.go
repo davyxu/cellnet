@@ -50,6 +50,23 @@ func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, e
 	return msg, meta, nil
 }
 
+func DecodeMessageByType(data []byte, msg interface{}) (*cellnet.MessageMeta, error) {
+
+	meta := cellnet.MessageMetaByMsg(msg)
+	// 消息没有注册
+	if meta == nil {
+		return nil, cellnet.NewErrorContext("msg not exists", nil)
+	}
+
+	err := meta.Codec.Decode(data, msg)
+	if err != nil {
+		return meta, err
+	}
+
+	return meta, nil
+
+}
+
 // Codec.Encode内分配的资源，在必要时可以回收，例如内存池对象
 type CodecRecycler interface {
 	Free(data interface{}, ctx cellnet.ContextSet)
