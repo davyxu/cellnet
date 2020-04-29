@@ -100,7 +100,7 @@ func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
 	defer func() {
 
 		if err := recover(); err != nil {
-			log.Errorf("IO panic: %s", err)
+			log.Errorf("IO read panic: %s", err)
 			self.Conn().Close()
 		}
 
@@ -155,10 +155,28 @@ func (self *tcpSession) recvLoop() {
 	self.exitSync.Done()
 }
 
+func (self *tcpSession) protectedSendMessage(ev cellnet.Event) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Errorf("IO send panic: %s %s", err, cellnet.MessageToName(ev.Message()))
+		}
+
+	}()
+
+	self.SendMessage(ev)
+}
+
 // 发送循环
 func (self *tcpSession) sendLoop() {
 
 	var writeList []interface{}
+
+	var capturePanic bool
+
+	if i, ok := self.Peer().(cellnet.PeerCaptureIOPanic); ok {
+		capturePanic = i.CaptureIOPanic()
+	}
 
 	for {
 		writeList = writeList[0:0]
@@ -167,7 +185,11 @@ func (self *tcpSession) sendLoop() {
 		// 遍历要发送的数据
 		for _, msg := range writeList {
 
-			self.SendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
+			if capturePanic {
+				self.protectedSendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
+			} else {
+				self.SendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
+			}
 		}
 
 		if exit {
