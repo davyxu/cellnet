@@ -3,26 +3,25 @@
 package relay
 
 import (
+	"github.com/davyxu/protoplus/proto"
+	"unsafe"
+	"reflect"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/codec/protoplus"
-	"github.com/davyxu/protoplus/proto"
-	"reflect"
-	"unsafe"
 )
 
 var (
 	_ *proto.Buffer
-	_ codec.CodecRecycler
-	_ cellnet.Session
-	_ reflect.Type
 	_ unsafe.Pointer
+	_ cellnet.MessageMeta
+	_ codec.CodecRecycler
+	_ reflect.Kind
 )
 
 type RelayACK struct {
-	Msg        []byte  `text:"-"` // 数据消息转换后传输bytes
-	MsgID      uint32  `text:"-"` // 消息ID
-	Bytes      []byte  `text:"-"` // 数据bytes
+	Msg        []byte  // 数据消息转换后传输bytes
+	MsgID      uint32  // 消息ID
+	Bytes      []byte  // 数据bytes
 	Int64      int64   // 透传int64
 	Int64Slice []int64 // 透传int64切片
 	Str        string
@@ -32,52 +31,64 @@ func (self *RelayACK) String() string { return proto.CompactTextString(self) }
 
 func (self *RelayACK) Size() (ret int) {
 
-	ret += proto.SizeBytes(0, self.Msg)
+	ret += proto.SizeBytes(1, self.Msg)
 
-	ret += proto.SizeUInt32(1, self.MsgID)
+	ret += proto.SizeUInt32(2, self.MsgID)
 
-	ret += proto.SizeBytes(2, self.Bytes)
+	ret += proto.SizeBytes(3, self.Bytes)
 
-	ret += proto.SizeInt64(3, self.Int64)
+	ret += proto.SizeInt64(4, self.Int64)
 
-	ret += proto.SizeInt64Slice(4, self.Int64Slice)
+	ret += proto.SizeInt64Slice(5, self.Int64Slice)
 
-	ret += proto.SizeString(5, self.Str)
+	ret += proto.SizeString(6, self.Str)
 
 	return
 }
 
 func (self *RelayACK) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalBytes(buffer, 0, self.Msg)
+	proto.MarshalBytes(buffer, 1, self.Msg)
 
-	proto.MarshalUInt32(buffer, 1, self.MsgID)
+	proto.MarshalUInt32(buffer, 2, self.MsgID)
 
-	proto.MarshalBytes(buffer, 2, self.Bytes)
+	proto.MarshalBytes(buffer, 3, self.Bytes)
 
-	proto.MarshalInt64(buffer, 3, self.Int64)
+	proto.MarshalInt64(buffer, 4, self.Int64)
 
-	proto.MarshalInt64Slice(buffer, 4, self.Int64Slice)
+	proto.MarshalInt64Slice(buffer, 5, self.Int64Slice)
 
-	proto.MarshalString(buffer, 5, self.Str)
+	proto.MarshalString(buffer, 6, self.Str)
 
 	return nil
 }
 
 func (self *RelayACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
-	case 0:
-		return proto.UnmarshalBytes(buffer, wt, &self.Msg)
 	case 1:
-		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.Msg = v
+		return err
 	case 2:
-		return proto.UnmarshalBytes(buffer, wt, &self.Bytes)
+		v, err := proto.UnmarshalUInt32(buffer, wt)
+		self.MsgID = v
+		return err
 	case 3:
-		return proto.UnmarshalInt64(buffer, wt, &self.Int64)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.Bytes = v
+		return err
 	case 4:
-		return proto.UnmarshalInt64Slice(buffer, wt, &self.Int64Slice)
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.Int64 = v
+		return err
 	case 5:
-		return proto.UnmarshalString(buffer, wt, &self.Str)
+		v, err := proto.UnmarshalInt64Slice(buffer, wt)
+		self.Int64Slice = append(self.Int64Slice, v...)
+		return err
+	case 6:
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Str = v
+		return err
 
 	}
 
@@ -91,4 +102,5 @@ func init() {
 		Type:  reflect.TypeOf((*RelayACK)(nil)).Elem(),
 		ID:    45545,
 	})
+
 }

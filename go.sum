@@ -1,5 +1,8 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davyxu/golexer v0.0.0-20180314091252-f048a86ae200/go.mod h1:K/1PVWqaQEwMs+N+VvaoS66o1BAAwso+jEgXKBIa8QY=
+github.com/davyxu/golexer v0.1.0 h1:PFavbgNV8PUH2HPU1G3o0QMcNJ3I4BkL8esbeenTyMU=
+github.com/davyxu/golexer v0.1.0/go.mod h1:K/1PVWqaQEwMs+N+VvaoS66o1BAAwso+jEgXKBIa8QY=
 github.com/davyxu/goobjfmt v0.1.0 h1:/Kz4X/UL4Jf5xOaQhP5DxzNtcwsfJqsz6ceoePeHBgA=
 github.com/davyxu/goobjfmt v0.1.0/go.mod h1:KKrytCtCXny2sEg3ojQfJ4NThhBP8hKw/qM9vhDwgog=
 github.com/davyxu/protoplus v0.1.0 h1:iKk94nwYZdEK8r1r4GZDkW7JnmLJTPYQSVUvBLBxsb8=

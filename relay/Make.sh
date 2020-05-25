@@ -7,4 +7,4 @@ cd ${CURRDIR}
 go build -v -o=${GOPATH}/bin/protoplus github.com/davyxu/protoplus
 
 
-${GOPATH}/bin/protoplus -go_out=msg_gen.go -package=relay msg.proto
+${GOPATH}/bin/protoplus -go_out=msg_gen.go -package=relay -genreg msg.proto

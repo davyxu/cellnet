@@ -3,6 +3,7 @@ module github.com/davyxu/cellnet
 go 1.13
 
 require (
+	github.com/davyxu/golexer v0.1.0 // indirect
 	github.com/davyxu/goobjfmt v0.1.0
 	github.com/davyxu/protoplus v0.1.0
 	github.com/davyxu/ulog v1.0.0
@@ -13,3 +14,5 @@ require (
 )
 
 replace github.com/davyxu/ulog => ../ulog
+
+replace github.com/davyxu/protoplus => ../protoplus

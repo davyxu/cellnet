@@ -4,19 +4,18 @@ package rpc
 
 import (
 	"github.com/davyxu/protoplus/proto"
+	"unsafe"
+	"reflect"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/codec/protoplus"
-	"reflect"
-	"unsafe"
 )
 
 var (
 	_ *proto.Buffer
-	_ codec.CodecRecycler
-	_ cellnet.Session
-	_ reflect.Type
 	_ unsafe.Pointer
+	_ cellnet.MessageMeta
+	_ codec.CodecRecycler
+	_ reflect.Kind
 )
 
 type RemoteCallREQ struct {
@@ -29,34 +28,40 @@ func (self *RemoteCallREQ) String() string { return proto.CompactTextString(self
 
 func (self *RemoteCallREQ) Size() (ret int) {
 
-	ret += proto.SizeUInt32(0, self.MsgID)
+	ret += proto.SizeUInt32(1, self.MsgID)
 
-	ret += proto.SizeBytes(1, self.Data)
+	ret += proto.SizeBytes(2, self.Data)
 
-	ret += proto.SizeInt64(2, self.CallID)
+	ret += proto.SizeInt64(3, self.CallID)
 
 	return
 }
 
 func (self *RemoteCallREQ) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalUInt32(buffer, 0, self.MsgID)
+	proto.MarshalUInt32(buffer, 1, self.MsgID)
 
-	proto.MarshalBytes(buffer, 1, self.Data)
+	proto.MarshalBytes(buffer, 2, self.Data)
 
-	proto.MarshalInt64(buffer, 2, self.CallID)
+	proto.MarshalInt64(buffer, 3, self.CallID)
 
 	return nil
 }
 
 func (self *RemoteCallREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
-	case 0:
-		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
 	case 1:
-		return proto.UnmarshalBytes(buffer, wt, &self.Data)
+		v, err := proto.UnmarshalUInt32(buffer, wt)
+		self.MsgID = v
+		return err
 	case 2:
-		return proto.UnmarshalInt64(buffer, wt, &self.CallID)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.Data = v
+		return err
+	case 3:
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.CallID = v
+		return err
 
 	}
 
@@ -73,34 +78,40 @@ func (self *RemoteCallACK) String() string { return proto.CompactTextString(self
 
 func (self *RemoteCallACK) Size() (ret int) {
 
-	ret += proto.SizeUInt32(0, self.MsgID)
+	ret += proto.SizeUInt32(1, self.MsgID)
 
-	ret += proto.SizeBytes(1, self.Data)
+	ret += proto.SizeBytes(2, self.Data)
 
-	ret += proto.SizeInt64(2, self.CallID)
+	ret += proto.SizeInt64(3, self.CallID)
 
 	return
 }
 
 func (self *RemoteCallACK) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalUInt32(buffer, 0, self.MsgID)
+	proto.MarshalUInt32(buffer, 1, self.MsgID)
 
-	proto.MarshalBytes(buffer, 1, self.Data)
+	proto.MarshalBytes(buffer, 2, self.Data)
 
-	proto.MarshalInt64(buffer, 2, self.CallID)
+	proto.MarshalInt64(buffer, 3, self.CallID)
 
 	return nil
 }
 
 func (self *RemoteCallACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
-	case 0:
-		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
 	case 1:
-		return proto.UnmarshalBytes(buffer, wt, &self.Data)
+		v, err := proto.UnmarshalUInt32(buffer, wt)
+		self.MsgID = v
+		return err
 	case 2:
-		return proto.UnmarshalInt64(buffer, wt, &self.CallID)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.Data = v
+		return err
+	case 3:
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.CallID = v
+		return err
 
 	}
 
@@ -119,4 +130,5 @@ func init() {
 		Type:  reflect.TypeOf((*RemoteCallACK)(nil)).Elem(),
 		ID:    20476,
 	})
+
 }
