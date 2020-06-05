@@ -133,7 +133,16 @@ func (self *tcpSession) recvLoop() {
 
 		if err != nil {
 			if !util.IsEOFOrNetReadError(err) {
-				log.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
+
+				var ip string
+				if self.conn != nil {
+					addr := self.conn.RemoteAddr()
+					if addr != nil {
+						ip = addr.String()
+					}
+				}
+
+				log.Errorf("session closed, sesid: %d, err: %s ip: %s", self.ID(), err, ip)
 			}
 
 			self.sendQueue.Add(nil)
