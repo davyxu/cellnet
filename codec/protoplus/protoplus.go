@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/protoplus/proto"
+	"github.com/davyxu/protoplus/wire"
 )
 
 type protoplus struct {
@@ -19,13 +20,13 @@ func (self *protoplus) MimeType() string {
 
 func (self *protoplus) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interface{}, err error) {
 
-	return proto.Marshal(msgObj)
+	return proto.Marshal(msgObj.(wire.Struct))
 
 }
 
 func (self *protoplus) Decode(data interface{}, msgObj interface{}) error {
 
-	return proto.Unmarshal(data.([]byte), msgObj)
+	return proto.Unmarshal(data.([]byte), msgObj.(wire.Struct))
 }
 
 func init() {

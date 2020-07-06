@@ -4,6 +4,7 @@ package rpc
 
 import (
 	"github.com/davyxu/protoplus/proto"
+	"github.com/davyxu/protoplus/wire"
 	"unsafe"
 	"reflect"
 	"github.com/davyxu/cellnet"
@@ -11,7 +12,8 @@ import (
 )
 
 var (
-	_ *proto.Buffer
+	_ *wire.Buffer
+	_ = proto.Marshal
 	_ unsafe.Pointer
 	_ cellnet.MessageMeta
 	_ codec.CodecRecycler
@@ -28,44 +30,44 @@ func (self *RemoteCallREQ) String() string { return proto.CompactTextString(self
 
 func (self *RemoteCallREQ) Size() (ret int) {
 
-	ret += proto.SizeUInt32(1, self.MsgID)
+	ret += wire.SizeUInt32(1, self.MsgID)
 
-	ret += proto.SizeBytes(2, self.Data)
+	ret += wire.SizeBytes(2, self.Data)
 
-	ret += proto.SizeInt64(3, self.CallID)
+	ret += wire.SizeInt64(3, self.CallID)
 
 	return
 }
 
-func (self *RemoteCallREQ) Marshal(buffer *proto.Buffer) error {
+func (self *RemoteCallREQ) Marshal(buffer *wire.Buffer) error {
 
-	proto.MarshalUInt32(buffer, 1, self.MsgID)
+	wire.MarshalUInt32(buffer, 1, self.MsgID)
 
-	proto.MarshalBytes(buffer, 2, self.Data)
+	wire.MarshalBytes(buffer, 2, self.Data)
 
-	proto.MarshalInt64(buffer, 3, self.CallID)
+	wire.MarshalInt64(buffer, 3, self.CallID)
 
 	return nil
 }
 
-func (self *RemoteCallREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *RemoteCallREQ) Unmarshal(buffer *wire.Buffer, fieldIndex uint64, wt wire.WireType) error {
 	switch fieldIndex {
 	case 1:
-		v, err := proto.UnmarshalUInt32(buffer, wt)
+		v, err := wire.UnmarshalUInt32(buffer, wt)
 		self.MsgID = v
 		return err
 	case 2:
-		v, err := proto.UnmarshalBytes(buffer, wt)
+		v, err := wire.UnmarshalBytes(buffer, wt)
 		self.Data = v
 		return err
 	case 3:
-		v, err := proto.UnmarshalInt64(buffer, wt)
+		v, err := wire.UnmarshalInt64(buffer, wt)
 		self.CallID = v
 		return err
 
 	}
 
-	return proto.ErrUnknownField
+	return wire.ErrUnknownField
 }
 
 type RemoteCallACK struct {
@@ -78,44 +80,44 @@ func (self *RemoteCallACK) String() string { return proto.CompactTextString(self
 
 func (self *RemoteCallACK) Size() (ret int) {
 
-	ret += proto.SizeUInt32(1, self.MsgID)
+	ret += wire.SizeUInt32(1, self.MsgID)
 
-	ret += proto.SizeBytes(2, self.Data)
+	ret += wire.SizeBytes(2, self.Data)
 
-	ret += proto.SizeInt64(3, self.CallID)
+	ret += wire.SizeInt64(3, self.CallID)
 
 	return
 }
 
-func (self *RemoteCallACK) Marshal(buffer *proto.Buffer) error {
+func (self *RemoteCallACK) Marshal(buffer *wire.Buffer) error {
 
-	proto.MarshalUInt32(buffer, 1, self.MsgID)
+	wire.MarshalUInt32(buffer, 1, self.MsgID)
 
-	proto.MarshalBytes(buffer, 2, self.Data)
+	wire.MarshalBytes(buffer, 2, self.Data)
 
-	proto.MarshalInt64(buffer, 3, self.CallID)
+	wire.MarshalInt64(buffer, 3, self.CallID)
 
 	return nil
 }
 
-func (self *RemoteCallACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *RemoteCallACK) Unmarshal(buffer *wire.Buffer, fieldIndex uint64, wt wire.WireType) error {
 	switch fieldIndex {
 	case 1:
-		v, err := proto.UnmarshalUInt32(buffer, wt)
+		v, err := wire.UnmarshalUInt32(buffer, wt)
 		self.MsgID = v
 		return err
 	case 2:
-		v, err := proto.UnmarshalBytes(buffer, wt)
+		v, err := wire.UnmarshalBytes(buffer, wt)
 		self.Data = v
 		return err
 	case 3:
-		v, err := proto.UnmarshalInt64(buffer, wt)
+		v, err := wire.UnmarshalInt64(buffer, wt)
 		self.CallID = v
 		return err
 
 	}
 
-	return proto.ErrUnknownField
+	return wire.ErrUnknownField
 }
 
 func init() {
@@ -124,11 +126,13 @@ func init() {
 		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*RemoteCallREQ)(nil)).Elem(),
 		ID:    58645,
+		New:   func() interface{} { return &RemoteCallREQ{} },
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*RemoteCallACK)(nil)).Elem(),
 		ID:    20476,
+		New:   func() interface{} { return &RemoteCallACK{} },
 	})
 
 }
