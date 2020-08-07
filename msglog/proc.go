@@ -10,9 +10,13 @@ type PacketMessagePeeker interface {
 	Message() interface{}
 }
 
+var (
+	EnableMsgLog = true
+)
+
 func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
-	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+	if EnableMsgLog {
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
@@ -35,7 +39,7 @@ func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
 func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
-	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+	if EnableMsgLog {
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
@@ -55,4 +59,23 @@ func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
 	}
 
+}
+
+type Hooker struct {
+}
+
+// 来自后台服务器的消息
+func (Hooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+
+	WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
+
+	return inputEvent
+}
+
+// 发送给后台服务器
+func (Hooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+
+	WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
+
+	return inputEvent
 }

@@ -19,7 +19,7 @@ type MessageMeta struct {
 	ctxList      []*context
 
 	name     string
-	fullName string
+	fullName string // 包+.+消息名
 }
 
 type context struct {
@@ -27,6 +27,7 @@ type context struct {
 	data interface{}
 }
 
+// 注意, 这里的包名, 取的是文件夹名, 而不是代码中的声明名, 尽量让两者统一
 func (self *MessageMeta) init() {
 	self.name = self.Type.Name()
 	self.fullName = path.Base(self.Type.PkgPath()) + "." + self.Type.Name()
