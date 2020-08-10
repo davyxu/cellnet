@@ -47,4 +47,7 @@ type TCPConnector interface {
 
 	// 查看当前连接使用的端口
 	Port() int
+
+	// 设置重连汇报错误日志次数, 超过设定次数时, 将不再汇报. 0表示连接不上也不汇报
+	SetReconnectReportLimitTimes(v int)
 }

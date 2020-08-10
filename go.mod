@@ -14,3 +14,5 @@ require (
 replace github.com/davyxu/ulog => ../ulog
 
 replace github.com/davyxu/protoplus => ../protoplus
+
+replace github.com/davyxu/ulexer => ../ulexer

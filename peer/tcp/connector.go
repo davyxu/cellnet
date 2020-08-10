@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"context"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
@@ -25,27 +26,26 @@ type tcpConnector struct {
 	sesEndSignal sync.WaitGroup
 
 	reconDur time.Duration
+
+	reconReportLimitTimes int
+
+	cancelFunc context.CancelFunc
 }
 
 func (self *tcpConnector) Start() cellnet.Peer {
-
-	self.WaitStopFinished()
 
 	if self.IsRunning() {
 		return self
 	}
 
-	go self.connect(self.Address())
+	ulog.Debugf("start %s %d %p", self.Name(), self.tryConnTimes, self)
+
+	var ctx context.Context
+	ctx, self.cancelFunc = context.WithCancel(context.Background())
+
+	go self.connect(self.Address(), ctx)
 
 	return self
-}
-
-func (self *tcpConnector) Session() cellnet.Session {
-	return self.defaultSes
-}
-
-func (self *tcpConnector) SetSessionManager(raw interface{}) {
-	self.SessionManager = raw.(peer.SessionManager)
 }
 
 func (self *tcpConnector) Stop() {
@@ -53,17 +53,24 @@ func (self *tcpConnector) Stop() {
 		return
 	}
 
-	if self.IsStopping() {
-		return
+	ulog.Debugf("stop %s %d %p", self.Name(), self.tryConnTimes, self)
+
+	// 通知发送关闭, session设置Manual close
+	self.defaultSes.Close()
+
+	if self.cancelFunc != nil {
+		self.cancelFunc()
 	}
 
-	self.StartStopping()
+	ulog.Debugf("cancel done %s %d", self.Name(), self.tryConnTimes)
 
-	// 通知发送关闭
-	self.defaultSes.Close()
+	self.SetRunning(false)
+	self.tryConnTimes = 0
 
 	// 等待线程结束
 	self.WaitStopFinished()
+
+	ulog.Debugf("stop done %s %d", self.Name(), self.tryConnTimes)
 
 }
 
@@ -74,6 +81,18 @@ func (self *tcpConnector) ReconnectDuration() time.Duration {
 
 func (self *tcpConnector) SetReconnectDuration(v time.Duration) {
 	self.reconDur = v
+}
+
+func (self *tcpConnector) SetReconnectReportLimitTimes(v int) {
+	self.reconReportLimitTimes = v
+}
+
+func (self *tcpConnector) Session() cellnet.Session {
+	return self.defaultSes
+}
+
+func (self *tcpConnector) SetSessionManager(raw interface{}) {
+	self.SessionManager = raw.(peer.SessionManager)
 }
 
 func (self *tcpConnector) Port() int {
@@ -87,34 +106,34 @@ func (self *tcpConnector) Port() int {
 	return conn.LocalAddr().(*net.TCPAddr).Port
 }
 
-const reportConnectFailedLimitTimes = 3
-
 // 连接器，传入连接地址和发送封包次数
-func (self *tcpConnector) connect(address string) {
+func (self *tcpConnector) connect(address string, ctx context.Context) {
 
 	self.SetRunning(true)
 
 	for {
 		self.tryConnTimes++
 
+		d := net.Dialer{Timeout: time.Second * 3}
 		// 尝试用Socket连接地址
-		conn, err := net.Dial("tcp", address)
+		conn, err := d.DialContext(ctx, "tcp", address)
 
 		self.defaultSes.setConn(conn)
 
 		// 发生错误时退出
 		if err != nil {
 
-			if self.tryConnTimes <= reportConnectFailedLimitTimes {
-				ulog.Errorf("#tcp.connect failed(%s) %v", self.Name(), err.Error())
+			ulog.Debugf("manual closed: %v", self.defaultSes.IsManualClosed())
+			if self.defaultSes.IsManualClosed() {
+				break
+			}
 
-				if self.tryConnTimes == reportConnectFailedLimitTimes {
-					ulog.Errorf("(%s) continue reconnecting, but mute log", self.Name())
-				}
+			if self.tryConnTimes <= self.reconReportLimitTimes {
+				ulog.Errorf("#tcp.connect failed(%s), times: %d %v %p", self.Name(), self.tryConnTimes, err.Error(), self)
 			}
 
 			// 没重连就退出
-			if self.ReconnectDuration() == 0 || self.IsStopping() {
+			if self.ReconnectDuration() == 0 {
 
 				self.ProcEvent(&cellnet.RecvMsgEvent{
 					Ses: self.defaultSes,
@@ -145,7 +164,7 @@ func (self *tcpConnector) connect(address string) {
 		self.defaultSes.setConn(nil)
 
 		// 没重连就退出/主动退出
-		if self.IsStopping() || self.ReconnectDuration() == 0 {
+		if self.ReconnectDuration() == 0 {
 			break
 		}
 
@@ -157,9 +176,8 @@ func (self *tcpConnector) connect(address string) {
 
 	}
 
-	self.SetRunning(false)
-
 	self.EndStopping()
+	self.SetRunning(false)
 }
 
 func (self *tcpConnector) IsReady() bool {
@@ -171,11 +189,14 @@ func (self *tcpConnector) TypeName() string {
 	return "tcp.Connector"
 }
 
+const reportConnectFailedLimitTimes = 3
+
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		self := &tcpConnector{
-			SessionManager: new(peer.CoreSessionManager),
+			SessionManager:        new(peer.CoreSessionManager),
+			reconReportLimitTimes: reportConnectFailedLimitTimes,
 		}
 
 		self.defaultSes = newSession(nil, self, func() {

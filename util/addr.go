@@ -40,12 +40,12 @@ type RemoteAddr interface {
 }
 
 // 获取session远程的地址
-func GetRemoteAddrss(ses cellnet.Session) (string, bool) {
+func GetRemoteAddrss(ses cellnet.Session) string {
 	if c, ok := ses.Raw().(RemoteAddr); ok {
-		return c.RemoteAddr().String(), true
+		return c.RemoteAddr().String()
 	}
 
-	return "", false
+	return ""
 }
 
 var (
