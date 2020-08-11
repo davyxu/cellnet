@@ -38,8 +38,6 @@ func (self *tcpConnector) Start() cellnet.Peer {
 		return self
 	}
 
-	ulog.Debugf("start %s %d %p", self.Name(), self.tryConnTimes, self)
-
 	var ctx context.Context
 	ctx, self.cancelFunc = context.WithCancel(context.Background())
 
@@ -53,7 +51,7 @@ func (self *tcpConnector) Stop() {
 		return
 	}
 
-	ulog.Debugf("stop %s %d %p", self.Name(), self.tryConnTimes, self)
+	self.StartStopping()
 
 	// 通知发送关闭, session设置Manual close
 	self.defaultSes.Close()
@@ -62,16 +60,10 @@ func (self *tcpConnector) Stop() {
 		self.cancelFunc()
 	}
 
-	ulog.Debugf("cancel done %s %d", self.Name(), self.tryConnTimes)
-
-	self.SetRunning(false)
 	self.tryConnTimes = 0
 
 	// 等待线程结束
 	self.WaitStopFinished()
-
-	ulog.Debugf("stop done %s %d", self.Name(), self.tryConnTimes)
-
 }
 
 func (self *tcpConnector) ReconnectDuration() time.Duration {
@@ -123,7 +115,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 		// 发生错误时退出
 		if err != nil {
 
-			ulog.Debugf("manual closed: %v", self.defaultSes.IsManualClosed())
+			// 直接关闭时，退出连接循环
 			if self.defaultSes.IsManualClosed() {
 				break
 			}

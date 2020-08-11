@@ -12,11 +12,18 @@ type PacketMessagePeeker interface {
 
 var (
 	EnableMsgLog = true
+	SystemMsgVisible = true
 )
 
 func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
 	if EnableMsgLog {
+
+		if !SystemMsgVisible {
+			if _, ok := msg.(cellnet.SystemMessageIdentifier); ok {
+				return
+			}
+		}
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
@@ -40,6 +47,12 @@ func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
 
 	if EnableMsgLog {
+
+		if !SystemMsgVisible {
+			if _, ok := msg.(cellnet.SystemMessageIdentifier); ok {
+				return
+			}
+		}
 
 		if peeker, ok := msg.(PacketMessagePeeker); ok {
 			msg = peeker.Message()
