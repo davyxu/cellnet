@@ -25,7 +25,9 @@ type tcpConnector struct {
 
 	sesEndSignal sync.WaitGroup
 
-	reconDur time.Duration
+	reconInterval time.Duration
+
+	conTimeout time.Duration
 
 	reconReportLimitTimes int
 
@@ -66,13 +68,18 @@ func (self *tcpConnector) Stop() {
 	self.WaitStopFinished()
 }
 
-func (self *tcpConnector) ReconnectDuration() time.Duration {
+func (self *tcpConnector) ReconnectInterval() time.Duration {
 
-	return self.reconDur
+	return self.reconInterval
 }
 
-func (self *tcpConnector) SetReconnectDuration(v time.Duration) {
-	self.reconDur = v
+func (self *tcpConnector) SetReconnectInterval(v time.Duration) {
+	self.reconInterval = v
+}
+
+
+func (self *tcpConnector) SetConnectTimeout(v time.Duration) {
+	self.conTimeout = v
 }
 
 func (self *tcpConnector) SetReconnectReportLimitTimes(v int) {
@@ -106,7 +113,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 	for {
 		self.tryConnTimes++
 
-		d := net.Dialer{Timeout: time.Second * 3}
+		d := net.Dialer{Timeout: self.conTimeout}
 		// 尝试用Socket连接地址
 		conn, err := d.DialContext(ctx, "tcp", address)
 
@@ -125,7 +132,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 			}
 
 			// 没重连就退出
-			if self.ReconnectDuration() == 0 {
+			if self.reconInterval== 0 {
 
 				self.ProcEvent(&cellnet.RecvMsgEvent{
 					Ses: self.defaultSes,
@@ -135,7 +142,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 			}
 
 			// 有重连就等待
-			time.Sleep(self.ReconnectDuration())
+			time.Sleep(self.reconInterval)
 
 			// 继续连接
 			continue
@@ -156,12 +163,12 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 		self.defaultSes.setConn(nil)
 
 		// 没重连就退出/主动退出
-		if self.ReconnectDuration() == 0 {
+		if self.reconInterval == 0 {
 			break
 		}
 
 		// 有重连就等待
-		time.Sleep(self.ReconnectDuration())
+		time.Sleep(self.reconInterval)
 
 		// 继续连接
 		continue
@@ -181,14 +188,14 @@ func (self *tcpConnector) TypeName() string {
 	return "tcp.Connector"
 }
 
-const reportConnectFailedLimitTimes = 3
 
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		self := &tcpConnector{
 			SessionManager:        new(peer.CoreSessionManager),
-			reconReportLimitTimes: reportConnectFailedLimitTimes,
+			reconReportLimitTimes: 3,
+			conTimeout:            time.Second* 3,
 		}
 
 		self.defaultSes = newSession(nil, self, func() {

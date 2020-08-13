@@ -62,11 +62,11 @@ func (self *tcpSyncConnector) SetSessionManager(raw interface{}) {
 	self.SessionManager = raw.(peer.SessionManager)
 }
 
-func (self *tcpSyncConnector) ReconnectDuration() time.Duration {
+func (self *tcpSyncConnector) ReconnectInterval() time.Duration {
 	return 0
 }
 
-func (self *tcpSyncConnector) SetReconnectDuration(v time.Duration) {
+func (self *tcpSyncConnector) SetReconnectInterval(v time.Duration) {
 
 }
 

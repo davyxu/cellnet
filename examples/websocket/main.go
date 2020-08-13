@@ -47,7 +47,7 @@ func client() {
 	queue := cellnet.NewEventQueue()
 
 	p := peer.NewGenericPeer("gorillaws.Connector", "client", TestAddress, queue)
-	p.(cellnet.WSConnector).SetReconnectDuration(time.Second)
+	p.(cellnet.WSConnector).SetReconnectInterval(time.Second)
 
 	proc.BindProcessorHandler(p, "gorillaws.ltv", func(ev cellnet.Event) {
 

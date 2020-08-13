@@ -23,10 +23,10 @@ type WSConnector interface {
 	GenericPeer
 
 	// 设置重连时间
-	SetReconnectDuration(time.Duration)
+	SetReconnectInterval(time.Duration)
 
 	// 获取重连时间
-	ReconnectDuration() time.Duration
+	ReconnectInterval() time.Duration
 
 	// 默认会话
 	Session() Session

@@ -69,11 +69,11 @@ func (self *wsSyncConnector) SetSessionManager(raw interface{}) {
 	self.SessionManager = raw.(peer.SessionManager)
 }
 
-func (self *wsSyncConnector) ReconnectDuration() time.Duration {
+func (self *wsSyncConnector) ReconnectInterval() time.Duration {
 	return 0
 }
 
-func (self *wsSyncConnector) SetReconnectDuration(v time.Duration) {
+func (self *wsSyncConnector) SetReconnectInterval(v time.Duration) {
 
 }
 

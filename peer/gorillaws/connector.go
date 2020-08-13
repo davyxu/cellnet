@@ -78,12 +78,12 @@ func (self *wsConnector) Stop() {
 	self.WaitStopFinished()
 }
 
-func (self *wsConnector) ReconnectDuration() time.Duration {
+func (self *wsConnector) ReconnectInterval() time.Duration {
 
 	return self.reconDur
 }
 
-func (self *wsConnector) SetReconnectDuration(v time.Duration) {
+func (self *wsConnector) SetReconnectInterval(v time.Duration) {
 	self.reconDur = v
 }
 
@@ -128,7 +128,7 @@ func (self *wsConnector) connect(address string) {
 			}
 
 			// 没重连就退出
-			if self.ReconnectDuration() == 0 || self.IsStopping() {
+			if self.ReconnectInterval() == 0 || self.IsStopping() {
 
 				self.ProcEvent(&cellnet.RecvMsgEvent{
 					Ses: self.defaultSes,
@@ -138,7 +138,7 @@ func (self *wsConnector) connect(address string) {
 			}
 
 			// 有重连就等待
-			time.Sleep(self.ReconnectDuration())
+			time.Sleep(self.ReconnectInterval())
 
 			// 继续连接
 			continue
@@ -158,12 +158,12 @@ func (self *wsConnector) connect(address string) {
 		self.defaultSes.conn = nil
 
 		// 没重连就退出/主动退出
-		if self.IsStopping() || self.ReconnectDuration() == 0 {
+		if self.IsStopping() || self.ReconnectInterval() == 0 {
 			break
 		}
 
 		// 有重连就等待
-		time.Sleep(self.ReconnectDuration())
+		time.Sleep(self.ReconnectInterval())
 	}
 
 	self.SetRunning(false)

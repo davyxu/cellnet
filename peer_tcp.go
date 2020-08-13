@@ -33,11 +33,11 @@ type TCPConnector interface {
 
 	TCPSocketOption
 
-	// 设置重连时间
-	SetReconnectDuration(time.Duration)
+	// 设置重连间隔
+	SetReconnectInterval(time.Duration)
 
-	// 获取重连时间
-	ReconnectDuration() time.Duration
+	// 获取重连间隔
+	ReconnectInterval() time.Duration
 
 	// 默认会话
 	Session() Session
@@ -47,6 +47,9 @@ type TCPConnector interface {
 
 	// 查看当前连接使用的端口
 	Port() int
+
+	// 设置连接超时
+	SetConnectTimeout( duration time.Duration)
 
 	// 设置重连汇报错误日志次数, 超过设定次数时, 将不再汇报. 0表示连接不上也不汇报
 	SetReconnectReportLimitTimes(v int)
