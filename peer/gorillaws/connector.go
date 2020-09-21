@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	xnet "github.com/davyxu/x/net"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
@@ -100,7 +100,7 @@ func (self *wsConnector) connect(address string) {
 		dialer.Proxy = http.ProxyFromEnvironment
 		dialer.HandshakeTimeout = 45 * time.Second
 
-		addrObj, err := util.ParseAddress(address)
+		addrObj, err := xnet.NewAddress(address)
 		if err != nil {
 			ulog.Errorf("invalid address: %s", address)
 			break

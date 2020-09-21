@@ -3,8 +3,8 @@ package gorillaws
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	xnet "github.com/davyxu/x/net"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
@@ -51,12 +51,12 @@ func (self *wsAcceptor) SetHttps(certfile, keyfile string) {
 func (self *wsAcceptor) Start() cellnet.Peer {
 
 	var (
-		addrObj *util.Address
+		addrObj *xnet.Address
 		err     error
 		raw     interface{}
 	)
 
-	raw, err = util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+	raw, err = xnet.DetectPort(self.Address(), func(a *xnet.Address, port int) (interface{}, error) {
 		addrObj = a
 		return net.Listen("tcp", a.HostPortString(port))
 	})

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/x/bytes"
 	"reflect"
 )
 
@@ -20,6 +20,6 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    int(util.StringHash("main.TestEchoACK")),
+		ID:    int(bytes.StringHash("main.TestEchoACK")),
 	})
 }

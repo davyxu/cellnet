@@ -3,8 +3,8 @@ package udp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	xnet "github.com/davyxu/x/net"
 	"net"
 	"time"
 )
@@ -43,8 +43,8 @@ func (self *udpAcceptor) Port() int {
 
 func (self *udpAcceptor) Start() cellnet.Peer {
 
-	var finalAddr *util.Address
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+	var finalAddr *xnet.Address
+	ln, err := xnet.DetectPort(self.Address(), func(a *xnet.Address, port int) (interface{}, error) {
 
 		addr, err := net.ResolveUDPAddr("udp", a.HostPortString(port))
 		if err != nil {

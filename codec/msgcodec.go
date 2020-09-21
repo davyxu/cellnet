@@ -27,6 +27,30 @@ func EncodeMessage(msg interface{}, ctx cellnet.ContextSet) (data []byte, meta *
 }
 
 // 解码消息
+func DecodeMessageByName(msgName string, data []byte) (interface{}, *cellnet.MessageMeta, error) {
+
+	// 获取消息元信息
+	meta := cellnet.MessageMetaByFullName(msgName)
+
+	// 消息没有注册
+	if meta == nil {
+		return nil, nil, cellnet.NewErrorContext("msg not exists", msgName)
+	}
+
+	// 创建消息
+	msg := meta.NewType()
+
+	// 从字节数组转换为消息
+	err := meta.Codec.Decode(data, msg)
+
+	if err != nil {
+		return nil, meta, err
+	}
+
+	return msg, meta, nil
+}
+
+// 解码消息
 func DecodeMessage(msgid int, data []byte) (interface{}, *cellnet.MessageMeta, error) {
 
 	// 获取消息元信息

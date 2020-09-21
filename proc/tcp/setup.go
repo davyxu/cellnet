@@ -9,7 +9,7 @@ func init() {
 
 	proc.RegisterProcessor("tcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
-		bundle.SetTransmitter(new(TCPMessageTransmitter))
+		bundle.SetTransmitter(new(TCPLIDVTransmitter))
 		bundle.SetHooker(new(MsgHooker))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 

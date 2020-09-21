@@ -4,7 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/binary"
-	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/x/bytes"
 	"reflect"
 )
 
@@ -12,31 +12,31 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionAccepted)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionAccepted")),
+		ID:    int(bytes.StringHash("cellnet.SessionAccepted")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionConnected)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionConnected")),
+		ID:    int(bytes.StringHash("cellnet.SessionConnected")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionConnectError)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionConnectError")),
+		ID:    int(bytes.StringHash("cellnet.SessionConnectError")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionClosed)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionClosed")),
+		ID:    int(bytes.StringHash("cellnet.SessionClosed")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionCloseNotify)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionCloseNotify")),
+		ID:    int(bytes.StringHash("cellnet.SessionCloseNotify")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionInit)(nil)).Elem(),
-		ID:    int(util.StringHash("cellnet.SessionInit")),
+		ID:    int(bytes.StringHash("cellnet.SessionInit")),
 	})
 }

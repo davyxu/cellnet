@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/x/bytes"
 
 	// 使用binary协议，因此匿名引用这个包，底层会自动注册
 	_ "github.com/davyxu/cellnet/codec/binary"
-	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -30,12 +30,12 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
-		ID:    int(util.StringHash("proto.ChatREQ")),
+		ID:    int(bytes.StringHash("proto.ChatREQ")),
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
-		ID:    int(util.StringHash("proto.ChatACK")),
+		ID:    int(bytes.StringHash("proto.ChatACK")),
 	})
 }

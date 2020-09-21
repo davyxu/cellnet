@@ -2,21 +2,15 @@ package tcp
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/cellnet/packet"
 	"io"
 	"net"
 )
 
-type TCPMessageTransmitter struct {
+type TCPLNVTransmitter struct {
 }
 
-type socketOpt interface {
-	MaxPacketSize() int
-	ApplySocketReadTimeout(conn net.Conn, callback func())
-	ApplySocketWriteTimeout(conn net.Conn, callback func())
-}
-
-func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (TCPLNVTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	reader, ok := ses.Raw().(io.Reader)
 
@@ -32,7 +26,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		// 有读超时时，设置超时
 		opt.ApplySocketReadTimeout(conn, func() {
 
-			msg, err = util.RecvLTVPacket(reader, opt.MaxPacketSize())
+			msg, err = packet.RecvLenNameValue(reader, opt.MaxPacketSize())
 
 		})
 	}
@@ -40,7 +34,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 	return
 }
 
-func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) (err error) {
+func (TCPLNVTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) (err error) {
 
 	writer, ok := ses.Raw().(io.Writer)
 
@@ -54,7 +48,7 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 	// 有写超时时，设置超时
 	opt.ApplySocketWriteTimeout(writer.(net.Conn), func() {
 
-		err = util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
+		err = packet.SendLenNameValue(writer, ses.(cellnet.ContextSet), msg)
 
 	})
 

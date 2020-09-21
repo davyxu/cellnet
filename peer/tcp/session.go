@@ -3,8 +3,9 @@ package tcp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	"github.com/davyxu/x/frame"
+	"github.com/davyxu/x/io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -27,7 +28,7 @@ type tcpSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *cellnet.Pipe
+	sendQueue *frame.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -133,7 +134,7 @@ func (self *tcpSession) recvLoop() {
 		}
 
 		if err != nil {
-			if !util.IsEOFOrNetReadError(err) {
+			if !io.IsEOFOrNetReadError(err) {
 				ulog.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
 			}
 
@@ -225,7 +226,7 @@ func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	self := &tcpSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  cellnet.NewPipe(),
+		sendQueue:  frame.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle

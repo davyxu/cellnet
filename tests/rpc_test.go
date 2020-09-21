@@ -183,7 +183,7 @@ func init() {
 	// 对TypeRPC增强
 	proc.RegisterProcessor("tcp.ltv.type", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
-		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetTransmitter(new(tcp.TCPLIDVTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(rpc.TypeRPCHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})

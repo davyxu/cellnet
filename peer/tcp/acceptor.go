@@ -3,8 +3,8 @@ package tcp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	xnet "github.com/davyxu/x/net"
 	"net"
 	"strings"
 	"time"
@@ -46,7 +46,7 @@ func (self *tcpAcceptor) Start() cellnet.Peer {
 		return self
 	}
 
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+	ln, err := xnet.DetectPort(self.Address(), func(a *xnet.Address, port int) (interface{}, error) {
 		return net.Listen("tcp", a.HostPortString(port))
 	})
 
@@ -77,7 +77,7 @@ func (self *tcpAcceptor) ListenAddress() string {
 
 	host := self.Address()[:pos]
 
-	return util.JoinAddress(host, self.Port())
+	return xnet.JoinAddress(host, self.Port())
 }
 
 func (self *tcpAcceptor) accept() {

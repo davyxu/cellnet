@@ -1,11 +1,12 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	xnet "github.com/davyxu/x/net"
 	"html/template"
 	"net"
 	"net/http"
@@ -72,17 +73,17 @@ func (self *httpAcceptor) WANAddress() string {
 	host := self.Address()[:pos]
 
 	if host == "" {
-		host = util.GetLocalIP()
+		host = xnet.GetLocalIP()
 	}
 
-	return util.JoinAddress(host, self.Port())
+	return xnet.JoinAddress(host, self.Port())
 }
 
 func (self *httpAcceptor) Start() cellnet.Peer {
 
 	self.sv = &http.Server{Addr: self.Address(), Handler: self}
 
-	ln, err := util.DetectPort(self.Address(), func(a *util.Address, port int) (interface{}, error) {
+	ln, err := xnet.DetectPort(self.Address(), func(a *xnet.Address, port int) (interface{}, error) {
 		return net.Listen("tcp", a.HostPortString(port))
 	})
 
@@ -176,7 +177,8 @@ OnError:
 // 停止侦听器
 func (self *httpAcceptor) Stop() {
 
-	if err := self.sv.Shutdown(nil); err != nil {
+	ctx := context.Background()
+	if err := self.sv.Shutdown(ctx); err != nil {
 		ulog.Errorf("#http.stop failed(%s) %v", self.Name(), err.Error())
 	}
 }

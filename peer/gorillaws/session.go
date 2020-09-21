@@ -3,8 +3,9 @@ package gorillaws
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
+	"github.com/davyxu/x/frame"
+	"github.com/davyxu/x/io"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -23,7 +24,7 @@ type wsSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *cellnet.Pipe
+	sendQueue *frame.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -63,7 +64,7 @@ func (self *wsSession) recvLoop() {
 
 			ulog.Debugln(err)
 
-			if !util.IsEOFOrNetReadError(err) {
+			if !io.IsEOFOrNetReadError(err) {
 				ulog.Errorln("session closed:", err)
 			}
 
@@ -144,7 +145,7 @@ func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) *wsSessi
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  cellnet.NewPipe(),
+		sendQueue:  frame.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle

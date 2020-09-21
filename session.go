@@ -1,5 +1,7 @@
 package cellnet
 
+import "net"
+
 // 长连接
 type Session interface {
 
@@ -23,6 +25,7 @@ type Session interface {
 type RawPacket struct {
 	MsgData []byte
 	MsgID   int
+	MsgName string
 }
 
 func (self *RawPacket) Message() interface{} {
@@ -45,4 +48,19 @@ func (self *RawPacket) Message() interface{} {
 	}
 
 	return msg
+}
+
+
+// 修复ws没有实现所有net.conn方法，导致无法获取客服端地址问题.
+type RemoteAddr interface {
+	RemoteAddr() net.Addr
+}
+
+// 获取session远程的地址
+func GetRemoteAddrss(ses Session) string {
+	if c, ok := ses.Raw().(RemoteAddr); ok {
+		return c.RemoteAddr().String()
+	}
+
+	return ""
 }

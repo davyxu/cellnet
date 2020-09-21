@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/cellnet/packet"
 	"github.com/gorilla/websocket"
 )
 
@@ -33,7 +33,7 @@ func (WSMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{},
 	}
 
 	if len(raw) < MsgIDSize {
-		return nil, util.ErrMinPacket
+		return nil, packet.ErrMinPacket
 	}
 
 	switch messageType {

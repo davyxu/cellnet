@@ -3,6 +3,7 @@ package cellnet
 import (
 	"fmt"
 	"github.com/davyxu/ulog"
+	"github.com/davyxu/x/frame"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -29,7 +30,7 @@ type EventQueue interface {
 type CapturePanicNotifyFunc func(interface{}, EventQueue)
 
 type eventQueue struct {
-	*Pipe
+	*frame.Pipe
 
 	endSignal sync.WaitGroup
 
@@ -125,7 +126,7 @@ func (self *eventQueue) Wait() {
 func NewEventQueue() EventQueue {
 
 	return &eventQueue{
-		Pipe: NewPipe(),
+		Pipe: frame.NewPipe(),
 
 		// 默认的崩溃捕获打印
 		onPanic: func(raw interface{}, queue EventQueue) {
