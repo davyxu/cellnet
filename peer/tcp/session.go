@@ -28,7 +28,7 @@ type tcpSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *frame.Pipe
+	sendQueue *xframe.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -134,7 +134,7 @@ func (self *tcpSession) recvLoop() {
 		}
 
 		if err != nil {
-			if !io.IsEOFOrNetReadError(err) {
+			if !xio.IsEOFOrNetReadError(err) {
 				ulog.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
 			}
 
@@ -226,7 +226,7 @@ func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	self := &tcpSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  frame.NewPipe(),
+		sendQueue:  xframe.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle

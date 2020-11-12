@@ -20,6 +20,6 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    int(bytes.StringHash("main.TestEchoACK")),
+		ID:    int(xbytes.StringHash("main.TestEchoACK")),
 	})
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/binary"
-	xbytes "github.com/davyxu/x/bytes"
+	"github.com/davyxu/x/bytes"
 	"reflect"
 	"testing"
 )

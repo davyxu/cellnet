@@ -24,7 +24,7 @@ type wsSession struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *frame.Pipe
+	sendQueue *xframe.Pipe
 
 	cleanupGuard sync.Mutex
 
@@ -64,7 +64,7 @@ func (self *wsSession) recvLoop() {
 
 			ulog.Debugln(err)
 
-			if !io.IsEOFOrNetReadError(err) {
+			if !xio.IsEOFOrNetReadError(err) {
 				ulog.Errorln("session closed:", err)
 			}
 
@@ -145,7 +145,7 @@ func newSession(conn *websocket.Conn, p cellnet.Peer, endNotify func()) *wsSessi
 	self := &wsSession{
 		conn:       conn,
 		endNotify:  endNotify,
-		sendQueue:  frame.NewPipe(),
+		sendQueue:  xframe.NewPipe(),
 		pInterface: p,
 		CoreProcBundle: p.(interface {
 			GetBundle() *peer.CoreProcBundle

@@ -12,31 +12,31 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionAccepted)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionAccepted")),
+		ID:    int(xbytes.StringHash("cellnet.SessionAccepted")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionConnected)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionConnected")),
+		ID:    int(xbytes.StringHash("cellnet.SessionConnected")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionConnectError)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionConnectError")),
+		ID:    int(xbytes.StringHash("cellnet.SessionConnectError")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionClosed)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionClosed")),
+		ID:    int(xbytes.StringHash("cellnet.SessionClosed")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionCloseNotify)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionCloseNotify")),
+		ID:    int(xbytes.StringHash("cellnet.SessionCloseNotify")),
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*cellnet.SessionInit)(nil)).Elem(),
-		ID:    int(bytes.StringHash("cellnet.SessionInit")),
+		ID:    int(xbytes.StringHash("cellnet.SessionInit")),
 	})
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
-	xnet "github.com/davyxu/x/net"
+	"github.com/davyxu/x/net"
 	"net"
 	"time"
 )

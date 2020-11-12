@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	xio "github.com/davyxu/x/io"
+	"github.com/davyxu/x/io"
 	"io"
 )
 

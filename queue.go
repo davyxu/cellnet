@@ -30,7 +30,7 @@ type EventQueue interface {
 type CapturePanicNotifyFunc func(interface{}, EventQueue)
 
 type eventQueue struct {
-	*frame.Pipe
+	*xframe.Pipe
 
 	endSignal sync.WaitGroup
 
@@ -126,7 +126,7 @@ func (self *eventQueue) Wait() {
 func NewEventQueue() EventQueue {
 
 	return &eventQueue{
-		Pipe: frame.NewPipe(),
+		Pipe: xframe.NewPipe(),
 
 		// 默认的崩溃捕获打印
 		onPanic: func(raw interface{}, queue EventQueue) {

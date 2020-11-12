@@ -30,12 +30,12 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
-		ID:    int(bytes.StringHash("proto.ChatREQ")),
+		ID:    int(xbytes.StringHash("proto.ChatREQ")),
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
-		ID:    int(bytes.StringHash("proto.ChatACK")),
+		ID:    int(xbytes.StringHash("proto.ChatACK")),
 	})
 }
