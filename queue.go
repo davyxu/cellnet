@@ -12,10 +12,10 @@ import (
 // 事件队列
 type EventQueue interface {
 	// 事件队列开始工作
-	StartLoop() EventQueue
+	Start() EventQueue
 
 	// 停止事件队列
-	StopLoop() EventQueue
+	Stop() EventQueue
 
 	// 等待退出
 	Wait()
@@ -76,7 +76,7 @@ func (self *eventQueue) protectedCall(callback func()) {
 }
 
 // 开启事件循环
-func (self *eventQueue) StartLoop() EventQueue {
+func (self *eventQueue) Start() EventQueue {
 
 	self.endSignal.Add(1)
 
@@ -112,7 +112,7 @@ func (self *eventQueue) StartLoop() EventQueue {
 }
 
 // 停止事件循环
-func (self *eventQueue) StopLoop() EventQueue {
+func (self *eventQueue) Stop() EventQueue {
 	self.Add(nil)
 	return self
 }

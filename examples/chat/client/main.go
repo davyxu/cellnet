@@ -58,7 +58,7 @@ func main() {
 	p.Start()
 
 	// 事件队列开始循环
-	queue.StartLoop()
+	queue.Start()
 
 	ulog.Debugln("Ready to chat!")
 

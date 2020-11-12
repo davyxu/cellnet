@@ -39,7 +39,7 @@ func clientAsyncCallback() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	// 等待客户端收到消息
 	<-done

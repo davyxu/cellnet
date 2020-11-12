@@ -46,5 +46,5 @@ func server() {
 
 	peerIns.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }

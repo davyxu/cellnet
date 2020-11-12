@@ -21,7 +21,7 @@ func clientSyncRPC() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	// 等连接上时
 	rv.WaitMessage("cellnet.SessionConnected")

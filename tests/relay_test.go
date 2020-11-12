@@ -45,7 +45,7 @@ func relay_backend() {
 
 	relay_BackendToAgentConnector.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 
 func relay_agent() {
@@ -145,7 +145,7 @@ func relay_client() {
 
 	relay_Client.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 }
 

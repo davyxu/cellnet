@@ -37,7 +37,7 @@ func server() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 
 func client() {
@@ -52,7 +52,7 @@ func client() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	rv.WaitMessage("cellnet.SessionConnected")
 

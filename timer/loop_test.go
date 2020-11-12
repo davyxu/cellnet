@@ -12,7 +12,7 @@ func TestLoopPanic(t *testing.T) {
 	q := cellnet.NewEventQueue()
 	q.EnableCapturePanic(true)
 
-	q.StartLoop()
+	q.Start()
 
 	var times = 3
 
@@ -21,7 +21,7 @@ func TestLoopPanic(t *testing.T) {
 		times--
 		if times == 0 {
 			loop.Stop()
-			q.StopLoop()
+			q.Stop()
 		}
 
 		fmt.Println("before")

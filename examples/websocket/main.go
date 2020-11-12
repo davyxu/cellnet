@@ -74,9 +74,9 @@ func client() {
 	p.Start()
 
 	// 事件队列开始循环
-	queue.StartLoop()
+	queue.Start()
 
-	// 阻塞等待事件队列结束退出( 在另外的goroutine调用queue.StopLoop() )
+	// 阻塞等待事件队列结束退出( 在另外的goroutine调用queue.Stop() )
 	queue.Wait()
 }
 
@@ -119,9 +119,9 @@ func server() {
 	p.Start()
 
 	// 事件队列开始循环
-	queue.StartLoop()
+	queue.Start()
 
-	// 阻塞等待事件队列结束退出( 在另外的goroutine调用queue.StopLoop() )
+	// 阻塞等待事件队列结束退出( 在另外的goroutine调用queue.Stop() )
 	queue.Wait()
 
 }

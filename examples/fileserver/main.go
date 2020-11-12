@@ -25,7 +25,7 @@ func main() {
 	proc.BindProcessorHandler(p, "http", nil)
 
 	p.Start()
-	queue.StartLoop()
+	queue.Start()
 
 	queue.Wait()
 }

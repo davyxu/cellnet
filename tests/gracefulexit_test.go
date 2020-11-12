@@ -36,7 +36,7 @@ func recreateConn_StartServer() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 
 // 客户端连接上后, 主动断开连接, 确保连接正常关闭
@@ -66,7 +66,7 @@ func runConnClose() {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	recreateConn_Signal.WaitAndExpect("not expect times", 1)
 
@@ -105,7 +105,7 @@ func TestCreateDestroyAcceptor(t *testing.T) {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	ulog.Debugln("Start connecting...")
 	allAccepted.Add(recreateAcc_clientConnection)

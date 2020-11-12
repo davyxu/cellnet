@@ -71,7 +71,7 @@ func echo_StartServer(context *echoContext) {
 
 	context.Acceptor.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 
 func echo_StartClient(echoContext *echoContext) {
@@ -101,7 +101,7 @@ func echo_StartClient(echoContext *echoContext) {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 
 	echoContext.Tester.WaitAndExpect("not recv data", 1)
 }

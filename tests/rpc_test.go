@@ -43,7 +43,7 @@ func rpc_StartServer() {
 	})
 	rpc_Acceptor.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 func syncRPC_OnClientEvent(ev cellnet.Event) {
 
@@ -140,7 +140,7 @@ func rpc_StartClient(eventFunc func(event cellnet.Event)) {
 
 	p.Start()
 
-	queue.StartLoop()
+	queue.Start()
 }
 
 func TestSyncRPC(t *testing.T) {

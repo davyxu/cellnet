@@ -15,7 +15,7 @@ func TestAfterTimer(t *testing.T) {
 
 	queue := cellnet.NewEventQueue()
 
-	queue.StartLoop()
+	queue.Start()
 
 	timer.After(queue, 100*time.Millisecond, func() {
 		ulog.Debugln("after 100 ms")
@@ -47,7 +47,7 @@ func TestLoopTimer(t *testing.T) {
 	queue := cellnet.NewEventQueue()
 
 	// 启动消息循环
-	queue.StartLoop()
+	queue.Start()
 
 	var count int
 
