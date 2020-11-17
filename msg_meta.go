@@ -122,7 +122,7 @@ func MessageMetaByID(id int) *MessageMeta {
 	return nil
 }
 
-// 消息名（没有包，纯类型名）
+// 消息名(例如:MsgREQ)
 func MessageToName(msg interface{}) string {
 
 	if msg == nil {
@@ -135,6 +135,21 @@ func MessageToName(msg interface{}) string {
 	}
 
 	return meta.TypeName()
+}
+
+// 消息名(例如:proto.MsgREQ)
+func MessageToFullName(msg interface{}) string {
+
+	if msg == nil {
+		return ""
+	}
+
+	meta := MessageMetaByMsg(msg)
+	if meta == nil {
+		return ""
+	}
+
+	return meta.FullName()
 }
 
 func MessageToID(msg interface{}) int {
