@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"io"
 	"net/http"
 	"reflect"
@@ -14,7 +15,7 @@ import (
 type httpConnector struct {
 	peer.CorePeerProperty
 	peer.CoreProcBundle
-	peer.CoreContextSet
+	xframe.PropertySet
 }
 
 func (self *httpConnector) Start() cellnet.Peer {

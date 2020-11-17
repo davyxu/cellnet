@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	xframe "github.com/davyxu/x/frame"
 	"html/template"
 	"net/http"
 )
@@ -20,7 +21,7 @@ var (
 )
 
 type httpSession struct {
-	peer.CoreContextSet
+	xframe.PropertySet
 	*peer.CoreProcBundle
 	req  *http.Request
 	resp http.ResponseWriter

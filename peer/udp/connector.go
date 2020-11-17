@@ -4,13 +4,14 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"net"
 )
 
 type udpConnector struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 

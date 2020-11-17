@@ -12,7 +12,7 @@ import (
 
 type redisConnector struct {
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreRedisParameter
 
 	pool      *pool.Pool

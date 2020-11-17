@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"github.com/davyxu/x/net"
 	"github.com/gorilla/websocket"
 	"net"
@@ -13,7 +14,7 @@ import (
 type wsAcceptor struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreProcBundle
 
 	certfile string
@@ -83,7 +84,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 		}
 
 		ses := newSession(c, self, nil)
-		ses.SetContext("request", r)
+		ses.Set("request", r)
 		ses.Start()
 
 		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: &cellnet.SessionAccepted{}})

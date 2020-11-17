@@ -12,7 +12,7 @@ import (
 
 type mysqlConnector struct {
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreSQLParameter
 
 	db      *sql.DB

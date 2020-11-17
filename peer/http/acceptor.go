@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"github.com/davyxu/x/net"
 	"html/template"
 	"net"
@@ -17,7 +18,7 @@ import (
 type httpAcceptor struct {
 	peer.CorePeerProperty
 	peer.CoreProcBundle
-	peer.CoreContextSet
+	xframe.PropertySet
 
 	sv *http.Server
 

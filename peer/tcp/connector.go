@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"net"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ type tcpConnector struct {
 	peer.SessionManager
 
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 	peer.CoreTCPSocketOption
@@ -77,7 +78,6 @@ func (self *tcpConnector) SetReconnectInterval(v time.Duration) {
 	self.reconInterval = v
 }
 
-
 func (self *tcpConnector) SetConnectTimeout(v time.Duration) {
 	self.conTimeout = v
 }
@@ -132,7 +132,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 			}
 
 			// 没重连就退出
-			if self.reconInterval== 0 {
+			if self.reconInterval == 0 {
 
 				self.ProcEvent(&cellnet.RecvMsgEvent{
 					Ses: self.defaultSes,
@@ -188,14 +188,13 @@ func (self *tcpConnector) TypeName() string {
 	return "tcp.Connector"
 }
 
-
 func init() {
 
 	peer.RegisterPeerCreator(func() cellnet.Peer {
 		self := &tcpConnector{
 			SessionManager:        new(peer.CoreSessionManager),
 			reconReportLimitTimes: 3,
-			conTimeout:            time.Second* 3,
+			conTimeout:            time.Second * 3,
 		}
 
 		self.defaultSes = newSession(nil, self, func() {

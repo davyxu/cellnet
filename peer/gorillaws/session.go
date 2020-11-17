@@ -12,7 +12,7 @@ import (
 
 // Socket会话
 type wsSession struct {
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreSessionIdentify
 	*peer.CoreProcBundle
 

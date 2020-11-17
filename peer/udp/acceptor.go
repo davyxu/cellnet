@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"github.com/davyxu/x/net"
 	"net"
 	"time"
@@ -14,7 +15,7 @@ const MaxUDPRecvBuffer = 2048
 type udpAcceptor struct {
 	peer.CoreSessionManager
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 	peer.CoreCaptureIOPanic

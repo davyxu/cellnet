@@ -3,6 +3,7 @@ package udp
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
+	xframe "github.com/davyxu/x/frame"
 	"net"
 	"sync"
 	"time"
@@ -19,7 +20,7 @@ type DataWriter interface {
 // Socket会话
 type udpSession struct {
 	*peer.CoreProcBundle
-	peer.CoreContextSet
+	xframe.PropertySet
 
 	pInterface cellnet.Peer
 

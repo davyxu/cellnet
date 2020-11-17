@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"github.com/davyxu/x/net"
 	"net"
 	"strings"
@@ -14,7 +15,7 @@ import (
 type tcpAcceptor struct {
 	peer.SessionManager
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 	peer.CoreTCPSocketOption

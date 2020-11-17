@@ -100,7 +100,7 @@ func server() {
 
 			ulog.Debugf("recv: %+v %v", msg, []byte("鲍勃"))
 
-			val, exist := ev.Session().(cellnet.ContextSet).GetContext("request")
+			val, exist := ev.Session().(cellnet.ContextSet).Get("request")
 			if exist {
 				if req, ok := val.(*http.Request); ok {
 					raw, _ := json.Marshal(req.Header)

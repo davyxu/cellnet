@@ -14,7 +14,7 @@ import (
 
 // Socket会话
 type tcpSession struct {
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreSessionIdentify
 	*peer.CoreProcBundle
 

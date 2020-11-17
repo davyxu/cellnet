@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
+	xframe "github.com/davyxu/x/frame"
 	"net"
 	"time"
 )
@@ -12,7 +13,7 @@ type tcpSyncConnector struct {
 	peer.SessionManager
 
 	peer.CorePeerProperty
-	peer.CoreContextSet
+	xframe.PropertySet
 	peer.CoreProcBundle
 	peer.CoreTCPSocketOption
 
