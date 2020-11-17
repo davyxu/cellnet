@@ -74,7 +74,7 @@ func (self *httpAcceptor) WANAddress() string {
 	host := self.Address()[:pos]
 
 	if host == "" {
-		host = xnet.GetLocalIP()
+		host = xnet.GetLocalIP("")
 	}
 
 	return xnet.JoinAddress(host, self.Port())
