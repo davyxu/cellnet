@@ -16,9 +16,8 @@ import (
 type tcpSession struct {
 	xframe.PropertySet
 	peer.CoreSessionIdentify
-	*peer.CoreProcBundle
 
-	pInterface cellnet.Peer
+	peer cellnet.Peer
 
 	// Socket原始连接
 	conn      net.Conn
@@ -50,7 +49,7 @@ func (self *tcpSession) Conn() net.Conn {
 }
 
 func (self *tcpSession) Peer() cellnet.Peer {
-	return self.pInterface
+	return self.peer
 }
 
 // 取原始连接
@@ -90,14 +89,20 @@ func (self *tcpSession) Send(msg interface{}) {
 		return
 	}
 
-	self.sendQueue.Add(msg)
+	ev := peer.PackEvent(msg, cellnet.ContextSet(self))
+	if ev == nil {
+		return
+	}
+	ev.Ses = self
+
+	self.sendQueue.Add(ev)
 }
 
 func (self *tcpSession) IsManualClosed() bool {
 	return atomic.LoadInt64(&self.closing) != 0
 }
 
-func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
+func (self *tcpSession) protectedReadMessage(bs peer.BundleSupport) (ev cellnet.Event, err error) {
 
 	defer func() {
 
@@ -108,7 +113,7 @@ func (self *tcpSession) protectedReadMessage() (msg interface{}, err error) {
 
 	}()
 
-	msg, err = self.ReadMessage(self)
+	ev, err = bs.ReadMessage(self)
 
 	return
 }
@@ -122,15 +127,17 @@ func (self *tcpSession) recvLoop() {
 		capturePanic = i.CaptureIOPanic()
 	}
 
+	bs := self.peer.(peer.BundleSupport)
+
 	for self.Conn() != nil {
 
-		var msg interface{}
+		var ev cellnet.Event
 		var err error
 
 		if capturePanic {
-			msg, err = self.protectedReadMessage()
+			ev, err = self.protectedReadMessage(bs)
 		} else {
-			msg, err = self.ReadMessage(self)
+			ev, err = bs.ReadMessage(self)
 		}
 
 		if err != nil {
@@ -146,11 +153,11 @@ func (self *tcpSession) recvLoop() {
 				closedMsg.Reason = cellnet.CloseReason_Manual
 			}
 
-			self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: closedMsg})
+			bs.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: closedMsg})
 			break
 		}
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: msg})
+		bs.ProcEvent(ev)
 	}
 
 	// 通知完成
@@ -162,14 +169,15 @@ func (self *tcpSession) sendLoop() {
 
 	var writeList []interface{}
 
+	bs := self.peer.(peer.BundleSupport)
+
 	for {
 		writeList = writeList[0:0]
 		exit := self.sendQueue.Pick(&writeList)
 
 		// 遍历要发送的数据
-		for _, msg := range writeList {
-
-			self.SendMessage(&cellnet.SendMsgEvent{Ses: self, Msg: msg})
+		for _, ev := range writeList {
+			bs.SendMessage(ev.(cellnet.Event))
 		}
 
 		if exit {
@@ -224,13 +232,10 @@ func (self *tcpSession) Start() {
 
 func newSession(conn net.Conn, p cellnet.Peer, endNotify func()) *tcpSession {
 	self := &tcpSession{
-		conn:       conn,
-		endNotify:  endNotify,
-		sendQueue:  xframe.NewPipe(),
-		pInterface: p,
-		CoreProcBundle: p.(interface {
-			GetBundle() *peer.CoreProcBundle
-		}).GetBundle(),
+		conn:      conn,
+		endNotify: endNotify,
+		sendQueue: xframe.NewPipe(),
+		peer:      p,
 	}
 
 	return self

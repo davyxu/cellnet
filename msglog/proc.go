@@ -11,13 +11,15 @@ type PacketMessagePeeker interface {
 }
 
 var (
-	EnableMsgLog = true
+	EnableMsgLog     = true
 	SystemMsgVisible = true
 )
 
-func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
+func WriteRecvLogger(protocol string, ev cellnet.Event) {
 
 	if EnableMsgLog {
+
+		msg := ev.Message()
 
 		if !SystemMsgVisible {
 			if _, ok := msg.(cellnet.SystemMessageIdentifier); ok {
@@ -30,23 +32,27 @@ func WriteRecvLogger(protocol string, ses cellnet.Session, msg interface{}) {
 		}
 
 		if IsMsgLogValid(cellnet.MessageToID(msg)) {
-			peerInfo := ses.Peer().(cellnet.PeerProperty)
+			peerInfo := ev.Session().Peer().(cellnet.PeerProperty)
+
+			meta := cellnet.MessageMetaByID(ev.MessageID())
 
 			ulog.Debugf("#%s.recv(%s)@%d len: %d %s | %s",
 				protocol,
 				peerInfo.Name(),
-				ses.ID(),
+				ev.Session().ID(),
 				cellnet.MessageSize(msg),
-				cellnet.MessageToName(msg),
+				meta.TypeName(),
 				cellnet.MessageToString(msg))
 		}
 
 	}
 }
 
-func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
+func WriteSendLogger(protocol string, ev cellnet.Event) {
 
 	if EnableMsgLog {
+
+		msg := ev.Message()
 
 		if !SystemMsgVisible {
 			if _, ok := msg.(cellnet.SystemMessageIdentifier); ok {
@@ -58,15 +64,17 @@ func WriteSendLogger(protocol string, ses cellnet.Session, msg interface{}) {
 			msg = peeker.Message()
 		}
 
-		if IsMsgLogValid(cellnet.MessageToID(msg)) {
-			peerInfo := ses.Peer().(cellnet.PeerProperty)
+		if IsMsgLogValid(ev.MessageID()) {
+			peerInfo := ev.Session().Peer().(cellnet.PeerProperty)
+
+			meta := cellnet.MessageMetaByID(ev.MessageID())
 
 			ulog.Debugf("#%s.send(%s)@%d len: %d %s | %s",
 				protocol,
 				peerInfo.Name(),
-				ses.ID(),
+				ev.Session().ID(),
 				cellnet.MessageSize(msg),
-				cellnet.MessageToName(msg),
+				meta.TypeName(),
 				cellnet.MessageToString(msg))
 		}
 
@@ -80,7 +88,7 @@ type Hooker struct {
 // 来自后台服务器的消息
 func (Hooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
+	WriteRecvLogger("tcp", inputEvent)
 
 	return inputEvent
 }
@@ -88,7 +96,7 @@ func (Hooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Even
 // 发送给后台服务器
 func (Hooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
+	WriteSendLogger("tcp", inputEvent)
 
 	return inputEvent
 }
