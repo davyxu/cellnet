@@ -300,5 +300,5 @@ func MessageToString(msg interface{}) string {
 		return stringer.String()
 	}
 
-	return ""
+	return fmt.Sprintf("%+v", msg)
 }
