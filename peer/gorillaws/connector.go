@@ -131,10 +131,7 @@ func (self *wsConnector) connect(address string) {
 			// 没重连就退出
 			if self.ReconnectInterval() == 0 || self.IsStopping() {
 
-				self.ProcEvent(&cellnet.RecvMsgEvent{
-					Ses: self.defaultSes,
-					Msg: &cellnet.SessionConnectError{},
-				})
+				self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnectError{}))
 				break
 			}
 
@@ -152,7 +149,7 @@ func (self *wsConnector) connect(address string) {
 
 		self.tryConnTimes = 0
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnected{}})
+		self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnected{}))
 
 		self.sesEndSignal.Wait()
 

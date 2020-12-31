@@ -153,7 +153,7 @@ func (self *tcpSession) recvLoop() {
 				closedMsg.Reason = cellnet.CloseReason_Manual
 			}
 
-			bs.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: closedMsg})
+			bs.ProcEvent(cellnet.BuildSystemEvent(self, closedMsg))
 			break
 		}
 

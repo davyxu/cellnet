@@ -40,7 +40,7 @@ func (self *tcpSyncConnector) Start() cellnet.Peer {
 
 		ulog.Debugf("#tcp.connect failed(%s)@%d address: %s", self.Name(), self.defaultSes.ID(), self.Address())
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnectError{}})
+		self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnectError{}))
 		return self
 	}
 
@@ -50,7 +50,7 @@ func (self *tcpSyncConnector) Start() cellnet.Peer {
 
 	self.defaultSes.Start()
 
-	self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnected{}})
+	self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnected{}))
 
 	return self
 }

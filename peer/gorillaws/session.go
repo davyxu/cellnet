@@ -68,7 +68,7 @@ func (self *wsSession) recvLoop() {
 				ulog.Errorln("session closed:", err)
 			}
 
-			self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self, Msg: &cellnet.SessionClosed{}})
+			self.ProcEvent(cellnet.BuildSystemEvent(self, &cellnet.SessionClosed{}))
 			break
 		}
 

@@ -58,7 +58,7 @@ func (self *udpConnector) connect() {
 
 	ses := self.defaultSes
 
-	self.ProcEvent(&cellnet.RecvMsgEvent{ses, &cellnet.SessionConnected{}})
+	self.ProcEvent(cellnet.BuildSystemEvent(ses, &cellnet.SessionConnected{}))
 
 	recvBuff := make([]byte, MaxUDPRecvBuffer)
 

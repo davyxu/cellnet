@@ -35,7 +35,7 @@ func RegisterMessageMeta(meta *MessageMeta) *MessageMeta {
 	meta.init()
 
 	if _, ok := metaByType[meta.Type]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by type: %d name: %s", meta.ID, meta.Type.Name()))
+		panic(fmt.Sprintf("Duplicate message meta register by id: %d name: %s", meta.ID, meta.Type.Name()))
 	} else {
 		metaByType[meta.Type] = meta
 	}

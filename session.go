@@ -50,7 +50,6 @@ func (self *RawPacket) Message() interface{} {
 	return msg
 }
 
-
 // 修复ws没有实现所有net.conn方法，导致无法获取客服端地址问题.
 type RemoteAddr interface {
 	RemoteAddr() net.Addr
@@ -58,6 +57,11 @@ type RemoteAddr interface {
 
 // 获取session远程的地址
 func GetRemoteAddrss(ses Session) string {
+
+	if ses == nil {
+		return ""
+	}
+
 	if c, ok := ses.Raw().(RemoteAddr); ok {
 		return c.RemoteAddr().String()
 	}

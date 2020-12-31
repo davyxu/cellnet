@@ -1,6 +1,8 @@
 package cellnet
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type SessionInit struct {
 }
@@ -58,4 +60,18 @@ func (self *SessionCloseNotify) SystemMessage()  {}
 // 使用类型断言判断是否为系统消息
 type SystemMessageIdentifier interface {
 	SystemMessage()
+}
+
+func BuildSystemEvent(ses Session, msg interface{}) Event {
+
+	meta := MessageMetaByMsg(msg)
+	if meta == nil {
+		panic("sysmsg meta not found")
+	}
+
+	return &RecvMsgEvent{
+		Ses:   ses,
+		MsgID: meta.ID,
+		Msg:   msg,
+	}
 }

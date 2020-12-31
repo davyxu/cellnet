@@ -87,8 +87,7 @@ func (self *wsAcceptor) Start() cellnet.Peer {
 		ses.Set("request", r)
 		ses.Start()
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: ses, Msg: &cellnet.SessionAccepted{}})
-
+		self.ProcEvent(cellnet.BuildSystemEvent(ses, &cellnet.SessionAccepted{}))
 	})
 
 	self.sv = &http.Server{Addr: addrObj.HostPortString(self.Port()), Handler: mux}

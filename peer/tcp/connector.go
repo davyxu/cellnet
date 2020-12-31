@@ -134,10 +134,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 			// 没重连就退出
 			if self.reconInterval == 0 {
 
-				self.ProcEvent(&cellnet.RecvMsgEvent{
-					Ses: self.defaultSes,
-					Msg: &cellnet.SessionConnectError{},
-				})
+				self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnectError{}))
 				break
 			}
 
@@ -156,7 +153,7 @@ func (self *tcpConnector) connect(address string, ctx context.Context) {
 
 		self.tryConnTimes = 0
 
-		self.ProcEvent(&cellnet.RecvMsgEvent{Ses: self.defaultSes, Msg: &cellnet.SessionConnected{}})
+		self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnected{}))
 
 		self.sesEndSignal.Wait()
 
