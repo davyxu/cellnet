@@ -1,6 +1,9 @@
 package cellnet
 
-import "net"
+import (
+	xnet "github.com/davyxu/x/net"
+	"net"
+)
 
 // 长连接
 type Session interface {
@@ -64,6 +67,16 @@ func GetRemoteAddrss(ses Session) string {
 
 	if c, ok := ses.Raw().(RemoteAddr); ok {
 		return c.RemoteAddr().String()
+	}
+
+	return ""
+}
+
+func GetRemoteHost(ses Session) string {
+	addr := GetRemoteAddrss(ses)
+	host, _, err := xnet.SpliteAddress(addr)
+	if err == nil {
+		return host
 	}
 
 	return ""
