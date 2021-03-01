@@ -2,11 +2,16 @@ package codec
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 )
 
 func init() {
 	cellnet.InternalDecodeHandler = func(ev cellnet.Event) (msg interface{}) {
-		msg, _, _ = DecodeMessage(ev.MessageID(), ev.MessageData())
+		var err error
+		msg, _, err = DecodeMessage(ev.MessageID(), ev.MessageData())
+		if err != nil {
+			ulog.Errorf("msg decode failed, %s, msgID: %d", err, ev.MessageID())
+		}
 		return
 	}
 }
