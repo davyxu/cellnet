@@ -16,6 +16,7 @@ type tcpConnector struct {
 	peer.CoreRunningTag
 	peer.CoreProcBundle
 	peer.CoreTCPSocketOption
+	peer.CoreCaptureIOPanic
 
 	defaultSes *tcpSession
 
