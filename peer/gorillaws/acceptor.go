@@ -14,6 +14,7 @@ type wsAcceptor struct {
 	peer.CorePeerProperty
 	peer.CoreContextSet
 	peer.CoreProcBundle
+	peer.CoreCaptureIOPanic
 
 	certfile string
 	keyfile  string
