@@ -57,6 +57,8 @@ type ContextSet interface {
 	GetInt64(key interface{}) (ret int64)
 
 	GetFloat32(key interface{}) (ret float32)
+
+	Unset(key interface{})
 }
 
 // 会话访问
