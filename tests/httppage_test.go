@@ -36,7 +36,7 @@ func TestPrintPage(t *testing.T) {
 
 	validPage(t, fmt.Sprintf("http://%s", pageAddress), "<h1>Hello world</h1>")
 
-	p.Stop()
+	//	p.Stop()
 
 }
 

@@ -59,7 +59,7 @@ func TestHttp(t *testing.T) {
 		Token: "post",
 	})
 
-	p.Stop()
+	//p.Stop()
 }
 
 func requestThenValid(t *testing.T, method, path string, req, expectACK interface{}) {

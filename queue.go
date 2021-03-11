@@ -24,6 +24,9 @@ type EventQueue interface {
 
 	// 是否捕获异常
 	EnableCapturePanic(v bool)
+
+	// 获取事件数量
+	Count() int
 }
 
 type CapturePanicNotifyFunc func(interface{}, EventQueue)
