@@ -51,12 +51,41 @@ func (self *wsSession) Send(msg interface{}) {
 	self.sendQueue.Add(msg)
 }
 
+func (self *wsSession) protectedReadMessage() (msg interface{}, err error) {
+
+	defer func() {
+
+		if err := recover(); err != nil {
+			log.Errorf("IO read panic: %s", err)
+			self.Close()
+		}
+
+	}()
+
+	msg, err = self.ReadMessage(self)
+
+	return
+}
+
 // 接收循环
 func (self *wsSession) recvLoop() {
 
+	var capturePanic bool
+
+	if i, ok := self.Peer().(cellnet.PeerCaptureIOPanic); ok {
+		capturePanic = i.CaptureIOPanic()
+	}
+
 	for self.conn != nil {
 
-		msg, err := self.ReadMessage(self)
+		var msg interface{}
+		var err error
+
+		if capturePanic {
+			msg, err = self.protectedReadMessage()
+		} else {
+			msg, err = self.ReadMessage(self)
+		}
 
 		if err != nil {
 

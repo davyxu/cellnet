@@ -175,6 +175,10 @@ OnError:
 // 停止侦听器
 func (self *httpAcceptor) Stop() {
 
+	if self.sv == nil {
+		return
+	}
+
 	if err := self.sv.Shutdown(nil); err != nil {
 		log.Errorf("#http.stop failed(%s) %v", self.Name(), err.Error())
 	}

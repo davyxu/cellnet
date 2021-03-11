@@ -12,6 +12,7 @@ type udpConnector struct {
 	peer.CoreContextSet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
+	peer.CoreCaptureIOPanic
 
 	remoteAddr *net.UDPAddr
 

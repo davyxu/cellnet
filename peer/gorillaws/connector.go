@@ -19,6 +19,7 @@ type wsConnector struct {
 	peer.CoreContextSet
 	peer.CoreRunningTag
 	peer.CoreProcBundle
+	peer.CoreCaptureIOPanic
 
 	defaultSes *wsSession
 
