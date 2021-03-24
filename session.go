@@ -28,7 +28,11 @@ type Session interface {
 type RawPacket struct {
 	MsgData []byte
 	MsgID   int
-	MsgName string
+	MsgName string // TODO 废除
+}
+
+func (self *RawPacket) MessageID() int {
+	return self.MsgID
 }
 
 func (self *RawPacket) Message() interface{} {
