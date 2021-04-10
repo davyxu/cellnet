@@ -102,6 +102,10 @@ func (self *tcpSession) IsManualClosed() bool {
 	return atomic.LoadInt64(&self.closing) != 0
 }
 
+func (self *tcpSession) EmulateClose() {
+	self.conn.Close()
+}
+
 func (self *tcpSession) protectedReadMessage(bs peer.BundleSupport) (ev cellnet.Event, err error) {
 
 	defer func() {
