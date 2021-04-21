@@ -29,7 +29,7 @@ func newPeer() *Peer {
 }
 
 // SessionID根据各种实现不一样(例如网关), 应该在具体实现里获取
-func SessionID(ses cellnet5.Session) int64 {
+func SessionID(ses cellnet.Session) int64 {
 	if ses == nil {
 		return 0
 	}
@@ -39,7 +39,7 @@ func SessionID(ses cellnet5.Session) int64 {
 	}).ID()
 }
 
-func SessionPeer(ses cellnet5.Session) *Peer {
+func SessionPeer(ses cellnet.Session) *Peer {
 	if ses == nil {
 		return nil
 	}
@@ -51,7 +51,7 @@ func SessionPeer(ses cellnet5.Session) *Peer {
 	return nil
 }
 
-func ConnectorFromSession(ses cellnet5.Session) *Connector {
+func ConnectorFromSession(ses cellnet.Session) *Connector {
 	if ses == nil {
 		return nil
 	}
@@ -65,7 +65,7 @@ func ConnectorFromSession(ses cellnet5.Session) *Connector {
 	return nil
 }
 
-func AcceptorFromSession(ses cellnet5.Session) *Acceptor {
+func AcceptorFromSession(ses cellnet.Session) *Acceptor {
 	if ses == nil {
 		return nil
 	}
@@ -78,7 +78,7 @@ func AcceptorFromSession(ses cellnet5.Session) *Acceptor {
 	return nil
 }
 
-func SessionQueuedCall(ses cellnet5.Session, callback func()) {
+func SessionQueuedCall(ses cellnet.Session, callback func()) {
 	peer := SessionPeer(ses)
 	if peer == nil {
 		return

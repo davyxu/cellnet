@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	codecByName = map[string]cellnet5.Codec{}
+	codecByName = map[string]cellnet.Codec{}
 )
 
 // 注册编码器
-func Register(c cellnet5.Codec) {
+func Register(c cellnet.Codec) {
 
 	if codecByName[c.Name()] != nil {
 		panic("duplicate codec: " + c.Name())
@@ -20,7 +20,7 @@ func Register(c cellnet5.Codec) {
 }
 
 // 获取编码器
-func GetByName(name string) cellnet5.Codec {
+func GetByName(name string) cellnet.Codec {
 
 	for _, c := range codecByName {
 		if c.Name() == name {
@@ -46,7 +46,7 @@ func getPackageByCodecName(name string) string {
 }
 
 // 指定编码器不存在时，报错
-func MustGetByName(name string) cellnet5.Codec {
+func MustGetByName(name string) cellnet.Codec {
 	codec := GetByName(name)
 
 	if codec == nil {

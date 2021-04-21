@@ -1,4 +1,4 @@
-package cellnet5
+package cellnet
 
 import xframe "github.com/davyxu/x/frame"
 

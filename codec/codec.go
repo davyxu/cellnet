@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	cellevent.InternalDecodeHandler = func(ev cellnet5.Event) (msg interface{}) {
+	cellevent.InternalDecodeHandler = func(ev cellnet.Event) (msg interface{}) {
 		msg, _, _ = Decode(ev.MessageID(), ev.MessageData())
 		return
 	}
@@ -90,7 +90,7 @@ type CodecRecycler interface {
 	Free(data interface{}, ps *xframe.PropertySet)
 }
 
-func Free(codec cellnet5.Codec, data interface{}, ps *xframe.PropertySet) {
+func Free(codec cellnet.Codec, data interface{}, ps *xframe.PropertySet) {
 
 	if codec == nil {
 		return

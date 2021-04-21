@@ -24,7 +24,7 @@ type identifyChecker interface {
 }
 
 type SessionManager struct {
-	sesByID      map[int64]cellnet5.Session
+	sesByID      map[int64]cellnet.Session
 	sesByIDGuard sync.RWMutex
 
 	sesIDGen int64 // 记录已经生成的会话ID流水号
@@ -40,7 +40,7 @@ func (self *SessionManager) Count() int {
 	return len(self.sesByID)
 }
 
-func (self *SessionManager) Add(ses cellnet5.Session) {
+func (self *SessionManager) Add(ses cellnet.Session) {
 
 	id := atomic.AddInt64(&self.sesIDGen, 1)
 
@@ -51,7 +51,7 @@ func (self *SessionManager) Add(ses cellnet5.Session) {
 	self.sesByIDGuard.Unlock()
 }
 
-func (self *SessionManager) Remove(ses cellnet5.Session) {
+func (self *SessionManager) Remove(ses cellnet.Session) {
 
 	id := ses.(identifyChecker).ID()
 
@@ -61,13 +61,13 @@ func (self *SessionManager) Remove(ses cellnet5.Session) {
 }
 
 // 获得一个连接
-func (self *SessionManager) Get(id int64) cellnet5.Session {
+func (self *SessionManager) Get(id int64) cellnet.Session {
 	self.sesByIDGuard.RLock()
 	defer self.sesByIDGuard.RUnlock()
 	return self.sesByID[id]
 }
 
-func (self *SessionManager) Visit(callback func(cellnet5.Session) bool) {
+func (self *SessionManager) Visit(callback func(cellnet.Session) bool) {
 
 	self.sesByIDGuard.RLock()
 	defer self.sesByIDGuard.RUnlock()
@@ -85,12 +85,12 @@ func (self *SessionManager) CloseAll() {
 	for _, ses := range self.sesByID {
 		ses.Close()
 	}
-	self.sesByID = map[int64]cellnet5.Session{}
+	self.sesByID = map[int64]cellnet.Session{}
 
 }
 
 func NewSessionManager() *SessionManager {
 	return &SessionManager{
-		sesByID: map[int64]cellnet5.Session{},
+		sesByID: map[int64]cellnet.Session{},
 	}
 }

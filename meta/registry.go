@@ -10,8 +10,8 @@ import (
 // 消息元信息
 type Meta struct {
 	xframe.PropertySet
-	Codec cellnet5.Codec // 消息用到的编码
-	Type  reflect.Type   // 消息类型, 注册时使用指针类型
+	Codec cellnet.Codec // 消息用到的编码
+	Type  reflect.Type  // 消息类型, 注册时使用指针类型
 
 	New func() interface{} // 直接生成
 

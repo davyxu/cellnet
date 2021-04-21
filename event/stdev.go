@@ -6,7 +6,7 @@ import (
 
 // 接收到消息
 type RecvMsgEvent struct {
-	Ses cellnet5.Session
+	Ses cellnet.Session
 	Msg interface{}
 
 	// 原始数据
@@ -14,7 +14,7 @@ type RecvMsgEvent struct {
 	MsgData []byte
 }
 
-func (self *RecvMsgEvent) Session() cellnet5.Session {
+func (self *RecvMsgEvent) Session() cellnet.Session {
 	return self.Ses
 }
 
@@ -37,7 +37,7 @@ func (self *RecvMsgEvent) Message() interface{} {
 
 // 会话开始发送数据事件
 type SendMsgEvent struct {
-	Ses cellnet5.Session
+	Ses cellnet.Session
 	Msg interface{} // 用户需要发送的消息
 
 	// 原始数据
@@ -53,7 +53,7 @@ func (self *SendMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
-func (self *SendMsgEvent) Session() cellnet5.Session {
+func (self *SendMsgEvent) Session() cellnet.Session {
 	return self.Ses
 }
 
@@ -70,4 +70,4 @@ type ReplyEvent interface {
 	Reply(msg interface{})
 }
 
-var InternalDecodeHandler func(ev cellnet5.Event) (msg interface{})
+var InternalDecodeHandler func(ev cellnet.Event) (msg interface{})

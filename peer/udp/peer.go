@@ -27,7 +27,7 @@ func newPeer() *Peer {
 	}
 }
 
-func PeerFromSession(ses cellnet5.Session) *Peer {
+func PeerFromSession(ses cellnet.Session) *Peer {
 	if ses == nil {
 		return nil
 	}
@@ -39,7 +39,7 @@ func PeerFromSession(ses cellnet5.Session) *Peer {
 	return nil
 }
 
-//func ConnectorFromSession(ses cellnet5.Session) *Connector {
+//func ConnectorFromSession(ses cellnet.Session) *Connector {
 //	if ses == nil {
 //		return nil
 //	}
@@ -53,7 +53,7 @@ func PeerFromSession(ses cellnet5.Session) *Peer {
 //	return nil
 //}
 
-func AcceptorFromSession(ses cellnet5.Session) *Acceptor {
+func AcceptorFromSession(ses cellnet.Session) *Acceptor {
 	if ses == nil {
 		return nil
 	}
@@ -66,7 +66,7 @@ func AcceptorFromSession(ses cellnet5.Session) *Acceptor {
 	return nil
 }
 
-func SessionQueuedCall(ses cellnet5.Session, callback func()) {
+func SessionQueuedCall(ses cellnet.Session, callback func()) {
 	peer := PeerFromSession(ses)
 	if peer == nil {
 		return
