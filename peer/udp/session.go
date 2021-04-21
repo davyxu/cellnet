@@ -1,29 +1,20 @@
 package udp
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
+	cellpeer "github.com/davyxu/cellnet/peer"
+	xframe "github.com/davyxu/x/frame"
 	"net"
 	"sync"
 	"time"
 )
 
-type DataReader interface {
-	ReadData() []byte
-}
-
-type DataWriter interface {
-	WriteData(data []byte)
-}
-
 // Socket会话
-type udpSession struct {
-	*peer.CoreProcBundle
-	peer.CoreContextSet
+type Session struct {
+	xframe.PropertySet
+	cellpeer.SessionIdentify
 
-	pInterface cellnet.Peer
-
-	pkt []byte
+	peer   *Peer
+	parent interface{}
 
 	// Socket原始连接
 	remote      *net.UDPAddr
@@ -33,78 +24,56 @@ type udpSession struct {
 	key         *connTrackKey
 }
 
-func (self *udpSession) setConn(conn *net.UDPConn) {
-	self.connGuard.Lock()
-	self.conn = conn
-	self.connGuard.Unlock()
-}
-
-func (self *udpSession) Conn() *net.UDPConn {
-	self.connGuard.RLock()
-	defer self.connGuard.RUnlock()
-	return self.conn
-}
-
-func (self *udpSession) IsAlive() bool {
+func (self *Session) IsAlive() bool {
 	return time.Now().Before(self.timeOutTick)
 }
 
-func (self *udpSession) ID() int64 {
-	return 0
-}
+func (self *Session) Recv(data []byte) {
 
-func (self *udpSession) LocalAddress() net.Addr {
-	return self.Conn().LocalAddr()
-}
+	if self.peer.Recv == nil {
+		panic("no transmitter")
+	}
 
-func (self *udpSession) Peer() cellnet.Peer {
-	return self.pInterface
-}
+	ev, err := self.peer.Recv(self, data)
 
-// 取原始连接
-func (self *udpSession) Raw() interface{} {
-	return self
-}
-
-func (self *udpSession) Recv(data []byte) {
-
-	self.pkt = data
-
-	msg, err := self.ReadMessage(self)
-
-	if msg != nil && err == nil {
-		self.ProcEvent(&cellnet.RecvMsgEvent{self, msg})
+	if ev != nil && err == nil {
+		self.peer.ProcEvent(ev)
 	}
 }
 
-func (self *udpSession) ReadData() []byte {
-	return self.pkt
-}
-
-func (self *udpSession) WriteData(data []byte) {
-
-	c := self.Conn()
-	if c == nil {
-		return
-	}
+func (self *Session) WriteData(data []byte) {
 
 	// Connector中的Session
 	if self.remote == nil {
 
-		c.Write(data)
+		self.conn.Write(data)
 
 		// Acceptor中的Session
 	} else {
-		c.WriteToUDP(data, self.remote)
+		self.conn.WriteToUDP(data, self.remote)
 	}
 }
 
 // 发送封包
-func (self *udpSession) Send(msg interface{}) {
+func (self *Session) Send(msg interface{}) {
+	if self.peer.Recv == nil {
+		panic("no transmitter")
+	}
 
-	self.SendMessage(&cellnet.SendMsgEvent{self, msg})
+	// 在用户线程编码, 保证字段不会在其他线程被序列化读取
+	ev := cellpeer.PackEvent(msg, &self.PropertySet)
+	if ev == nil {
+		return
+	}
+	ev.Ses = self
+
+	if self.peer.Outbound != nil {
+		ev = self.peer.Outbound(ev)
+	}
+
+	self.peer.Send(self, ev)
 }
 
-func (self *udpSession) Close() {
+func (self *Session) Close() {
 
 }
