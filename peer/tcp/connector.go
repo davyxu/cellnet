@@ -2,7 +2,7 @@ package tcp
 
 import (
 	"context"
-	cellevent "github.com/davyxu/cellnet/event"
+	"github.com/davyxu/cellnet/event"
 	"math"
 	"net"
 	"sync"

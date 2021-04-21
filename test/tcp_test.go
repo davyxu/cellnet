@@ -31,9 +31,7 @@ func startTCPServer(t *testing.T) {
 	assert.NoError(t, acc.ListenAndAccept(tcpListen), "ListenAndAccept failed")
 }
 
-func TestTCPEcho(t *testing.T) {
-	startTCPServer(t)
-
+func startTCPClient(t *testing.T) {
 	signal := NewSignalTester(t)
 	signal.SetTimeout(time.Second)
 
@@ -59,5 +57,10 @@ func TestTCPEcho(t *testing.T) {
 
 	conn.AsyncConnect(tcpListen)
 
-	signal.WaitAndExpect("echo not respond", "hello")
+	signal.WaitAll("echo not respond", "hello")
+}
+
+func TestTCPEcho(t *testing.T) {
+	startTCPServer(t)
+	startTCPClient(t)
 }

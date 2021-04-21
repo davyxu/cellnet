@@ -2,7 +2,7 @@ package tcp
 
 import (
 	"errors"
-	cellevent "github.com/davyxu/cellnet/event"
+	"github.com/davyxu/cellnet/event"
 	xnet "github.com/davyxu/x/net"
 	"net"
 	"time"

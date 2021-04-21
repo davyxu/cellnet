@@ -30,9 +30,18 @@ func (self *NoCryptMessage) Message() interface{} {
 	return self.Msg
 }
 
-func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
-	opt := ses.peer.SocketOption
+var (
+	TestEnableRecvPanic bool
+	TestEnableSendPanic bool
+)
 
+func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
+
+	if TestEnableRecvPanic {
+		panic("emulate recv crash")
+	}
+
+	opt := ses.peer.SocketOption
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, packetHeaderSize)
 
@@ -84,6 +93,10 @@ func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
 }
 
 func SendMessage(ses *Session, ev *cellevent.SendMsgEvent) error {
+
+	if TestEnableSendPanic {
+		panic("emulate send crash")
+	}
 
 	ps := &ses.peer.PropertySet
 

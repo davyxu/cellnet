@@ -1,8 +1,10 @@
 package tcp
 
 import (
+	"fmt"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellpeer "github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/ulog"
 	"github.com/davyxu/x/frame"
 	"github.com/davyxu/x/io"
 	"net"
@@ -96,7 +98,16 @@ func (self *Session) readMessage() (ev *cellevent.RecvMsgEvent, err error) {
 
 	apply := self.peer.BeginApplyReadTimeout(self.conn)
 
-	ev, err = self.peer.Recv(self)
+	self.peer.ProctectCall(func() {
+
+		ev, err = self.peer.Recv(self)
+
+	}, func(raw interface{}) {
+		var ok bool
+		if err, ok = raw.(error); !ok {
+			err = fmt.Errorf("recv panic: %+v", raw)
+		}
+	})
 
 	if apply {
 		self.peer.EndApplyTimeout(self.conn)
@@ -108,7 +119,7 @@ func (self *Session) readMessage() (ev *cellevent.RecvMsgEvent, err error) {
 // 接收循环
 func (self *Session) recvLoop() {
 
-	for self.conn != nil {
+	for {
 
 		var ev *cellevent.RecvMsgEvent
 		var err error
@@ -139,6 +150,12 @@ func (self *Session) recvLoop() {
 	self.exitSync.Done()
 }
 
+var (
+	OnSendCrash = func(raw interface{}) {
+		ulog.Errorf("send panic: %+v", raw)
+	}
+)
+
 func (self *Session) sendMessage(ev *cellevent.SendMsgEvent) (err error) {
 
 	if self.peer.Send == nil {
@@ -151,7 +168,11 @@ func (self *Session) sendMessage(ev *cellevent.SendMsgEvent) (err error) {
 
 	apply := self.peer.BeginApplyWriteTimeout(self.conn)
 
-	err = self.peer.Send(self, ev)
+	self.peer.ProctectCall(func() {
+
+		err = self.peer.Send(self, ev)
+
+	}, OnSendCrash)
 
 	if apply {
 		self.peer.EndApplyTimeout(self.conn)

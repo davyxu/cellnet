@@ -13,6 +13,7 @@ type Peer struct {
 	*cellpeer.SessionManager
 	xframe.PropertySet
 	cellpeer.SocketOption
+	cellpeer.Protect
 	Queue *cellqueue.Queue
 	Recv  func(ses *Session) (ev *cellevent.RecvMsgEvent, err error)
 	Send  func(ses *Session, ev *cellevent.SendMsgEvent) error

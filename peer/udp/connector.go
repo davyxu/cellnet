@@ -1,7 +1,7 @@
 package udp
 
 import (
-	cellevent "github.com/davyxu/cellnet/event"
+	"github.com/davyxu/cellnet/event"
 	"net"
 	"sync/atomic"
 )

@@ -58,5 +58,5 @@ func TestUDPEcho(t *testing.T) {
 
 	conn.AsyncConnect(udpListen)
 
-	signal.WaitAndExpect("echo not respond", "hello")
+	signal.WaitAll("echo not respond", "hello")
 }
