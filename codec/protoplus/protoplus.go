@@ -1,10 +1,10 @@
 package protoplus
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
+	cellcodec "github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/protoplus/api/golang"
 	"github.com/davyxu/protoplus/api/golang/wire"
+	xframe "github.com/davyxu/x/frame"
 )
 
 type protoplus struct {
@@ -14,11 +14,7 @@ func (self *protoplus) Name() string {
 	return "protoplus"
 }
 
-func (self *protoplus) MimeType() string {
-	return "application/binary"
-}
-
-func (self *protoplus) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interface{}, err error) {
+func (self *protoplus) Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error) {
 
 	return ppgo.Marshal(msgObj.(ppgo.Struct))
 
@@ -30,6 +26,5 @@ func (self *protoplus) Decode(data interface{}, msgObj interface{}) error {
 }
 
 func init() {
-
-	codec.RegisterCodec(new(protoplus))
+	cellcodec.Register(new(protoplus))
 }

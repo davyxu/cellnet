@@ -2,204 +2,142 @@ package tcp
 
 import (
 	"context"
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/ulog"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/cellnet/event"
 	"net"
 	"sync"
 	"time"
 )
 
-type tcpConnector struct {
-	peer.SessionManager
+type Connector struct {
+	*Peer
 
-	peer.CorePeerProperty
-	xframe.PropertySet
-	peer.CoreRunningTag
-	peer.CoreProcBundle
-	peer.CoreTCPSocketOption
+	// 连接会话
+	Session *Session
 
-	defaultSes *tcpSession
+	// 连接超时
+	ConnTimeout time.Duration
 
-	tryConnTimes int // 尝试连接次数
+	// 重连间隔
+	ReconnInterval time.Duration
 
-	sesEndSignal sync.WaitGroup
+	// 连接地址
+	Address string
 
-	reconInterval time.Duration
-
-	conTimeout time.Duration
-
-	reconReportLimitTimes int
+	endSignal sync.WaitGroup
 
 	cancelFunc context.CancelFunc
+
+	tryConnTimes int32 // 尝试连接次数
 }
 
-func (self *tcpConnector) Start() cellnet.Peer {
-
-	if self.IsRunning() {
-		return self
-	}
+func (self *Connector) Connect(address string) error {
+	self.Address = address
 
 	var ctx context.Context
 	ctx, self.cancelFunc = context.WithCancel(context.Background())
-
-	go self.connect(self.Address(), ctx)
-
-	return self
+	return self.conn(ctx)
 }
 
-func (self *tcpConnector) Stop() {
-	if !self.IsRunning() {
-		return
-	}
+func (self *Connector) AsyncConnect(address string) {
+	self.Address = address
 
-	self.StartStopping()
+	var ctx context.Context
+	ctx, self.cancelFunc = context.WithCancel(context.Background())
+	go self.conn(ctx)
+}
 
-	// 通知发送关闭, session设置Manual close
-	self.defaultSes.Close()
+func (self *Connector) Close() {
+	self.Session.Close()
 
 	if self.cancelFunc != nil {
 		self.cancelFunc()
 	}
 
 	self.tryConnTimes = 0
-
-	// 等待线程结束
-	self.WaitStopFinished()
 }
 
-func (self *tcpConnector) ReconnectInterval() time.Duration {
-
-	return self.reconInterval
-}
-
-func (self *tcpConnector) SetReconnectInterval(v time.Duration) {
-	self.reconInterval = v
-}
-
-func (self *tcpConnector) SetConnectTimeout(v time.Duration) {
-	self.conTimeout = v
-}
-
-func (self *tcpConnector) SetReconnectReportLimitTimes(v int) {
-	self.reconReportLimitTimes = v
-}
-
-func (self *tcpConnector) Session() cellnet.Session {
-	return self.defaultSes
-}
-
-func (self *tcpConnector) SetSessionManager(raw interface{}) {
-	self.SessionManager = raw.(peer.SessionManager)
-}
-
-func (self *tcpConnector) Port() int {
-
-	conn := self.defaultSes.Conn()
-
-	if conn == nil {
+func (self *Connector) Port() int {
+	if self.Session.conn == nil {
 		return 0
 	}
 
-	return conn.LocalAddr().(*net.TCPAddr).Port
+	return self.Session.conn.LocalAddr().(*net.TCPAddr).Port
 }
 
-// 连接器，传入连接地址和发送封包次数
-func (self *tcpConnector) connect(address string, ctx context.Context) {
+func (self *Connector) conn(ctx context.Context) (err error) {
 
-	self.SetRunning(true)
-
+	var connectedTimes int32
 	for {
 		self.tryConnTimes++
 
-		d := net.Dialer{Timeout: self.conTimeout}
-		// 尝试用Socket连接地址
-		conn, err := d.DialContext(ctx, "tcp", address)
+		d := net.Dialer{Timeout: self.ConnTimeout}
+		var conn net.Conn
+		conn, err = d.DialContext(ctx, "tcp", self.Address)
 
-		self.defaultSes.setConn(conn)
-
-		// 发生错误时退出
 		if err != nil {
 
-			// 直接关闭时，退出连接循环
-			if self.defaultSes.IsManualClosed() {
+			// 手动关闭时, 不要重连
+			if self.Session.IsManualClosed() {
 				break
 			}
 
-			if self.tryConnTimes <= self.reconReportLimitTimes {
-				ulog.Errorf("#tcp.connect failed(%s), times: %d %v %p", self.Name(), self.tryConnTimes, err.Error(), self)
-			}
+			self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnectError{
+				Err:            err,
+				RetryTimes:     self.tryConnTimes,
+				ConnectedTimes: connectedTimes,
+			}))
 
-			// 没重连就退出
-			if self.reconInterval == 0 {
-
-				self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnectError{}))
+			if self.ReconnInterval == 0 {
 				break
 			}
 
 			// 有重连就等待
-			time.Sleep(self.reconInterval)
+			time.Sleep(self.ReconnInterval)
 
-			// 继续连接
 			continue
 		}
 
-		self.sesEndSignal.Add(1)
+		self.Session.conn = conn
+
+		self.endSignal.Add(1)
 
 		self.ApplySocketOption(conn)
 
-		self.defaultSes.Start()
+		self.Session.Start()
 
 		self.tryConnTimes = 0
+		connectedTimes++
 
-		self.ProcEvent(cellnet.BuildSystemEvent(self.defaultSes, &cellnet.SessionConnected{}))
+		self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnected{}))
 
-		self.sesEndSignal.Wait()
+		self.endSignal.Wait()
 
-		self.defaultSes.setConn(nil)
-
-		// 没重连就退出/主动退出
-		if self.reconInterval == 0 {
+		// 连接断开了, 没重连就退出循环
+		if self.ReconnInterval == 0 {
 			break
 		}
 
 		// 有重连就等待
-		time.Sleep(self.reconInterval)
+		time.Sleep(self.ReconnInterval)
 
-		// 继续连接
 		continue
-
 	}
 
-	self.EndStopping()
-	self.SetRunning(false)
+	return
 }
 
-func (self *tcpConnector) IsReady() bool {
+func NewConnector() *Connector {
+	self := &Connector{
+		Peer:        newPeer(),
+		ConnTimeout: time.Second * 5,
+	}
 
-	return self.SessionCount() != 0
-}
+	self.Session = newSession(nil, self.Peer, self)
+	self.Session.endNotify = func() {
+		self.endSignal.Done()
+	}
 
-func (self *tcpConnector) TypeName() string {
-	return "tcp.Connector"
-}
+	self.Init()
 
-func init() {
-
-	peer.RegisterPeerCreator(func() cellnet.Peer {
-		self := &tcpConnector{
-			SessionManager:        new(peer.CoreSessionManager),
-			reconReportLimitTimes: 3,
-			conTimeout:            time.Second * 3,
-		}
-
-		self.defaultSes = newSession(nil, self, func() {
-			self.sesEndSignal.Done()
-		})
-
-		self.CoreTCPSocketOption.Init()
-
-		return self
-	})
+	return self
 }

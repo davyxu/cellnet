@@ -1,31 +1,56 @@
 package tcp
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/ulog"
-	xframe "github.com/davyxu/x/frame"
-	"github.com/davyxu/x/net"
+	"errors"
+	"github.com/davyxu/cellnet/event"
+	xnet "github.com/davyxu/x/net"
 	"net"
-	"strings"
 	"time"
 )
 
-// 接受器
-type tcpAcceptor struct {
-	peer.SessionManager
-	peer.CorePeerProperty
-	xframe.PropertySet
-	peer.CoreRunningTag
-	peer.CoreProcBundle
-	peer.CoreTCPSocketOption
-	peer.CoreCaptureIOPanic
+var (
+	ErrClosed = errors.New("acceptor closed")
+)
 
-	// 保存侦听器
+type Acceptor struct {
+	*Peer
+
+	// 连接地址
+	Address string
+
 	listener net.Listener
+
+	doneChan chan struct{}
 }
 
-func (self *tcpAcceptor) Port() int {
+func (self *Acceptor) Listen(addr string) error {
+	self.Address = addr
+	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (interface{}, error) {
+		return net.Listen("tcp", a.HostPortString(port))
+	})
+
+	if err != nil {
+		return err
+	}
+
+	self.listener = ln.(net.Listener)
+
+	return nil
+}
+
+func (self *Acceptor) ListenAndAccept(addr string) error {
+
+	err := self.Listen(addr)
+	if err != nil {
+		return err
+	}
+
+	go self.Accept()
+
+	return nil
+}
+
+func (self *Acceptor) ListenPort() int {
 	if self.listener == nil {
 		return 0
 	}
@@ -33,132 +58,88 @@ func (self *tcpAcceptor) Port() int {
 	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
-func (self *tcpAcceptor) IsReady() bool {
+func (self *Acceptor) Accept() error {
 
-	return self.IsRunning()
-}
-
-// 异步开始侦听
-func (self *tcpAcceptor) Start() cellnet.Peer {
-
-	self.WaitStopFinished()
-
-	if self.IsRunning() {
-		return self
+	if self.listener == nil {
+		return ErrClosed
 	}
 
-	ln, err := xnet.DetectPort(self.Address(), func(a *xnet.Address, port int) (interface{}, error) {
-		return net.Listen("tcp", a.HostPortString(port))
-	})
-
-	if err != nil {
-
-		ulog.Errorf("#tcp.listen failed(%s) %v", self.Name(), err.Error())
-
-		self.SetRunning(false)
-
-		return self
-	}
-
-	self.listener = ln.(net.Listener)
-
-	ulog.Infof("#tcp.listen(%s) %s", self.Name(), self.ListenAddress())
-
-	go self.accept()
-
-	return self
-}
-
-func (self *tcpAcceptor) ListenAddress() string {
-
-	pos := strings.Index(self.Address(), ":")
-	if pos == -1 {
-		return self.Address()
-	}
-
-	host := self.Address()[:pos]
-
-	return xnet.JoinAddress(host, self.Port())
-}
-
-func (self *tcpAcceptor) accept() {
-	self.SetRunning(true)
+	var tempDelay time.Duration
 
 	for {
 		conn, err := self.listener.Accept()
 
-		if self.IsStopping() {
-			break
-		}
+		if err != nil {
 
-		if err == nil {
-			// 处理连接进入独立线程, 防止accept无法响应
-			go self.onNewSession(conn)
+			select {
+			case <-self.doneChan:
+				return ErrClosed
+			default:
+			}
 
-		} else {
+			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
 
-			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
-				time.Sleep(time.Millisecond)
+				time.Sleep(tempDelay)
 				continue
 			}
 
-			// 调试状态时, 才打出accept的具体错误
-			ulog.Errorf("#tcp.accept failed(%s) %v", self.Name(), err.Error())
-			break
+			return err
 		}
+
+		// 处理连接进入独立线程, 防止accept无法响应
+		go self.onNewSession(conn)
 	}
-
-	self.SetRunning(false)
-
-	self.EndStopping()
-
 }
 
-func (self *tcpAcceptor) onNewSession(conn net.Conn) {
+func (self *Acceptor) onNewSession(conn net.Conn) {
 
 	self.ApplySocketOption(conn)
 
-	ses := newSession(conn, self, nil)
+	ses := newSession(conn, self.Peer, self)
 
 	ses.Start()
 
-	self.ProcEvent(cellnet.BuildSystemEvent(ses, &cellnet.SessionAccepted{}))
+	self.ProcEvent(cellevent.BuildSystemEvent(ses, &cellevent.SessionAccepted{}))
 }
 
-// 停止侦听器
-func (self *tcpAcceptor) Stop() {
-	if !self.IsRunning() {
-		return
+func (self *Acceptor) Close() error {
+	if self.listener == nil {
+		return nil
 	}
 
-	if self.IsStopping() {
-		return
+	self.closeDone()
+
+	err := self.listener.Close()
+
+	self.CloseAll()
+
+	return err
+}
+
+func (self *Acceptor) closeDone() {
+	select {
+	case <-self.doneChan:
+		// 已经关闭, 不要重复关闭
+	default:
+		close(self.doneChan)
+	}
+}
+
+func NewAcceptor() *Acceptor {
+	self := &Acceptor{
+		Peer:     newPeer(),
+		doneChan: make(chan struct{}),
 	}
 
-	self.StartStopping()
+	self.Init()
 
-	self.listener.Close()
-
-	// 断开所有连接
-	self.CloseAllSession()
-
-	// 等待线程结束
-	self.WaitStopFinished()
-}
-
-func (self *tcpAcceptor) TypeName() string {
-	return "tcp.Acceptor"
-}
-
-func init() {
-
-	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &tcpAcceptor{
-			SessionManager: new(peer.CoreSessionManager),
-		}
-
-		p.CoreTCPSocketOption.Init()
-
-		return p
-	})
+	return self
 }

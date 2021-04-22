@@ -1,4 +1,4 @@
-package peer
+package cellpeer
 
 import (
 	"github.com/davyxu/cellnet"
@@ -6,87 +6,94 @@ import (
 	"sync/atomic"
 )
 
-// 完整功能的会话管理
-type SessionManager interface {
-	cellnet.SessionAccessor
-
-	Add(cellnet.Session)
-	Remove(cellnet.Session)
-	Count() int
-
-	// 设置ID开始的号
-	SetIDBase(base int64)
+type SessionIdentify struct {
+	id int64
 }
 
-type CoreSessionManager struct {
-	sesById sync.Map // 使用Id关联会话
+func (self *SessionIdentify) ID() int64 {
+	return self.id
+}
+
+func (self *SessionIdentify) SetID(id int64) {
+	self.id = id
+}
+
+type SessionID64Fetcher interface {
+	ID() int64
+}
+
+type SessionID64Setter interface {
+	SetID(id int64)
+}
+
+type SessionManager struct {
+	sesByID      map[int64]cellnet.Session
+	sesByIDGuard sync.RWMutex
 
 	sesIDGen int64 // 记录已经生成的会话ID流水号
-
-	count int64 // 记录当前在使用的会话数量
 }
 
-func (self *CoreSessionManager) SetIDBase(base int64) {
-
+func (self *SessionManager) SetIDBase(base int64) {
 	atomic.StoreInt64(&self.sesIDGen, base)
 }
 
-func (self *CoreSessionManager) Count() int {
-	return int(atomic.LoadInt64(&self.count))
+func (self *SessionManager) Count() int {
+	self.sesByIDGuard.RLock()
+	defer self.sesByIDGuard.RUnlock()
+	return len(self.sesByID)
 }
 
-func (self *CoreSessionManager) Add(ses cellnet.Session) {
+func (self *SessionManager) Add(ses cellnet.Session) {
 
 	id := atomic.AddInt64(&self.sesIDGen, 1)
 
-	atomic.AddInt64(&self.count, 1)
+	ses.(SessionID64Setter).SetID(id)
 
-	ses.(interface {
-		SetID(int64)
-	}).SetID(id)
-
-	self.sesById.Store(id, ses)
+	self.sesByIDGuard.Lock()
+	self.sesByID[id] = ses
+	self.sesByIDGuard.Unlock()
 }
 
-func (self *CoreSessionManager) Remove(ses cellnet.Session) {
+func (self *SessionManager) Remove(ses cellnet.Session) {
 
-	self.sesById.Delete(ses.ID())
+	id := ses.(SessionID64Fetcher).ID()
 
-	atomic.AddInt64(&self.count, -1)
+	self.sesByIDGuard.Lock()
+	delete(self.sesByID, id)
+	self.sesByIDGuard.Unlock()
 }
 
 // 获得一个连接
-func (self *CoreSessionManager) GetSession(id int64) cellnet.Session {
-	if v, ok := self.sesById.Load(id); ok {
-		return v.(cellnet.Session)
+func (self *SessionManager) Get(id int64) cellnet.Session {
+	self.sesByIDGuard.RLock()
+	defer self.sesByIDGuard.RUnlock()
+	return self.sesByID[id]
+}
+
+func (self *SessionManager) Visit(callback func(cellnet.Session) bool) {
+
+	self.sesByIDGuard.RLock()
+	defer self.sesByIDGuard.RUnlock()
+	for _, ses := range self.sesByID {
+		if !callback(ses) {
+			break
+		}
 	}
-
-	return nil
 }
 
-func (self *CoreSessionManager) VisitSession(callback func(cellnet.Session) bool) {
+func (self *SessionManager) CloseAll() {
 
-	self.sesById.Range(func(key, value interface{}) bool {
-
-		return callback(value.(cellnet.Session))
-
-	})
-}
-
-func (self *CoreSessionManager) CloseAllSession() {
-
-	self.VisitSession(func(ses cellnet.Session) bool {
-
+	self.sesByIDGuard.RLock()
+	defer self.sesByIDGuard.RUnlock()
+	for _, ses := range self.sesByID {
 		ses.Close()
+	}
+	self.sesByID = map[int64]cellnet.Session{}
 
-		return true
-	})
 }
 
-// 活跃的会话数量
-func (self *CoreSessionManager) SessionCount() int {
-
-	v := atomic.LoadInt64(&self.count)
-
-	return int(v)
+func NewSessionManager() *SessionManager {
+	return &SessionManager{
+		sesByID: map[int64]cellnet.Session{},
+	}
 }

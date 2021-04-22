@@ -1,70 +1,73 @@
 package udp
 
 import (
-	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/ulog"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/cellnet/event"
 	"net"
+	"sync/atomic"
 )
 
-type udpConnector struct {
-	peer.CoreSessionManager
-	peer.CorePeerProperty
-	xframe.PropertySet
-	peer.CoreRunningTag
-	peer.CoreProcBundle
+type Connector struct {
+	*Peer
+
+	Address string
 
 	remoteAddr *net.UDPAddr
 
-	defaultSes *udpSession
+	// 连接会话
+	Session *Session
+
+	closed int64
 }
 
-func (self *udpConnector) Start() cellnet.Peer {
+func (self *Connector) Connect(address string) error {
+	self.Address = address
 
 	var err error
-	self.remoteAddr, err = net.ResolveUDPAddr("udp", self.Address())
+	self.remoteAddr, err = net.ResolveUDPAddr("udp", address)
 
 	if err != nil {
-
-		ulog.Errorf("#resolve udp address failed(%s) %v", self.Name(), err.Error())
-		return self
+		return err
 	}
 
-	go self.connect()
-
-	return self
+	return self.conn()
 }
 
-func (self *udpConnector) Session() cellnet.Session {
-	return self.defaultSes
+func (self *Connector) AsyncConnect(address string) error {
+	self.Address = address
+	var err error
+	self.remoteAddr, err = net.ResolveUDPAddr("udp", address)
+
+	if err != nil {
+		return err
+	}
+
+	go self.conn()
+
+	return nil
 }
 
-func (self *udpConnector) IsReady() bool {
-
-	return self.defaultSes.Conn() != nil
-}
-
-func (self *udpConnector) connect() {
-
+func (self *Connector) conn() error {
 	conn, err := net.DialUDP("udp", nil, self.remoteAddr)
 	if err != nil {
-
-		ulog.Errorf("#udp.connect failed(%s) %v", self.Name(), err.Error())
-		return
+		self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnectError{}))
+		return err
 	}
 
-	self.defaultSes.setConn(conn)
+	atomic.StoreInt64(&self.closed, 0)
 
-	ses := self.defaultSes
+	self.Session.conn = conn
 
-	self.ProcEvent(cellnet.BuildSystemEvent(ses, &cellnet.SessionConnected{}))
+	ses := self.Session
+
+	self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnected{}))
 
 	recvBuff := make([]byte, MaxUDPRecvBuffer)
 
-	self.SetRunning(true)
+	for {
 
-	for self.IsRunning() {
+		if atomic.LoadInt64(&self.closed) != 0 {
+			break
+		}
 
 		n, _, err := conn.ReadFromUDP(recvBuff)
 		if err != nil {
@@ -72,35 +75,40 @@ func (self *udpConnector) connect() {
 		}
 
 		if n > 0 {
-			ses.Recv(recvBuff[:n])
+			ses.Read(recvBuff[:n])
 		}
 
 	}
-}
 
-func (self *udpConnector) Stop() {
-
-	self.SetRunning(false)
-
-	if c := self.defaultSes.Conn(); c != nil {
-		c.Close()
+	if self.Session.conn != nil {
+		self.Session.conn.Close()
 	}
+
+	self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionClosed{}))
+	return nil
 }
 
-func (self *udpConnector) TypeName() string {
-	return "udp.Connector"
+func (self *Connector) Close() {
+	atomic.StoreInt64(&self.closed, 1)
 }
 
-func init() {
+func (self *Connector) Port() int {
+	if self.Session.conn == nil {
+		return 0
+	}
+	return self.Session.conn.LocalAddr().(*net.UDPAddr).Port
+}
 
-	peer.RegisterPeerCreator(func() cellnet.Peer {
-		p := &udpConnector{}
+func NewConnector() *Connector {
+	self := &Connector{
+		Peer: newPeer(),
+	}
 
-		p.defaultSes = &udpSession{
-			pInterface:     p,
-			CoreProcBundle: &p.CoreProcBundle,
-		}
+	ses := &Session{}
+	ses.parent = self
+	ses.peer = self.Peer
 
-		return p
-	})
+	self.Session = ses
+
+	return self
 }
