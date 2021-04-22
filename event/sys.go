@@ -14,7 +14,9 @@ type SessionConnected struct {
 }
 
 type SessionConnectError struct {
-	Err error
+	Err            error
+	ConnectedTimes int32
+	RetryTimes     int32
 }
 
 type CloseReason int32

@@ -75,7 +75,7 @@ func (self *Connector) conn() error {
 		}
 
 		if n > 0 {
-			ses.Recv(recvBuff[:n])
+			ses.Read(recvBuff[:n])
 		}
 
 	}

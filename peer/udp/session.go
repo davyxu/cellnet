@@ -28,7 +28,7 @@ func (self *Session) IsAlive() bool {
 	return time.Now().Before(self.timeOutTick)
 }
 
-func (self *Session) Recv(data []byte) {
+func (self *Session) Read(data []byte) {
 
 	if self.peer.Recv == nil {
 		panic("no transmitter")
@@ -41,7 +41,7 @@ func (self *Session) Recv(data []byte) {
 	}
 }
 
-func (self *Session) WriteData(data []byte) {
+func (self *Session) Write(data []byte) {
 
 	// Connector中的Session
 	if self.remote == nil {

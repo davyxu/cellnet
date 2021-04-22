@@ -54,7 +54,7 @@ func SendMessage(ses *Session, ev *cellevent.SendMsgEvent) error {
 	// Value
 	copy(pktData[HeaderSize:], ev.MsgData)
 
-	ses.WriteData(pktData)
+	ses.Write(pktData)
 
 	return nil
 }

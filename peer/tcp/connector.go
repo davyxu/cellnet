@@ -3,7 +3,6 @@ package tcp
 import (
 	"context"
 	"github.com/davyxu/cellnet/event"
-	"math"
 	"net"
 	"sync"
 	"time"
@@ -27,6 +26,8 @@ type Connector struct {
 	endSignal sync.WaitGroup
 
 	cancelFunc context.CancelFunc
+
+	tryConnTimes int32 // 尝试连接次数
 }
 
 func (self *Connector) Connect(address string) error {
@@ -34,7 +35,7 @@ func (self *Connector) Connect(address string) error {
 
 	var ctx context.Context
 	ctx, self.cancelFunc = context.WithCancel(context.Background())
-	return self.conn(ctx, 1)
+	return self.conn(ctx)
 }
 
 func (self *Connector) AsyncConnect(address string) {
@@ -42,7 +43,7 @@ func (self *Connector) AsyncConnect(address string) {
 
 	var ctx context.Context
 	ctx, self.cancelFunc = context.WithCancel(context.Background())
-	go self.conn(ctx, math.MaxInt32)
+	go self.conn(ctx)
 }
 
 func (self *Connector) Close() {
@@ -51,6 +52,8 @@ func (self *Connector) Close() {
 	if self.cancelFunc != nil {
 		self.cancelFunc()
 	}
+
+	self.tryConnTimes = 0
 }
 
 func (self *Connector) Port() int {
@@ -61,9 +64,12 @@ func (self *Connector) Port() int {
 	return self.Session.conn.LocalAddr().(*net.TCPAddr).Port
 }
 
-func (self *Connector) conn(ctx context.Context, maxTryTimes int) (err error) {
+func (self *Connector) conn(ctx context.Context) (err error) {
 
-	for tryTimes := 0; tryTimes < maxTryTimes; tryTimes++ {
+	var connectedTimes int32
+	for {
+		self.tryConnTimes++
+
 		d := net.Dialer{Timeout: self.ConnTimeout}
 		var conn net.Conn
 		conn, err = d.DialContext(ctx, "tcp", self.Address)
@@ -75,10 +81,13 @@ func (self *Connector) conn(ctx context.Context, maxTryTimes int) (err error) {
 				break
 			}
 
+			self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnectError{
+				Err:            err,
+				RetryTimes:     self.tryConnTimes,
+				ConnectedTimes: connectedTimes,
+			}))
+
 			if self.ReconnInterval == 0 {
-				self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnectError{
-					Err: err,
-				}))
 				break
 			}
 
@@ -95,6 +104,9 @@ func (self *Connector) conn(ctx context.Context, maxTryTimes int) (err error) {
 		self.ApplySocketOption(conn)
 
 		self.Session.Start()
+
+		self.tryConnTimes = 0
+		connectedTimes++
 
 		self.ProcEvent(cellevent.BuildSystemEvent(self.Session, &cellevent.SessionConnected{}))
 

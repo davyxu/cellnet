@@ -34,3 +34,15 @@ func (self *RecvMsgEvent) Message() interface{} {
 
 	return self.Msg
 }
+
+func (self *RecvMsgEvent) Send(msg interface{}) {
+	if self.Ses != nil {
+		self.Ses.Send(msg)
+	}
+}
+
+func (self *RecvMsgEvent) Reply(msg interface{}) {
+	if self.Ses != nil {
+		self.Ses.Send(msg)
+	}
+}

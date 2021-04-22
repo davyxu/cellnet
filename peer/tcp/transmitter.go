@@ -41,7 +41,7 @@ func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
 		panic("emulate recv crash")
 	}
 
-	opt := ses.peer.SocketOption
+	opt := ses.Peer.SocketOption
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, packetHeaderSize)
 
@@ -98,7 +98,7 @@ func SendMessage(ses *Session, ev *cellevent.SendMsgEvent) error {
 		panic("emulate send crash")
 	}
 
-	ps := &ses.peer.PropertySet
+	ps := &ses.Peer.PropertySet
 
 	var (
 		msgData []byte

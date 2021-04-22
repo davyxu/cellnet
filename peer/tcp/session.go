@@ -2,11 +2,13 @@ package tcp
 
 import (
 	"fmt"
+	"github.com/davyxu/cellnet"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellpeer "github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
 	"github.com/davyxu/x/frame"
 	"github.com/davyxu/x/io"
+	xnet "github.com/davyxu/x/net"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -18,7 +20,7 @@ type Session struct {
 	xframe.PropertySet
 	cellpeer.SessionIdentify
 
-	peer   *Peer
+	Peer   *Peer
 	parent interface{}
 
 	// Socket原始连接
@@ -92,15 +94,15 @@ func (self *Session) Disconnect() {
 
 func (self *Session) readMessage() (ev *cellevent.RecvMsgEvent, err error) {
 
-	if self.peer.Recv == nil {
+	if self.Peer.Recv == nil {
 		panic("no transmitter")
 	}
 
-	apply := self.peer.BeginApplyReadTimeout(self.conn)
+	apply := self.Peer.BeginApplyReadTimeout(self.conn)
 
-	self.peer.ProctectCall(func() {
+	self.Peer.ProctectCall(func() {
 
-		ev, err = self.peer.Recv(self)
+		ev, err = self.Peer.Recv(self)
 
 	}, func(raw interface{}) {
 		var ok bool
@@ -110,7 +112,7 @@ func (self *Session) readMessage() (ev *cellevent.RecvMsgEvent, err error) {
 	})
 
 	if apply {
-		self.peer.EndApplyTimeout(self.conn)
+		self.Peer.EndApplyTimeout(self.conn)
 	}
 
 	return
@@ -139,11 +141,11 @@ func (self *Session) recvLoop() {
 				closedMsg.Reason = cellevent.CloseReason_Manual
 			}
 
-			self.peer.ProcEvent(cellevent.BuildSystemEvent(self, closedMsg))
+			self.Peer.ProcEvent(cellevent.BuildSystemEvent(self, closedMsg))
 			break
 		}
 
-		self.peer.ProcEvent(ev)
+		self.Peer.ProcEvent(ev)
 	}
 
 	// 通知完成
@@ -158,24 +160,24 @@ var (
 
 func (self *Session) sendMessage(ev *cellevent.SendMsgEvent) (err error) {
 
-	if self.peer.Send == nil {
+	if self.Peer.Send == nil {
 		panic("no transmitter")
 	}
 
-	if self.peer.Outbound != nil {
-		ev = self.peer.Outbound(ev)
+	if self.Peer.Outbound != nil {
+		ev = self.Peer.Outbound(ev)
 	}
 
-	apply := self.peer.BeginApplyWriteTimeout(self.conn)
+	apply := self.Peer.BeginApplyWriteTimeout(self.conn)
 
-	self.peer.ProctectCall(func() {
+	self.Peer.ProctectCall(func() {
 
-		err = self.peer.Send(self, ev)
+		err = self.Peer.Send(self, ev)
 
 	}, OnSendCrash)
 
 	if apply {
-		self.peer.EndApplyTimeout(self.conn)
+		self.Peer.EndApplyTimeout(self.conn)
 	}
 
 	return
@@ -219,7 +221,7 @@ func (self *Session) Start() {
 	self.exitSync.Add(2)
 
 	// 将会话添加到管理器, 在线程处理前添加到管理器(分配id), 避免ID还未分配,就开始使用id的竞态问题
-	self.peer.Add(self)
+	self.Peer.Add(self)
 
 	go func() {
 
@@ -227,7 +229,7 @@ func (self *Session) Start() {
 		self.exitSync.Wait()
 
 		// 将会话从管理器移除
-		self.peer.Remove(self)
+		self.Peer.Remove(self)
 
 		if self.endNotify != nil {
 			self.endNotify()
@@ -243,11 +245,34 @@ func (self *Session) Start() {
 
 func newSession(conn net.Conn, p *Peer, parent interface{}) *Session {
 	self := &Session{
-		peer:      p,
+		Peer:      p,
 		parent:    parent,
 		conn:      conn,
 		sendQueue: xframe.NewPipe(),
 	}
 
 	return self
+}
+
+// 获取session远程的地址
+func GetRemoteAddrss(ses cellnet.Session) string {
+	if ses == nil {
+		return ""
+	}
+
+	if rawSes, ok := ses.(*Session); ok {
+		return rawSes.Raw().RemoteAddr().String()
+	}
+
+	return ""
+}
+
+func GetRemoteHost(ses cellnet.Session) string {
+	addr := GetRemoteAddrss(ses)
+	host, _, err := xnet.SpliteAddress(addr)
+	if err == nil {
+		return host
+	}
+
+	return ""
 }

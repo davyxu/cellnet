@@ -1,8 +1,10 @@
 package cellmsglog
 
 import (
+	"github.com/davyxu/cellnet"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmeta "github.com/davyxu/cellnet/meta"
+	cellpeer "github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/ulog"
 )
 
@@ -14,6 +16,7 @@ type PacketMessagePeeker interface {
 var (
 	EnableMsgLog     = true
 	SystemMsgVisible = true
+	EnableColor      = false
 )
 
 func RecvLogger(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
@@ -35,12 +38,8 @@ func RecvLogger(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
 
 		if IsMsgVisible(msgID) {
 
-			sesID := input.Session().(interface {
-				ID() int64
-			}).ID()
-
-			ulog.Debugf("#recv %d %s %d %s",
-				sesID,
+			ulog.WithColorByCondition(ulog.Blue, EnableColor).Debugf("#recv %d %s %d %s",
+				getSessionID(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),
 				cellmeta.MessageToString(msg))
@@ -49,6 +48,14 @@ func RecvLogger(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
 	}
 
 	return input
+}
+
+func getSessionID(session cellnet.Session) int64 {
+
+	if fetcher, ok := session.(cellpeer.SessionID64Fetcher); ok {
+		return fetcher.ID()
+	}
+	return 0
 }
 
 func SendLogger(input *cellevent.SendMsgEvent) *cellevent.SendMsgEvent {
@@ -70,12 +77,8 @@ func SendLogger(input *cellevent.SendMsgEvent) *cellevent.SendMsgEvent {
 
 		if IsMsgVisible(msgID) {
 
-			sesID := input.Session().(interface {
-				ID() int64
-			}).ID()
-
-			ulog.Debugf("#send %d %s %d %s",
-				sesID,
+			ulog.WithColorByCondition(ulog.Purple, EnableColor).Debugf("#send %d %s %d %s",
+				getSessionID(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),
 				cellmeta.MessageToString(msg))

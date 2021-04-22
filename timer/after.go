@@ -29,7 +29,7 @@ func After(q *cellqueue.Queue, duration time.Duration, callbackObj interface{}, 
 				})
 			}
 		default:
-			panic("timer.After: require func() or func(interface{})")
+			panic("celltimer.After: require func() or func(interface{})")
 		}
 	})
 

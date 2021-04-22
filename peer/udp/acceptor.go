@@ -77,7 +77,7 @@ func (self *Acceptor) Accept() error {
 		if n > 0 {
 
 			ses := self.getSession(remoteAddr)
-			ses.Recv(recvBuff[:n])
+			ses.Read(recvBuff[:n])
 		}
 
 	}

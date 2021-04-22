@@ -2,6 +2,7 @@ package cellnet
 
 import xframe "github.com/davyxu/x/frame"
 
+// 会话
 type Session interface {
 	// 发送消息
 	Send(msg interface{})

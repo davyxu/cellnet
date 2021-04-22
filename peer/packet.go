@@ -43,6 +43,10 @@ type RawPacket struct {
 	MsgID   int
 }
 
+func (self *RawPacket) MessageID() int {
+	return self.MsgID
+}
+
 func (self *RawPacket) Message() interface{} {
 
 	// 获取消息元信息

@@ -18,8 +18,11 @@ func (self *SessionIdentify) SetID(id int64) {
 	self.id = id
 }
 
-type identifyChecker interface {
+type SessionID64Fetcher interface {
 	ID() int64
+}
+
+type SessionID64Setter interface {
 	SetID(id int64)
 }
 
@@ -44,7 +47,7 @@ func (self *SessionManager) Add(ses cellnet.Session) {
 
 	id := atomic.AddInt64(&self.sesIDGen, 1)
 
-	ses.(identifyChecker).SetID(id)
+	ses.(SessionID64Setter).SetID(id)
 
 	self.sesByIDGuard.Lock()
 	self.sesByID[id] = ses
@@ -53,7 +56,7 @@ func (self *SessionManager) Add(ses cellnet.Session) {
 
 func (self *SessionManager) Remove(ses cellnet.Session) {
 
-	id := ses.(identifyChecker).ID()
+	id := ses.(SessionID64Fetcher).ID()
 
 	self.sesByIDGuard.Lock()
 	delete(self.sesByID, id)

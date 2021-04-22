@@ -35,9 +35,15 @@ func SessionID(ses cellnet.Session) int64 {
 		return 0
 	}
 
-	return ses.(interface {
+	type idfetcher interface {
 		ID() int64
-	}).ID()
+	}
+
+	if f, ok := ses.(idfetcher); ok {
+		return f.ID()
+	}
+
+	return 0
 }
 
 func SessionPeer(ses cellnet.Session) *Peer {
@@ -46,34 +52,19 @@ func SessionPeer(ses cellnet.Session) *Peer {
 	}
 
 	if tcpSes, ok := ses.(*Session); ok {
-		return tcpSes.peer
+		return tcpSes.Peer
 	}
 
 	return nil
 }
 
-func ConnectorFromSession(ses cellnet.Session) *Connector {
+func SessionParent(ses cellnet.Session) interface{} {
 	if ses == nil {
 		return nil
 	}
 
 	if tcpSes, ok := ses.(*Session); ok {
-		if conn, connOK := tcpSes.parent.(*Connector); connOK {
-			return conn
-		}
-	}
-
-	return nil
-}
-
-func AcceptorFromSession(ses cellnet.Session) *Acceptor {
-	if ses == nil {
-		return nil
-	}
-	if tcpSes, ok := ses.(*Session); ok {
-		if acc, accOK := tcpSes.parent.(*Acceptor); accOK {
-			return acc
-		}
+		return tcpSes.parent
 	}
 
 	return nil
