@@ -30,6 +30,7 @@ type Connector struct {
 	tryConnTimes int32 // 尝试连接次数
 }
 
+// 发起连接到指定地址
 func (self *Connector) Connect(address string) error {
 	self.Address = address
 
@@ -38,6 +39,7 @@ func (self *Connector) Connect(address string) error {
 	return self.conn(ctx)
 }
 
+// 异步连接到指定地址
 func (self *Connector) AsyncConnect(address string) {
 	self.Address = address
 
@@ -46,6 +48,7 @@ func (self *Connector) AsyncConnect(address string) {
 	go self.conn(ctx)
 }
 
+// 关闭连接
 func (self *Connector) Close() {
 	self.Session.Close()
 
@@ -56,6 +59,7 @@ func (self *Connector) Close() {
 	self.tryConnTimes = 0
 }
 
+// 连接的端口
 func (self *Connector) Port() int {
 	if self.Session.conn == nil {
 		return 0

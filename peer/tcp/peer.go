@@ -15,8 +15,8 @@ type Peer struct {
 	cellpeer.SocketOption
 	cellpeer.Protect
 	Queue *cellqueue.Queue
-	Recv  func(ses *Session) (ev *cellevent.RecvMsgEvent, err error)
-	Send  func(ses *Session, ev *cellevent.SendMsgEvent) error
+	Recv  func(ses *Session) (ev *cellevent.RecvMsg, err error)
+	Send  func(ses *Session, ev *cellevent.SendMsg) error
 }
 
 func (self *Peer) Peer() *Peer {

@@ -23,6 +23,7 @@ type Acceptor struct {
 	doneChan chan struct{}
 }
 
+// 根据地址, 开始侦听
 func (self *Acceptor) Listen(addr string) error {
 	self.Address = addr
 	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (interface{}, error) {
@@ -38,6 +39,7 @@ func (self *Acceptor) Listen(addr string) error {
 	return nil
 }
 
+// 侦听并开始后台接受连接
 func (self *Acceptor) ListenAndAccept(addr string) error {
 
 	err := self.Listen(addr)
@@ -50,6 +52,7 @@ func (self *Acceptor) ListenAndAccept(addr string) error {
 	return nil
 }
 
+// 获取侦听端口
 func (self *Acceptor) ListenPort() int {
 	if self.listener == nil {
 		return 0
@@ -58,6 +61,7 @@ func (self *Acceptor) ListenPort() int {
 	return self.listener.Addr().(*net.TCPAddr).Port
 }
 
+// 接受连接循环
 func (self *Acceptor) Accept() error {
 
 	if self.listener == nil {
@@ -110,6 +114,7 @@ func (self *Acceptor) onNewSession(conn net.Conn) {
 	self.ProcEvent(cellevent.BuildSystemEvent(ses, &cellevent.SessionAccepted{}))
 }
 
+// 停止侦听,并关闭所有连接
 func (self *Acceptor) Close() error {
 	if self.listener == nil {
 		return nil

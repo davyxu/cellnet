@@ -64,14 +64,14 @@ type SystemMessageIdentifier interface {
 	SystemMessage()
 }
 
-func BuildSystemEvent(ses cellnet.Session, msg interface{}) *RecvMsgEvent {
+func BuildSystemEvent(ses cellnet.Session, msg interface{}) *RecvMsg {
 
 	meta := cellmeta.MetaByMsg(msg)
 	if meta == nil {
 		panic("sysmsg meta not found")
 	}
 
-	return &RecvMsgEvent{
+	return &RecvMsg{
 		Ses:   ses,
 		MsgID: meta.ID,
 		Msg:   msg,

@@ -13,8 +13,8 @@ type Peer struct {
 	*cellpeer.SessionManager
 	xframe.PropertySet
 	Queue *cellqueue.Queue
-	Recv  func(ses *Session, data []byte) (ev *cellevent.RecvMsgEvent, err error)
-	Send  func(ses *Session, ev *cellevent.SendMsgEvent) error
+	Recv  func(ses *Session, data []byte) (ev *cellevent.RecvMsg, err error)
+	Send  func(ses *Session, ev *cellevent.SendMsg) error
 }
 
 func (self *Peer) Peer() *Peer {

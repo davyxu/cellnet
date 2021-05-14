@@ -19,7 +19,7 @@ var (
 	EnableColor      = false
 )
 
-func RecvLogger(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
+func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 
 	if EnableMsgLog {
 
@@ -58,7 +58,7 @@ func getSessionID(session cellnet.Session) int64 {
 	return 0
 }
 
-func SendLogger(input *cellevent.SendMsgEvent) *cellevent.SendMsgEvent {
+func SendLogger(input *cellevent.SendMsg) *cellevent.SendMsg {
 
 	if EnableMsgLog {
 

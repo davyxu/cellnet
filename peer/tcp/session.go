@@ -92,7 +92,7 @@ func (self *Session) Disconnect() {
 	self.conn.Close()
 }
 
-func (self *Session) readMessage() (ev *cellevent.RecvMsgEvent, err error) {
+func (self *Session) readMessage() (ev *cellevent.RecvMsg, err error) {
 
 	if self.Peer.Recv == nil {
 		panic("no transmitter")
@@ -123,7 +123,7 @@ func (self *Session) recvLoop() {
 
 	for {
 
-		var ev *cellevent.RecvMsgEvent
+		var ev *cellevent.RecvMsg
 		var err error
 
 		ev, err = self.readMessage()
@@ -158,7 +158,7 @@ var (
 	}
 )
 
-func (self *Session) sendMessage(ev *cellevent.SendMsgEvent) (err error) {
+func (self *Session) sendMessage(ev *cellevent.SendMsg) (err error) {
 
 	if self.Peer.Send == nil {
 		panic("no transmitter")
@@ -194,7 +194,7 @@ func (self *Session) sendLoop() {
 
 		// 遍历要发送的数据
 		for _, ev := range writeList {
-			self.sendMessage(ev.(*cellevent.SendMsgEvent))
+			self.sendMessage(ev.(*cellevent.SendMsg))
 		}
 
 		if exit {

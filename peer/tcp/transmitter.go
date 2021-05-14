@@ -35,7 +35,7 @@ var (
 	TestEnableSendPanic bool
 )
 
-func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
+func RecvMessage(ses *Session) (ev *cellevent.RecvMsg, err error) {
 
 	if TestEnableRecvPanic {
 		panic("emulate recv crash")
@@ -83,7 +83,7 @@ func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
 
 	msgData := body[msgIDLen:]
 
-	ev = &cellevent.RecvMsgEvent{
+	ev = &cellevent.RecvMsg{
 		Ses:     ses,
 		MsgID:   int(msgid),
 		MsgData: msgData,
@@ -92,7 +92,7 @@ func RecvMessage(ses *Session) (ev *cellevent.RecvMsgEvent, err error) {
 	return
 }
 
-func SendMessage(ses *Session, ev *cellevent.SendMsgEvent) error {
+func SendMessage(ses *Session, ev *cellevent.SendMsg) error {
 
 	if TestEnableSendPanic {
 		panic("emulate send crash")

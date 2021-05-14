@@ -8,7 +8,7 @@ import (
 )
 
 // 将用户消息封装为发送事件
-func PackEvent(payload interface{}, ps *xframe.PropertySet) *cellevent.SendMsgEvent {
+func PackEvent(payload interface{}, ps *xframe.PropertySet) *cellevent.SendMsg {
 	var (
 		msgData []byte
 		msgID   int
@@ -27,11 +27,11 @@ func PackEvent(payload interface{}, ps *xframe.PropertySet) *cellevent.SendMsgEv
 			msgID = meta.ID
 		} else {
 			// 无法识别的消息, 丢给transmitter层处理
-			return &cellevent.SendMsgEvent{Msg: payload}
+			return &cellevent.SendMsg{Msg: payload}
 		}
 
 	}
-	return &cellevent.SendMsgEvent{
+	return &cellevent.SendMsg{
 		MsgID:   msgID,
 		MsgData: msgData,
 	}

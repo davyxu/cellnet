@@ -13,7 +13,7 @@ const (
 	HeaderSize = MsgIDLen + MsgIDLen // 整个UDP包头部分
 )
 
-func RecvMessage(ses *Session, pktData []byte) (ev *cellevent.RecvMsgEvent, err error) {
+func RecvMessage(ses *Session, pktData []byte) (ev *cellevent.RecvMsg, err error) {
 	// 小于包头，使用nc指令测试时，为1
 	if len(pktData) < packetLen {
 		return nil, nil
@@ -32,7 +32,7 @@ func RecvMessage(ses *Session, pktData []byte) (ev *cellevent.RecvMsgEvent, err 
 
 	msgData := pktData[HeaderSize:]
 
-	ev = &cellevent.RecvMsgEvent{
+	ev = &cellevent.RecvMsg{
 		Ses:     ses,
 		MsgID:   int(msgid),
 		MsgData: msgData,
@@ -41,7 +41,7 @@ func RecvMessage(ses *Session, pktData []byte) (ev *cellevent.RecvMsgEvent, err 
 	return
 }
 
-func SendMessage(ses *Session, ev *cellevent.SendMsgEvent) error {
+func SendMessage(ses *Session, ev *cellevent.SendMsg) error {
 
 	pktData := make([]byte, HeaderSize+len(ev.MsgData))
 

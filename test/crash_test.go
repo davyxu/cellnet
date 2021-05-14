@@ -19,7 +19,7 @@ func TestRecvCrash(t *testing.T) {
 	acc.CapturePanic = true
 	acc.Recv = tcp.RecvMessage
 	acc.Send = tcp.SendMessage
-	acc.Inbound = func(input *cellevent.RecvMsgEvent) (output *cellevent.RecvMsgEvent) {
+	acc.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionClosed:
@@ -34,7 +34,7 @@ func TestRecvCrash(t *testing.T) {
 	conn.CapturePanic = true
 	conn.Recv = tcp.RecvMessage
 	conn.Send = tcp.SendMessage
-	conn.Inbound = func(input *cellevent.RecvMsgEvent) (output *cellevent.RecvMsgEvent) {
+	conn.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionClosed:
@@ -56,7 +56,7 @@ func TestSendCrash(t *testing.T) {
 	acc.CapturePanic = true
 	acc.Recv = tcp.RecvMessage
 	acc.Send = tcp.SendMessage
-	acc.Inbound = func(input *cellevent.RecvMsgEvent) (output *cellevent.RecvMsgEvent) {
+	acc.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		return input
 	}
@@ -67,7 +67,7 @@ func TestSendCrash(t *testing.T) {
 	conn.CapturePanic = true
 	conn.Recv = tcp.RecvMessage
 	conn.Send = tcp.SendMessage
-	conn.Inbound = func(input *cellevent.RecvMsgEvent) (output *cellevent.RecvMsgEvent) {
+	conn.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionConnected:

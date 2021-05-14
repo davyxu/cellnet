@@ -2,8 +2,8 @@ package cellevent
 
 import "github.com/davyxu/cellnet"
 
-// rpc, relay, 普通消息
-type ReplyEvent interface {
+// 回复对方消息,rpc
+type Replier interface {
 	Reply(msg interface{})
 }
 

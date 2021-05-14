@@ -3,7 +3,7 @@ package cellevent
 import "github.com/davyxu/cellnet"
 
 // 会话开始发送数据事件
-type SendMsgEvent struct {
+type SendMsg struct {
 	Ses cellnet.Session
 	Msg interface{} // 用户需要发送的消息
 
@@ -12,7 +12,7 @@ type SendMsgEvent struct {
 	MsgData []byte
 }
 
-func (self *SendMsgEvent) Message() interface{} {
+func (self *SendMsg) Message() interface{} {
 	if self.Msg == nil {
 		self.Msg = InternalDecodeHandler(self)
 	}
@@ -20,14 +20,14 @@ func (self *SendMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
-func (self *SendMsgEvent) Session() cellnet.Session {
+func (self *SendMsg) Session() cellnet.Session {
 	return self.Ses
 }
 
-func (self *SendMsgEvent) MessageID() int {
+func (self *SendMsg) MessageID() int {
 	return self.MsgID
 }
 
-func (self *SendMsgEvent) MessageData() []byte {
+func (self *SendMsg) MessageData() []byte {
 	return self.MsgData
 }

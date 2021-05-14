@@ -18,7 +18,7 @@ func startTCPServer(t *testing.T) {
 	acc.Recv = tcp.RecvMessage
 	acc.Send = tcp.SendMessage
 	acc.Outbound = cellmsglog.SendLogger
-	acc.Inbound = func(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
+	acc.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *TestEchoACK:
@@ -40,7 +40,7 @@ func startTCPClient(t *testing.T) {
 	conn.Send = tcp.SendMessage
 	conn.Outbound = cellmsglog.SendLogger
 
-	conn.Inbound = func(input *cellevent.RecvMsgEvent) *cellevent.RecvMsgEvent {
+	conn.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionConnected:
