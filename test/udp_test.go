@@ -4,6 +4,7 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmsglog "github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/udp"
+	udptransmit "github.com/davyxu/cellnet/transmit/udp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -15,8 +16,8 @@ const (
 
 func startUDPServer(t *testing.T) {
 	acc := udp.NewAcceptor()
-	acc.Recv = udp.RecvMessage
-	acc.Send = udp.SendMessage
+	acc.Recv = udptransmit.RecvMessage
+	acc.Send = udptransmit.SendMessage
 	acc.Outbound = cellmsglog.SendLogger
 	acc.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
@@ -38,8 +39,8 @@ func TestUDPEcho(t *testing.T) {
 	signal.SetTimeout(time.Second)
 
 	conn := udp.NewConnector()
-	conn.Recv = udp.RecvMessage
-	conn.Send = udp.SendMessage
+	conn.Recv = udptransmit.RecvMessage
+	conn.Send = udptransmit.SendMessage
 	conn.Outbound = cellmsglog.SendLogger
 	conn.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
