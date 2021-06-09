@@ -94,7 +94,7 @@ func (self *Session) Disconnect() {
 
 func (self *Session) readMessage() (ev *cellevent.RecvMsg, err error) {
 
-	if self.Peer.Recv == nil {
+	if self.Peer.OnRecv == nil {
 		panic("no transmitter")
 	}
 
@@ -102,7 +102,7 @@ func (self *Session) readMessage() (ev *cellevent.RecvMsg, err error) {
 
 	self.Peer.ProctectCall(func() {
 
-		ev, err = self.Peer.Recv(self)
+		ev, err = self.Peer.OnRecv(self)
 
 	}, func(raw interface{}) {
 		var ok bool
@@ -160,19 +160,19 @@ var (
 
 func (self *Session) sendMessage(ev *cellevent.SendMsg) (err error) {
 
-	if self.Peer.Send == nil {
+	if self.Peer.OnSend == nil {
 		panic("no transmitter")
 	}
 
-	if self.Peer.Outbound != nil {
-		ev = self.Peer.Outbound(ev)
+	if self.Peer.OnOutbound != nil {
+		ev = self.Peer.OnOutbound(ev)
 	}
 
 	apply := self.Peer.BeginApplyWriteTimeout(self.conn)
 
 	self.Peer.ProctectCall(func() {
 
-		err = self.Peer.Send(self, ev)
+		err = self.Peer.OnSend(self, ev)
 
 	}, OnSendCrash)
 

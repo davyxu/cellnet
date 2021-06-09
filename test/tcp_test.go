@@ -16,10 +16,10 @@ const (
 
 func startTCPServer(t *testing.T) {
 	acc := tcp.NewAcceptor()
-	acc.Recv = tcptransmit.RecvMessage
-	acc.Send = tcptransmit.SendMessage
-	acc.Outbound = cellmsglog.SendLogger
-	acc.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
+	acc.OnRecv = tcptransmit.RecvMessage
+	acc.OnSend = tcptransmit.SendMessage
+	acc.OnOutbound = cellmsglog.SendLogger
+	acc.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *TestEchoACK:
@@ -37,11 +37,11 @@ func startTCPClient(t *testing.T) {
 	signal.SetTimeout(time.Second)
 
 	conn := tcp.NewConnector()
-	conn.Recv = tcptransmit.RecvMessage
-	conn.Send = tcptransmit.SendMessage
-	conn.Outbound = cellmsglog.SendLogger
+	conn.OnRecv = tcptransmit.RecvMessage
+	conn.OnSend = tcptransmit.SendMessage
+	conn.OnOutbound = cellmsglog.SendLogger
 
-	conn.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
+	conn.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionConnected:

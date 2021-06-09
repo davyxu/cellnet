@@ -67,8 +67,8 @@ func (self *Session) Send(msg interface{}) {
 	}
 	ev.Ses = self
 
-	if self.peer.Outbound != nil {
-		ev = self.peer.Outbound(ev)
+	if self.peer.OnOutbound != nil {
+		ev = self.peer.OnOutbound(ev)
 	}
 
 	self.peer.Send(self, ev)

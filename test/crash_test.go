@@ -28,9 +28,9 @@ func TestRecvCrash(t *testing.T) {
 
 	acc := tcp.NewAcceptor()
 	acc.CapturePanic = true
-	acc.Recv = tcptransmit.RecvMessage
-	acc.Send = tcptransmit.SendMessage
-	acc.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
+	acc.OnRecv = tcptransmit.RecvMessage
+	acc.OnSend = tcptransmit.SendMessage
+	acc.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionClosed:
@@ -43,9 +43,9 @@ func TestRecvCrash(t *testing.T) {
 
 	conn := tcp.NewConnector()
 	conn.CapturePanic = true
-	conn.Recv = tcptransmit.RecvMessage
-	conn.Send = tcptransmit.SendMessage
-	conn.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
+	conn.OnRecv = tcptransmit.RecvMessage
+	conn.OnSend = tcptransmit.SendMessage
+	conn.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionClosed:
@@ -71,9 +71,9 @@ func TestSendCrash(t *testing.T) {
 
 	acc := tcp.NewAcceptor()
 	acc.CapturePanic = true
-	acc.Recv = tcptransmit.RecvMessage
-	acc.Send = tcptransmit.SendMessage
-	acc.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
+	acc.OnRecv = tcptransmit.RecvMessage
+	acc.OnSend = tcptransmit.SendMessage
+	acc.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		return input
 	}
@@ -82,9 +82,9 @@ func TestSendCrash(t *testing.T) {
 
 	conn := tcp.NewConnector()
 	conn.CapturePanic = true
-	conn.Recv = tcptransmit.RecvMessage
-	conn.Send = tcptransmit.SendMessage
-	conn.Inbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
+	conn.OnRecv = tcptransmit.RecvMessage
+	conn.OnSend = tcptransmit.SendMessage
+	conn.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionConnected:

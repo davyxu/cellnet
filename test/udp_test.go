@@ -18,8 +18,8 @@ func startUDPServer(t *testing.T) {
 	acc := udp.NewAcceptor()
 	acc.Recv = udptransmit.RecvMessage
 	acc.Send = udptransmit.SendMessage
-	acc.Outbound = cellmsglog.SendLogger
-	acc.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
+	acc.OnOutbound = cellmsglog.SendLogger
+	acc.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *TestEchoACK:
@@ -41,8 +41,8 @@ func TestUDPEcho(t *testing.T) {
 	conn := udp.NewConnector()
 	conn.Recv = udptransmit.RecvMessage
 	conn.Send = udptransmit.SendMessage
-	conn.Outbound = cellmsglog.SendLogger
-	conn.Inbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
+	conn.OnOutbound = cellmsglog.SendLogger
+	conn.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
 		case *cellevent.SessionConnected:
