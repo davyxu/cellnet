@@ -40,10 +40,10 @@ func Register(meta *Meta) *Meta {
 		metaByType[meta.Type] = meta
 	}
 
-	if _, ok := metaByFullName[meta.FullName()]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by fullname: %s", meta.FullName()))
+	if _, ok := metaByFullName[meta.FullName]; ok {
+		panic(fmt.Sprintf("Duplicate message meta register by fullname: %s", meta.FullName))
 	} else {
-		metaByFullName[meta.FullName()] = meta
+		metaByFullName[meta.FullName] = meta
 	}
 
 	if meta.ID != 0 {
@@ -146,7 +146,7 @@ func MessageIDToName(msgid int) string {
 	return ""
 }
 
-// 消息名(例如:proto.MsgREQ)
+// 消息名(例如:pb.MsgREQ)
 func MessageToFullName(msg interface{}) string {
 
 	if msg == nil {
@@ -158,7 +158,7 @@ func MessageToFullName(msg interface{}) string {
 		return ""
 	}
 
-	return meta.FullName()
+	return meta.FullName
 }
 
 func MessageToID(msg interface{}) int {
