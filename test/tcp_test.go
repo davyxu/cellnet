@@ -4,7 +4,7 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmsglog "github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/tcp"
-	tcptransmit "github.com/davyxu/cellnet/transmit/tcp"
+	tcptransport "github.com/davyxu/cellnet/transport/tcp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -16,8 +16,8 @@ const (
 
 func startTCPServer(t *testing.T) {
 	acc := tcp.NewAcceptor()
-	acc.OnRecv = tcptransmit.RecvMessage
-	acc.OnSend = tcptransmit.SendMessage
+	acc.OnRecv = tcptransport.RecvMessage
+	acc.OnSend = tcptransport.SendMessage
 	acc.OnOutbound = cellmsglog.SendLogger
 	acc.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 		cellmsglog.RecvLogger(input)
@@ -37,8 +37,8 @@ func startTCPClient(t *testing.T) {
 	signal.SetTimeout(time.Second)
 
 	conn := tcp.NewConnector()
-	conn.OnRecv = tcptransmit.RecvMessage
-	conn.OnSend = tcptransmit.SendMessage
+	conn.OnRecv = tcptransport.RecvMessage
+	conn.OnSend = tcptransport.SendMessage
 	conn.OnOutbound = cellmsglog.SendLogger
 
 	conn.OnInbound = func(input *cellevent.RecvMsg) *cellevent.RecvMsg {

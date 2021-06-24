@@ -1,4 +1,4 @@
-package tcptransmit
+package tcptransport
 
 const (
 	packetHeaderSize = 2 // 包体大小字段

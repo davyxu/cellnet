@@ -4,7 +4,7 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmsglog "github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/peer/tcp"
-	tcptransmit "github.com/davyxu/cellnet/transmit/tcp"
+	tcptransport "github.com/davyxu/cellnet/transport/tcp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -20,16 +20,16 @@ func TestRecvCrash(t *testing.T) {
 	signal := NewSignalTester(t)
 	signal.SetTimeout(time.Second)
 
-	tcptransmit.TestEnableRecvPanic = true
+	tcptransport.TestEnableRecvPanic = true
 
 	defer func() {
-		tcptransmit.TestEnableRecvPanic = false
+		tcptransport.TestEnableRecvPanic = false
 	}()
 
 	acc := tcp.NewAcceptor()
 	acc.CapturePanic = true
-	acc.OnRecv = tcptransmit.RecvMessage
-	acc.OnSend = tcptransmit.SendMessage
+	acc.OnRecv = tcptransport.RecvMessage
+	acc.OnSend = tcptransport.SendMessage
 	acc.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
@@ -43,8 +43,8 @@ func TestRecvCrash(t *testing.T) {
 
 	conn := tcp.NewConnector()
 	conn.CapturePanic = true
-	conn.OnRecv = tcptransmit.RecvMessage
-	conn.OnSend = tcptransmit.SendMessage
+	conn.OnRecv = tcptransport.RecvMessage
+	conn.OnSend = tcptransport.SendMessage
 	conn.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {
@@ -63,16 +63,16 @@ func TestSendCrash(t *testing.T) {
 	signal := NewSignalTester(t)
 	signal.SetTimeout(time.Second)
 
-	tcptransmit.TestEnableSendPanic = true
+	tcptransport.TestEnableSendPanic = true
 
 	defer func() {
-		tcptransmit.TestEnableSendPanic = false
+		tcptransport.TestEnableSendPanic = false
 	}()
 
 	acc := tcp.NewAcceptor()
 	acc.CapturePanic = true
-	acc.OnRecv = tcptransmit.RecvMessage
-	acc.OnSend = tcptransmit.SendMessage
+	acc.OnRecv = tcptransport.RecvMessage
+	acc.OnSend = tcptransport.SendMessage
 	acc.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		return input
@@ -82,8 +82,8 @@ func TestSendCrash(t *testing.T) {
 
 	conn := tcp.NewConnector()
 	conn.CapturePanic = true
-	conn.OnRecv = tcptransmit.RecvMessage
-	conn.OnSend = tcptransmit.SendMessage
+	conn.OnRecv = tcptransport.RecvMessage
+	conn.OnSend = tcptransport.SendMessage
 	conn.OnInbound = func(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 		cellmsglog.RecvLogger(input)
 		switch msg := input.Message().(type) {

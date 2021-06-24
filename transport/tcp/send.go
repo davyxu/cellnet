@@ -1,4 +1,4 @@
-package tcptransmit
+package tcptransport
 
 import (
 	"fmt"

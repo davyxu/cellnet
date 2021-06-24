@@ -1,4 +1,4 @@
-package udptransmit
+package udptransport
 
 import (
 	"encoding/binary"

@@ -1,4 +1,4 @@
-package udptransmit
+package udptransport
 
 const (
 	MTU       = 1472 // 最大传输单元

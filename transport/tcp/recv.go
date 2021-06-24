@@ -1,10 +1,10 @@
-package tcptransmit
+package tcptransport
 
 import (
 	"encoding/binary"
 	cellevent "github.com/davyxu/cellnet/event"
 	"github.com/davyxu/cellnet/peer/tcp"
-	celltransmit "github.com/davyxu/cellnet/transmit"
+	celltransport "github.com/davyxu/cellnet/transport"
 	"io"
 )
 
@@ -27,14 +27,14 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 	}
 
 	if len(sizeBuffer) < packetHeaderSize {
-		return nil, celltransmit.ErrMinPacket
+		return nil, celltransport.ErrMinPacket
 	}
 
 	// 用小端格式读取Size
 	size := binary.LittleEndian.Uint16(sizeBuffer)
 
 	if opt.MaxPacketSize > 0 && int(size) >= opt.MaxPacketSize {
-		return nil, celltransmit.ErrMaxPacket
+		return nil, celltransport.ErrMaxPacket
 	}
 
 	// 分配包体大小
@@ -49,7 +49,7 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 	}
 
 	if len(body) < msgIDLen {
-		return nil, celltransmit.ErrShortMsgID
+		return nil, celltransport.ErrShortMsgID
 	}
 
 	msgid := binary.LittleEndian.Uint16(body)
