@@ -29,34 +29,28 @@ func (self *Queue) Post(callback func()) {
 	self.pipe.Add(callback)
 }
 
-// 保护调用用户函数
-func (self *Queue) protectedCall(callback func()) {
-
-	if self.CapturePanic {
-		defer func() {
-
-			if err := recover(); err != nil {
-				self.PanicNotify(err, self)
-			}
-
-		}()
-	}
-
-	callback()
-}
-
 // 开启事件循环
 func (self *Queue) Run() *Queue {
 
 	self.pipe.Run(func(raw interface{}) {
 
-		switch t := raw.(type) {
+		switch value := raw.(type) {
 		case func():
-			self.protectedCall(t)
+			if self.CapturePanic {
+				defer func() {
+
+					if err := recover(); err != nil {
+						self.PanicNotify(err, self)
+					}
+
+				}()
+			}
+
+			value()
 		case nil:
 			break
 		default:
-			panic(fmt.Sprintf("unexpected type %T", t))
+			panic(fmt.Sprintf("unexpected type %T", value))
 		}
 	})
 
