@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"github.com/davyxu/x/frame"
 	"runtime/debug"
-	"sync"
 	"time"
 )
 
 type PanicNotifyFunc func(interface{}, *Queue)
 
 type Queue struct {
-	pipe      *xframe.Pipe
-	endSignal sync.WaitGroup
+	pipe *xframe.Pipe
 
 	// 启动崩溃捕获
 	CapturePanic bool
@@ -50,48 +48,25 @@ func (self *Queue) protectedCall(callback func()) {
 // 开启事件循环
 func (self *Queue) Run() *Queue {
 
-	self.endSignal.Add(1)
+	self.pipe.Run(func(raw interface{}) {
 
-	go func() {
-
-		var writeList []interface{}
-
-		for {
-			writeList = writeList[0:0]
-			exit := self.pipe.Pick(&writeList)
-
-			// 遍历要发送的数据
-			for _, msg := range writeList {
-				switch t := msg.(type) {
-				case func():
-					self.protectedCall(t)
-				case nil:
-					break
-				default:
-					panic(fmt.Sprintf("unexpected type %T", t))
-				}
-			}
-
-			if exit {
-				break
-			}
+		switch t := raw.(type) {
+		case func():
+			self.protectedCall(t)
+		case nil:
+			break
+		default:
+			panic(fmt.Sprintf("unexpected type %T", t))
 		}
-
-		self.endSignal.Done()
-	}()
+	})
 
 	return self
 }
 
 // 停止事件循环
 func (self *Queue) Stop() *Queue {
-	self.pipe.Add(nil)
+	self.pipe.Stop()
 	return self
-}
-
-// 等待退出消息
-func (self *Queue) Wait() {
-	self.endSignal.Wait()
 }
 
 // 创建默认长度的队列
