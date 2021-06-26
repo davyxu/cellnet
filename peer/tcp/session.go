@@ -95,7 +95,7 @@ func (self *Session) Disconnect() {
 func (self *Session) readMessage() (ev *cellevent.RecvMsg, err error) {
 
 	if self.Peer.OnRecv == nil {
-		panic("no transmitter")
+		panic("peer.OnRecv not set")
 	}
 
 	apply := self.Peer.BeginApplyReadTimeout(self.conn)
@@ -161,7 +161,7 @@ var (
 func (self *Session) sendMessage(ev *cellevent.SendMsg) (err error) {
 
 	if self.Peer.OnSend == nil {
-		panic("no transmitter")
+		panic("peer.OnSend not set")
 	}
 
 	if self.Peer.OnOutbound != nil {
