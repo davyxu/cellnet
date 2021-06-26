@@ -5,7 +5,7 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmeta "github.com/davyxu/cellnet/meta"
 	cellpeer "github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/ulog"
+	xlog "github.com/davyxu/x/logger"
 )
 
 // 萃取消息中的消息
@@ -16,7 +16,6 @@ type PacketMessagePeeker interface {
 var (
 	EnableMsgLog     = true
 	SystemMsgVisible = true
-	EnableColor      = false
 )
 
 func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
@@ -38,7 +37,8 @@ func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 
 		if IsMsgVisible(msgID) {
 
-			ulog.WithColorByCondition(ulog.Blue, EnableColor).Debugf("#recv %d %s %d %s",
+			// blue
+			xlog.Debugf("#recv %d %s %d %s",
 				getSessionID(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),
@@ -77,7 +77,8 @@ func SendLogger(input *cellevent.SendMsg) *cellevent.SendMsg {
 
 		if IsMsgVisible(msgID) {
 
-			ulog.WithColorByCondition(ulog.Purple, EnableColor).Debugf("#send %d %s %d %s",
+			// purple
+			xlog.Debugf("#send %d %s %d %s",
 				getSessionID(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),

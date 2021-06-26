@@ -5,9 +5,9 @@ import (
 	"github.com/davyxu/cellnet"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellpeer "github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/ulog"
 	"github.com/davyxu/x/frame"
 	"github.com/davyxu/x/io"
+	xlog "github.com/davyxu/x/logger"
 	xnet "github.com/davyxu/x/net"
 	"net"
 	"sync"
@@ -154,7 +154,7 @@ func (self *Session) recvLoop() {
 
 var (
 	OnSendCrash = func(raw interface{}) {
-		ulog.Errorf("send panic: %+v", raw)
+		xlog.Errorf("send panic: %+v", raw)
 	}
 )
 
