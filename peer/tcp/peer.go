@@ -31,43 +31,33 @@ func newPeer() *Peer {
 
 // SessionID根据各种实现不一样(例如网关), 应该在具体实现里获取
 func SessionID(ses cellnet.Session) int64 {
-	if ses == nil {
+	raw := SessionRaw(ses)
+	if raw == nil {
 		return 0
 	}
 
-	type idfetcher interface {
-		ID() int64
+	return raw.ID()
+}
+
+func SessionRaw(ses cellnet.Session) *Session {
+	if ses == nil {
+		return nil
 	}
 
-	if f, ok := ses.(idfetcher); ok {
-		return f.ID()
+	if tcpSes, ok := ses.(*Session); ok {
+		return tcpSes
 	}
 
-	return 0
+	return nil
 }
 
 func SessionPeer(ses cellnet.Session) *Peer {
-	if ses == nil {
+	raw := SessionRaw(ses)
+	if raw == nil {
 		return nil
 	}
 
-	if tcpSes, ok := ses.(*Session); ok {
-		return tcpSes.Peer
-	}
-
-	return nil
-}
-
-func SessionParent(ses cellnet.Session) interface{} {
-	if ses == nil {
-		return nil
-	}
-
-	if tcpSes, ok := ses.(*Session); ok {
-		return tcpSes.parent
-	}
-
-	return nil
+	return raw.Peer
 }
 
 func SessionQueuedCall(ses cellnet.Session, callback func()) {
