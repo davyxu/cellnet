@@ -40,9 +40,3 @@ func (self *RecvMsg) Send(msg interface{}) {
 		self.Ses.Send(msg)
 	}
 }
-
-func (self *RecvMsg) Reply(msg interface{}) {
-	if self.Ses != nil {
-		self.Ses.Send(msg)
-	}
-}

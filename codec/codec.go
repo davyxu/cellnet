@@ -14,7 +14,7 @@ var (
 )
 
 // 编码消息, 在使用了带内存池的codec中，可以传入session或peer的ContextSet，保存内存池上下文，默认ctx传nil
-func Encode(msg interface{}, ps *xframe.PropertySet) (data []byte, meta *cellmeta.Meta, err error) {
+func Encode(msg interface{}, ps *xframe.Mapper) (data []byte, meta *cellmeta.Meta, err error) {
 
 	// 获取消息元信息
 	meta = cellmeta.MetaByMsg(msg)
@@ -73,10 +73,10 @@ func Decode(msgid int, data []byte) (msg interface{}, meta *cellmeta.Meta, err e
 
 // Codec.Encode内分配的资源，在必要时可以回收，例如内存池对象
 type CodecRecycler interface {
-	Free(data interface{}, ps *xframe.PropertySet)
+	Free(data interface{}, ps *xframe.Mapper)
 }
 
-func Free(codec cellnet.Codec, data interface{}, ps *xframe.PropertySet) {
+func Free(codec cellnet.Codec, data interface{}, ps *xframe.Mapper) {
 
 	if codec == nil {
 		return

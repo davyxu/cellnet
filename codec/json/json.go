@@ -15,7 +15,7 @@ func (self *jsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *jsonCodec) Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error) {
+func (self *jsonCodec) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
 
 	return json.Marshal(msgObj)
 

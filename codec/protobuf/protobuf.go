@@ -13,7 +13,7 @@ func (self *protobuf) Name() string {
 	return "protobuf"
 }
 
-func (self *protobuf) Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error) {
+func (self *protobuf) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
 
 	return pb.Marshal(msgObj.(pb.Message))
 

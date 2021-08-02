@@ -11,7 +11,7 @@ import (
 type Peer struct {
 	cellpeer.Hooker
 	*cellpeer.SessionManager
-	xframe.PropertySet
+	xframe.Mapper
 	cellpeer.SocketOption
 	cellpeer.Protect
 	Queue  *cellqueue.Queue

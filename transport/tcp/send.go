@@ -23,7 +23,7 @@ func SendMessage(ses *tcp.Session, ev *cellevent.SendMsg) error {
 		panic("emulate send crash")
 	}
 
-	ps := &ses.Peer.PropertySet
+	ps := &ses.Peer.Mapper
 
 	var (
 		msgData []byte

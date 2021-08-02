@@ -14,7 +14,7 @@ func (self *protoplus) Name() string {
 	return "protoplus"
 }
 
-func (self *protoplus) Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error) {
+func (self *protoplus) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
 
 	return ppgo.Marshal(msgObj.(ppgo.Struct))
 

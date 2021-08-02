@@ -8,7 +8,7 @@ type Session interface {
 	Send(msg interface{})
 
 	// 关闭连接
-	Close()
+	Close() //  TODO 干掉, 默认不需要
 }
 
 // 事件
@@ -29,7 +29,7 @@ type Event interface {
 
 type Codec interface {
 	// 将数据转换为字节数组
-	Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error)
+	Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error)
 
 	// 将字节数组转换为数据
 	Decode(data interface{}, msgObj interface{}) error

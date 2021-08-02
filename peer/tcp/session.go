@@ -17,7 +17,7 @@ import (
 
 // Socket会话
 type Session struct {
-	xframe.PropertySet
+	xframe.Mapper
 	cellpeer.SessionIdentify
 
 	Peer   *Peer
@@ -74,7 +74,7 @@ func (self *Session) Send(msg interface{}) {
 	}
 
 	// 在用户线程编码, 保证字段不会在其他线程被序列化读取
-	ev := cellpeer.PackEvent(msg, &self.PropertySet)
+	ev := cellpeer.PackEvent(msg, &self.Mapper)
 	if ev == nil {
 		return
 	}

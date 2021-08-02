@@ -9,7 +9,7 @@ import (
 
 // 消息元信息
 type Meta struct {
-	xframe.PropertySet
+	xframe.Mapper
 
 	Type  reflect.Type       // 消息类型, 注册时使用指针类型
 	Codec cellnet.Codec      // 消息用到的编码

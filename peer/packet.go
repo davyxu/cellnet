@@ -8,7 +8,7 @@ import (
 )
 
 // 将用户消息封装为发送事件
-func PackEvent(payload interface{}, ps *xframe.PropertySet) *cellevent.SendMsg {
+func PackEvent(payload interface{}, ps *xframe.Mapper) *cellevent.SendMsg {
 	var (
 		msgData []byte
 		msgID   int

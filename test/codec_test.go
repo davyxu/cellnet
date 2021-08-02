@@ -31,7 +31,7 @@ func (self *problemJsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *problemJsonCodec) Encode(msgObj interface{}, ps *xframe.PropertySet) (data interface{}, err error) {
+func (self *problemJsonCodec) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
 	panic("encode")
 	return nil, nil
 }

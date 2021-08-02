@@ -11,7 +11,7 @@ import (
 type Peer struct {
 	cellpeer.Hooker
 	*cellpeer.SessionManager
-	xframe.PropertySet
+	xframe.Mapper
 	Queue *cellqueue.Queue
 	Recv  func(ses *Session, data []byte) (ev *cellevent.RecvMsg, err error)
 	Send  func(ses *Session, ev *cellevent.SendMsg) error

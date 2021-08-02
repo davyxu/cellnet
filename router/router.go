@@ -3,47 +3,50 @@ package cellrouter
 import (
 	cellmeta "github.com/davyxu/cellnet/meta"
 	xframe "github.com/davyxu/x/frame"
+	xlog "github.com/davyxu/x/logger"
+	xos "github.com/davyxu/x/os"
+	xruntime "github.com/davyxu/x/runtime"
 )
 
-// gin风格的路由
+type HandlerFunc func(ctx *Context)
+
 type Router struct {
-	node            xframe.PropertySet
-	handlers        []HandlerFunc // 全局handler
-	defaultHandlers []HandlerFunc // 默认无处理handler
+	mapper   xframe.Mapper
+	handlers []interface{} // 全局handler
+	Recover  bool
 }
 
-func (self *Router) Use(handlers ...HandlerFunc) {
-	self.handlers = append(self.handlers, handlers...)
+type HandlerKey struct {
+	ID   int
+	Kind string
 }
 
-func (self *Router) combineHandlers(handlers []HandlerFunc) []HandlerFunc {
-	finalSize := len(self.handlers) + len(handlers)
-	mergedHandlers := make([]HandlerFunc, finalSize)
-	copy(mergedHandlers, self.handlers)
-	copy(mergedHandlers[len(self.handlers):], handlers)
-	return mergedHandlers
-}
+func (self *Router) Handle(obj interface{}, kind string, handler interface{}) {
 
-func (self *Router) Handle(msgTypeObj interface{}, handlers ...HandlerFunc) {
-
-	meta := cellmeta.MetaByMsg(msgTypeObj)
+	meta := cellmeta.MetaByMsg(obj)
 	if meta == nil {
 		panic("msg not register meta")
 	}
-
-	self.node.Set(meta.ID, self.combineHandlers(handlers))
+	self.mapper.Set(HandlerKey{ID: meta.ID, Kind: kind}, handler)
 }
 
-func (self *Router) HandleDefault(handlers ...HandlerFunc) {
-	self.defaultHandlers = self.combineHandlers(handlers)
-}
+func (self *Router) Invoke(ctx *Context, kind string, customInvoker func(raw interface{})) {
 
-func (self *Router) Invoke(ctx *Context) {
-	if raw, ok := self.node.Get(ctx.MessageID()); ok {
-		ctx.handlers = raw.([]HandlerFunc)
-		ctx.Next()
-	} else if len(self.defaultHandlers) > 0 {
-		ctx.handlers = self.defaultHandlers
-		ctx.Next()
+	if self.Recover {
+		defer xos.Recover(func(raw interface{}) {
+			reqName := cellmeta.MessageToName(ctx.Message())
+			reqBody := cellmeta.MessageToString(ctx.Message())
+
+			xlog.Errorf("Panic recovery | %v | stack: %s |> %s | %s", raw, xruntime.StackToString(5), reqName, reqBody)
+		})
+	}
+
+	if raw, ok := self.mapper.Get(HandlerKey{ID: ctx.MessageID(), Kind: kind}); ok {
+		if entry, ok := raw.(HandlerFunc); ok {
+
+			entry(ctx)
+		} else if customInvoker != nil {
+			customInvoker(raw)
+		}
 	}
 }
