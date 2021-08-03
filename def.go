@@ -6,9 +6,6 @@ import xframe "github.com/davyxu/x/frame"
 type Session interface {
 	// 发送消息
 	Send(msg interface{})
-
-	// 关闭连接
-	Close() //  TODO 干掉, 默认不需要
 }
 
 // 事件

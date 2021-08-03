@@ -92,7 +92,9 @@ func (self *SessionManager) CloseAll() {
 	self.sesByIDGuard.RLock()
 	defer self.sesByIDGuard.RUnlock()
 	for _, ses := range self.sesByID {
-		ses.Close()
+		ses.(interface {
+			Close()
+		}).Close()
 	}
 	self.sesByID = map[int64]cellnet.Session{}
 
