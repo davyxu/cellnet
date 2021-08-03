@@ -10,6 +10,8 @@ type MsgQueue struct {
 	nc *nats.Conn
 	// 重连间隔
 	ReconnInterval time.Duration
+	// Ping间隔
+	PingInterval time.Duration
 
 	OnSend func(msg interface{}) (payload []byte, err error)
 	OnRecv func(payload []byte) (msg interface{}, err error)
@@ -35,7 +37,9 @@ func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err
 }
 
 func (self *MsgQueue) Connect(addr string) error {
-	nc, err := nats.Connect(addr, nats.ReconnectWait(self.ReconnInterval))
+	nc, err := nats.Connect(addr,
+		nats.ReconnectWait(self.ReconnInterval),
+		nats.PingInterval(self.PingInterval))
 
 	if err != nil {
 		return err
@@ -52,7 +56,8 @@ func NewMsgQueue() *MsgQueue {
 	self := &MsgQueue{
 		OnRecv:         natstransport.RecvMessage,
 		OnSend:         natstransport.SendMessage,
-		ReconnInterval: time.Second * 3,
+		ReconnInterval: time.Second * 5,
+		PingInterval:   time.Second * 10,
 	}
 
 	return self
