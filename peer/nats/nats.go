@@ -3,16 +3,10 @@ package nats
 import (
 	natstransport "github.com/davyxu/cellnet/transport/nats"
 	"github.com/nats-io/nats.go"
-	"time"
 )
 
 type MsgQueue struct {
-	nc *nats.Conn
-	// 重连间隔
-	ReconnInterval time.Duration
-	// Ping间隔
-	PingInterval time.Duration
-
+	nc     *nats.Conn
 	OnSend func(msg interface{}) (payload []byte, err error)
 	OnRecv func(payload []byte) (msg interface{}, err error)
 }
@@ -36,10 +30,8 @@ func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err
 	return err
 }
 
-func (self *MsgQueue) Connect(addr string) error {
-	nc, err := nats.Connect(addr,
-		nats.ReconnectWait(self.ReconnInterval),
-		nats.PingInterval(self.PingInterval))
+func (self *MsgQueue) Connect(addr string, options ...nats.Option) error {
+	nc, err := nats.Connect(addr, options...)
 
 	if err != nil {
 		return err
@@ -54,10 +46,8 @@ func (self *MsgQueue) Connect(addr string) error {
 
 func NewMsgQueue() *MsgQueue {
 	self := &MsgQueue{
-		OnRecv:         natstransport.RecvMessage,
-		OnSend:         natstransport.SendMessage,
-		ReconnInterval: time.Second * 5,
-		PingInterval:   time.Second * 10,
+		OnRecv: natstransport.RecvMessage,
+		OnSend: natstransport.SendMessage,
 	}
 
 	return self
