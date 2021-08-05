@@ -46,3 +46,19 @@ func (self *Context) Reset() {
 	self.Event = nil
 	self.Mapper = new(xframe.Mapper)
 }
+
+func (self *Context) Reply(msg interface{}) {
+
+	// 无法回复的来源, 多半是服务器间的来源
+	if self.Event == nil {
+		panic("can not reply to source due to nil sevent")
+	}
+
+	if replyEv, ok := self.Event.(interface {
+		Reply(msg interface{})
+	}); ok {
+		replyEv.Reply(msg)
+	} else {
+		self.Session().Send(msg)
+	}
+}
