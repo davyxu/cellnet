@@ -3,6 +3,7 @@ package nats
 import (
 	natstransport "github.com/davyxu/cellnet/transport/nats"
 	"github.com/nats-io/nats.go"
+	"time"
 )
 
 type MsgQueue struct {
@@ -21,13 +22,33 @@ func (self *MsgQueue) Publish(topic string, msg interface{}) error {
 	return self.nc.Publish(topic, payload)
 }
 
-func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err error)) error {
+func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err error) interface{}) error {
 	_, err := self.nc.Subscribe(topic, func(raw *nats.Msg) {
 		msg, err := self.OnRecv(raw.Data)
-		callback(msg, err)
+		reply := callback(msg, err)
+		if raw.Reply != "" && reply != nil {
+			self.Publish(raw.Reply, reply)
+		}
 	})
 
 	return err
+}
+
+func (self *MsgQueue) Request(topic string, msg interface{}, timeout time.Duration) (resp interface{}, retErr error) {
+
+	payload, err := self.OnSend(msg)
+	if err != nil {
+		retErr = err
+		return
+	}
+
+	reply, err := self.nc.Request(topic, payload, timeout)
+	if err != nil {
+		retErr = err
+		return
+	}
+
+	return self.OnRecv(reply.Data)
 }
 
 func (self *MsgQueue) Connect(addr string, options ...nats.Option) error {
