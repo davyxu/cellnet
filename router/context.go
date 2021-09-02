@@ -2,11 +2,11 @@ package cellrouter
 
 import (
 	"github.com/davyxu/cellnet"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 )
 
 type Context struct {
-	*xframe.Mapper
+	*xcontainer.Mapper
 	Event cellnet.Event
 }
 
@@ -44,7 +44,7 @@ func (self *Context) Session() cellnet.Session {
 
 func (self *Context) Reset() {
 	self.Event = nil
-	self.Mapper = new(xframe.Mapper)
+	self.Mapper = new(xcontainer.Mapper)
 }
 
 func (self *Context) Reply(msg interface{}) {

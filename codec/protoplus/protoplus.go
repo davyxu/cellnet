@@ -4,7 +4,7 @@ import (
 	cellcodec "github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/protoplus/api/golang"
 	"github.com/davyxu/protoplus/api/golang/wire"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 )
 
 type protoplus struct {
@@ -14,7 +14,7 @@ func (self *protoplus) Name() string {
 	return "protoplus"
 }
 
-func (self *protoplus) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
+func (self *protoplus) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
 
 	return ppgo.Marshal(msgObj.(ppgo.Struct))
 

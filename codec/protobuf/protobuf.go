@@ -2,7 +2,7 @@ package protoplus
 
 import (
 	cellcodec "github.com/davyxu/cellnet/codec"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	pb "github.com/golang/protobuf/proto"
 )
 
@@ -13,7 +13,7 @@ func (self *protobuf) Name() string {
 	return "protobuf"
 }
 
-func (self *protobuf) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
+func (self *protobuf) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
 
 	return pb.Marshal(msgObj.(pb.Message))
 

@@ -2,7 +2,7 @@ package udp
 
 import (
 	cellpeer "github.com/davyxu/cellnet/peer"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	"net"
 	"sync"
 	"time"
@@ -10,7 +10,7 @@ import (
 
 // Socket会话
 type Session struct {
-	xframe.Mapper
+	xcontainer.Mapper
 	cellpeer.SessionIdentify
 
 	peer   *Peer

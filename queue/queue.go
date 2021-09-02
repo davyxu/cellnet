@@ -2,7 +2,7 @@ package cellqueue
 
 import (
 	"fmt"
-	"github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	"runtime/debug"
 	"time"
 )
@@ -10,7 +10,7 @@ import (
 type PanicNotifyFunc func(interface{}, *Queue)
 
 type Queue struct {
-	pipe *xframe.Pipe
+	pipe *xcontainer.Pipe
 
 	// 启动崩溃捕获
 	CapturePanic bool
@@ -67,7 +67,7 @@ func (self *Queue) Stop() *Queue {
 func NewQueue() *Queue {
 
 	return &Queue{
-		pipe: xframe.NewPipe(),
+		pipe: xcontainer.NewPipe(),
 
 		// 默认的崩溃捕获打印
 		PanicNotify: func(raw interface{}, queue *Queue) {

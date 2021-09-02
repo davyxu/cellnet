@@ -3,7 +3,7 @@ package json
 import (
 	"encoding/json"
 	cellcodec "github.com/davyxu/cellnet/codec"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 )
 
 type jsonCodec struct {
@@ -15,7 +15,7 @@ func (self *jsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *jsonCodec) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
+func (self *jsonCodec) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
 
 	return json.Marshal(msgObj)
 

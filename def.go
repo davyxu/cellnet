@@ -1,6 +1,6 @@
 package cellnet
 
-import xframe "github.com/davyxu/x/frame"
+import "github.com/davyxu/x/container"
 
 // 会话
 type Session interface {
@@ -26,7 +26,7 @@ type Event interface {
 
 type Codec interface {
 	// 将数据转换为字节数组
-	Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error)
+	Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error)
 
 	// 将字节数组转换为数据
 	Decode(data interface{}, msgObj interface{}) error

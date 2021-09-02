@@ -2,7 +2,7 @@ package cellrouter
 
 import (
 	cellmeta "github.com/davyxu/cellnet/meta"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	xlog "github.com/davyxu/x/logger"
 	xos "github.com/davyxu/x/os"
 	xruntime "github.com/davyxu/x/runtime"
@@ -11,7 +11,7 @@ import (
 type HandlerFunc func(ctx *Context)
 
 type Router struct {
-	mapper   xframe.Mapper
+	mapper   xcontainer.Mapper
 	handlers []interface{} // 全局handler
 	Recover  bool
 }

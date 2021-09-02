@@ -5,13 +5,13 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellpeer "github.com/davyxu/cellnet/peer"
 	cellqueue "github.com/davyxu/cellnet/queue"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 )
 
 type Peer struct {
 	cellpeer.Hooker
 	*cellpeer.SessionManager
-	xframe.Mapper
+	xcontainer.Mapper
 	cellpeer.SocketOption
 	cellpeer.Protect
 	Queue  *cellqueue.Queue

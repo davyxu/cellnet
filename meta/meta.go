@@ -2,14 +2,14 @@ package cellmeta
 
 import (
 	"github.com/davyxu/cellnet"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	"path"
 	"reflect"
 )
 
 // 消息元信息
 type Meta struct {
-	xframe.Mapper
+	xcontainer.Mapper
 
 	Type  reflect.Type       // 消息类型, 注册时使用指针类型
 	Codec cellnet.Codec      // 消息用到的编码

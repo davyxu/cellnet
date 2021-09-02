@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellpeer "github.com/davyxu/cellnet/peer"
-	"github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	"github.com/davyxu/x/io"
 	xlog "github.com/davyxu/x/logger"
 	xnet "github.com/davyxu/x/net"
@@ -17,7 +17,7 @@ import (
 
 // Socket会话
 type Session struct {
-	xframe.Mapper
+	xcontainer.Mapper
 	cellpeer.SessionIdentify
 
 	Peer   *Peer
@@ -30,7 +30,7 @@ type Session struct {
 	exitSync sync.WaitGroup
 
 	// 发送队列
-	sendQueue *xframe.Pipe
+	sendQueue *xcontainer.Pipe
 
 	closing int64
 
@@ -248,7 +248,7 @@ func newSession(conn net.Conn, p *Peer, parent interface{}) *Session {
 		Peer:      p,
 		parent:    parent,
 		conn:      conn,
-		sendQueue: xframe.NewPipe(),
+		sendQueue: xcontainer.NewPipe(),
 	}
 
 	return self

@@ -4,11 +4,11 @@ import (
 	cellcodec "github.com/davyxu/cellnet/codec"
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmeta "github.com/davyxu/cellnet/meta"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 )
 
 // 将用户消息封装为发送事件
-func PackEvent(payload interface{}, ps *xframe.Mapper) *cellevent.SendMsg {
+func PackEvent(payload interface{}, ps *xcontainer.Mapper) *cellevent.SendMsg {
 	var (
 		msgData []byte
 		msgID   int

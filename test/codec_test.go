@@ -4,7 +4,7 @@ import (
 	"fmt"
 	cellcodec "github.com/davyxu/cellnet/codec"
 	cellmeta "github.com/davyxu/cellnet/meta"
-	xframe "github.com/davyxu/x/frame"
+	"github.com/davyxu/x/container"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -31,7 +31,7 @@ func (self *problemJsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *problemJsonCodec) Encode(msgObj interface{}, ps *xframe.Mapper) (data interface{}, err error) {
+func (self *problemJsonCodec) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
 	panic("encode")
 	return nil, nil
 }
