@@ -6,7 +6,7 @@ import (
 	cellmeta "github.com/davyxu/cellnet/meta"
 	cellmsglog "github.com/davyxu/cellnet/msglog"
 	cellpeer "github.com/davyxu/cellnet/peer"
-	xlog "github.com/davyxu/x/logger"
+	"github.com/davyxu/xlog"
 )
 
 type MessageFetcher interface {

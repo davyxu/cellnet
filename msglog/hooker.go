@@ -5,7 +5,7 @@ import (
 	cellevent "github.com/davyxu/cellnet/event"
 	cellmeta "github.com/davyxu/cellnet/meta"
 	cellpeer "github.com/davyxu/cellnet/peer"
-	xlog "github.com/davyxu/x/logger"
+	"github.com/davyxu/xlog"
 )
 
 // 萃取消息中的消息

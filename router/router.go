@@ -3,9 +3,9 @@ package cellrouter
 import (
 	cellmeta "github.com/davyxu/cellnet/meta"
 	"github.com/davyxu/x/container"
-	xlog "github.com/davyxu/x/logger"
 	xos "github.com/davyxu/x/os"
 	xruntime "github.com/davyxu/x/runtime"
+	"github.com/davyxu/xlog"
 )
 
 type HandlerFunc func(ctx *Context)
