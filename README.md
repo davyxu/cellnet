@@ -1,13 +1,11 @@
 ![cellnetlogo](doc/logo.png)
 
- [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12] [![GoDoc][1]][2]
+ [![Build Status][3]][4]  [![MIT licensed][11]][12] [![GoDoc][1]][2]
 
 [1]: https://godoc.org/github.com/davyxu/cellnet?status.svg
 [2]: https://godoc.org/github.com/davyxu/cellnet
 [3]: https://travis-ci.org/davyxu/cellnet.svg?branch=master
 [4]: https://travis-ci.org/davyxu/cellnet
-[5]: https://goreportcard.com/badge/github.com/davyxu/cellnet
-[6]: https://goreportcard.com/report/github.com/davyxu/cellnet
 [11]: https://img.shields.io/badge/license-MIT-blue.svg
 [12]: LICENSE
 
@@ -244,13 +242,6 @@ func client() {
 
 # 运行聊天例子
 
-**确认GOPATH设置正确！！**
-
-假设 GOPATH设置为/home/you/go
-
-那么 cellnet结构位于 /home/you/go/src/github.com/davyxu/cellnet
-
-
 ## 运行 服务器
 
 ```bash
@@ -307,11 +298,6 @@ sid1 say: hello
 [常见问题及回答](https://github.com/davyxu/cellnet/blob/master/doc/faq.md)
 
 这里应该有你想知道的答案
-
-# 基于cellnet的游戏服务器框架
-
-cellmesh
-https://github.com/davyxu/cellmesh
 
 
 # 贡献者
