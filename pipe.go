@@ -41,9 +41,9 @@ func (self *Pipe) Pick(retList *[]interface{}) (exit bool) {
 		self.listCond.Wait()
 	}
 
-	self.listGuard.Unlock()
+// 	self.listGuard.Unlock()
 
-	self.listGuard.Lock()
+// 	self.listGuard.Lock()
 
 	// 复制出队列
 
