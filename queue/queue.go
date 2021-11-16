@@ -59,7 +59,7 @@ func (self *Queue) Run() *Queue {
 
 // 停止事件循环
 func (self *Queue) Stop() *Queue {
-	self.pipe.Stop()
+	self.pipe.Stop(true)
 	return self
 }
 

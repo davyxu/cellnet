@@ -129,7 +129,7 @@ func (self *Session) recvLoop() {
 		ev, err = self.readMessage()
 
 		if err != nil {
-			self.sendQueue.Add(nil)
+			self.sendQueue.Stop(false)
 
 			// 标记为手动关闭原因
 			closedMsg := &cellevent.SessionClosed{}
