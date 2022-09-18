@@ -47,8 +47,8 @@ func SendMessage(ses *tcp.Session, ev *cellevent.SendMsg) error {
 	composeBuffer := make([]byte, packetHeaderSize+bodySize)
 	writer := xbytes.NewWriter(composeBuffer)
 
-	writer.WriteUint16(uint16(bodySize))
-	writer.WriteUint16(uint16(ev.MsgID))
+	writer.WriteUint32(uint32(bodySize))
+	writer.WriteUint32(uint32(ev.MsgID))
 	writer.Write(msgData)
 
 	// 将数据写入Socket

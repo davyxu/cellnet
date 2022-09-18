@@ -1,8 +1,8 @@
 package tcptransport
 
 const (
-	packetHeaderSize = 2 // 包体大小字段
-	msgIDLen         = 2 // 消息ID字段
+	packetHeaderSize = 4 // 包体大小字段
+	msgIDLen         = 4 // 消息ID字段
 )
 
 var (

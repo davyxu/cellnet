@@ -15,7 +15,7 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 	}
 
 	opt := ses.Peer.SocketOption
-	// Size为uint16，占2字节
+	// Size为uint32，占4字节
 	var sizeBuffer = make([]byte, packetHeaderSize)
 
 	// 持续读取Size直到读到为止
@@ -31,7 +31,7 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 	}
 
 	// 用小端格式读取Size
-	size := binary.LittleEndian.Uint16(sizeBuffer)
+	size := binary.LittleEndian.Uint32(sizeBuffer)
 
 	if opt.MaxPacketSize > 0 && int(size) >= opt.MaxPacketSize {
 		return nil, celltransport.ErrMaxPacket
@@ -52,7 +52,7 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 		return nil, celltransport.ErrShortMsgID
 	}
 
-	msgid := binary.LittleEndian.Uint16(body)
+	msgid := binary.LittleEndian.Uint32(body)
 
 	msgData := body[msgIDLen:]
 
