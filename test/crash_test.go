@@ -97,7 +97,7 @@ func TestSendCrash(t *testing.T) {
 		return input
 	}
 
-	tcp.OnSendCrash = func(raw interface{}) {
+	tcp.OnSendCrash = func(raw any) {
 		signal.Done(raw.(string))
 	}
 	conn.AsyncConnect(crashListen2)

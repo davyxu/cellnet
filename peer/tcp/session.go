@@ -21,7 +21,7 @@ type Session struct {
 	cellpeer.SessionIdentify
 
 	Peer   *Peer
-	parent interface{}
+	parent any
 
 	// Socket原始连接
 	conn net.Conn
@@ -61,7 +61,7 @@ func (self *Session) Close() {
 }
 
 // 发送封包
-func (self *Session) Send(msg interface{}) {
+func (self *Session) Send(msg any) {
 
 	// 只能通过Close关闭连接
 	if msg == nil {
@@ -104,7 +104,7 @@ func (self *Session) readMessage() (ev *cellevent.RecvMsg, err error) {
 
 		ev, err = self.Peer.OnRecv(self)
 
-	}, func(raw interface{}) {
+	}, func(raw any) {
 		var ok bool
 		if err, ok = raw.(error); !ok {
 			err = fmt.Errorf("recv panic: %+v", raw)
@@ -153,7 +153,7 @@ func (self *Session) recvLoop() {
 }
 
 var (
-	OnSendCrash = func(raw interface{}) {
+	OnSendCrash = func(raw any) {
 		xlog.Errorf("send panic: %+v", raw)
 	}
 )
@@ -186,7 +186,7 @@ func (self *Session) sendMessage(ev *cellevent.SendMsg) (err error) {
 // 发送循环
 func (self *Session) sendLoop() {
 
-	var writeList []interface{}
+	var writeList []any
 
 	for {
 		writeList = writeList[0:0]
@@ -243,7 +243,7 @@ func (self *Session) Start() {
 	go self.sendLoop()
 }
 
-func newSession(conn net.Conn, p *Peer, parent interface{}) *Session {
+func newSession(conn net.Conn, p *Peer, parent any) *Session {
 	self := &Session{
 		Peer:      p,
 		parent:    parent,

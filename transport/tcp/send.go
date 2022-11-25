@@ -10,10 +10,10 @@ import (
 )
 
 type NoCryptMessage struct {
-	Msg interface{}
+	Msg any
 }
 
-func (self *NoCryptMessage) Message() interface{} {
+func (self *NoCryptMessage) Message() any {
 	return self.Msg
 }
 

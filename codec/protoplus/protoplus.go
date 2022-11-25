@@ -14,13 +14,13 @@ func (self *protoplus) Name() string {
 	return "protoplus"
 }
 
-func (self *protoplus) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
+func (self *protoplus) Encode(msgObj any, ps *xcontainer.Mapper) (data any, err error) {
 
 	return ppgo.Marshal(msgObj.(ppgo.Struct))
 
 }
 
-func (self *protoplus) Decode(data interface{}, msgObj interface{}) error {
+func (self *protoplus) Decode(data any, msgObj any) error {
 
 	return ppgo.Unmarshal(data.([]byte), msgObj.(wire.Struct))
 }

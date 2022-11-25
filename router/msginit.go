@@ -10,7 +10,7 @@ var (
 )
 
 // 注册消息处理具备
-func Handle(msgTypeObj interface{}, handler HandlerFunc) {
+func Handle(msgTypeObj any, handler HandlerFunc) {
 	Global.Handle(msgTypeObj, "", handler)
 }
 

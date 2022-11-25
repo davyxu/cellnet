@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type PanicNotifyFunc func(interface{}, *Queue)
+type PanicNotifyFunc func(any, *Queue)
 
 type Queue struct {
 	pipe *xcontainer.Pipe
@@ -32,7 +32,7 @@ func (self *Queue) Post(callback func()) {
 // 开启事件循环
 func (self *Queue) Run() *Queue {
 
-	self.pipe.Run(func(raw interface{}) {
+	self.pipe.Run(func(raw any) {
 
 		switch value := raw.(type) {
 		case func():
@@ -70,7 +70,7 @@ func NewQueue() *Queue {
 		pipe: xcontainer.NewPipe(),
 
 		// 默认的崩溃捕获打印
-		PanicNotify: func(raw interface{}, queue *Queue) {
+		PanicNotify: func(raw any, queue *Queue) {
 
 			fmt.Printf("%s: %v \n%s\n", time.Now().Format("2006-01-02 15:04:05"), raw, string(debug.Stack()))
 			debug.PrintStack()

@@ -10,7 +10,7 @@ type Context struct {
 	Event cellnet.Event
 }
 
-func (self *Context) Message() interface{} {
+func (self *Context) Message() any {
 	if self.Event == nil {
 		return nil
 	}
@@ -47,7 +47,7 @@ func (self *Context) Reset() {
 	self.Mapper = new(xcontainer.Mapper)
 }
 
-func (self *Context) Reply(msg interface{}) {
+func (self *Context) Reply(msg any) {
 
 	// 无法回复的来源, 多半是服务器间的来源
 	if self.Event == nil {
@@ -55,7 +55,7 @@ func (self *Context) Reply(msg interface{}) {
 	}
 
 	if replyEv, ok := self.Event.(interface {
-		Reply(msg interface{})
+		Reply(msg any)
 	}); ok {
 		replyEv.Reply(msg)
 	} else {

@@ -11,9 +11,9 @@ import (
 type Meta struct {
 	xcontainer.Mapper
 
-	Type  reflect.Type       // 消息类型, 注册时使用指针类型
-	Codec cellnet.Codec      // 消息用到的编码
-	New   func() interface{} // 直接生成
+	Type  reflect.Type  // 消息类型, 注册时使用指针类型
+	Codec cellnet.Codec // 消息用到的编码
+	New   func() any    // 直接生成
 
 	ID       int // 消息ID (二进制协议中使用)
 	name     string
@@ -39,7 +39,7 @@ func (self *Meta) TypeName() string {
 }
 
 // 创建meta类型的实例
-func (self *Meta) NewType() interface{} {
+func (self *Meta) NewType() any {
 
 	if self.New != nil {
 		return self.New()

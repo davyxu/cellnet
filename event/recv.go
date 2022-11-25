@@ -7,7 +7,7 @@ import (
 // 接收到消息
 type RecvMsg struct {
 	Ses cellnet.Session
-	Msg interface{}
+	Msg any
 
 	// 原始数据
 	MsgID   int
@@ -26,7 +26,7 @@ func (self *RecvMsg) MessageData() []byte {
 	return self.MsgData
 }
 
-func (self *RecvMsg) Message() interface{} {
+func (self *RecvMsg) Message() any {
 
 	if self.Msg == nil {
 		self.Msg = InternalDecodeHandler(self)
@@ -35,7 +35,7 @@ func (self *RecvMsg) Message() interface{} {
 	return self.Msg
 }
 
-func (self *RecvMsg) Send(msg interface{}) {
+func (self *RecvMsg) Send(msg any) {
 	if self.Ses != nil {
 		self.Ses.Send(msg)
 	}

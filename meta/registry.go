@@ -104,7 +104,7 @@ func MetaByType(t reflect.Type) *Meta {
 }
 
 // 根据消息对象获得消息元信息
-func MetaByMsg(msg interface{}) *Meta {
+func MetaByMsg(msg any) *Meta {
 
 	if msg == nil {
 		return nil
@@ -123,7 +123,7 @@ func MetaByID(id int) *Meta {
 }
 
 // 消息名(例如:MsgREQ)
-func MessageToName(msg interface{}) string {
+func MessageToName(msg any) string {
 
 	if msg == nil {
 		return ""
@@ -147,7 +147,7 @@ func MessageIDToName(msgid int) string {
 }
 
 // 消息名(例如:pb.MsgREQ)
-func MessageToFullName(msg interface{}) string {
+func MessageToFullName(msg any) string {
 
 	if msg == nil {
 		return ""
@@ -161,7 +161,7 @@ func MessageToFullName(msg interface{}) string {
 	return meta.FullName
 }
 
-func MessageToID(msg interface{}) int {
+func MessageToID(msg any) int {
 
 	if msg == nil {
 		return 0
@@ -172,10 +172,10 @@ func MessageToID(msg interface{}) int {
 		return 0
 	}
 
-	return int(meta.ID)
+	return meta.ID
 }
 
-func MessageSize(msg interface{}) int {
+func MessageSize(msg any) int {
 
 	if msg == nil {
 		return 0
@@ -201,7 +201,7 @@ func MessageSize(msg interface{}) int {
 	return len(raw.([]byte))
 }
 
-func MessageToString(msg interface{}) string {
+func MessageToString(msg any) string {
 
 	if msg == nil {
 		return ""

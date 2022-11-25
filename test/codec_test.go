@@ -31,12 +31,12 @@ func (self *problemJsonCodec) Name() string {
 }
 
 // 将结构体编码为JSON的字节数组
-func (self *problemJsonCodec) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
+func (self *problemJsonCodec) Encode(msgObj any, ps *xcontainer.Mapper) (data any, err error) {
 	panic("encode")
 	return nil, nil
 }
 
-func (self *problemJsonCodec) Decode(data interface{}, msgObj interface{}) error {
+func (self *problemJsonCodec) Decode(data any, msgObj any) error {
 	panic("decode")
 	return nil
 }

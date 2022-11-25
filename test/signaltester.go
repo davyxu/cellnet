@@ -10,7 +10,7 @@ import (
 type SignalTester struct {
 	*testing.T
 
-	dataList []interface{}
+	dataList []any
 	guard    sync.Mutex
 
 	timeout time.Duration
@@ -20,13 +20,13 @@ func (self *SignalTester) SetTimeout(du time.Duration) {
 	self.timeout = du
 }
 
-func (self *SignalTester) match(expect []interface{}) bool {
+func (self *SignalTester) match(expect []any) bool {
 	self.guard.Lock()
 	defer self.guard.Unlock()
 	return len(self.dataList) == len(expect)
 }
 
-func (self *SignalTester) WaitAll(msg string, values ...interface{}) {
+func (self *SignalTester) WaitAll(msg string, values ...any) {
 
 	timeoutTS := time.Now().Add(self.timeout)
 	for {
@@ -52,7 +52,7 @@ func (self *SignalTester) WaitAll(msg string, values ...interface{}) {
 	}
 }
 
-func (self *SignalTester) Done(value interface{}) {
+func (self *SignalTester) Done(value any) {
 	self.guard.Lock()
 	self.dataList = append(self.dataList, value)
 	self.guard.Unlock()

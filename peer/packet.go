@@ -8,7 +8,7 @@ import (
 )
 
 // 将用户消息封装为发送事件
-func PackEvent(payload interface{}, ps *xcontainer.Mapper) *cellevent.SendMsg {
+func PackEvent(payload any, ps *xcontainer.Mapper) *cellevent.SendMsg {
 	var (
 		msgData []byte
 		msgID   int
@@ -47,7 +47,7 @@ func (self *RawPacket) MessageID() int {
 	return self.MsgID
 }
 
-func (self *RawPacket) Message() interface{} {
+func (self *RawPacket) Message() any {
 
 	// 获取消息元信息
 	meta := cellmeta.MetaByID(self.MsgID)

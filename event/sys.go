@@ -64,7 +64,7 @@ type SystemMessageIdentifier interface {
 	SystemMessage()
 }
 
-func BuildSystemEvent(ses cellnet.Session, msg interface{}) *RecvMsg {
+func BuildSystemEvent(ses cellnet.Session, msg any) *RecvMsg {
 
 	meta := cellmeta.MetaByMsg(msg)
 	if meta == nil {

@@ -14,7 +14,7 @@ var (
 )
 
 // 编码消息, 在使用了带内存池的codec中，可以传入session或peer的ContextSet，保存内存池上下文，默认ctx传nil
-func Encode(msg interface{}, ps *xcontainer.Mapper) (data []byte, meta *cellmeta.Meta, err error) {
+func Encode(msg any, ps *xcontainer.Mapper) (data []byte, meta *cellmeta.Meta, err error) {
 
 	// 获取消息元信息
 	meta = cellmeta.MetaByMsg(msg)
@@ -26,12 +26,12 @@ func Encode(msg interface{}, ps *xcontainer.Mapper) (data []byte, meta *cellmeta
 		return nil, nil, ErrNoCodec
 	}
 
-	defer xos.Recover(func(raw interface{}) {
+	defer xos.Recover(func(raw any) {
 		err = fmt.Errorf("encode panic: %+v", raw)
 	})
 
 	// 将消息编码为字节数组
-	var raw interface{}
+	var raw any
 	raw, err = meta.Codec.Encode(msg, ps)
 
 	if err != nil {
@@ -44,7 +44,7 @@ func Encode(msg interface{}, ps *xcontainer.Mapper) (data []byte, meta *cellmeta
 }
 
 // 解码消息
-func Decode(msgid int, data []byte) (msg interface{}, meta *cellmeta.Meta, err error) {
+func Decode(msgid int, data []byte) (msg any, meta *cellmeta.Meta, err error) {
 
 	// 获取消息元信息
 	meta = cellmeta.MetaByID(msgid)
@@ -58,7 +58,7 @@ func Decode(msgid int, data []byte) (msg interface{}, meta *cellmeta.Meta, err e
 		return nil, nil, ErrNoCodec
 	}
 
-	defer xos.Recover(func(raw interface{}) {
+	defer xos.Recover(func(raw any) {
 		err = fmt.Errorf("encode panic: %+v", raw)
 	})
 
@@ -73,10 +73,10 @@ func Decode(msgid int, data []byte) (msg interface{}, meta *cellmeta.Meta, err e
 
 // Codec.Encode内分配的资源，在必要时可以回收，例如内存池对象
 type CodecRecycler interface {
-	Free(data interface{}, ps *xcontainer.Mapper)
+	Free(data any, ps *xcontainer.Mapper)
 }
 
-func Free(codec cellnet.Codec, data interface{}, ps *xcontainer.Mapper) {
+func Free(codec cellnet.Codec, data any, ps *xcontainer.Mapper) {
 
 	if codec == nil {
 		return

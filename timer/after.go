@@ -12,7 +12,7 @@ type AfterStopper interface {
 // 在给定的duration持续时间后, 执行callbackObj对象类型对应的函数回调
 // q: 队列,在指定的队列goroutine执行, 空时,直接在当前goroutine
 // context: 将context上下文传递到带有context指针的函数回调中
-func After(q *cellqueue.Queue, duration time.Duration, callbackObj interface{}, context interface{}) AfterStopper {
+func After(q *cellqueue.Queue, duration time.Duration, callbackObj any, context any) AfterStopper {
 
 	return time.AfterFunc(duration, func() {
 		switch callback := callbackObj.(type) {
@@ -21,7 +21,7 @@ func After(q *cellqueue.Queue, duration time.Duration, callbackObj interface{}, 
 				cellqueue.QueuedCall(q, callback)
 			}
 
-		case func(interface{}):
+		case func(any):
 			if callback != nil {
 
 				cellqueue.QueuedCall(q, func() {
@@ -29,7 +29,7 @@ func After(q *cellqueue.Queue, duration time.Duration, callbackObj interface{}, 
 				})
 			}
 		default:
-			panic("celltimer.After: require func() or func(interface{})")
+			panic("celltimer.After: require func() or func(any)")
 		}
 	})
 

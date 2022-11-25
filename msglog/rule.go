@@ -42,13 +42,13 @@ func VisitRule(mode string, callback func(*cellmeta.Meta) bool) {
 
 	switch mode {
 	case "black":
-		blackListByMsgID.Range(func(key, value interface{}) bool {
+		blackListByMsgID.Range(func(key, value any) bool {
 			meta := value.(*cellmeta.Meta)
 
 			return callback(meta)
 		})
 	case "white":
-		whiteListByMsgID.Range(func(key, value interface{}) bool {
+		whiteListByMsgID.Range(func(key, value any) bool {
 			meta := value.(*cellmeta.Meta)
 
 			return callback(meta)

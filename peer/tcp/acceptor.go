@@ -26,7 +26,7 @@ type Acceptor struct {
 // 根据地址, 开始侦听
 func (self *Acceptor) Listen(addr string) error {
 	self.Address = addr
-	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (interface{}, error) {
+	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (any, error) {
 		return net.Listen("tcp", a.HostPortString(port))
 	})
 

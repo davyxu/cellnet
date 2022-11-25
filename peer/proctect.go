@@ -7,7 +7,7 @@ type Protect struct {
 }
 
 // 根据选项, 决定是否要捕获错误
-func (self *Protect) ProctectCall(job func(), cleanup func(raw interface{})) {
+func (self *Protect) ProctectCall(job func(), cleanup func(raw any)) {
 
 	if self.CapturePanic {
 		xos.Try(job, cleanup)

@@ -5,21 +5,21 @@ import (
 	xbytes "github.com/davyxu/x/bytes"
 )
 
-func SendMessage(msg interface{}) ([]byte, error) {
+func SendMessage(msg any) ([]byte, error) {
 	data, meta, err := cellcodec.Encode(msg, nil)
 	if err != nil {
 		return nil, err
 	}
 	payload := make([]byte, len(data)+2)
 	writer := xbytes.NewWriter(payload)
-	writer.WriteUint16(uint16(meta.ID))
+	writer.WriteUint32(uint32(meta.ID))
 	writer.Write(data)
 	return payload, err
 }
 
-func RecvMessage(payload []byte) (interface{}, error) {
+func RecvMessage(payload []byte) (any, error) {
 	reader := xbytes.NewReader(payload)
-	msgID, err := reader.ReadUint16()
+	msgID, err := reader.ReadUint32()
 	if err != nil {
 		return nil, err
 	}

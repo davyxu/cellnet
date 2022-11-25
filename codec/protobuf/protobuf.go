@@ -13,13 +13,13 @@ func (self *protobuf) Name() string {
 	return "protobuf"
 }
 
-func (self *protobuf) Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error) {
+func (self *protobuf) Encode(msgObj any, ps *xcontainer.Mapper) (data any, err error) {
 
 	return pb.Marshal(msgObj.(pb.Message))
 
 }
 
-func (self *protobuf) Decode(data interface{}, msgObj interface{}) error {
+func (self *protobuf) Decode(data any, msgObj any) error {
 
 	return pb.Unmarshal(data.([]byte), msgObj.(pb.Message))
 }

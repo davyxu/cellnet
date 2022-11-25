@@ -10,7 +10,7 @@ import (
 
 // 萃取消息中的消息
 type PacketMessagePeeker interface {
-	Message() interface{}
+	Message() any
 }
 
 var (

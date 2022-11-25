@@ -23,7 +23,7 @@ type Acceptor struct {
 
 func (self *Acceptor) Listen(addr string) error {
 	self.Address = addr
-	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (interface{}, error) {
+	ln, err := xnet.DetectPort(self.Address, func(a *xnet.Address, port int) (any, error) {
 		addr, err := net.ResolveUDPAddr("udp", a.HostPortString(port))
 		if err != nil {
 			return nil, err

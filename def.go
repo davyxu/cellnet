@@ -5,7 +5,7 @@ import "github.com/davyxu/x/container"
 // 会话
 type Session interface {
 	// 发送消息
-	Send(msg interface{})
+	Send(msg any)
 }
 
 // 事件
@@ -15,7 +15,7 @@ type Event interface {
 	Session() Session
 
 	// 如果消息尚未解析, 调用时将自动解析
-	Message() interface{}
+	Message() any
 
 	// 消息ID
 	MessageID() int
@@ -26,10 +26,10 @@ type Event interface {
 
 type Codec interface {
 	// 将数据转换为字节数组
-	Encode(msgObj interface{}, ps *xcontainer.Mapper) (data interface{}, err error)
+	Encode(msgObj any, ps *xcontainer.Mapper) (data any, err error)
 
 	// 将字节数组转换为数据
-	Decode(data interface{}, msgObj interface{}) error
+	Decode(data any, msgObj any) error
 
 	Name() string
 }

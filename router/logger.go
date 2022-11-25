@@ -11,12 +11,12 @@ import (
 
 type MessageFetcher interface {
 	MessageID() int
-	Message() interface{}
+	Message() any
 }
 
-func RecvLogger(where interface{}, data interface{}) {
+func RecvLogger(where, data any) {
 
-	var msg interface{}
+	var msg any
 
 	switch v := data.(type) {
 	case MessageFetcher:
@@ -36,7 +36,7 @@ func RecvLogger(where interface{}, data interface{}) {
 	xlog.Debugf("#recv %v len: %d | %s %s", where, cellmeta.MessageSize(msg), cellmeta.MessageToName(msg), cellmeta.MessageToString(msg))
 }
 
-func SendLogger(where interface{}, msg interface{}) {
+func SendLogger(where any, msg any) {
 
 	switch v := msg.(type) {
 	case cellevent.SystemMessageIdentifier:

@@ -14,7 +14,7 @@ type Session struct {
 	cellpeer.SessionIdentify
 
 	peer   *Peer
-	parent interface{}
+	parent any
 
 	// Socket原始连接
 	remote      *net.UDPAddr
@@ -55,7 +55,7 @@ func (self *Session) Write(data []byte) {
 }
 
 // 发送封包
-func (self *Session) Send(msg interface{}) {
+func (self *Session) Send(msg any) {
 	if self.peer.Recv == nil {
 		panic("no transmitter")
 	}

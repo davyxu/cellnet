@@ -5,14 +5,14 @@ import "github.com/davyxu/cellnet"
 // 会话开始发送数据事件
 type SendMsg struct {
 	Ses cellnet.Session
-	Msg interface{} // 用户需要发送的消息
+	Msg any // 用户需要发送的消息
 
 	// 原始数据
 	MsgID   int
 	MsgData []byte
 }
 
-func (self *SendMsg) Message() interface{} {
+func (self *SendMsg) Message() any {
 	if self.Msg == nil {
 		self.Msg = InternalDecodeHandler(self)
 	}

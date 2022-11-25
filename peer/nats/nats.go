@@ -13,11 +13,11 @@ var (
 
 type MsgQueue struct {
 	nc     *nats.Conn
-	OnSend func(msg interface{}) (payload []byte, err error)
-	OnRecv func(payload []byte) (msg interface{}, err error)
+	OnSend func(msg any) (payload []byte, err error)
+	OnRecv func(payload []byte) (msg any, err error)
 }
 
-func (self *MsgQueue) Publish(topic string, msg interface{}) error {
+func (self *MsgQueue) Publish(topic string, msg any) error {
 
 	payload, err := self.OnSend(msg)
 	if err != nil {
@@ -31,7 +31,7 @@ func (self *MsgQueue) Publish(topic string, msg interface{}) error {
 	return self.nc.Publish(topic, payload)
 }
 
-func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err error) interface{}) error {
+func (self *MsgQueue) Subscribe(topic string, callback func(msg any, err error) any) error {
 	if self.nc == nil {
 		return ErrMsgqNotReady
 	}
@@ -46,7 +46,7 @@ func (self *MsgQueue) Subscribe(topic string, callback func(msg interface{}, err
 	return err
 }
 
-func (self *MsgQueue) Request(topic string, msg interface{}, timeout time.Duration) (resp interface{}, retErr error) {
+func (self *MsgQueue) Request(topic string, msg any, timeout time.Duration) (resp any, retErr error) {
 
 	payload, err := self.OnSend(msg)
 	if err != nil {

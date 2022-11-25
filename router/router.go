@@ -12,7 +12,7 @@ type HandlerFunc func(ctx *Context)
 
 type Router struct {
 	mapper   xcontainer.Mapper
-	handlers []interface{} // 全局handler
+	handlers []any // 全局handler
 	Recover  bool
 }
 
@@ -21,7 +21,7 @@ type HandlerKey struct {
 	Kind string
 }
 
-func (self *Router) Handle(obj interface{}, kind string, handler interface{}) {
+func (self *Router) Handle(obj any, kind string, handler any) {
 
 	meta := cellmeta.MetaByMsg(obj)
 	if meta == nil {
@@ -30,10 +30,10 @@ func (self *Router) Handle(obj interface{}, kind string, handler interface{}) {
 	self.mapper.Set(HandlerKey{ID: meta.ID, Kind: kind}, handler)
 }
 
-func (self *Router) Invoke(ctx *Context, kind string, customInvoker func(raw interface{})) {
+func (self *Router) Invoke(ctx *Context, kind string, customInvoker func(raw any)) {
 
 	if self.Recover {
-		defer xos.Recover(func(raw interface{}) {
+		defer xos.Recover(func(raw any) {
 			reqName := cellmeta.MessageToName(ctx.Message())
 			reqBody := cellmeta.MessageToString(ctx.Message())
 
