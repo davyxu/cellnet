@@ -15,7 +15,7 @@ type Meta struct {
 	Codec cellnet.Codec // 消息用到的编码
 	New   func() any    // 直接生成
 
-	ID       int // 消息ID (二进制协议中使用)
+	Id       int // 消息ID (二进制协议中使用)
 	name     string
 	FullName string // 包+.+消息名
 

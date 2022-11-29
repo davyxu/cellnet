@@ -26,12 +26,12 @@ func (self *Context) MessageData() []byte {
 	return self.Event.MessageData()
 }
 
-func (self *Context) MessageID() int {
+func (self *Context) MessageId() int {
 	if self.Event == nil {
 		return 0
 	}
 
-	return self.Event.MessageID()
+	return self.Event.MessageId()
 }
 
 func (self *Context) Session() cellnet.Session {

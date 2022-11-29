@@ -18,7 +18,7 @@ type Event interface {
 	Message() any
 
 	// 消息ID
-	MessageID() int
+	MessageId() int
 
 	// 原始数据
 	MessageData() []byte

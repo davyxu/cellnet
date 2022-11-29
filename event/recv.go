@@ -10,7 +10,7 @@ type RecvMsg struct {
 	Msg any
 
 	// 原始数据
-	MsgID   int
+	MsgId   int
 	MsgData []byte
 }
 
@@ -18,8 +18,8 @@ func (self *RecvMsg) Session() cellnet.Session {
 	return self.Ses
 }
 
-func (self *RecvMsg) MessageID() int {
-	return self.MsgID
+func (self *RecvMsg) MessageId() int {
+	return self.MsgId
 }
 
 func (self *RecvMsg) MessageData() []byte {

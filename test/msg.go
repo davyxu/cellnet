@@ -20,6 +20,6 @@ func init() {
 	cellmeta.Register(&cellmeta.Meta{
 		Codec: cellcodec.MustGetByName("json"),
 		Type:  reflect.TypeOf((*TestEchoACK)(nil)).Elem(),
-		ID:    int(xbytes.StringHash("TestEchoACK")),
+		Id:    int(xbytes.StringHash("TestEchoACK")),
 	})
 }

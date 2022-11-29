@@ -35,7 +35,7 @@ func Register(meta *Meta) *Meta {
 	meta.init()
 
 	if pre, ok := metaByType[meta.Type]; ok {
-		panic(fmt.Sprintf("Duplicate message meta register by id: %d name: %s, pre id: %d name: %s", meta.ID, meta.Type.Name(), pre.ID, pre.TypeName()))
+		panic(fmt.Sprintf("Duplicate message meta register by id: %d name: %s, pre id: %d name: %s", meta.Id, meta.Type.Name(), pre.Id, pre.TypeName()))
 	} else {
 		metaByType[meta.Type] = meta
 	}
@@ -46,11 +46,11 @@ func Register(meta *Meta) *Meta {
 		metaByFullName[meta.FullName] = meta
 	}
 
-	if meta.ID != 0 {
-		if prev, ok := metaByID[meta.ID]; ok {
-			panic(fmt.Sprintf("Duplicate message meta register by id: %d type: %s, pre type: %s", meta.ID, meta.TypeName(), prev.TypeName()))
+	if meta.Id != 0 {
+		if prev, ok := metaByID[meta.Id]; ok {
+			panic(fmt.Sprintf("Duplicate message meta register by id: %d type: %s, pre type: %s", meta.Id, meta.TypeName(), prev.TypeName()))
 		} else {
-			metaByID[meta.ID] = meta
+			metaByID[meta.Id] = meta
 		}
 	}
 
@@ -172,7 +172,7 @@ func MessageToID(msg any) int {
 		return 0
 	}
 
-	return meta.ID
+	return meta.Id
 }
 
 func MessageSize(msg any) int {

@@ -19,7 +19,7 @@ func init() {
 	cellmeta.Register(&cellmeta.Meta{
 		Codec: new(problemJsonCodec),
 		Type:  reflect.TypeOf((*CodecPanicMsg)(nil)).Elem(),
-		ID:    1111,
+		Id:    1111,
 	})
 }
 

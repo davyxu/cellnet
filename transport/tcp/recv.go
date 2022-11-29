@@ -58,7 +58,7 @@ func RecvMessage(ses *tcp.Session) (ev *cellevent.RecvMsg, err error) {
 
 	ev = &cellevent.RecvMsg{
 		Ses:     ses,
-		MsgID:   int(msgid),
+		MsgId:   int(msgid),
 		MsgData: msgData,
 	}
 

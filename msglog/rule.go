@@ -24,12 +24,12 @@ func SetRule(name string, rule string) error {
 
 	switch rule {
 	case "black":
-		blackListByMsgID.Store(int(meta.ID), meta)
+		blackListByMsgID.Store(int(meta.Id), meta)
 	case "white":
-		whiteListByMsgID.Store(int(meta.ID), meta)
+		whiteListByMsgID.Store(int(meta.Id), meta)
 	case "none": // 从规则中移除
-		blackListByMsgID.Delete(int(meta.ID))
-		whiteListByMsgID.Delete(int(meta.ID))
+		blackListByMsgID.Delete(int(meta.Id))
+		whiteListByMsgID.Delete(int(meta.Id))
 	}
 
 	return nil

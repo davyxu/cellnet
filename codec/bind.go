@@ -7,7 +7,7 @@ import (
 
 func init() {
 	cellevent.InternalDecodeHandler = func(ev cellnet.Event) (msg any) {
-		msg, _, _ = Decode(ev.MessageID(), ev.MessageData())
+		msg, _, _ = Decode(ev.MessageId(), ev.MessageData())
 		return
 	}
 }

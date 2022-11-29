@@ -8,7 +8,7 @@ type SendMsg struct {
 	Msg any // 用户需要发送的消息
 
 	// 原始数据
-	MsgID   int
+	MsgId   int
 	MsgData []byte
 }
 
@@ -24,8 +24,8 @@ func (self *SendMsg) Session() cellnet.Session {
 	return self.Ses
 }
 
-func (self *SendMsg) MessageID() int {
-	return self.MsgID
+func (self *SendMsg) MessageId() int {
+	return self.MsgId
 }
 
 func (self *SendMsg) MessageData() []byte {

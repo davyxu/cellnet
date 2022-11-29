@@ -10,7 +10,7 @@ import (
 )
 
 type MessageFetcher interface {
-	MessageID() int
+	MessageId() int
 	Message() any
 }
 
@@ -20,7 +20,7 @@ func RecvLogger(where, data any) {
 
 	switch v := data.(type) {
 	case MessageFetcher:
-		if cellmsglog.IsMsgVisible(v.MessageID()) {
+		if cellmsglog.IsMsgVisible(v.MessageId()) {
 			msg = v.Message()
 		} else {
 			return
@@ -44,7 +44,7 @@ func SendLogger(where any, msg any) {
 	case cellmsglog.PacketMessagePeeker:
 		msg = v.Message()
 	case *cellpeer.RawPacket:
-		msg, _, _ = cellcodec.Decode(v.MsgID, v.MsgData)
+		msg, _, _ = cellcodec.Decode(v.MsgId, v.MsgData)
 	}
 
 	if cellmsglog.IsMsgVisible(cellmeta.MessageToID(msg)) {

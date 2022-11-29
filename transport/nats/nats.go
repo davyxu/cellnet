@@ -12,7 +12,7 @@ func SendMessage(msg any) ([]byte, error) {
 	}
 	payload := make([]byte, len(data)+2)
 	writer := xbytes.NewWriter(payload)
-	writer.WriteUint32(uint32(meta.ID))
+	writer.WriteUint32(uint32(meta.Id))
 	writer.Write(data)
 	return payload, err
 }

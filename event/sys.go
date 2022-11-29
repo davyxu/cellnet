@@ -73,7 +73,7 @@ func BuildSystemEvent(ses cellnet.Session, msg any) *RecvMsg {
 
 	return &RecvMsg{
 		Ses:   ses,
-		MsgID: meta.ID,
+		MsgId: meta.Id,
 		Msg:   msg,
 	}
 }
@@ -81,22 +81,22 @@ func BuildSystemEvent(ses cellnet.Session, msg any) *RecvMsg {
 func init() {
 	cellmeta.Register(&cellmeta.Meta{
 		Type: reflect.TypeOf((*SessionAccepted)(nil)).Elem(),
-		ID:   1,
+		Id:   1,
 	})
 	cellmeta.Register(&cellmeta.Meta{
 		Type: reflect.TypeOf((*SessionConnected)(nil)).Elem(),
-		ID:   2,
+		Id:   2,
 	})
 	cellmeta.Register(&cellmeta.Meta{
 		Type: reflect.TypeOf((*SessionConnectError)(nil)).Elem(),
-		ID:   3,
+		Id:   3,
 	})
 	cellmeta.Register(&cellmeta.Meta{
 		Type: reflect.TypeOf((*SessionClosed)(nil)).Elem(),
-		ID:   4,
+		Id:   4,
 	})
 	cellmeta.Register(&cellmeta.Meta{
 		Type: reflect.TypeOf((*SessionCloseNotify)(nil)).Elem(),
-		ID:   5,
+		Id:   5,
 	})
 }

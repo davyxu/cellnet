@@ -23,7 +23,7 @@ func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 	if EnableMsgLog {
 
 		msg := input.Message()
-		msgID := input.MessageID()
+		msgId := input.MessageId()
 
 		if !SystemMsgVisible {
 			if _, ok := msg.(cellevent.SystemMessageIdentifier); ok {
@@ -35,7 +35,7 @@ func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 			msg = peeker.Message()
 		}
 
-		if IsMsgVisible(msgID) {
+		if IsMsgVisible(msgId) {
 
 			// blue
 			xlog.Debugf("#recv %d %s %d %s",
@@ -63,7 +63,7 @@ func SendLogger(input *cellevent.SendMsg) *cellevent.SendMsg {
 	if EnableMsgLog {
 
 		msg := input.Message()
-		msgID := input.MessageID()
+		msgID := input.MessageId()
 
 		if !SystemMsgVisible {
 			if _, ok := msg.(cellevent.SystemMessageIdentifier); ok {

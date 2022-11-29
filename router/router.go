@@ -27,7 +27,7 @@ func (self *Router) Handle(obj any, kind string, handler any) {
 	if meta == nil {
 		panic("msg not register meta")
 	}
-	self.mapper.Set(HandlerKey{ID: meta.ID, Kind: kind}, handler)
+	self.mapper.Set(HandlerKey{ID: meta.Id, Kind: kind}, handler)
 }
 
 func (self *Router) Invoke(ctx *Context, kind string, customInvoker func(raw any)) {
@@ -41,7 +41,7 @@ func (self *Router) Invoke(ctx *Context, kind string, customInvoker func(raw any
 		})
 	}
 
-	if raw, ok := self.mapper.Get(HandlerKey{ID: ctx.MessageID(), Kind: kind}); ok {
+	if raw, ok := self.mapper.Get(HandlerKey{ID: ctx.MessageId(), Kind: kind}); ok {
 		if entry, ok := raw.(HandlerFunc); ok {
 
 			entry(ctx)

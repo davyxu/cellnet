@@ -37,7 +37,7 @@ func SendMessage(ses *tcp.Session, ev *cellevent.SendMsg) error {
 			return fmt.Errorf("encode msg failed, %+v", raw.Msg)
 		} else {
 			msgData = data
-			ev.MsgID = meta.ID
+			ev.MsgId = meta.Id
 		}
 	} else {
 		panic(fmt.Sprintf("invalid message %+v", ev.Message()))
@@ -48,7 +48,7 @@ func SendMessage(ses *tcp.Session, ev *cellevent.SendMsg) error {
 	writer := xbytes.NewWriter(composeBuffer)
 
 	writer.WriteUint32(uint32(bodySize))
-	writer.WriteUint32(uint32(ev.MsgID))
+	writer.WriteUint32(uint32(ev.MsgId))
 	writer.Write(msgData)
 
 	// 将数据写入Socket

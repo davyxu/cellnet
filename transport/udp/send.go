@@ -14,7 +14,7 @@ func SendMessage(ses *udp.Session, ev *cellevent.SendMsg) error {
 	binary.LittleEndian.PutUint16(pktData, uint16(HeaderSize+len(ev.MsgData)))
 
 	// Type
-	binary.LittleEndian.PutUint16(pktData[2:], uint16(ev.MsgID))
+	binary.LittleEndian.PutUint16(pktData[2:], uint16(ev.MsgId))
 
 	// Value
 	copy(pktData[HeaderSize:], ev.MsgData)

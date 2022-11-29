@@ -11,20 +11,20 @@ import (
 func PackEvent(payload any, ps *xcontainer.Mapper) *cellevent.SendMsg {
 	var (
 		msgData []byte
-		msgID   int
+		msgId   int
 		meta    *cellmeta.Meta
 	)
 
 	switch raw := payload.(type) {
 	case *RawPacket: // 发裸包
 		msgData = raw.MsgData
-		msgID = raw.MsgID
+		msgId = raw.MsgId
 	default: // 发普通编码包
 		// 将用户数据转换为字节数组和消息ID
 		msgData, meta, _ = cellcodec.Encode(payload, ps)
 
 		if meta != nil {
-			msgID = meta.ID
+			msgId = meta.Id
 		} else {
 			// 无法识别的消息, 丢给transmitter层处理
 			return &cellevent.SendMsg{Msg: payload}
@@ -32,7 +32,7 @@ func PackEvent(payload any, ps *xcontainer.Mapper) *cellevent.SendMsg {
 
 	}
 	return &cellevent.SendMsg{
-		MsgID:   msgID,
+		MsgId:   msgId,
 		MsgData: msgData,
 	}
 }
@@ -40,17 +40,17 @@ func PackEvent(payload any, ps *xcontainer.Mapper) *cellevent.SendMsg {
 // 直接发送数据时，将*RawPacket作为Send参数
 type RawPacket struct {
 	MsgData []byte
-	MsgID   int
+	MsgId   int
 }
 
-func (self *RawPacket) MessageID() int {
-	return self.MsgID
+func (self *RawPacket) MessageId() int {
+	return self.MsgId
 }
 
 func (self *RawPacket) Message() any {
 
 	// 获取消息元信息
-	meta := cellmeta.MetaByID(self.MsgID)
+	meta := cellmeta.MetaByID(self.MsgId)
 
 	// 消息没有注册
 	if meta == nil {
