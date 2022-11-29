@@ -26,7 +26,7 @@ func RecvLogger(where, data any) {
 			return
 		}
 	default:
-		if cellmsglog.IsMsgVisible(cellmeta.MessageToID(v)) {
+		if cellmsglog.IsMsgVisible(cellmeta.MessageToId(v)) {
 			msg = v
 		} else {
 			return
@@ -47,7 +47,7 @@ func SendLogger(where any, msg any) {
 		msg, _, _ = cellcodec.Decode(v.MsgId, v.MsgData)
 	}
 
-	if cellmsglog.IsMsgVisible(cellmeta.MessageToID(msg)) {
+	if cellmsglog.IsMsgVisible(cellmeta.MessageToId(msg)) {
 		xlog.Debugf("#send %v len: %d | %s %s", where, cellmeta.MessageSize(msg), cellmeta.MessageToName(msg), cellmeta.MessageToString(msg))
 	}
 }

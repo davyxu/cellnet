@@ -39,7 +39,7 @@ func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 
 			// blue
 			xlog.Debugf("#recv %d %s %d %s",
-				getSessionID(input.Ses),
+				getSessionId(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),
 				cellmeta.MessageToString(msg))
@@ -50,10 +50,10 @@ func RecvLogger(input *cellevent.RecvMsg) *cellevent.RecvMsg {
 	return input
 }
 
-func getSessionID(session cellnet.Session) int64 {
+func getSessionId(session cellnet.Session) int64 {
 
 	if fetcher, ok := session.(cellpeer.SessionID64Fetcher); ok {
-		return fetcher.ID()
+		return fetcher.Id()
 	}
 	return 0
 }
@@ -79,7 +79,7 @@ func SendLogger(input *cellevent.SendMsg) *cellevent.SendMsg {
 
 			// purple
 			xlog.Debugf("#send %d %s %d %s",
-				getSessionID(input.Ses),
+				getSessionId(input.Ses),
 				cellmeta.MessageToName(msg),
 				cellmeta.MessageSize(msg),
 				cellmeta.MessageToString(msg))

@@ -50,7 +50,7 @@ func (self *RawPacket) MessageId() int {
 func (self *RawPacket) Message() any {
 
 	// 获取消息元信息
-	meta := cellmeta.MetaByID(self.MsgId)
+	meta := cellmeta.MetaById(self.MsgId)
 
 	// 消息没有注册
 	if meta == nil {

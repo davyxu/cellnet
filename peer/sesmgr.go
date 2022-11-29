@@ -10,76 +10,76 @@ type SessionIdentify struct {
 	id int64
 }
 
-func (self *SessionIdentify) ID() int64 {
+func (self *SessionIdentify) Id() int64 {
 	return self.id
 }
 
-func (self *SessionIdentify) SetID(id int64) {
+func (self *SessionIdentify) SetId(id int64) {
 	self.id = id
 }
 
 type SessionID64Fetcher interface {
-	ID() int64
+	Id() int64
 }
 
 type SessionID64Setter interface {
-	SetID(id int64)
+	SetId(id int64)
 }
 
 type SessionManager struct {
-	sesByID      map[int64]cellnet.Session
-	sesByIDGuard sync.RWMutex
+	sesById      map[int64]cellnet.Session
+	sesByIdGuard sync.RWMutex
 
-	sesIDGen int64 // 记录已经生成的会话ID流水号
+	sesIdGen int64 // 记录已经生成的会话ID流水号
 }
 
 // 设置id起始数值
-func (self *SessionManager) SetSessionIDBase(base int64) {
-	atomic.StoreInt64(&self.sesIDGen, base)
+func (self *SessionManager) SetSessionIdBase(base int64) {
+	atomic.StoreInt64(&self.sesIdGen, base)
 }
 
 // 活跃的连接数量
 func (self *SessionManager) SessionCount() int {
-	self.sesByIDGuard.RLock()
-	defer self.sesByIDGuard.RUnlock()
-	return len(self.sesByID)
+	self.sesByIdGuard.RLock()
+	defer self.sesByIdGuard.RUnlock()
+	return len(self.sesById)
 }
 
 // 将会话添加到管理中
 func (self *SessionManager) AddSession(ses cellnet.Session) {
 
-	id := atomic.AddInt64(&self.sesIDGen, 1)
+	id := atomic.AddInt64(&self.sesIdGen, 1)
 
-	ses.(SessionID64Setter).SetID(id)
+	ses.(SessionID64Setter).SetId(id)
 
-	self.sesByIDGuard.Lock()
-	self.sesByID[id] = ses
-	self.sesByIDGuard.Unlock()
+	self.sesByIdGuard.Lock()
+	self.sesById[id] = ses
+	self.sesByIdGuard.Unlock()
 }
 
 // 将会话移除管理
 func (self *SessionManager) RemoveSession(ses cellnet.Session) {
 
-	id := ses.(SessionID64Fetcher).ID()
+	id := ses.(SessionID64Fetcher).Id()
 
-	self.sesByIDGuard.Lock()
-	delete(self.sesByID, id)
-	self.sesByIDGuard.Unlock()
+	self.sesByIdGuard.Lock()
+	delete(self.sesById, id)
+	self.sesByIdGuard.Unlock()
 }
 
 // 获得一个会话
 func (self *SessionManager) GetSession(id int64) cellnet.Session {
-	self.sesByIDGuard.RLock()
-	defer self.sesByIDGuard.RUnlock()
-	return self.sesByID[id]
+	self.sesByIdGuard.RLock()
+	defer self.sesByIdGuard.RUnlock()
+	return self.sesById[id]
 }
 
 // 遍历所有的会话
 func (self *SessionManager) VisitSession(callback func(cellnet.Session) bool) {
 
-	self.sesByIDGuard.RLock()
-	defer self.sesByIDGuard.RUnlock()
-	for _, ses := range self.sesByID {
+	self.sesByIdGuard.RLock()
+	defer self.sesByIdGuard.RUnlock()
+	for _, ses := range self.sesById {
 		if !callback(ses) {
 			break
 		}
@@ -89,19 +89,19 @@ func (self *SessionManager) VisitSession(callback func(cellnet.Session) bool) {
 // 关闭所有会话
 func (self *SessionManager) CloseAllSession() {
 
-	self.sesByIDGuard.RLock()
-	defer self.sesByIDGuard.RUnlock()
-	for _, ses := range self.sesByID {
+	self.sesByIdGuard.RLock()
+	defer self.sesByIdGuard.RUnlock()
+	for _, ses := range self.sesById {
 		ses.(interface {
 			Close()
 		}).Close()
 	}
-	self.sesByID = map[int64]cellnet.Session{}
+	self.sesById = map[int64]cellnet.Session{}
 
 }
 
 func NewSessionManager() *SessionManager {
 	return &SessionManager{
-		sesByID: map[int64]cellnet.Session{},
+		sesById: map[int64]cellnet.Session{},
 	}
 }

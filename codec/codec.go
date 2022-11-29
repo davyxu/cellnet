@@ -47,7 +47,7 @@ func Encode(msg any, ps *xcontainer.Mapper) (data []byte, meta *cellmeta.Meta, e
 func Decode(msgid int, data []byte) (msg any, meta *cellmeta.Meta, err error) {
 
 	// 获取消息元信息
-	meta = cellmeta.MetaByID(msgid)
+	meta = cellmeta.MetaById(msgid)
 
 	// 消息没有注册
 	if meta == nil {

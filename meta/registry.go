@@ -114,7 +114,7 @@ func MetaByMsg(msg any) *Meta {
 }
 
 // 根据id查找消息元信息
-func MetaByID(id int) *Meta {
+func MetaById(id int) *Meta {
 	if v, ok := metaByID[id]; ok {
 		return v
 	}
@@ -138,7 +138,7 @@ func MessageToName(msg any) string {
 }
 
 func MessageIDToName(msgid int) string {
-	meta := MetaByID(msgid)
+	meta := MetaById(msgid)
 	if meta != nil {
 		return meta.TypeName()
 	}
@@ -161,7 +161,7 @@ func MessageToFullName(msg any) string {
 	return meta.FullName
 }
 
-func MessageToID(msg any) int {
+func MessageToId(msg any) int {
 
 	if msg == nil {
 		return 0

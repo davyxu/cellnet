@@ -30,14 +30,14 @@ func newPeer() *Peer {
 }
 
 // SessionID根据各种实现不一样(例如网关), 应该在具体实现里获取
-func SessionID(ses cellnet.Session) int64 {
+func SessionId(ses cellnet.Session) int64 {
 	if ses == nil {
 		return 0
 	}
 
 	return ses.(interface {
-		ID() int64
-	}).ID()
+		Id() int64
+	}).Id()
 }
 
 func SessionRaw(ses cellnet.Session) *Session {

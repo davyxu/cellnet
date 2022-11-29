@@ -21,7 +21,7 @@ func InboundEntry(input *cellevent.RecvMsg) (output *cellevent.RecvMsg) {
 	ctx.Reset()
 	ctx.Event = input
 
-	RecvLogger(tcp.SessionID(input.Session()), ctx)
+	RecvLogger(tcp.SessionId(input.Session()), ctx)
 
 	Global.Invoke(ctx, "", nil)
 
