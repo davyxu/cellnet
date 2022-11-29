@@ -221,7 +221,7 @@ func (self *Session) Start() {
 	self.exitSync.Add(2)
 
 	// 将会话添加到管理器, 在线程处理前添加到管理器(分配id), 避免ID还未分配,就开始使用id的竞态问题
-	self.Peer.Add(self)
+	self.Peer.AddSession(self)
 
 	go func() {
 
@@ -229,7 +229,7 @@ func (self *Session) Start() {
 		self.exitSync.Wait()
 
 		// 将会话从管理器移除
-		self.Peer.Remove(self)
+		self.Peer.RemoveSession(self)
 
 		if self.endNotify != nil {
 			self.endNotify()

@@ -124,7 +124,7 @@ func (self *Acceptor) Close() error {
 
 	err := self.listener.Close()
 
-	self.CloseAll()
+	self.CloseAllSession()
 
 	return err
 }
