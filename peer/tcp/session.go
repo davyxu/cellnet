@@ -145,7 +145,7 @@ func (self *tcpSession) recvLoop() {
 				log.Errorf("session closed, sesid: %d, err: %s ip: %s", self.ID(), err, ip)
 			}
 
-			self.sendQueue.Add(nil)
+			self.sendQueue.Close()
 
 			// 标记为手动关闭原因
 			closedMsg := &cellnet.SessionClosed{}

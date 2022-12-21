@@ -43,7 +43,7 @@ func (self *wsSession) Raw() interface{} {
 }
 
 func (self *wsSession) Close() {
-	self.sendQueue.Add(nil)
+	self.sendQueue.Close()
 }
 
 // 发送封包

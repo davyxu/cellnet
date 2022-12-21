@@ -9,7 +9,10 @@ type Pipe struct {
 	list      []interface{}
 	listGuard sync.Mutex
 	listCond  *sync.Cond
+	ExistFlag int8
 }
+
+const DefaultExistFlag  = 1
 
 // 添加时不会发送阻塞
 func (self *Pipe) Add(msg interface{}) {
@@ -38,24 +41,15 @@ func (self *Pipe) Pick(retList *[]interface{}) (exit bool) {
 	self.listGuard.Lock()
 
 	for len(self.list) == 0 {
+		if self.ExistFlag == DefaultExistFlag {
+			self.listGuard.Unlock()
+			return true
+		}
 		self.listCond.Wait()
 	}
 
-// 	self.listGuard.Unlock()
-
-// 	self.listGuard.Lock()
-
 	// 复制出队列
-
-	for _, data := range self.list {
-
-		if data == nil {
-			exit = true
-			break
-		} else {
-			*retList = append(*retList, data)
-		}
-	}
+	*retList = append(*retList, self.list)
 
 	self.list = self.list[0:0]
 	self.listGuard.Unlock()
@@ -68,4 +62,12 @@ func NewPipe() *Pipe {
 	self.listCond = sync.NewCond(&self.listGuard)
 
 	return self
+}
+
+
+func (self *Pipe) Close() {
+	self.listGuard.Lock()
+	self.ExistFlag = DefaultExistFlag
+	self.listCond.Broadcast()
+	self.listGuard.Unlock()
 }

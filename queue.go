@@ -115,7 +115,7 @@ func (self *eventQueue) StartLoop() EventQueue {
 
 // 停止事件循环
 func (self *eventQueue) StopLoop() EventQueue {
-	self.Add(nil)
+	self.Close()
 	return self
 }
 
