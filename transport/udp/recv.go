@@ -27,7 +27,7 @@ func RecvMessage(ses *udp.Session, pktData []byte) (ev *cellevent.RecvMsg, err e
 
 	ev = &cellevent.RecvMsg{
 		Ses:     ses,
-		MsgID:   int(msgid),
+		MsgId:   int(msgid),
 		MsgData: msgData,
 	}
 
